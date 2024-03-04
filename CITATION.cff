@@ -1,0 +1,26 @@
+---
+cff-version: 1.2.0
+
+message: "This is the message displayed when viewing the citation on github"
+
+title: "ARLBench"
+date-released: "<<date>>"
+
+url: "https://automl.github.io/ARLBench/main/"
+
+# Replace automl here with your own github name if you need
+repository-code: "https://github.com/automl/ARLBench"
+
+version: "0.1.0"
+
+type: "template"
+keywords:
+  - "template"
+
+<<requires::license license: "BSD license" endrequires::license>>
+
+authors:
+  - family-names: ""
+    given-names: ""
+    affiliation: "Leibniz University Hannover, Germany"
+...

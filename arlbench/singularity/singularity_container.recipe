@@ -1,0 +1,31 @@
+Bootstrap: docker
+From: continuumio/miniconda3
+
+%runscript
+
+%files
+    requirements.txt
+
+%environment
+
+
+%labels
+
+
+%post
+    apt update -y
+    apt upgrade -y
+    apt install curl -y
+    apt install wget -y
+    apt install git -y    
+    . /opt/conda/etc/profile.d/conda.sh
+
+   conda update -n base -c defaults conda  
+   conda create -n environment python=3.9
+   conda init bash
+   conda activate environment
+   pip install -r requirements.txt
+
+   pip install git+https://github.com/mlindauer/ASlibScenario.git
+
+   echo "Successfully installed all features"
