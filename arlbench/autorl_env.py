@@ -94,6 +94,32 @@ class AutoRLEnv(Environment):
     def reset_env(
         self, key: chex.PRNGKey, params: EnvParams
     ) -> Tuple[chex.Array, EnvState]:
+        state = EnvState(
+            c_step=0,
+            global_step=0,
+            episode=0,          # TODO validate
+            env=env,
+            env_params=env_params,
+            total_updates=total_updates,
+            update_interval=update_interval,
+            network=network,
+            network_params=network_params,
+            target_params=target_params,
+            opt_state=opt_state,
+            opt_info=None,
+            buffer_state=buffer_state,
+            last_obsv=last_obsv,
+            last_env_state=last_env_state,
+            loss_info=[],
+            grad_info=[],
+            traj=[],
+            additional_info={},
+            rng=rng
+        )
+        
+        return self.get_state(state, params), state
+
+        # old function (moved to step function now):
         env, env_params = make_env(params.instance)
 
         # TODO how to access state.rng here?
@@ -229,13 +255,126 @@ class AutoRLEnv(Environment):
     def step_env(
         self, key: chex.PRNGKey, state: EnvState, action: dict, params: EnvParams
     ) -> Tuple[chex.Array, EnvState, float, bool, dict]:
-        # TODO implement step + parts of previous step function
-        # this is from dacbench AbstractEnv.step()
         done = False
         state.c_step += 1
         if state.c_step >= params.n_steps:
             done = True
 
+        # ------------------------------------------------------------------------
+        # 1) Environment initialization
+        # ------------------------------------------------------------------------
+        env, env_params = make_env(params.instance)
+
+        # TODO how to access state.rng here?
+        # for now, use initial rng based on config seed
+        rng = jax.random.PRNGKey(params.config["seed"])
+        rng, _rng = jax.random.split(rng)
+        reset_rng = jax.random.split(_rng, params.instance["num_envs"])
+
+        last_obsv, last_env_state = jax.vmap(
+            env.reset, in_axes=(0, None)
+        )(reset_rng, env_params)
+        global_step = 0
+
+        if isinstance(
+            env.action_space(env_params), gymnax.environments.spaces.Discrete
+        ):
+            action_size = env.action_space(env_params).n
+            action_buffer_size = 1
+            discrete = True
+        elif isinstance(
+            env.action_space(env_params), gymnax.environments.spaces.Box
+        ):
+            action_size = env.action_space(env_params).shape[0]
+            if len(env.action_space(env_params).shape) > 1:
+                action_buffer_size = [
+                    env.action_space(env_params).shape[0],
+                    env.action_space(env_params).shape[1],
+                ]
+            elif env.name == "BraxToGymnaxWrapper":
+                action_buffer_size = [action_size, 1]
+            else:
+                action_buffer_size = action_size
+
+            discrete = False
+        else:
+            raise NotImplementedError(
+                f"Only Discrete and Box action spaces are supported, got {env.action_space(env_params)}."
+            )
+
+        # ------------------------------------------------------------------------
+        # 2) Network and buffer initialization
+        # ------------------------------------------------------------------------
+        network = self.network_cls(
+            action_size,
+            activation=params.instance["activation"],
+            hidden_size=params.instance["hidden_size"],
+            discrete=discrete,
+        )
+        buffer = uniform_replay(
+            max_size=int(params.instance["buffer_size"]), beta=params.instance["beta"]
+        )
+        init_x = jnp.zeros(env.observation_space(env_params).shape)
+        buffer_state = buffer.init_fn(
+                (
+                    jnp.zeros(init_x.shape),
+                    jnp.zeros(init_x.shape),
+                    jnp.zeros(action_buffer_size),
+                    jnp.zeros(1),
+                    jnp.zeros(1),
+                ),
+                jnp.zeros(1),
+            )
+        
+        _, _rng = jax.random.split(rng)
+        if "load" in params.options.keys():
+            checkpointer = orbax.checkpoint.PyTreeCheckpointer()
+            restored = checkpointer.restore(params.options["load"])
+            network_params = restored["params"]
+            if isinstance(network_params, list):
+                network_params = network_params[0]
+            network_params = FrozenDict(network_params)
+            if "buffer_obs" in restored.keys():
+                obs = restored["buffer_obs"]
+                next_obs = restored["buffer_next_obs"]
+                actions = restored["buffer_actions"]
+                rewards = restored["buffer_rewards"]
+                dones = restored["buffer_dones"]
+                weights = restored["buffer_weights"]
+                self.buffer_state = buffer.add_batch_fn(self.buffer_state, ((obs, next_obs, actions, rewards, dones), weights))
+                
+            instance = restored["config"]
+            if "target" in restored.keys():
+                target_params = restored["target"][0]
+                if isinstance(target_params, list):
+                    target_params = target_params[0]
+            try:
+                opt_state = restored["opt_state"]
+            except:
+                opt_state = None
+        else:
+            network_params = network.init(_rng, init_x)
+            target_params = network.init(_rng, init_x)
+            opt_state = None
+        self.eval_func = make_eval(instance, network)
+        if params.config["algorithm"] == "ppo":
+            total_updates = (
+                instance["total_timesteps"]
+                // instance["num_steps"]
+                // instance["num_envs"]
+            )
+            update_interval = np.ceil(total_updates / params.n_steps)
+            if update_interval < 1:
+                update_interval = 1
+                print(
+                    "WARNING: The number of iterations selected in combination with your timestep, num_env and num_step settings results in 0 steps per iteration. Rounded up to 1, this means more total steps will be executed."
+                )
+        else:
+            self.update_interval = None
+        
+        # ------------------------------------------------------------------------
+        # 3) Training
+        # ------------------------------------------------------------------------
         if "algorithm" in action.keys():
             print(
                 f"Changing algorithm to {action['algorithm']} - attention, this will reinstantiate the network!"
@@ -435,14 +574,14 @@ class AutoRLEnv(Environment):
             c_step=0,
             global_step=0,
             episode=0,          # TODO validate
-            env=state.env,
-            env_params=state.env_params,
-            total_updates=state.total_updates,
-            update_interval=state.update_interval,
-            network=state.network,
+            env=env,
+            env_params=env_params,
+            total_updates=total_updates,
+            update_interval=update_interval,
+            network=network,
             network_params=network_params,
-            target_params=state.target_params,
-            opt_state=state.opt_state,
+            target_params=target_params,
+            opt_state=opt_state,
             opt_info=opt_info,
             buffer_state=buffer_state,
             last_obsv=last_obsv,
