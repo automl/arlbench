@@ -431,7 +431,7 @@ class AutoRLEnv(Environment):
                     save_args=save_args,
                 )
 
-            state = EnvState(
+        state = EnvState(
             c_step=0,
             global_step=0,
             episode=0,          # TODO validate
@@ -454,9 +454,9 @@ class AutoRLEnv(Environment):
             rng=state.rng
         )
     
-        return self.get_state(state, params), state, 0, False, {}
+        return self.get_state(state, params), state, reward, done, {}
 
-    def get_default_reward(self, state):
+    def get_default_reward(self, state) -> float:
         return self.eval_func(state.rng, state.network_params)
 
     def switch_algorithm(self, new_algorithm):
