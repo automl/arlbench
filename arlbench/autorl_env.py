@@ -6,7 +6,7 @@ import flax
 from flax import struct
 from flax.training import orbax_utils
 from flax.core.frozen_dict import FrozenDict
-import gymnax 
+import gymnax
 import orbax
 import chex
 from typing import Tuple, Union, Any, Dict
@@ -18,7 +18,7 @@ from utils import (
     Q,
     make_env,
     uniform_replay,
-    UniformReplayBufferState
+    UniformReplayBufferState,
 )
 from gymnax.environments.environment import Environment
 
@@ -45,7 +45,7 @@ class EnvState:
     traj: Any
     additional_info: Any
     rng: Any
-    
+
 
 @struct.dataclass
 class EnvParams:
@@ -69,8 +69,8 @@ class AutoRLEnv(Environment):
         # self.checkpoint = self.config["checkpoint"]
         # self.checkpoint_dir = self.config["checkpoint_dir"]
         # self.rng = jax.random.PRNGKey(self.config.seed)
-       
-       #  self.episode = 0
+
+        #  self.episode = 0
 
         if "reward_function" in config.keys():
             self.get_reward = config["reward_function"]
@@ -90,14 +90,14 @@ class AutoRLEnv(Environment):
         else:
             self.make_train = make_train_ppo
             self.network_cls = ActorCritic
-    
+
     def reset_env(
         self, key: chex.PRNGKey, params: EnvParams
     ) -> Tuple[chex.Array, EnvState]:
         state = EnvState(
             c_step=0,
             global_step=0,
-            episode=0,          # TODO validate
+            episode=0,  # TODO validate
             env=env,
             env_params=env_params,
             total_updates=total_updates,
@@ -114,9 +114,9 @@ class AutoRLEnv(Environment):
             grad_info=[],
             traj=[],
             additional_info={},
-            rng=rng
+            rng=rng,
         )
-        
+
         return self.get_state(state, params), state
 
         # old function (moved to step function now):
@@ -128,9 +128,9 @@ class AutoRLEnv(Environment):
         rng, _rng = jax.random.split(rng)
         reset_rng = jax.random.split(_rng, params.instance["num_envs"])
 
-        last_obsv, last_env_state = jax.vmap(
-            env.reset, in_axes=(0, None)
-        )(reset_rng, env_params)
+        last_obsv, last_env_state = jax.vmap(env.reset, in_axes=(0, None))(
+            reset_rng, env_params
+        )
         global_step = 0
 
         if isinstance(
@@ -139,9 +139,7 @@ class AutoRLEnv(Environment):
             action_size = env.action_space(env_params).n
             action_buffer_size = 1
             discrete = True
-        elif isinstance(
-            env.action_space(env_params), gymnax.environments.spaces.Box
-        ):
+        elif isinstance(env.action_space(env_params), gymnax.environments.spaces.Box):
             action_size = env.action_space(env_params).shape[0]
             if len(env.action_space(env_params).shape) > 1:
                 action_buffer_size = [
@@ -170,16 +168,16 @@ class AutoRLEnv(Environment):
         )
         init_x = jnp.zeros(env.observation_space(env_params).shape)
         buffer_state = buffer.init_fn(
-                (
-                    jnp.zeros(init_x.shape),
-                    jnp.zeros(init_x.shape),
-                    jnp.zeros(action_buffer_size),
-                    jnp.zeros(1),
-                    jnp.zeros(1),
-                ),
+            (
+                jnp.zeros(init_x.shape),
+                jnp.zeros(init_x.shape),
+                jnp.zeros(action_buffer_size),
                 jnp.zeros(1),
-            )
-        
+                jnp.zeros(1),
+            ),
+            jnp.zeros(1),
+        )
+
         _, _rng = jax.random.split(rng)
         if "load" in params.options.keys():
             checkpointer = orbax.checkpoint.PyTreeCheckpointer()
@@ -195,8 +193,11 @@ class AutoRLEnv(Environment):
                 rewards = restored["buffer_rewards"]
                 dones = restored["buffer_dones"]
                 weights = restored["buffer_weights"]
-                self.buffer_state = buffer.add_batch_fn(self.buffer_state, ((obs, next_obs, actions, rewards, dones), weights))
-                
+                self.buffer_state = buffer.add_batch_fn(
+                    self.buffer_state,
+                    ((obs, next_obs, actions, rewards, dones), weights),
+                )
+
             instance = restored["config"]
             if "target" in restored.keys():
                 target_params = restored["target"][0]
@@ -229,7 +230,7 @@ class AutoRLEnv(Environment):
         state = EnvState(
             c_step=0,
             global_step=0,
-            episode=0,          # TODO validate
+            episode=0,  # TODO validate
             env=env,
             env_params=env_params,
             total_updates=total_updates,
@@ -246,11 +247,10 @@ class AutoRLEnv(Environment):
             grad_info=[],
             traj=[],
             additional_info={},
-            rng=rng
+            rng=rng,
         )
-        
-        return self.get_state(state, params), state
 
+        return self.get_state(state, params), state
 
     def step_env(
         self, key: chex.PRNGKey, state: EnvState, action: dict, params: EnvParams
@@ -271,9 +271,9 @@ class AutoRLEnv(Environment):
         rng, _rng = jax.random.split(rng)
         reset_rng = jax.random.split(_rng, params.instance["num_envs"])
 
-        last_obsv, last_env_state = jax.vmap(
-            env.reset, in_axes=(0, None)
-        )(reset_rng, env_params)
+        last_obsv, last_env_state = jax.vmap(env.reset, in_axes=(0, None))(
+            reset_rng, env_params
+        )
         global_step = 0
 
         if isinstance(
@@ -282,9 +282,7 @@ class AutoRLEnv(Environment):
             action_size = env.action_space(env_params).n
             action_buffer_size = 1
             discrete = True
-        elif isinstance(
-            env.action_space(env_params), gymnax.environments.spaces.Box
-        ):
+        elif isinstance(env.action_space(env_params), gymnax.environments.spaces.Box):
             action_size = env.action_space(env_params).shape[0]
             if len(env.action_space(env_params).shape) > 1:
                 action_buffer_size = [
@@ -316,16 +314,16 @@ class AutoRLEnv(Environment):
         )
         init_x = jnp.zeros(env.observation_space(env_params).shape)
         buffer_state = buffer.init_fn(
-                (
-                    jnp.zeros(init_x.shape),
-                    jnp.zeros(init_x.shape),
-                    jnp.zeros(action_buffer_size),
-                    jnp.zeros(1),
-                    jnp.zeros(1),
-                ),
+            (
+                jnp.zeros(init_x.shape),
+                jnp.zeros(init_x.shape),
+                jnp.zeros(action_buffer_size),
                 jnp.zeros(1),
-            )
-        
+                jnp.zeros(1),
+            ),
+            jnp.zeros(1),
+        )
+
         _, _rng = jax.random.split(rng)
         if "load" in params.options.keys():
             checkpointer = orbax.checkpoint.PyTreeCheckpointer()
@@ -341,8 +339,11 @@ class AutoRLEnv(Environment):
                 rewards = restored["buffer_rewards"]
                 dones = restored["buffer_dones"]
                 weights = restored["buffer_weights"]
-                self.buffer_state = buffer.add_batch_fn(self.buffer_state, ((obs, next_obs, actions, rewards, dones), weights))
-                
+                self.buffer_state = buffer.add_batch_fn(
+                    self.buffer_state,
+                    ((obs, next_obs, actions, rewards, dones), weights),
+                )
+
             instance = restored["config"]
             if "target" in restored.keys():
                 target_params = restored["target"][0]
@@ -371,7 +372,7 @@ class AutoRLEnv(Environment):
                 )
         else:
             self.update_interval = None
-        
+
         # ------------------------------------------------------------------------
         # 3) Training
         # ------------------------------------------------------------------------
@@ -386,7 +387,9 @@ class AutoRLEnv(Environment):
         params.instance["track_metrics"] = params.config["grad_obs"]
 
         self.train_func = jax.jit(
-            self.make_train(params.instance, state.env, state.network, state.update_interval)
+            self.make_train(
+                params.instance, state.env, state.network, state.update_interval
+            )
         )
 
         train_args = (
@@ -408,7 +411,7 @@ class AutoRLEnv(Environment):
                 state.last_obsv,
                 state.last_env_state,
                 state.buffer_state,
-                state.global_step
+                state.global_step,
             )
 
         runner_state, metrics = self.train_func(*train_args)
@@ -487,7 +490,10 @@ class AutoRLEnv(Environment):
 
             additional_info = state.additional_info
 
-            if "minibatches" in params.config["checkpoint"] and "trajectory" in params.config["checkpoint"]:
+            if (
+                "minibatches" in params.config["checkpoint"]
+                and "trajectory" in params.config["checkpoint"]
+            ):
                 ckpt = {}
                 ckpt["minibatches"] = {}
                 ckpt["minibatches"]["states"] = jnp.concatenate(
@@ -546,8 +552,12 @@ class AutoRLEnv(Environment):
                 ckpt = {}
                 ckpt["trajectory"] = {}
                 ckpt["trajectory"]["states"] = jnp.concatenate(state.traj.obs, axis=0)
-                ckpt["trajectory"]["action"] = jnp.concatenate(state.traj.action, axis=0)
-                ckpt["trajectory"]["reward"] = jnp.concatenate(state.traj.reward, axis=0)
+                ckpt["trajectory"]["action"] = jnp.concatenate(
+                    state.traj.action, axis=0
+                )
+                ckpt["trajectory"]["reward"] = jnp.concatenate(
+                    state.traj.reward, axis=0
+                )
                 ckpt["trajectory"]["dones"] = jnp.concatenate(state.traj.done, axis=0)
                 if params.config["algorithm"] == "ppo":
                     ckpt["trajectory"]["value"] = jnp.concatenate(
@@ -573,7 +583,7 @@ class AutoRLEnv(Environment):
         state = EnvState(
             c_step=0,
             global_step=0,
-            episode=0,          # TODO validate
+            episode=0,  # TODO validate
             env=env,
             env_params=env_params,
             total_updates=total_updates,
@@ -590,10 +600,16 @@ class AutoRLEnv(Environment):
             grad_info=grad_info,
             traj=traj,
             additional_info=additional_info,
-            rng=state.rng
+            rng=state.rng,
         )
-    
-        return self.get_state(state, params), state, reward, done, {}
+
+        return (
+            jax.lax.stop_gradient(self.get_state(state, params)),
+            jax.lax.stop_gradient(state),
+            reward,
+            done,
+            {},
+        )
 
     def get_default_reward(self, state) -> float:
         return self.eval_func(state.rng, state.network_params)
@@ -603,9 +619,11 @@ class AutoRLEnv(Environment):
         self.network_cls = self.ALGORITHMS[new_algorithm][1]
         self.reset()
 
-     # Useful features could be: total deltas of grad norm and grad var, instance info...
+    # Useful features could be: total deltas of grad norm and grad var, instance info...
     def get_default_state(self, state, _):
-        return jnp.array([state.c_step, state.c_step * state.instance["total_timesteps"]])
+        return jnp.array(
+            [state.c_step, state.c_step * state.instance["total_timesteps"]]
+        )
 
     def get_gradient_state(self, state, params):
         if state.c_step == 0:
