@@ -114,6 +114,17 @@ def make_train_sac(config, env, actor_network, critic_network):
         
         # TRAIN LOOP
         def _update_step(runner_state, unused):
+            # COLLECT TRAJECTORIES
+            def _env_step(runner_state, unused):
+                train_state, env_state, last_obs, rng, buffer_state = runner_state
+
+                # SELECT ACTION
+                rng, _rng = jax.random.split(rng)
+                pi, value = actor_network.apply(train_state.params, last_obs)
+                action = pi.sample(seed=_rng)
+                log_prob = pi.log_prob(action)
+         
+            
             # Collect transitions and store in buffer
             
             # Sample mini-batches from replay buffer
