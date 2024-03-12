@@ -236,7 +236,7 @@ def make_train_dqn(config, env, network, _):
         )
         # initiliaze buffer using a mock transition
         # TODO update buffer_state?
-        buffer.init((obsv, obsv, jnp.array(0), jnp.array(0.), jnp.array(True)))
+        # sth like buffer.init((obsv, obsv, jnp.array(0), jnp.array(0.), jnp.array(True)))
 
         global_step = global_step
 
@@ -339,9 +339,8 @@ def make_train_dqn(config, env, network, _):
                     buffer_state,
                     (last_obs, obsv, action, reward, done),
                 )
-                buffer_state = buffer.set_priorities()
+                # buffer_state = buffer.set_priorities(buffer_state, ...)
                 
-
                 global_step += 1
                 return (obsv, env_state, global_step, buffer_state), (
                     obsv,

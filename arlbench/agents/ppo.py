@@ -4,7 +4,7 @@ import jax.numpy as jnp
 import optax
 from typing import NamedTuple
 from .common import ExtendedTrainState
-from .dqn import uniform_replay
+import flashbax as fbx
 
 
 class Transition(NamedTuple):
@@ -39,8 +39,11 @@ def make_train_ppo(config, env, network, num_updates):
             tx=tx,
             opt_state=opt_state,
         )
-        buffer = uniform_replay(
-            max_size=int(config["buffer_size"]), beta=config["beta"]
+        buffer = fbx.make_prioritised_flat_buffer(
+            max_length=int(config["buffer_size"]),
+            min_length=config["batch_size"],
+            sample_batch_size=config["batch_size"],
+            priority_exponent=config["beta"]
         )
 
         # TRAIN LOOP
@@ -61,7 +64,7 @@ def make_train_ppo(config, env, network, num_updates):
                 obsv, env_state, reward, done, info = jax.vmap(
                     env.step, in_axes=(0, 0, 0, None)
                 )(rng_step, env_state, action, env_params)
-                buffer_state = buffer.add_batch_fn(
+                buffer_state = buffer.add(
                     buffer_state,
                     (
                         (
