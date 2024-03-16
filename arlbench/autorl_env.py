@@ -94,32 +94,7 @@ class AutoRLEnv(Environment):
     def reset_env(
         self, key: chex.PRNGKey, params: EnvParams
     ) -> Tuple[chex.Array, EnvState]:
-        state = EnvState(
-            c_step=0,
-            global_step=0,
-            episode=0,  # TODO validate
-            env=env,
-            env_params=env_params,
-            total_updates=total_updates,
-            update_interval=update_interval,
-            network=network,
-            network_params=network_params,
-            target_params=target_params,
-            opt_state=opt_state,
-            opt_info=None,
-            buffer_state=buffer_state,
-            last_obsv=last_obsv,
-            last_env_state=last_env_state,
-            loss_info=[],
-            grad_info=[],
-            traj=[],
-            additional_info={},
-            rng=rng,
-        )
-
-        return self.get_state(state, params), state
-
-        # old function (moved to step function now):
+        # TODO move to new function that is shared among reset and step
         env, env_params = make_env(params.instance)
 
         # TODO how to access state.rng here?
@@ -163,6 +138,7 @@ class AutoRLEnv(Environment):
             hidden_size=params.instance["hidden_size"],
             discrete=discrete,
         )
+        # TODO use flashbax
         buffer = uniform_replay(
             max_size=int(params.instance["buffer_size"]), beta=params.instance["beta"]
         )
@@ -309,6 +285,7 @@ class AutoRLEnv(Environment):
             hidden_size=params.instance["hidden_size"],
             discrete=discrete,
         )
+        # TODO use flashbax buffer
         buffer = uniform_replay(
             max_size=int(params.instance["buffer_size"]), beta=params.instance["beta"]
         )
