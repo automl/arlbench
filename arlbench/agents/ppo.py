@@ -5,6 +5,7 @@ import optax
 from typing import NamedTuple
 from .common import ExtendedTrainState
 import flashbax as fbx
+import flax
 
 
 class Transition(NamedTuple):
@@ -64,19 +65,19 @@ def make_train_ppo(config, env, network, num_updates):
                 obsv, env_state, reward, done, info = jax.vmap(
                     env.step, in_axes=(0, 0, 0, None)
                 )(rng_step, env_state, action, env_params)
-                buffer_state = buffer.add(
-                    buffer_state,
-                    (
-                        (
-                            last_obs,
-                            obsv,
-                            jnp.expand_dims(action, -1),
-                            jnp.expand_dims(reward, -1),
-                            jnp.expand_dims(done, -1),
-                        ),
-                        jnp.zeros((*reward.shape, 1)),
-                    ),
-                )
+                
+                # TODO make this running, apparently there is a problem with the shape of transitions
+                # https://github.com/instadeepai/flashbax?tab=readme-ov-file#quickstart-
+                # buffer_state = buffer.add(
+                #     buffer_state,
+                #     (
+                #         last_obs,
+                #         obsv,
+                #         jnp.expand_dims(action, -1),
+                #         jnp.expand_dims(reward, -1),
+                #         jnp.expand_dims(done, -1),   
+                #     ),
+                # )
                 transition = Transition(
                     done, action, value, reward, log_prob, last_obs, info
                 )
@@ -199,7 +200,7 @@ def make_train_ppo(config, env, network, num_updates):
                     total_loss,
                     grads,
                     minibatches,
-                    train_state.params.unfreeze().copy(),
+                    train_state.params.unfreeze().copy() if isinstance(train_state.params, flax.core.FrozenDict) else train_state.params.copy(),
                 )
 
             update_state = (train_state, traj_batch, advantages, targets, rng)

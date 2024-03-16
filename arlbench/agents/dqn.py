@@ -3,7 +3,7 @@ import jax
 import jax.numpy as jnp
 import chex
 import optax
-from ..utils.common import ExtendedTrainState
+from .common import ExtendedTrainState
 from typing import NamedTuple
 import dejax.utils as utils
 from typing import Callable, Any, Tuple
