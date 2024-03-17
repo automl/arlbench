@@ -3,7 +3,7 @@ import jax
 import jax.numpy as jnp
 import chex
 import optax
-from .common import ExtendedTrainState
+from .common import ExtendedTrainState, TimeStep
 from typing import NamedTuple
 import dejax.utils as utils
 from typing import Callable, Any, Tuple
@@ -19,7 +19,6 @@ IntScalar = chex.Array
 ItemUpdateFn = Callable[[Item], Item]
 BoolScalar = chex.Array
 
-
 class Transition(NamedTuple):
     done: jnp.ndarray
     action: jnp.ndarray
@@ -27,6 +26,7 @@ class Transition(NamedTuple):
     reward: jnp.ndarray
     obs: jnp.ndarray
     info: jnp.ndarray
+
 
 
 # def make_default_add_batch_fn(add_fn):
@@ -217,28 +217,18 @@ def make_train_dqn(config, env, network, _):
         opt_state,
         obsv,
         env_state,
+        buffer,
         buffer_state,
         global_step
     ):
         train_state_kwargs = {
             "apply_fn": network.apply,
             "params": network_params,
+            "target_params": target_params,
             "tx": optax.adam(config["lr"], eps=1e-5),
             "opt_state": opt_state,
         }
-        train_state_kwargs["target_params"] = target_params
         train_state = ExtendedTrainState.create_with_opt_state(**train_state_kwargs)
-        buffer = fbx.make_prioritised_flat_buffer(
-            max_length=int(config["buffer_size"]),
-            min_length=config["batch_size"],
-            sample_batch_size=config["batch_size"],
-            priority_exponent=config["beta"]
-        )
-        # initiliaze buffer using a mock transition
-        # TODO update buffer_state?
-        # sth like buffer.init((obsv, obsv, jnp.array(0), jnp.array(0.), jnp.array(True)))
-
-        global_step = global_step
 
         # TRAIN LOOP
         def update(
@@ -306,9 +296,6 @@ def make_train_dqn(config, env, network, _):
                 obsv, env_state, reward, done, info = jax.vmap(
                     env.step, in_axes=(0, 0, 0, None)
                 )(rng_step, env_state, action, env_params)
-                action = jnp.expand_dims(action, -1)
-                done = jnp.expand_dims(done, -1)
-                reward = jnp.expand_dims(reward, -1)
 
                 def no_target_td(train_state):
                     return network.apply(train_state.params, obsv).argmax(axis=-1)
@@ -330,18 +317,13 @@ def make_train_dqn(config, env, network, _):
                 transition_weight = jnp.power(
                     jnp.abs(td_error) + config["buffer_epsilon"], config["alpha"]
                 )
-
-                # buffer_state = buffer.add_batch_fn(
-                #     buffer_state,
-                #     ((last_obs, obsv, action, reward, done), transition_weight),
-                # )
-                buffer_state = buffer.add(
-                    buffer_state,
-                    (last_obs, obsv, action, reward, done),
-                )
+                timestep = TimeStep(last_obs=last_obs, obs=obsv, action=action, reward=reward, done=done)
+                
+                buffer_state = buffer.add(buffer_state, timestep)
                 # buffer_state = buffer.set_priorities(buffer_state, ...)
                 
-                global_step += 1
+                # global_step += 1
+                global_step += config["num_envs"]
                 return (obsv, env_state, global_step, buffer_state), (
                     obsv,
                     action,
@@ -353,14 +335,14 @@ def make_train_dqn(config, env, network, _):
 
             def do_update(train_state, buffer_state):
                 # batch = buffer.sample_fn(buffer_state, rng, config["batch_size"])
-                batch = buffer.sample(buffer_state, rng)
+                batch = buffer.sample(buffer_state, rng).experience.first
                 train_state, loss, q_pred, grads, opt_state = update(
                     train_state,
-                    batch[0],
-                    batch[2],
-                    batch[1],
-                    batch[3],
-                    batch[4],
+                    batch.last_obs,
+                    batch.action,
+                    batch.obs,
+                    batch.reward,
+                    batch.done,
                 )
                 return train_state, loss, q_pred, grads, opt_state
 
@@ -370,8 +352,7 @@ def make_train_dqn(config, env, network, _):
                     ((jnp.array([0]) - jnp.array([0])) ** 2).mean(),
                     jnp.ones(config["batch_size"]),
                     train_state.params,
-                    train_state.opt_state,
-                    None
+                    train_state.opt_state
                 )
 
             def target_update():

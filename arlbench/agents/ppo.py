@@ -37,6 +37,7 @@ def make_train_ppo(config, env, network, num_updates):
         train_state = ExtendedTrainState.create_with_opt_state(
             apply_fn=network.apply,
             params=network_params,
+            target_params=None,
             tx=tx,
             opt_state=opt_state,
         )
