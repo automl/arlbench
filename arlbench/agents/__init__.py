@@ -1,9 +1,10 @@
-from .common import ExtendedTrainState
+from .common import ExtendedTrainState, TimeStep
 from .dqn import make_train_dqn
 from .ppo import make_train_ppo
 from .sac import make_train_sac
 from .models import Q, ActorCritic
-from .oop_ppo import JAXPPO
+from .oop_ppo import PPO
+from .oop_dqn import DQN
 
 __all__ = [
     "ExtendedTrainState",
@@ -12,5 +13,7 @@ __all__ = [
     "make_train_sac",
     "Q",
     "ActorCritic",
-    "JAXPPO"
+    "PPO",
+    "DQN",
+    "TimeStep"
 ]

@@ -7,6 +7,7 @@ from .common import ExtendedTrainState
 import flashbax as fbx
 import flax
 import functools
+from .abstract_agent import Agent
 
 
 class Transition(NamedTuple):
@@ -19,7 +20,7 @@ class Transition(NamedTuple):
     info: jnp.ndarray
 
 
-class JAXPPO:
+class PPO(Agent):
     def __init__(
         self,
         config,
@@ -28,14 +29,19 @@ class JAXPPO:
         network,
         num_updates,
     ) -> None:
+        super().__init__(env, env_params)
+
         config["minibatch_size"] = (
             config["num_envs"] * config["num_steps"] // config["num_minibatches"]
         )
         self.config = config
-        self.env = env
-        self.env_params = env_params
         self.network = network
         self.num_updates = num_updates
+
+    @functools.partial(jax.jit, static_argnums=0)
+    def predict(self, network_params, obsv, rng) -> int:
+        pi, _ = self.network.apply(network_params, obsv)
+        return pi.sample(seed=rng)
 
     @functools.partial(jax.jit, static_argnums=0)
     def train(self, rng, network_params, opt_state, obsv, env_state, buffer_state):
