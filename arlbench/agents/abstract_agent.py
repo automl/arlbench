@@ -6,13 +6,16 @@ import jax
 import numpy as np
 import gymnax
 import jax.numpy as jnp
+from ConfigSpace import Configuration, ConfigurationSpace
+
 
 
 class Agent(ABC):
-    def __init__(self, config, env, env_params) -> None:
+    def __init__(self, config, options, env, env_params) -> None:
         super().__init__()
 
         self.config = config
+        self.options = options
         self.env = env
         self.env_params = env_params
 
@@ -32,6 +35,16 @@ class Agent(ABC):
             )
 
         return action_size, discrete
+    
+    @staticmethod
+    @abstractmethod
+    def get_configuration_space() -> ConfigurationSpace:
+        pass
+
+    @staticmethod
+    @abstractmethod
+    def get_default_configuration() -> Configuration:
+        pass
     
     @abstractmethod
     def init(self, rng) -> Tuple[Any, Any, Tuple]:
