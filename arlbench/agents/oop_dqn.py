@@ -7,7 +7,7 @@ from .common import TimeStep
 from flax.training.train_state import TrainState
 from typing import NamedTuple, Union
 import dejax.utils as utils
-from typing import Callable, Any, Tuple
+from typing import Callable, Any, Tuple, Dict
 import gymnax
 import chex
 import jax.lax
@@ -15,6 +15,7 @@ import flashbax as fbx
 from .abstract_agent import Agent
 import functools
 from .models import Q
+from ConfigSpace import Configuration, ConfigurationSpace, Float, Integer, Categorical
 
 
 class DQNRunnerState(NamedTuple):
@@ -58,32 +59,63 @@ class Transition(NamedTuple):
 class DQN(Agent):
     def __init__(
         self,
-        config,
+        config: Configuration,
+        options: Dict,
         env,
         env_params
     ) -> None:
-        super().__init__(config, env, env_params)
+        super().__init__(config, options, env, env_params)
 
         action_size, discrete = self.action_type
         self.network = Q(
             action_size,
             discrete=discrete,
-            activation=config["activation"],
-            hidden_size=config["hidden_size"],
+            activation=self.config["activation"],
+            hidden_size=self.config["hidden_size"],
         )
 
         self.buffer = fbx.make_prioritised_flat_buffer(
-            max_length=config["buffer_size"],
-            min_length=config["batch_size"],
-            sample_batch_size=config["batch_size"],
+            max_length=self.config["buffer_size"],
+            min_length=self.config["buffer_batch_size"],
+            sample_batch_size=self.config["buffer_batch_size"],
             add_sequences=False,
-            add_batch_size=config["num_envs"],
-            priority_exponent=config["beta"]    
+            add_batch_size=self.options["n_envs"],
+            priority_exponent=self.config["buffer_beta"]    
         )
+
+    @staticmethod
+    def get_configuration_space(seed=None) -> ConfigurationSpace:
+        return ConfigurationSpace(
+            name="PPOConfigSpace",
+            seed=seed,
+            space={
+                "buffer_size": Integer("buffer_size", (1, int(1e10)), default=int(1e6)),
+                "buffer_batch_size": Integer("buffer_batch_size", (1, 1024), default=64),
+                "buffer_alpha": Float("buffer_alpha", (0., 1.), default=0.9),
+                "buffer_beta": Float("buffer_beta", (0., 1.), default=0.9),
+                "buffer_epsilon": Float("buffer_epsilon", (0., 1.), default=0.9),
+                "lr": Float("lr", (1e-5, 0.1), default=2.5e-4),
+                "update_epochs": Integer("update_epochs", (1, int(1e5)), default=10),
+                "activation": Categorical("activation", ["tanh", "relu"], default="tanh"),
+                "hidden_size": Integer("hidden_size", (1, 1024), default=64),
+                "n_minibatches": Integer("n_minibatches", (1, 128), default=4),
+                "gamma": Float("gamma", (0., 1.), default=0.99),
+                "tau": Float("tau", (0., 1.), default=1.0),
+                "epsilon": Float("epsilon", (0., 1.), default=0.1),
+                "use_target_network": Categorical("use_target_network", [True, False], default=True),
+                "train_frequency": Integer("train_frequency", (1, int(1e5)), default=10),
+                "learning_starts": Integer("learning_starts", (1, int(1e5)), default=10000),
+                "target_network_update_freq": Integer("target_network_update_freq", (1, int(1e5)), default=500)
+            },
+        )
+
+    @staticmethod
+    def get_default_configuration() -> Configuration:
+        return DQN.get_configuration_space().get_default_configuration()
 
     def init(self, rng, network_params=None, target_params=None):
         rng, _rng = jax.random.split(rng)
-        reset_rng = jax.random.split(_rng, self.config["num_envs"])
+        reset_rng = jax.random.split(_rng, self.options["n_envs"])
 
         last_obsv, last_env_state = jax.vmap(self.env.reset, in_axes=(0, None))(
             reset_rng, self.env_params
@@ -138,7 +170,7 @@ class DQN(Agent):
         runner_state
     ):
         runner_state, out = jax.lax.scan(
-            self._update_step, runner_state, None, (self.config["total_timesteps"]//self.config["train_frequency"])//self.config["num_envs"]
+            self._update_step, runner_state, None, (self.options["n_total_timesteps"]//self.config["train_frequency"])//self.options["n_envs"]
         )
         return runner_state, out
     
@@ -151,7 +183,7 @@ class DQN(Agent):
         rewards, 
         dones
     ):
-        if self.config["target"]:
+        if self.config["use_target_network"]:
             q_next_target = self.network.apply(
                 train_state.target_params, next_observations
             )  # (batch_size, num_actions)
@@ -196,7 +228,7 @@ class DQN(Agent):
             return jnp.array(
                 [
                     self.env.action_space(self.env_params).sample(rng)
-                    for _ in range(self.config["num_envs"])
+                    for _ in range(self.options["n_envs"])
                 ]
             )
 
@@ -213,7 +245,7 @@ class DQN(Agent):
                 greedy_action,
             )
 
-            rng_step = jax.random.split(_rng, self.config["num_envs"])
+            rng_step = jax.random.split(_rng, self.options["n_envs"])
             obsv, env_state, reward, done, info = jax.vmap(
                 self.env.step, in_axes=(0, 0, 0, None)
             )(rng_step, env_state, action, self.env_params)
@@ -227,7 +259,7 @@ class DQN(Agent):
                 )
 
             q_next_target = jax.lax.cond(
-                self.config["target"], target_td, no_target_td, train_state
+                self.config["use_target_network"], target_td, no_target_td, train_state
             )
 
             td_error = (
@@ -236,7 +268,7 @@ class DQN(Agent):
                 - self.network.apply(train_state.params, last_obs).take(action)
             )
             transition_weight = jnp.power(
-                jnp.abs(td_error) + self.config["buffer_epsilon"], self.config["alpha"]
+                jnp.abs(td_error) + self.config["buffer_epsilon"], self.config["buffer_alpha"]
             )
             timestep = TimeStep(last_obs=last_obs, obs=obsv, action=action, reward=reward, done=done)
             
@@ -244,7 +276,7 @@ class DQN(Agent):
             # buffer_state = buffer.set_priorities(buffer_state, ...)
             
             # global_step += 1
-            global_step += self.config["num_envs"]
+            global_step += self.options["n_envs"]
             return (obsv, env_state, global_step, buffer_state), (
                 obsv,
                 action,
@@ -271,7 +303,7 @@ class DQN(Agent):
             return (
                 train_state,
                 ((jnp.array([0]) - jnp.array([0])) ** 2).mean(),
-                jnp.ones(self.config["batch_size"]),
+                jnp.ones(self.config["buffer_batch_size"]),
                 train_state.params,
                 train_state.opt_state
             )
@@ -322,7 +354,7 @@ class DQN(Agent):
             buffer_state=buffer_state,
             global_step=global_step
         )
-        if self.config["track_traj"]:
+        if self.options["track_traj"]:
             metric = (
                 loss,
                 grads,
@@ -337,7 +369,7 @@ class DQN(Agent):
                 ),
                 {"td_error": [td_error]},
             )
-        elif self.config["track_metrics"]:
+        elif self.options["track_metrics"]:
             metric = (
                 loss,
                 grads,
