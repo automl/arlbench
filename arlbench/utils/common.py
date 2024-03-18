@@ -11,6 +11,9 @@ from gymnax.environments import EnvState, EnvParams
 from minigrid.wrappers import RGBImgObsWrapper
 
 
+ENVS = {
+    0: ("gymnax", "CartPole-v1")
+}
 
 class ImageExtractionWrapper(gym.Wrapper):
     def __init__(self, env):
@@ -26,35 +29,41 @@ class ImageExtractionWrapper(gym.Wrapper):
         return obs["image"], reward, tr, te, info
 
 
-def make_env(instance):
-    if instance["env_framework"] == "gymnax":
-        env, env_params = gymnax.make(instance["env_name"])
+def make_env(env_id: int):
+    if env_id not in ENVS.keys():
+        raise ValueError(f"Invalid env_id: {env_id}")
+    env_framework, env_name = ENVS[env_id]
+
+    if env_framework == "gymnax":
+        env, env_params = gymnax.make(env_name)
         env = FlattenObservationWrapper(env)
-    elif instance["env_framework"] == "brax":
+    elif env_framework == "brax":
         from brax import envs
 
-        env = envs.get_environment(instance["env_name"], backend="generalized")
+        env = envs.get_environment(env_name, backend="generalized")
         env = envs.training.wrap(env)
         env = BraxToGymnaxWrapper(env)
         env_params = None
     else:
-        if instance["env_name"].startswith("procgen"):
+        if env_name.startswith("procgen"):
             import procgen
             import gym as old_gym
 
-            env = old_gym.make(instance["env_name"])
+            env = old_gym.make(env_name)
             env = GymToGymnasiumWrapper(env)
-        elif instance["env_name"].lower().startswith("minigrid"):
-            env = gym.make(instance["env_name"])
+        elif env_name.lower().startswith("minigrid"):
+            env = gym.make(env_name)
             env = RGBImgObsWrapper(env)
             env = ImageExtractionWrapper(env)
         else:
-            env = gym.make(instance["env_name"])
+            env = gym.make(env_name)
+
         # Gymnax does autoreset anyway
         env = AutoResetWrapper(env)
         env = FlattenObservation(env)
         env = GymToGymnaxWrapper(env)
         env_params = None
+        
     env = LogWrapper(env)
     return env, env_params
 
@@ -214,43 +223,3 @@ class GymToGymnaxWrapper(gymnax.environments.environment.Environment):
     @property
     def default_params(self) -> EnvParams:
         return EnvParams(500)
-
-
-def make_eval(config, network):
-    env, env_params = make_env(config)
-
-    def _env_episode(rng, env_params, network_params, _):
-        reset_rng = jax.random.split(rng, 1)
-        obsv, env_state = jax.vmap(env.reset, in_axes=(0, None))(reset_rng, env_params)
-        r = 0
-        done = False
-        while not done:
-            # SELECT ACTION
-            rng, _rng = jax.random.split(rng)
-            # TODO: make this pretty
-            try:
-                pi, value = network.apply(network_params, obsv)
-                action = pi.sample(seed=_rng)
-            except:
-                q_values = network.apply(network_params, obsv)
-                action = q_values.argmax(axis=-1)
-
-            # STEP ENV
-            rng, _rng = jax.random.split(rng)
-            rng_step = jax.random.split(_rng, 1)
-            obsv, env_state, reward, done, info = jax.vmap(
-                env.step, in_axes=(0, 0, 0, None)
-            )(rng_step, env_state, action, env_params)
-            r += reward
-        return r
-
-    def eval(rng, network_params) -> float:
-        rewards = jax.vmap(_env_episode, in_axes=(None, None, None, 0))(
-            rng, env_params, network_params, np.arange(config["num_eval_episodes"])
-        )
-        # TODO: vmap this
-        # for _ in range(config["num_eval_episodes"]):
-        #    rewards.append(_env_episode(rng, env_params, network_params))
-        return float(np.mean(rewards))
-
-    return eval
