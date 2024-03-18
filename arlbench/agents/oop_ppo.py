@@ -1,13 +1,43 @@
 # The PPO Code is heavily based on PureJax: https://github.com/luchris429/purejaxrl
 import jax
 import jax.numpy as jnp
+import numpy as np
 import optax
-from typing import NamedTuple
-from .common import ExtendedTrainState
+from typing import NamedTuple, Union, Any
+import chex
+from .common import TimeStep
+from flax.training.train_state import TrainState
 import flashbax as fbx
 import flax
 import functools
 from .abstract_agent import Agent
+from .models import ActorCritic
+import gymnax
+
+class PPORunnerState(NamedTuple):
+    rng: chex.PRNGKey
+    train_state: Any
+    env_state: Any
+    obs: chex.Array
+    buffer_state: Any
+
+class PPOTrainState(TrainState):
+    target_params: Union[None, chex.Array, dict] = None
+    opt_state = None
+
+    @classmethod
+    def create_with_opt_state(cls, *, apply_fn, params, tx, opt_state, **kwargs):
+        if opt_state is None:
+            opt_state = tx.init(params)
+        obj = cls(
+            step=0,
+            apply_fn=apply_fn,
+            params=params,
+            tx=tx,
+            opt_state=opt_state,
+            **kwargs,
+        )
+        return obj
 
 
 class Transition(NamedTuple):
@@ -25,18 +55,87 @@ class PPO(Agent):
         self,
         config,
         env,
-        env_params,
-        network,
-        num_updates,
+        env_params
     ) -> None:
-        super().__init__(env, env_params)
+        super().__init__(config, env, env_params)
 
         config["minibatch_size"] = (
             config["num_envs"] * config["num_steps"] // config["num_minibatches"]
         )
         self.config = config
-        self.network = network
-        self.num_updates = num_updates
+
+        action_size, discrete = self.action_type
+        self.network = ActorCritic(
+            action_size,
+            discrete=discrete,
+            activation=config["activation"],
+            hidden_size=config["hidden_size"],
+        )
+
+        self.buffer = fbx.make_prioritised_flat_buffer(
+            max_length=config["buffer_size"],
+            min_length=config["batch_size"],
+            sample_batch_size=config["batch_size"],
+            add_sequences=False,
+            add_batch_size=config["num_envs"],
+            priority_exponent=config["beta"]    
+        )
+
+        self.total_updates = (
+            config["total_timesteps"]
+            // config["num_steps"]
+            // config["num_envs"]
+        )
+        update_interval = np.ceil(self.total_updates / config["num_steps"])
+        if update_interval < 1:
+            update_interval = 1
+            print(
+                "WARNING: The number of iterations selected in combination with your timestep, num_env and num_step settings results in 0 steps per iteration. Rounded up to 1, this means more total steps will be executed."
+            )
+
+    def init(self, rng, network_params=None, opt_state=None):
+        rng, _rng = jax.random.split(rng)
+        reset_rng = jax.random.split(_rng, self.config["num_envs"])
+
+        last_obsv, last_env_state = jax.vmap(self.env.reset, in_axes=(0, None))(
+            reset_rng, self.env_params
+        )
+        
+        dummy_rng = jax.random.PRNGKey(0) 
+        _action = self.env.action_space().sample(dummy_rng)
+        _, _env_state = self.env.reset(rng, self.env_params)
+        _obs, _, _reward, _done, _ = self.env.step(rng, _env_state, _action, self.env_params)
+
+        _timestep = TimeStep(last_obs=_obs, obs=_obs, action=_action, reward=_reward, done=_done)
+        buffer_state = self.buffer.init(_timestep)
+
+        _, _rng = jax.random.split(rng)
+        if network_params is None:
+            network_params = self.network.init(_rng, _obs)
+
+        tx = optax.chain(
+                optax.clip_by_global_norm(self.config["max_grad_norm"]),
+                optax.adam(self.config["lr"], eps=1e-5),
+            )
+        if opt_state is None:
+            opt_state = tx.init(network_params)
+        
+        train_state = PPOTrainState.create_with_opt_state(
+            apply_fn=self.network.apply,
+            params=network_params,
+            tx=tx,
+            opt_state=opt_state,
+        )
+
+        rng, _rng = jax.random.split(rng)
+
+        return PPORunnerState(
+            rng=_rng,
+            train_state=train_state,
+            env_state=last_env_state,
+            obs=last_obsv,
+            buffer_state=buffer_state
+        )
 
     @functools.partial(jax.jit, static_argnums=0)
     def predict(self, network_params, obsv, rng) -> int:
@@ -44,32 +143,12 @@ class PPO(Agent):
         return pi.sample(seed=rng)
 
     @functools.partial(jax.jit, static_argnums=0)
-    def train(self, rng, network_params, opt_state, obsv, env_state, buffer_state):
-        tx = optax.chain(
-            optax.clip_by_global_norm(self.config["max_grad_norm"]),
-            optax.adam(self.config["lr"], eps=1e-5),
-        )
-
-        if opt_state is None:
-            opt_state = tx.init(network_params)
-
-        train_state = ExtendedTrainState.create_with_opt_state(
-            apply_fn=self.network.apply,
-            params=network_params,
-            tx=tx,
-            opt_state=opt_state,
-        )
-        buffer = fbx.make_prioritised_flat_buffer(
-            max_length=int(self.config["buffer_size"]),
-            min_length=self.config["batch_size"],
-            sample_batch_size=self.config["batch_size"],
-            priority_exponent=self.config["beta"]
-        )
-
-        rng, _rng = jax.random.split(rng)
-        runner_state = (train_state, env_state, obsv, _rng, buffer_state)
+    def train(
+        self,
+        runner_state
+    ):
         runner_state, out = jax.lax.scan(
-            self._update_step, runner_state, None, self.num_updates
+            self._update_step, runner_state, None, self.total_updates
         )
         return runner_state, out
     
@@ -80,7 +159,13 @@ class PPO(Agent):
         )
 
         # CALCULATE ADVANTAGE
-        train_state, env_state, last_obs, rng, buffer_state = runner_state
+        (
+            rng,
+            train_state,
+            env_state,
+            last_obs,
+            buffer_state
+        ) = runner_state
         _, last_val = self.network.apply(train_state.params, last_obs)
 
         advantages, targets = self._calculate_gae(traj_batch, last_val)
@@ -95,7 +180,13 @@ class PPO(Agent):
         train_state = update_state[0]
         rng = update_state[-1]
 
-        runner_state = (train_state, env_state, last_obs, rng, buffer_state)
+        runner_state = PPORunnerState(
+            rng=rng,
+            train_state=train_state,
+            env_state=env_state,
+            obs=last_obs,
+            buffer_state=buffer_state
+        )
         if self.config["track_traj"]:
             out = (
                 loss_info,
@@ -118,8 +209,14 @@ class PPO(Agent):
         return runner_state, out
     
     @functools.partial(jax.jit, static_argnums=0)
-    def _env_step(self, runner_state, unused):
-        train_state, env_state, last_obs, rng, buffer_state = runner_state
+    def _env_step(self, runner_state, _):
+        (
+            rng,
+            train_state,
+            env_state,
+            last_obs,
+            buffer_state
+        ) = runner_state
 
         # SELECT ACTION
         rng, _rng = jax.random.split(rng)
@@ -134,7 +231,7 @@ class PPO(Agent):
             self.env.step, in_axes=(0, 0, 0, None)
         )(rng_step, env_state, action, self.env_params)
 
-         # TODO make this running, apparently there is a problem with the shape of transitions
+         # TODO copy code from DQN implementation
         # https://github.com/instadeepai/flashbax?tab=readme-ov-file#quickstart-
         # buffer_state = buffer.add(
         #     buffer_state,
@@ -150,7 +247,13 @@ class PPO(Agent):
         transition = Transition(
             done, action, value, reward, log_prob, last_obs, info
         )
-        runner_state = (train_state, env_state, obsv, rng, buffer_state)
+        runner_state = PPORunnerState(
+            train_state=train_state,
+            env_state=env_state,
+            obs=obsv,
+            rng=rng,
+            buffer_state=buffer_state
+        )
         return runner_state, transition
     
     @functools.partial(jax.jit, static_argnums=0)

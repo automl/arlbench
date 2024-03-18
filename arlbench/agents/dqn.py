@@ -3,8 +3,9 @@ import jax
 import jax.numpy as jnp
 import chex
 import optax
-from .common import ExtendedTrainState, TimeStep
-from typing import NamedTuple
+from .common import TimeStep
+from typing import NamedTuple, Union
+from flax.training.train_state import TrainState
 import dejax.utils as utils
 from typing import Callable, Any, Tuple
 import gymnax
@@ -12,12 +13,25 @@ import chex
 import jax.lax
 import flashbax as fbx
 
-ReplayBufferState = Any
-Item = chex.ArrayTree
-ItemBatch = chex.ArrayTree
-IntScalar = chex.Array
-ItemUpdateFn = Callable[[Item], Item]
-BoolScalar = chex.Array
+
+class DQNTrainState(TrainState):
+    target_params: Union[None, chex.Array, dict] = None
+    opt_state = None
+
+    @classmethod
+    def create_with_opt_state(cls, *, apply_fn, params, target_params, tx, opt_state, **kwargs):
+        if opt_state is None:
+            opt_state = tx.init(params)
+        obj = cls(
+            step=0,
+            apply_fn=apply_fn,
+            params=params,
+            target_params=target_params,
+            tx=tx,
+            opt_state=opt_state,
+            **kwargs,
+        )
+        return obj
 
 class Transition(NamedTuple):
     done: jnp.ndarray
@@ -26,186 +40,6 @@ class Transition(NamedTuple):
     reward: jnp.ndarray
     obs: jnp.ndarray
     info: jnp.ndarray
-
-
-
-# def make_default_add_batch_fn(add_fn):
-#     def add_batch_fn(
-#         state: ReplayBufferState, item_batch: ItemBatch
-#     ) -> ReplayBufferState:
-#         def scan_body(state: ReplayBufferState, adds) -> Tuple[ReplayBufferState, None]:
-#             item, weight = adds
-#             state = add_fn(state, item, weight)
-#             return state, None
-
-#         state, _ = jax.lax.scan(f=scan_body, init=state, xs=item_batch)
-#         return state
-
-#     return add_batch_fn
-
-
-# @chex.dataclass(frozen=False)
-# class ReplayBuffer:
-#     init_fn: Callable[[Item], ReplayBufferState]
-#     size_fn: Callable[[ReplayBufferState], IntScalar]
-#     add_fn: Callable[[ReplayBufferState, Item], ReplayBufferState]
-#     add_batch_fn: Callable[[ReplayBufferState, ItemBatch], ReplayBufferState]
-#     sample_fn: Callable[[ReplayBufferState, chex.PRNGKey, int], ItemBatch]
-#     update_fn: Callable[[ReplayBufferState, ItemUpdateFn], ReplayBufferState]
-
-
-# @chex.dataclass(frozen=False)
-# class CircularBuffer:
-#     data: ItemBatch
-#     weights: ItemBatch
-#     head: IntScalar
-#     tail: IntScalar
-#     full: BoolScalar
-
-
-# def init(item_prototype: Item, weight_prototype, max_size: int) -> CircularBuffer:
-#     chex.assert_tree_has_only_ndarrays(item_prototype)
-
-#     data = jax.tree_util.tree_map(
-#         lambda t: utils.tile_over_axis(t, axis=0, size=max_size), item_prototype
-#     )
-#     weights = jax.tree_util.tree_map(
-#         lambda t: utils.tile_over_axis(t, axis=0, size=max_size), weight_prototype
-#     )
-#     return CircularBuffer(
-#         data=data,
-#         weights=weights,
-#         head=utils.scalar_to_jax(0),
-#         tail=utils.scalar_to_jax(0),
-#         full=utils.scalar_to_jax(False),
-#     )
-
-
-# def max_size(buffer: CircularBuffer) -> int:
-#     return utils.get_pytree_axis_dim(buffer.data, axis=0)
-
-
-# def size(buffer: CircularBuffer) -> IntScalar:
-#     return jax.lax.select(
-#         buffer.full,
-#         on_true=max_size(buffer),
-#         on_false=jax.lax.select(
-#             buffer.head >= buffer.tail,
-#             on_true=buffer.head - buffer.tail,
-#             on_false=max_size(buffer) - (buffer.tail - buffer.head),
-#         ),
-#     )
-
-
-# def push(buffer: CircularBuffer, item: Item, weight: Item) -> CircularBuffer:
-#     chex.assert_tree_has_only_ndarrays(item)
-
-#     insert_pos = buffer.head
-#     new_data = utils.set_pytree_batch_item(buffer.data, insert_pos, item)
-#     new_weights = utils.set_pytree_batch_item(buffer.weights, insert_pos, weight)
-#     new_head = (insert_pos + 1) % max_size(buffer)
-#     new_tail = jax.lax.select(
-#         buffer.full,
-#         on_true=new_head,
-#         on_false=buffer.tail,
-#     )
-#     new_full = new_head == new_tail
-
-#     return buffer.replace(
-#         data=new_data, head=new_head, tail=new_tail, full=new_full, weights=new_weights
-#     )
-
-
-# def pop(buffer: CircularBuffer) -> (Item, CircularBuffer):
-#     remove_pos = buffer.tail
-#     popped_item = utils.get_pytree_batch_item(buffer.data, remove_pos)
-#     new_tail = (remove_pos + 1) % max_size(buffer)
-#     new_full = utils.scalar_to_jax(False)
-
-#     return popped_item, buffer.replace(tail=new_tail, full=new_full)
-
-
-# def get_at_index(buffer: CircularBuffer, index: IntScalar) -> Item:
-#     chex.assert_shape(index, ())
-#     index = (buffer.tail + index) % max_size(buffer)
-#     return utils.get_pytree_batch_item(buffer.data, index), utils.get_pytree_batch_item(
-#         buffer.weights, index
-#     )
-
-
-# def uniform_sample(
-#     buffer: CircularBuffer, rng: chex.PRNGKey, batch_size: int
-# ) -> ItemBatch:
-#     sample_pos = jax.random.randint(
-#         rng, minval=0, maxval=size(buffer.storage), shape=(batch_size,)
-#     )
-#     get_at_index_batch = jax.vmap(get_at_index, in_axes=(None, 0))
-#     transition_batch, _ = get_at_index_batch(buffer.storage, sample_pos)
-#     return transition_batch
-
-
-# def weighted_sample(
-#     buffer: CircularBuffer, rng: chex.PRNGKey, batch_size: int
-# ) -> ItemBatch:
-#     sample_pos = jax.random.randint(
-#         rng, minval=0, maxval=size(buffer.storage), shape=(batch_size,)
-#     )
-#     get_at_index_batch = jax.vmap(get_at_index, in_axes=(None, 0))
-#     transition_batch, P = get_at_index_batch(buffer.storage, sample_pos)
-#     P_scaled = P / sum(buffer.storage.weights)  # prioritized, biased propensities
-#     W = jnp.power(
-#         P_scaled * size(buffer.storage), buffer.beta
-#     )  # inverse propensity weights (β≈1)
-#     W /= (
-#         W.max()
-#     )  # for stability, ensure only down-weighting (see sec. 3.4 of arxiv:1511.05952)
-#     updated_weights = P * W
-#     for idx, w in zip(sample_pos, updated_weights):
-#         P = utils.set_pytree_batch_item(buffer.storage.weights, idx, w)
-#     buffer.weights = buffer.storage.replace(weights=P)
-#     return transition_batch
-
-
-# @chex.dataclass(frozen=False)
-# class UniformReplayBufferState:
-#     storage: CircularBuffer
-#     beta: float
-
-
-# def uniform_replay(max_size: int, beta: float):
-#     def init_fn(beta, item_prototype, weight_prototype) -> UniformReplayBufferState:
-#         return UniformReplayBufferState(
-#             storage=init(item_prototype, weight_prototype, max_size), beta=beta
-#         )
-
-#     def size_fn(state: UniformReplayBufferState):
-#         return size(state.storage)
-
-#     def add_fn(
-#         state: UniformReplayBufferState, item, weight
-#     ) -> UniformReplayBufferState:
-#         return state.replace(storage=push(state.storage, item, weight))
-
-#     def sample_fn(state: UniformReplayBufferState, rng: chex.PRNGKey, batch_size: int):
-#         return uniform_sample(state.storage, rng, batch_size)
-
-#     def update_fn(
-#         state: UniformReplayBufferState, item_update_fn
-#     ) -> UniformReplayBufferState:
-#         # TODO: there might be a faster way to make updates that does not affect all items in the buffer
-#         batch_update_fn = jax.vmap(item_update_fn)
-#         updated_data = batch_update_fn(state.storage.data)
-#         return state.replace(storage=state.storage.replace(data=updated_data))
-
-#     return ReplayBuffer(
-#         init_fn=jax.tree_util.Partial(init_fn, beta),
-#         size_fn=jax.tree_util.Partial(size_fn),
-#         add_fn=jax.tree_util.Partial(add_fn),
-#         # TODO: it should be possible to make an optimized version of add_batch_fn for this buffer type
-#         add_batch_fn=jax.tree_util.Partial(make_default_add_batch_fn(add_fn)),
-#         sample_fn=jax.tree_util.Partial(sample_fn),
-#         update_fn=jax.tree_util.Partial(update_fn),
-#     )
 
 
 def make_train_dqn(config, env, network, _):
@@ -228,7 +62,7 @@ def make_train_dqn(config, env, network, _):
             "tx": optax.adam(config["lr"], eps=1e-5),
             "opt_state": opt_state,
         }
-        train_state = ExtendedTrainState.create_with_opt_state(**train_state_kwargs)
+        train_state = DQNTrainState.create_with_opt_state(**train_state_kwargs)
 
         # TRAIN LOOP
         def update(

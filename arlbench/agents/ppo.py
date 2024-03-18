@@ -2,10 +2,30 @@
 import jax
 import jax.numpy as jnp
 import optax
-from typing import NamedTuple
-from .common import ExtendedTrainState
+from typing import NamedTuple, Union
+from flax.training.train_state import TrainState
+import chex
 import flashbax as fbx
 import flax
+
+
+class PPOTrainState(TrainState):
+    target_params: Union[None, chex.Array, dict] = None
+    opt_state = None
+
+    @classmethod
+    def create_with_opt_state(cls, *, apply_fn, params, tx, opt_state, **kwargs):
+        if opt_state is None:
+            opt_state = tx.init(params)
+        obj = cls(
+            step=0,
+            apply_fn=apply_fn,
+            params=params,
+            tx=tx,
+            opt_state=opt_state,
+            **kwargs,
+        )
+        return obj
 
 
 class Transition(NamedTuple):
@@ -34,7 +54,7 @@ def make_train_ppo(config, env, network, num_updates):
         if opt_state is None:
             opt_state = tx.init(network_params)
 
-        train_state = ExtendedTrainState.create_with_opt_state(
+        train_state = PPOTrainState.create_with_opt_state(
             apply_fn=network.apply,
             params=network_params,
             target_params=None,

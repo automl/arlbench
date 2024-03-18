@@ -3,8 +3,9 @@ import jax
 import jax.numpy as jnp
 import chex
 import optax
-from .common import ExtendedTrainState
-from typing import NamedTuple
+from .common import TimeStep
+from flax.training.train_state import TrainState
+from typing import NamedTuple, Union
 import dejax.utils as utils
 from typing import Callable, Any, Tuple
 import gymnax
@@ -13,6 +14,36 @@ import jax.lax
 import flashbax as fbx
 from .abstract_agent import Agent
 import functools
+from .models import Q
+
+
+class DQNRunnerState(NamedTuple):
+    rng: chex.PRNGKey
+    train_state: Any
+    env_state: Any
+    obs: chex.Array
+    buffer_state: Any
+    global_step: int
+
+
+class DQNTrainState(TrainState):
+    target_params: Union[None, chex.Array, dict] = None
+    opt_state = None
+
+    @classmethod
+    def create_with_opt_state(cls, *, apply_fn, params, target_params, tx, opt_state, **kwargs):
+        if opt_state is None:
+            opt_state = tx.init(params)
+        obj = cls(
+            step=0,
+            apply_fn=apply_fn,
+            params=params,
+            target_params=target_params,
+            tx=tx,
+            opt_state=opt_state,
+            **kwargs,
+        )
+        return obj
 
 
 class Transition(NamedTuple):
@@ -29,15 +60,72 @@ class DQN(Agent):
         self,
         config,
         env,
-        env_params,
-        network,
-        num_updates,
+        env_params
     ) -> None:
-        super().__init__(env, env_params)
+        super().__init__(config, env, env_params)
 
-        self.config = config
-        self.network = network
-        self.num_updates = num_updates
+        action_size, discrete = self.action_type
+        self.network = Q(
+            action_size,
+            discrete=discrete,
+            activation=config["activation"],
+            hidden_size=config["hidden_size"],
+        )
+
+        self.buffer = fbx.make_prioritised_flat_buffer(
+            max_length=config["buffer_size"],
+            min_length=config["batch_size"],
+            sample_batch_size=config["batch_size"],
+            add_sequences=False,
+            add_batch_size=config["num_envs"],
+            priority_exponent=config["beta"]    
+        )
+
+    def init(self, rng, network_params=None, target_params=None):
+        rng, _rng = jax.random.split(rng)
+        reset_rng = jax.random.split(_rng, self.config["num_envs"])
+
+        last_obsv, last_env_state = jax.vmap(self.env.reset, in_axes=(0, None))(
+            reset_rng, self.env_params
+        )
+        
+        dummy_rng = jax.random.PRNGKey(0) 
+        _action = self.env.action_space().sample(dummy_rng)
+        _, _env_state = self.env.reset(rng, self.env_params)
+        _obs, _, _reward, _done, _ = self.env.step(rng, _env_state, _action, self.env_params)
+
+        _timestep = TimeStep(last_obs=_obs, obs=_obs, action=_action, reward=_reward, done=_done)
+        buffer_state = self.buffer.init(_timestep)
+
+        _, _rng = jax.random.split(rng)
+        if network_params is None:
+            network_params = self.network.init(_rng, _obs)
+        if target_params is None:
+            target_params = self.network.init(_rng, _obs)
+        opt_state = None
+
+        train_state_kwargs = {
+            "apply_fn": self.network.apply,
+            "params": network_params,
+            "target_params": target_params,
+            "tx": optax.adam(self.config["lr"], eps=1e-5),
+            "opt_state": opt_state,
+        }
+        train_state = DQNTrainState.create_with_opt_state(**train_state_kwargs)
+
+        rng, _rng = jax.random.split(rng)
+        global_step = 0
+
+        runner_state = DQNRunnerState(
+            rng=rng,
+            train_state=train_state,
+            env_state=last_env_state,
+            obs=last_obsv,
+            buffer_state=buffer_state,
+            global_step=global_step
+        )    
+
+        return runner_state
 
     @functools.partial(jax.jit, static_argnums=0)
     def predict(self, network_params, obsv, _) -> int:
@@ -47,89 +135,135 @@ class DQN(Agent):
     @functools.partial(jax.jit, static_argnums=0)
     def train(
         self,
-        rng,
-        network_params,
-        target_params,
-        opt_state,
-        obsv,
-        env_state,
-        buffer_state,
-        global_step
+        runner_state
     ):
-        train_state_kwargs = {
-            "apply_fn": self.network.apply,
-            "params": network_params,
-            "tx": optax.adam(self.config["lr"], eps=1e-5),
-            "opt_state": opt_state,
-        }
-        train_state_kwargs["target_params"] = target_params
-        train_state = ExtendedTrainState.create_with_opt_state(**train_state_kwargs)
-        buffer = fbx.make_prioritised_flat_buffer(
-            max_length=int(self.config["buffer_size"]),
-            min_length=self.config["batch_size"],
-            sample_batch_size=self.config["batch_size"],
-            priority_exponent=self.config["beta"]
-        )
-
-        rng, _rng = jax.random.split(rng)
-        runner_state = (train_state, env_state, obsv, _rng, buffer_state, global_step)
         runner_state, out = jax.lax.scan(
             self._update_step, runner_state, None, (self.config["total_timesteps"]//self.config["train_frequency"])//self.config["num_envs"]
         )
         return runner_state, out
     
-    @functools.partial(jax.jit, static_argnums=0)
     def update(
-            self, train_state, observations, actions, next_observations, rewards, dones
-        ):
-            if self.config["target"]:
-                q_next_target = self.network.apply(
-                    train_state.target_params, next_observations
-                )  # (batch_size, num_actions)
-            else:
-                q_next_target = self.network.apply(
-                    train_state.params, next_observations
-                )  # (batch_size, num_actions)
-            q_next_target = jnp.max(q_next_target, axis=-1)  # (batch_size,)
-            next_q_value = rewards + (1 - dones) * self.config["gamma"] * q_next_target
+        self,
+        train_state,
+        observations, 
+        actions,
+        next_observations, 
+        rewards, 
+        dones
+    ):
+        if self.config["target"]:
+            q_next_target = self.network.apply(
+                train_state.target_params, next_observations
+            )  # (batch_size, num_actions)
+        else:
+            q_next_target = self.network.apply(
+                train_state.params, next_observations
+            )  # (batch_size, num_actions)
+        q_next_target = jnp.max(q_next_target, axis=-1)  # (batch_size,)
+        next_q_value = rewards + (1 - dones) * self.config["gamma"] * q_next_target
 
-            (loss_value, q_pred), grads = jax.value_and_grad(self.mse_loss, has_aux=True)(
-                train_state.params, observations, actions, next_q_value
-            )
-            train_state = train_state.apply_gradients(grads=grads)
-            return train_state, loss_value, q_pred, grads, train_state.opt_state
-    
-    @functools.partial(jax.jit, static_argnums=0)
-    def mse_loss(self, params, observations, actions, next_q_value):
-        q_pred = self.network.apply(
-            params, observations
-        )  # (batch_size, num_actions)
-        q_pred = q_pred[
-            jnp.arange(q_pred.shape[0]), actions.squeeze().astype(int)
-        ]  # (batch_size,)
-        return ((q_pred - next_q_value) ** 2).mean(), q_pred
-    
-    @functools.partial(jax.jit, static_argnums=0)
-    def _update_step(self, runner_state, _):
+        def mse_loss(params):
+            q_pred = self.network.apply(
+                params, observations
+            )  # (batch_size, num_actions)
+            q_pred = q_pred[
+                jnp.arange(q_pred.shape[0]), actions.squeeze().astype(int)
+            ]  # (batch_size,)
+            return ((q_pred - next_q_value) ** 2).mean(), q_pred
+
+        (loss_value, q_pred), grads = jax.value_and_grad(mse_loss, has_aux=True)(
+            train_state.params
+        )
+        train_state = train_state.apply_gradients(grads=grads)
+        return train_state, loss_value, q_pred, grads, train_state.opt_state
+
+    def _update_step(
+        self,
+        runner_state,
+        _
+    ):
         (
+            rng,
             train_state,
             env_state,
             last_obs,
-            rng,
             buffer_state,
-            global_step,
+            global_step
         ) = runner_state
+        rng, _rng = jax.random.split(rng)
+
+        def random_action():
+            return jnp.array(
+                [
+                    self.env.action_space(self.env_params).sample(rng)
+                    for _ in range(self.config["num_envs"])
+                ]
+            )
+
+        def greedy_action():
+            q_values = self.network.apply(train_state.params, last_obs)
+            action = q_values.argmax(axis=-1)
+            return action
+
+        def take_step(carry, _):
+            obsv, env_state, global_step, buffer_state = carry
+            action = jax.lax.cond(
+                jax.random.uniform(rng) < self.config["epsilon"],
+                random_action,
+                greedy_action,
+            )
+
+            rng_step = jax.random.split(_rng, self.config["num_envs"])
+            obsv, env_state, reward, done, info = jax.vmap(
+                self.env.step, in_axes=(0, 0, 0, None)
+            )(rng_step, env_state, action, self.env_params)
+
+            def no_target_td(train_state):
+                return self.network.apply(train_state.params, obsv).argmax(axis=-1)
+
+            def target_td(train_state):
+                return self.network.apply(train_state.target_params, obsv).argmax(
+                    axis=-1
+                )
+
+            q_next_target = jax.lax.cond(
+                self.config["target"], target_td, no_target_td, train_state
+            )
+
+            td_error = (
+                reward
+                + (1 - done) * self.config["gamma"] * jnp.expand_dims(q_next_target, -1)
+                - self.network.apply(train_state.params, last_obs).take(action)
+            )
+            transition_weight = jnp.power(
+                jnp.abs(td_error) + self.config["buffer_epsilon"], self.config["alpha"]
+            )
+            timestep = TimeStep(last_obs=last_obs, obs=obsv, action=action, reward=reward, done=done)
+            
+            buffer_state = self.buffer.add(buffer_state, timestep)
+            # buffer_state = buffer.set_priorities(buffer_state, ...)
+            
+            # global_step += 1
+            global_step += self.config["num_envs"]
+            return (obsv, env_state, global_step, buffer_state), (
+                obsv,
+                action,
+                reward,
+                done,
+                info,
+                td_error,
+            )
 
         def do_update(train_state, buffer_state):
             # batch = buffer.sample_fn(buffer_state, rng, config["batch_size"])
-            batch = buffer.sample(buffer_state, rng)
+            batch = self.buffer.sample(buffer_state, rng).experience.first
             train_state, loss, q_pred, grads, opt_state = self.update(
                 train_state,
-                batch[0],
-                batch[2],
-                batch[1],
-                batch[3],
-                batch[4],
+                batch.last_obs,
+                batch.action,
+                batch.obs,
+                batch.reward,
+                batch.done,
             )
             return train_state, loss, q_pred, grads, opt_state
 
@@ -137,10 +271,9 @@ class DQN(Agent):
             return (
                 train_state,
                 ((jnp.array([0]) - jnp.array([0])) ** 2).mean(),
-                jnp.ones(config["batch_size"]),
+                jnp.ones(self.config["batch_size"]),
                 train_state.params,
-                train_state.opt_state,
-                None
+                train_state.opt_state
             )
 
         def target_update():
@@ -153,7 +286,6 @@ class DQN(Agent):
         def dont_target_update():
             return train_state
 
-
         (last_obs, env_state, global_step, buffer_state), (
             observations,
             action,
@@ -162,7 +294,7 @@ class DQN(Agent):
             info,
             td_error,
         ) = jax.lax.scan(
-            self.take_step,
+            take_step,
             (last_obs, env_state, global_step, buffer_state),
             None,
             self.config["train_frequency"],
@@ -182,13 +314,13 @@ class DQN(Agent):
             target_update,
             dont_target_update,
         )
-        runner_state = (
-            train_state,
-            env_state,
-            last_obs,
-            rng,
-            buffer_state,
-            global_step,
+        runner_state = DQNRunnerState(
+            rng=rng,
+            train_state=train_state,
+            env_state=env_state,
+            obs=last_obs,
+            buffer_state=buffer_state,
+            global_step=global_step
         )
         if self.config["track_traj"]:
             metric = (
@@ -215,76 +347,3 @@ class DQN(Agent):
         else:
             metric = None
         return runner_state, metric
-    
-    @functools.partial(jax.jit, static_argnums=0)
-    def take_step(self, carry, _, rng, train_state, last_obs):
-        def random_action():
-            return jnp.array(
-                [
-                    self.env.action_space(self.env_params).sample(rng)
-                    for _ in range(self.config["num_envs"])
-                ]
-            )
-
-        def greedy_action():
-            q_values = self.network.apply(train_state.params, last_obs)
-            action = q_values.argmax(axis=-1)
-            return action
-        
-        rng, _rng = jax.random.split(rng)
-    
-        obsv, env_state, global_step, buffer_state = carry
-        action = jax.lax.cond(
-            jax.random.uniform(rng) < self.config["epsilon"],
-            random_action,
-            greedy_action,
-        )
-
-        rng_step = jax.random.split(_rng, self.config["num_envs"])
-        obsv, env_state, reward, done, info = jax.vmap(
-            self.env.step, in_axes=(0, 0, 0, None)
-        )(rng_step, env_state, action, self.env_params)
-        action = jnp.expand_dims(action, -1)
-        done = jnp.expand_dims(done, -1)
-        reward = jnp.expand_dims(reward, -1)
-
-        def no_target_td(train_state):
-            return self.network.apply(train_state.params, obsv).argmax(axis=-1)
-
-        def target_td(train_state):
-            return self.network.apply(train_state.target_params, obsv).argmax(
-                axis=-1
-            )
-
-        q_next_target = jax.lax.cond(
-            self.config["target"], target_td, no_target_td, train_state
-        )
-
-        td_error = (
-            reward
-            + (1 - done) * self.config["gamma"] * jnp.expand_dims(q_next_target, -1)
-            - self.network.apply(train_state.params, last_obs).take(action)
-        )
-        transition_weight = jnp.power(
-            jnp.abs(td_error) + self.config["buffer_epsilon"], self.config["alpha"]
-        )
-
-        # buffer_state = buffer.add_batch_fn(
-        #     buffer_state,
-        #     ((last_obs, obsv, action, reward, done), transition_weight),
-        # )
-        buffer_state = buffer.add(
-            buffer_state,
-            (last_obs, obsv, action, reward, done),
-        )
-        # buffer_state = buffer.set_priorities(buffer_state, ...)
-        
-        global_step += 1
-        return (obsv, env_state, global_step, buffer_state), (
-            obsv,
-            action,
-            reward,
-            done,
-            info,
-            td_error,
-        )
