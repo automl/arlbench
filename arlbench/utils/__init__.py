@@ -1,6 +1,5 @@
-from .common import make_eval, make_env
+from .common import make_env
 
 __all__ = [
-    "make_eval",
     "make_env",
 ]

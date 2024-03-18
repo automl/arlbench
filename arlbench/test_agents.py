@@ -26,8 +26,7 @@ ALGORITHMS = {
 }
 
 OPTIONS = {
-    "env_framework": "gymnax",
-    "env_name": "CartPole-v1",
+    "env_id": 0,    # Gymnax CartPole-v1
     "n_total_timesteps": 1e5,
     "n_envs": 10,
     "n_env_steps": 500,
@@ -123,7 +122,7 @@ def prepare_training(algorithm, config, options):
     )
 
 def test_oop_ppo():
-    env, env_params = make_env(OPTIONS)
+    env, env_params = make_env(OPTIONS["env_id"])
     rng = jax.random.PRNGKey(42)
 
     agent = PPO(PPO_CONFIG, OPTIONS, env, env_params)
@@ -135,7 +134,7 @@ def test_oop_ppo():
     return (agent.eval(runner_state, OPTIONS["n_eval_episodes"]), training_time)
 
 def test_oop_dqn():
-    env, env_params = make_env(OPTIONS)
+    env, env_params = make_env(OPTIONS["env_id"])
     rng = jax.random.PRNGKey(42)
 
     agent = DQN(DQN_CONFIG, OPTIONS, env, env_params)
