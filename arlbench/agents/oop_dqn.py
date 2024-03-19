@@ -96,7 +96,8 @@ class DQN(Agent):
                 "buffer_epsilon": Float("buffer_epsilon", (0., 1.), default=0.9),
                 "lr": Float("lr", (1e-5, 0.1), default=2.5e-4),
                 "update_epochs": Integer("update_epochs", (1, int(1e5)), default=10),
-                "activation": Categorical("activation", ["tanh", "relu"], default="tanh"),
+                # 0 = tanh, 1 = relu, see agents.models.ACTIVATIONS
+                "activation": Categorical("activation", [0, 1], default=0),
                 "hidden_size": Integer("hidden_size", (1, 1024), default=64),
                 "n_minibatches": Integer("n_minibatches", (1, 128), default=4),
                 "gamma": Float("gamma", (0., 1.), default=0.99),

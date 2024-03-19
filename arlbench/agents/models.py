@@ -4,20 +4,24 @@ import flax.linen as nn
 from flax.linen.initializers import constant, orthogonal
 import distrax
 
+from enum import Enum
+
+ACTIVATION = {
+    0: nn.tanh,
+    1: nn.relu
+}
 
 class ActorCritic(nn.Module):
     action_dim: Sequence[int]
-    activation: int = 0     # 0 = tanh, 1 = relu
+    activation: int
     hidden_size: int = 64
     discrete: bool = True
 
     def setup(self):
-        if self.activation == 0:
-            self.activation_func = nn.tanh
-        elif self.activation == 1:
-            self.activation_func = nn.relu
+        if self.activation not in ACTIVATION.keys():
+            raise ValueError(f"Invalid activation_func id: {self.activation}")
         else:
-            raise ValueError(f"Invalid activation_func id: {self.activation_func}")
+            self.activation_func = ACTIVATION[self.activation]
 
         self.dense0 = nn.Dense(
             self.hidden_size,
@@ -73,15 +77,15 @@ class ActorCritic(nn.Module):
 
 class Q(nn.Module):
     action_dim: Sequence[int]
-    activation: str = "tanh"
+    activation: int         # 0 = tanh, 1 = relu
     hidden_size: int = 64
     discrete: bool = True
 
     def setup(self):
-        if self.activation == "relu":
-            self.activation_func = nn.relu
+        if self.activation not in ACTIVATION.keys():
+            raise ValueError(f"Invalid activation_func id: {self.activation}")
         else:
-            self.activation_func = nn.tanh
+            self.activation_func = ACTIVATION[self.activation]
 
         self.dense0 = nn.Dense(
             self.hidden_size,
