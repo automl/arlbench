@@ -39,8 +39,7 @@ PPO_CONFIG = PPO.get_default_configuration()
 DQN_CONFIG = DQN.get_default_configuration()
 
 def prepare_training(algorithm, config, options):
-    env, env_params = make_env(options)
-
+    env, env_params = make_env("gymnax", "CartPole-v1")
     rng = jax.random.PRNGKey(42)
     rng, _rng = jax.random.split(rng)
     reset_rng = jax.random.split(_rng, options["n_envs"])
@@ -122,7 +121,7 @@ def prepare_training(algorithm, config, options):
     )
 
 def test_oop_ppo():
-    env, env_params = make_env(OPTIONS["env_id"])
+    env, env_params = make_env("gymnax", "CartPole-v1")
     rng = jax.random.PRNGKey(42)
 
     agent = PPO(PPO_CONFIG, OPTIONS, env, env_params)
@@ -134,7 +133,7 @@ def test_oop_ppo():
     return (agent.eval(runner_state, OPTIONS["n_eval_episodes"]), training_time)
 
 def test_oop_dqn():
-    env, env_params = make_env(OPTIONS["env_id"])
+    env, env_params = make_env("gymnax", "CartPole-v1")
     rng = jax.random.PRNGKey(42)
 
     agent = DQN(DQN_CONFIG, OPTIONS, env, env_params)

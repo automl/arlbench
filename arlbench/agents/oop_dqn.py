@@ -59,7 +59,7 @@ class Transition(NamedTuple):
 class DQN(Agent):
     def __init__(
         self,
-        config: Configuration,
+        config: Union[Configuration, Dict],
         options: Dict,
         env,
         env_params
