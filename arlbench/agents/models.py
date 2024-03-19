@@ -7,15 +7,17 @@ import distrax
 
 class ActorCritic(nn.Module):
     action_dim: Sequence[int]
-    activation: str = "tanh"
+    activation: int = 0     # 0 = tanh, 1 = relu
     hidden_size: int = 64
     discrete: bool = True
 
     def setup(self):
-        if self.activation == "relu":
+        if self.activation == 0:
+            self.activation_func = nn.tanh
+        elif self.activation == 1:
             self.activation_func = nn.relu
         else:
-            self.activation_func = nn.tanh
+            raise ValueError(f"Invalid activation_func id: {self.activation_func}")
 
         self.dense0 = nn.Dense(
             self.hidden_size,

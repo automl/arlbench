@@ -1,17 +1,22 @@
 from abc import ABC, abstractmethod
-from typing import Tuple, Optional, Any, Sequence
+from typing import Tuple, Optional, Any, Sequence, Union, Dict
 from flax.training.train_state import TrainState
 import functools
 import jax
-import numpy as np
+from flax import struct
 import gymnax
 import jax.numpy as jnp
 from ConfigSpace import Configuration, ConfigurationSpace
 
 
-
 class Agent(ABC):
-    def __init__(self, config, options, env, env_params) -> None:
+    def __init__(
+            self,
+            config: Union[Configuration, Dict], 
+            options: Dict, 
+            env, 
+            env_params
+        ) -> None:
         super().__init__()
 
         self.config = config
@@ -90,27 +95,7 @@ class Agent(ABC):
         final_state = jax.lax.while_loop(cond_fn, body_fn, initial_state)
         _, _, total_reward, _, _, _ = final_state
         return total_reward
-
-    @functools.partial(jax.jit, static_argnums=0)
-    def _env_episode_deprecated(self, rng, network_params, _):
-        reset_rng = jax.random.split(rng, 1)
-        obsv, env_state = jax.vmap(self.env.reset, in_axes=(0, None))(reset_rng, self.env_params)
-        r = 0
-        done = False
-        while not done:
-            # SELECT ACTION
-            rng, _rng = jax.random.split(rng)
-            action = self.predict(network_params, obsv, rng)
-
-            # STEP ENV
-            rng, _rng = jax.random.split(rng)
-            rng_step = jax.random.split(_rng, 1)
-            obsv, env_state, reward, done, info = jax.vmap(
-                self.env.step, in_axes=(0, 0, 0, None)
-            )(rng_step, env_state, action, self.env_params)
-            r += reward
-        return r
-
+    
     def eval(self, runner_state, num_eval_episodes) -> float:
         eval_rng = jax.random.split(runner_state.rng, num_eval_episodes)
         rewards = jax.vmap(self._env_episode, in_axes=(0, None))(

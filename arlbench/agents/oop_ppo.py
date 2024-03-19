@@ -12,8 +12,8 @@ import flax
 import functools
 from .abstract_agent import Agent
 from .models import ActorCritic
-import gymnax
 from ConfigSpace import Configuration, ConfigurationSpace, Float, Integer, Categorical
+
 
 class PPORunnerState(NamedTuple):
     rng: chex.PRNGKey
@@ -54,7 +54,7 @@ class Transition(NamedTuple):
 class PPO(Agent):
     def __init__(
         self,
-        config: Configuration,
+        config: Union[Configuration, Dict],
         options: Dict,
         env,
         env_params
@@ -100,12 +100,12 @@ class PPO(Agent):
             name="PPOConfigSpace",
             seed=seed,
             space={
-                "buffer_size": Integer("buffer_size", (1, int(1e10)), default=int(1e6)),
+                "buffer_size": Integer("buffer_size", (1, int(1e7)), default=int(1e6)),
                 "buffer_batch_size": Integer("buffer_batch_size", (1, 1024), default=64),
                 "buffer_beta": Float("buffer_beta", (0., 1.), default=0.9),
                 "lr": Float("lr", (1e-5, 0.1), default=2.5e-4),
                 "update_epochs": Integer("update_epochs", (1, int(1e5)), default=10),
-                "activation": Categorical("activation", ["tanh", "relu"], default="tanh"),
+                "activation": Categorical("activation", [0, 1], default=0),        # 0 = tanh, 1 = relu
                 "hidden_size": Integer("hidden_size", (1, 1024), default=64),
                 "n_minibatches": Integer("n_minibatches", (1, 128), default=4),
                 "gamma": Float("gamma", (0., 1.), default=0.99),
@@ -121,6 +121,7 @@ class PPO(Agent):
     def get_default_configuration() -> Configuration:
         return PPO.get_configuration_space().get_default_configuration()
 
+    @functools.partial(jax.jit, static_argnums=0)
     def init(self, rng, network_params=None, opt_state=None):
         rng, _rng = jax.random.split(rng)
         reset_rng = jax.random.split(_rng, self.options["n_envs"])
