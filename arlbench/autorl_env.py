@@ -60,17 +60,13 @@ class AutoRLEnv(gymnasium.Env):
             grad_norm = 0
             grad_var = 0
         else:
-            grad_info = self.grad_info
-
-            if self.config["algorithm"] == "ppo":
-                import flax
-
-                grad_info = grad_info["params"]
-                grad_info = {
-                    k: v
-                    for (k, v) in grad_info.items()
-                    if isinstance(v, dict)
-                }
+            grad_info = self.grad_info["params"]
+            grad_info = {
+                k: v
+                for (k, v) in grad_info.items()
+                if isinstance(v, dict)
+            }
+            
             grad_info = [
                 grad_info[g][k] for g in grad_info.keys() for k in grad_info[g].keys()
             ]
@@ -120,20 +116,21 @@ class AutoRLEnv(gymnasium.Env):
 
         agent, runner_state = self.make_agent(action)
         runner_state, metrics = agent.train(runner_state)
-
-        if self.config["track_trajectories"]:
-            (
-                self.loss_info,
-                self.grad_info,
-                self.traj,
-                self.additional_info,
-            ) = metrics
-        elif self.config["grad_obs"]:
-            (
-                self.loss_info,
-                self.grad_info,
-                self.additional_info,
-            ) = metrics
+        
+        if metrics:
+            if self.config["track_trajectories"]:
+                (
+                    self.loss_info,
+                    self.grad_info,
+                    self.traj,
+                    self.additional_info,
+                ) = metrics
+            elif self.config["grad_obs"]:
+                (
+                    self.loss_info,
+                    self.grad_info,
+                    self.additional_info,
+                ) = metrics
 
         reward = agent.eval(runner_state, self.config["n_eval_episodes"])
         return self.get_obs(), reward, done, False, {}

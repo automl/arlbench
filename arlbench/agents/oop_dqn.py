@@ -62,9 +62,18 @@ class DQN(Agent):
         config: Union[Configuration, Dict],
         options: Dict,
         env,
-        env_params
+        env_params,
+        track_trajectories=False,
+        track_metrics=False
     ) -> None:
-        super().__init__(config, options, env, env_params)
+        super().__init__(
+            config,
+            options,
+            env,
+            env_params,
+            track_trajectories=track_trajectories,
+            track_metrics=track_metrics
+        )
 
         action_size, discrete = self.action_type
         self.network = Q(
@@ -359,7 +368,6 @@ class DQN(Agent):
             metric = (
                 loss,
                 grads,
-                opt_state,
                 Transition(
                     obs=observations,
                     action=action,
@@ -374,7 +382,6 @@ class DQN(Agent):
             metric = (
                 loss,
                 grads,
-                opt_state,
                 {"q_pred": [q_pred], "td_error": [td_error]},
             )
         else:
