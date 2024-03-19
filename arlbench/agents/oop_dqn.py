@@ -79,7 +79,7 @@ class DQN(Agent):
             min_length=self.config["buffer_batch_size"],
             sample_batch_size=self.config["buffer_batch_size"],
             add_sequences=False,
-            add_batch_size=self.options["n_envs"],
+            add_batch_size=self.env_options["n_envs"],
             priority_exponent=self.config["buffer_beta"]    
         )
 
@@ -116,7 +116,7 @@ class DQN(Agent):
 
     def init(self, rng, network_params=None, target_params=None):
         rng, _rng = jax.random.split(rng)
-        reset_rng = jax.random.split(_rng, self.options["n_envs"])
+        reset_rng = jax.random.split(_rng, self.env_options["n_envs"])
 
         last_obsv, last_env_state = jax.vmap(self.env.reset, in_axes=(0, None))(
             reset_rng, self.env_params
@@ -171,7 +171,7 @@ class DQN(Agent):
         runner_state
     ):
         runner_state, out = jax.lax.scan(
-            self._update_step, runner_state, None, (self.options["n_total_timesteps"]//self.config["train_frequency"])//self.options["n_envs"]
+            self._update_step, runner_state, None, (self.env_options["n_total_timesteps"]//self.config["train_frequency"])//self.env_options["n_envs"]
         )
         return runner_state, out
     
@@ -229,7 +229,7 @@ class DQN(Agent):
             return jnp.array(
                 [
                     self.env.action_space(self.env_params).sample(rng)
-                    for _ in range(self.options["n_envs"])
+                    for _ in range(self.env_options["n_envs"])
                 ]
             )
 
@@ -246,7 +246,7 @@ class DQN(Agent):
                 greedy_action,
             )
 
-            rng_step = jax.random.split(_rng, self.options["n_envs"])
+            rng_step = jax.random.split(_rng, self.env_options["n_envs"])
             obsv, env_state, reward, done, info = jax.vmap(
                 self.env.step, in_axes=(0, 0, 0, None)
             )(rng_step, env_state, action, self.env_params)
@@ -277,7 +277,7 @@ class DQN(Agent):
             # buffer_state = buffer.set_priorities(buffer_state, ...)
             
             # global_step += 1
-            global_step += self.options["n_envs"]
+            global_step += self.env_options["n_envs"]
             return (obsv, env_state, global_step, buffer_state), (
                 obsv,
                 action,
@@ -355,7 +355,7 @@ class DQN(Agent):
             buffer_state=buffer_state,
             global_step=global_step
         )
-        if self.options["track_traj"]:
+        if self.track_trajectories:
             metric = (
                 loss,
                 grads,
@@ -370,7 +370,7 @@ class DQN(Agent):
                 ),
                 {"td_error": [td_error]},
             )
-        elif self.options["track_metrics"]:
+        elif self.track_metrics:
             metric = (
                 loss,
                 grads,

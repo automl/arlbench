@@ -9,11 +9,10 @@ import chex
 from typing import Union
 from gymnax.environments import EnvState, EnvParams
 from minigrid.wrappers import RGBImgObsWrapper
+import functools
+import ConfigSpace
+import gymnasium
 
-
-ENVS = {
-    0: ("gymnax", "CartPole-v1")
-}
 
 class ImageExtractionWrapper(gym.Wrapper):
     def __init__(self, env):
@@ -29,11 +28,7 @@ class ImageExtractionWrapper(gym.Wrapper):
         return obs["image"], reward, tr, te, info
 
 
-def make_env(env_id: int):
-    if env_id not in ENVS.keys():
-        raise ValueError(f"Invalid env_id: {env_id}")
-    env_framework, env_name = ENVS[env_id]
-
+def make_env(env_framework, env_name):
     if env_framework == "gymnax":
         env, env_params = gymnax.make(env_name)
         env = FlattenObservationWrapper(env)
@@ -223,3 +218,18 @@ class GymToGymnaxWrapper(gymnax.environments.environment.Environment):
     @property
     def default_params(self) -> EnvParams:
         return EnvParams(500)
+    
+def config_space_to_gymnasium_space(config_space: ConfigSpace.ConfigurationSpace, seed=None) -> gymnasium.spaces.Dict:
+    spaces = {}
+
+    for hp_name, hp in config_space._hyperparameters.items():
+        if isinstance(hp, ConfigSpace.UniformFloatHyperparameter):
+            spaces[hp_name] = gymnasium.spaces.Box(low=hp.lower, high=hp.upper, seed=seed, dtype=np.float32)
+        elif isinstance(hp, ConfigSpace.UniformIntegerHyperparameter):
+            spaces[hp_name] = gymnasium.spaces.Box(low=hp.lower, high=hp.upper, seed=seed, dtype=np.int32)
+        elif isinstance(hp, ConfigSpace.CategoricalHyperparameter):
+            spaces[hp_name] = gymnasium.spaces.Discrete(n=hp.num_choices,start=0, seed=seed)
+        else:
+            raise ValueError(f"Invalid Hyperparameter type for {hp_name}: f{type(hp)}")
+
+    return gymnasium.spaces.Dict(spaces, seed=seed)

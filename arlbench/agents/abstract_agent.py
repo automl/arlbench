@@ -1,9 +1,8 @@
 from abc import ABC, abstractmethod
-from typing import Tuple, Optional, Any, Sequence, Union, Dict
+from typing import Tuple, Optional, Any, Sequence, Union, Dict, NamedTuple
 from flax.training.train_state import TrainState
 import functools
 import jax
-from flax import struct
 import gymnax
 import jax.numpy as jnp
 from ConfigSpace import Configuration, ConfigurationSpace
@@ -13,16 +12,20 @@ class Agent(ABC):
     def __init__(
             self,
             config: Union[Configuration, Dict], 
-            options: Dict, 
+            env_options: Dict, 
             env, 
-            env_params
+            env_params,
+            track_metrics=False,
+            track_trajectories=False
         ) -> None:
         super().__init__()
 
         self.config = config
-        self.options = options
+        self.env_options = env_options
         self.env = env
         self.env_params = env_params
+        self.track_metrics = track_metrics
+        self.track_trajectories = track_trajectories
 
     @property
     def action_type(self) -> Tuple[Sequence[int], bool]:
@@ -56,7 +59,7 @@ class Agent(ABC):
         pass
 
     @abstractmethod
-    def train(self) -> Tuple[TrainState, Optional[Tuple]]:
+    def train(self, runner_state: NamedTuple) -> Tuple[TrainState, Optional[Tuple]]:
         pass
 
     @abstractmethod 

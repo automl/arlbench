@@ -61,12 +61,6 @@ def make_train_ppo(config, env, network, num_updates):
             tx=tx,
             opt_state=opt_state,
         )
-        buffer = fbx.make_prioritised_flat_buffer(
-            max_length=int(config["buffer_size"]),
-            min_length=config["batch_size"],
-            sample_batch_size=config["batch_size"],
-            priority_exponent=config["beta"]
-        )
 
         # TRAIN LOOP
         def _update_step(runner_state, unused):
