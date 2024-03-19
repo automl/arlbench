@@ -13,6 +13,7 @@ import functools
 from .abstract_agent import Agent
 from .models import ActorCritic
 from ConfigSpace import Configuration, ConfigurationSpace, Float, Integer, Categorical
+import gymnax
 
 
 class PPORunnerState(NamedTuple):
@@ -55,15 +56,25 @@ class PPO(Agent):
     def __init__(
         self,
         config: Union[Configuration, Dict],
-        options: Dict,
-        env,
-        env_params
+        env_options: Dict,
+        env: gymnax.environments.environment.Environment,
+        env_params: Any,
+        track_metrics=False,
+        track_trajectories=False
     ) -> None:
-        super().__init__(config, options, env, env_params)
-
-        self.minibatch_size = (
-            options["n_envs"] * options["n_env_steps"] // config["n_minibatches"]
+        super().__init__(
+            config,
+            env_options,
+            env,
+            env_params,
+            track_metrics=track_metrics,
+            track_trajectories=track_trajectories
         )
+        # self.minibatch_size = (
+        #     env_options["n_envs"] * env_options["n_env_steps"] // config["n_minibatches"]
+        # )
+        # TODO validate if it's okay to define minibatch_size rather than n_minibatches
+        self.n_minibatches = env_options["n_envs"] * env_options["n_env_steps"] // config["minibatch_size"]
 
         action_size, discrete = self.action_type
         self.network = ActorCritic(
@@ -78,16 +89,16 @@ class PPO(Agent):
             min_length=config["buffer_batch_size"],
             sample_batch_size=config["buffer_batch_size"],
             add_sequences=False,
-            add_batch_size=options["n_envs"],
+            add_batch_size=env_options["n_envs"],
             priority_exponent=config["buffer_beta"]    
         )
 
         self.n_total_updates = (
-            options["n_total_timesteps"]
-            // options["n_env_steps"]
-            // options["n_envs"]
+            env_options["n_total_timesteps"]
+            // env_options["n_env_steps"]
+            // env_options["n_envs"]
         )
-        update_interval = np.ceil(self.n_total_updates / options["n_env_steps"])
+        update_interval = jnp.ceil(self.n_total_updates / env_options["n_env_steps"])
         if update_interval < 1:
             update_interval = 1
             print(
@@ -103,12 +114,12 @@ class PPO(Agent):
                 "buffer_size": Integer("buffer_size", (1, int(1e7)), default=int(1e6)),
                 "buffer_batch_size": Integer("buffer_batch_size", (1, 1024), default=64),
                 "buffer_beta": Float("buffer_beta", (0., 1.), default=0.9),
+                "minibatch_size": Integer("minibatch_size", (4, 1024), default=256),
                 "lr": Float("lr", (1e-5, 0.1), default=2.5e-4),
                 "update_epochs": Integer("update_epochs", (1, int(1e5)), default=10),
                 # 0 = tanh, 1 = relu, see agents.models.ACTIVATIONS
                 "activation": Categorical("activation", [0, 1], default=0),        
                 "hidden_size": Integer("hidden_size", (1, 1024), default=64),
-                "n_minibatches": Integer("n_minibatches", (1, 128), default=4),
                 "gamma": Float("gamma", (0., 1.), default=0.99),
                 "gae_lambda": Float("gae_lambda", (0., 1.), default=0.95),
                 "clip_eps": Float("clip_eps", (0., 1.), default=0.2),
@@ -125,7 +136,7 @@ class PPO(Agent):
     @functools.partial(jax.jit, static_argnums=0)
     def init(self, rng, network_params=None, opt_state=None):
         rng, _rng = jax.random.split(rng)
-        reset_rng = jax.random.split(_rng, self.options["n_envs"])
+        reset_rng = jax.random.split(_rng, self.env_options["n_envs"])
 
         last_obsv, last_env_state = jax.vmap(self.env.reset, in_axes=(0, None))(
             reset_rng, self.env_params
@@ -185,7 +196,7 @@ class PPO(Agent):
     @functools.partial(jax.jit, static_argnums=0)
     def _update_step(self, runner_state, unused):
         runner_state, traj_batch = jax.lax.scan(
-            self._env_step, runner_state, None, self.options["n_env_steps"]
+            self._env_step, runner_state, None, self.env_options["n_env_steps"]
         )
 
         # CALCULATE ADVANTAGE
@@ -217,7 +228,7 @@ class PPO(Agent):
             obs=last_obs,
             buffer_state=buffer_state
         )
-        if self.options["track_traj"]:
+        if self.track_trajectories:
             out = (
                 loss_info,
                 grads,
@@ -228,7 +239,7 @@ class PPO(Agent):
                     "minibatches": minibatches,
                 },
             )
-        elif self.options["track_metrics"]:
+        elif self.track_metrics:
             out = (
                 loss_info,
                 grads,
@@ -256,7 +267,7 @@ class PPO(Agent):
 
         # STEP ENV
         rng, _rng = jax.random.split(rng)
-        rng_step = jax.random.split(_rng, self.options["n_envs"])
+        rng_step = jax.random.split(_rng, self.env_options["n_envs"])
         obsv, env_state, reward, done, info = jax.vmap(
             self.env.step, in_axes=(0, 0, 0, None)
         )(rng_step, env_state, action, self.env_params)
@@ -313,13 +324,14 @@ class PPO(Agent):
         return (gae, value), gae
 
     @functools.partial(jax.jit, static_argnums=0)
-    def _update_epoch(self, update_state, unused):
+    def _update_epoch(self, update_state, _):
         train_state, traj_batch, advantages, targets, rng = update_state
         rng, _rng = jax.random.split(rng)
-        batch_size = int(self.minibatch_size * self.config["n_minibatches"])
-        assert (
-            batch_size == self.options["n_env_steps"] * self.options["n_envs"]
-        ), "batch size must be equal to number of steps * number of envs"
+
+        # TODO verify this approach of discarding data points
+        trimmed_batch_size = int(self.n_minibatches * self.config["minibatch_size"])
+        batch_size = self.env_options["n_env_steps"] * self.env_options["n_envs"]
+
         permutation = jax.random.permutation(_rng, batch_size)
         batch = (traj_batch, advantages, targets)
         batch = jax.tree_util.tree_map(
@@ -328,11 +340,16 @@ class PPO(Agent):
         shuffled_batch = jax.tree_util.tree_map(
             lambda x: jnp.take(x, permutation, axis=0), batch
         )
+
+        trimmed_batch = jax.tree_util.tree_map(
+            lambda x: x[:trimmed_batch_size], shuffled_batch
+        )
+        
         minibatches = jax.tree_util.tree_map(
             lambda x: jnp.reshape(
-                x, [self.config["n_minibatches"], -1] + list(x.shape[1:])
+                x, [self.n_minibatches, -1] + list(x.shape[1:])
             ),
-            shuffled_batch,
+            trimmed_batch,
         )
         train_state, (total_loss, grads) = jax.lax.scan(
             self._update_minbatch, train_state, minibatches
@@ -354,7 +371,7 @@ class PPO(Agent):
             train_state.params, traj_batch, advantages, targets
         )
         train_state = train_state.apply_gradients(grads=grads)
-        if self.options["track_metrics"]:
+        if self.track_metrics:
             out = (total_loss, grads)
         else:
             out = (None, None)

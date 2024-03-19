@@ -14,11 +14,8 @@ from arlbench.agents import (
     TimeStep
 )
 from arlbench.utils import (
-    make_eval,
     make_env,
 )
-from gymnax.environments.environment import Environment
-
 
 ALGORITHMS = {
     "ppo": (make_train_ppo, ActorCritic),
@@ -27,12 +24,23 @@ ALGORITHMS = {
     "oop-dqn": DQN
 }
 
-def prepare_training(algorithm, instance):
-    env, env_params = make_env(instance)
+OPTIONS = {
+    "n_total_timesteps": 1e5,
+    "n_envs": 10,
+    "n_env_steps": 500,
+    "n_eval_episodes": 10,
+    "track_metrics": False,
+    "track_traj": False,
+}
 
+PPO_CONFIG = PPO.get_default_configuration()
+DQN_CONFIG = DQN.get_default_configuration()
+
+def prepare_training(algorithm, config, options):
+    env, env_params = make_env("gymnax", "CartPole-v1")
     rng = jax.random.PRNGKey(42)
     rng, _rng = jax.random.split(rng)
-    reset_rng = jax.random.split(_rng, instance["num_envs"])
+    reset_rng = jax.random.split(_rng, options["n_envs"])
 
     last_obsv, last_env_state = jax.vmap(env.reset, in_axes=(0, None))(
         reset_rng, env_params
@@ -57,12 +65,12 @@ def prepare_training(algorithm, instance):
         discrete=discrete,
     )
     buffer = fbx.make_prioritised_flat_buffer(
-        max_length=instance["buffer_size"],
-        min_length=instance["batch_size"],
-        sample_batch_size=instance["batch_size"],
+        max_length=config["buffer_size"],
+        min_length=config["batch_size"],
+        sample_batch_size=config["batch_size"],
         add_sequences=False,
-        add_batch_size=instance["num_envs"],
-        priority_exponent=instance["beta"]    # TODO change to priorizited
+        add_batch_size=config["num_envs"],
+        priority_exponent=config["beta"]    
     )
     dummy_rng = jax.random.PRNGKey(0) 
     _action = env.action_space().sample(dummy_rng)
@@ -82,11 +90,11 @@ def prepare_training(algorithm, instance):
 
     if "ppo" in algorithm:
         total_updates = (
-            instance["total_timesteps"]
-            // instance["num_steps"]
-            // instance["num_envs"]
+            options["n_total_timesteps"]
+            // options["n_env_steps"]
+            // options["n_envs"]
         )
-        update_interval = np.ceil(total_updates / instance["num_steps"])
+        update_interval = np.ceil(total_updates / options["n_env_steps"])
         if update_interval < 1:
             update_interval = 1
             print(
@@ -110,194 +118,33 @@ def prepare_training(algorithm, instance):
         total_updates
     )
 
-def test_nested_ppo():
-    instance = {
-        "env_framework": "gymnax",
-        "env_name": "CartPole-v1",
-        "total_timesteps": 1e6,
-        "num_steps": 500,
-        "num_envs": 2,
-        "buffer_size": 1000000,
-        "batch_size": 64,
-        "beta": 0.9,
-        "lr": 2.5e-4,
-        "update_epochs": 4,
-        "num_minibatches": 4,
-        "gamma": 0.99,
-        "gae_lambda": 0.95,
-        "clip_eps": 0.2,
-        "ent_coef": 0.01,
-        "vf_coef": 0.5,
-        "max_grad_norm": 5,
-        "anneal_lr": True,
-        "track_metrics": False,
-        "track_traj": False,
-        "num_eval_episodes": 10
-    }
-
-    (
-        rng,
-        env, 
-        env_params, 
-        network, 
-        network_params, 
-        target_params,
-        opt_state, 
-        last_obsv, 
-        last_env_state, 
-        buffer,
-        buffer_state, 
-        total_updates
-    ) = prepare_training("ppo", instance)
-
-    train_func = jax.jit(
-        make_train_ppo(
-            instance, env, network, total_updates
-        )
-    )
-
-    train_args = (
-        rng,
-        env_params,
-        network_params,
-        opt_state,
-        last_obsv,
-        last_env_state,
-        buffer_state,
-    )
-
-    start = time.time()
-    runner_state, _ = train_func(*train_args)
-    network_params = runner_state[0].params
-    training_time = time.time() - start
-
-    eval_func = make_eval(instance, network)
-    return (eval_func(rng, network_params), training_time)
-
 def test_oop_ppo():
-    instance = {
-        "env_framework": "gymnax",
-        "env_name": "CartPole-v1",
-        "total_timesteps": 1e6,
-        "num_steps": 500,
-        "num_envs": 2,
-        "buffer_size": 1000000,
-        "batch_size": 64,
-        "beta": 0.9,
-        "lr": 2.5e-4,
-        "update_epochs": 4,
-        "num_minibatches": 4,
-        "gamma": 0.99,
-        "gae_lambda": 0.95,
-        "clip_eps": 0.2,
-        "ent_coef": 0.01,
-        "vf_coef": 0.5,
-        "max_grad_norm": 0.5,
-        "anneal_lr": True,
-        "track_metrics": False,
-        "track_traj": False,
-        "num_eval_episodes": 10
-    }
+    env, env_params = make_env("gymnax", "CartPole-v1")
+    rng = jax.random.PRNGKey(42)
 
-    (
-        rng,
-        env, 
-        env_params, 
-        network, 
-        network_params, 
-        target_params,
-        opt_state, 
-        last_obsv, 
-        last_env_state, 
-        buffer,
-        buffer_state, 
-        total_updates
-    ) = prepare_training("ppo", instance)
-
-    agent = PPO(instance, env, env_params, network, total_updates)
+    agent = PPO(PPO_CONFIG, OPTIONS, env, env_params)
+    runner_state = agent.init(rng)
     
     start = time.time()
-    runner_state, _ = agent.train(rng, network_params, opt_state, last_obsv, last_env_state, buffer_state)
-    network_params = runner_state[0].params
+    runner_state, _ = agent.train(runner_state)
     training_time = time.time() - start
-    return (agent.eval(rng, network_params, instance["num_eval_episodes"]), training_time)
+    return (agent.eval(runner_state, OPTIONS["n_eval_episodes"]), training_time)
 
-def test_nested_dqn():
-    instance = {
-        "env_framework": "gymnax",
-        "env_name": "CartPole-v1",
-        "total_timesteps": 1e6,
-        "train_frequency": 100,
-        "target_network_update_freq": 200,
-        "learning_starts": 1000,
-        "epsilon": 0.1,
-        "tau": 1.0,
-        "buffer_epsilon": 0.5,
-        "alpha": 0.9,
-        "beta": 0.9,
-        "target": True,
-        "num_steps": 500,
-        "num_envs": 10,
-        "buffer_size": 1000000,
-        "batch_size": 128,
-        "beta": 0.9,
-        "lr": 2.5e-4,
-        "gamma": 0.99,
-        "anneal_lr": True,
-        "track_metrics": False,
-        "track_traj": False,
-        "num_eval_episodes": 10
-    }
+def test_oop_dqn():
+    env, env_params = make_env("gymnax", "CartPole-v1")
+    rng = jax.random.PRNGKey(42)
 
-    (
-        rng,
-        env, 
-        env_params, 
-        network, 
-        network_params, 
-        target_params,
-        opt_state, 
-        last_obsv, 
-        last_env_state, 
-        buffer,
-        buffer_state, 
-        total_updates
-    ) = prepare_training("dqn", instance)
-
-    train_func = make_train_dqn(
-            instance, env, network, total_updates
-        )
+    agent = DQN(DQN_CONFIG, OPTIONS, env, env_params)
+    runner_state = agent.init(rng)
     
-    global_step = 0
-
-    train_args = (
-        rng,
-        env_params,
-        network_params,
-        target_params,
-        opt_state,
-        last_obsv,
-        last_env_state,
-        buffer,
-        buffer_state,
-        global_step,
-    )
-
     start = time.time()
-    runner_state, _ = train_func(*train_args)
-    network_params = runner_state[0].params
-    global_step = runner_state[5]
+    runner_state, _ = agent.train(runner_state)
     training_time = time.time() - start
-    print(global_step)
+    return (agent.eval(runner_state, OPTIONS["n_eval_episodes"]), training_time)
 
-    eval_func = make_eval(instance, network)
-    return (eval_func(rng, network_params), training_time)
 
 print("# OOP PPO #")
 print(test_oop_ppo())
 
-print("# Nested PPO #")
-print(test_nested_ppo())
-
-print("# Nested DQN #")
-print(test_nested_dqn())
+print("# OOP DQN #")
+print(test_oop_dqn())
