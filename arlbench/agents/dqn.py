@@ -95,7 +95,7 @@ class DQN(Agent):
             name="PPOConfigSpace",
             seed=seed,
             space={
-                "buffer_size": Integer("buffer_size", (1, int(1e10)), default=int(1e6)),
+                "buffer_size": Integer("buffer_size", (1, int(1e7)), default=int(1e6)),
                 "buffer_batch_size": Integer("buffer_batch_size", (1, 1024), default=64),
                 "buffer_alpha": Float("buffer_alpha", (0., 1.), default=0.9),
                 "buffer_beta": Float("buffer_beta", (0., 1.), default=0.9),

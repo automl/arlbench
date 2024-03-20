@@ -6,6 +6,8 @@ import jax
 import gymnax
 import jax.numpy as jnp
 from ConfigSpace import Configuration, ConfigurationSpace
+from flashbax.buffers.prioritised_trajectory_buffer import PrioritisedTrajectoryBufferState
+
 
 
 class Agent(ABC):
@@ -59,7 +61,7 @@ class Agent(ABC):
         pass
 
     @abstractmethod
-    def train(self, runner_state: NamedTuple) -> Tuple[tuple[Any, TrainState], Optional[Tuple]]:
+    def train(self, runner_state: NamedTuple, buffer_state: PrioritisedTrajectoryBufferState) -> Tuple[tuple[Any, TrainState], Optional[Tuple]]:
         pass
 
     @abstractmethod 
