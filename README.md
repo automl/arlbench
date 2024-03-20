@@ -1,6 +1,6 @@
 <p align="center">
-    <a href="./docs/img/logo2.png">
-        <img src="./docs/imgs/logo2.png" alt="ARLBench Logo" width="70%"/>
+    <a href="./docs/images/logo2.png">
+        <img src="./docs/images/logo2.png" alt="ARLBench Logo" width="70%"/>
     </a>
 </p>
 
