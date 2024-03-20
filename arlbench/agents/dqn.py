@@ -99,7 +99,7 @@ class DQN(Agent):
                 "buffer_batch_size": Integer("buffer_batch_size", (1, 1024), default=64),
                 "buffer_alpha": Float("buffer_alpha", (0., 1.), default=0.9),
                 "buffer_beta": Float("buffer_beta", (0., 1.), default=0.9),
-                "buffer_epsilon": Float("buffer_epsilon", (0., 1.), default=0.9),
+                "buffer_epsilon": Float("buffer_epsilon", (0., 1e-3), default=1e-5),
                 "lr": Float("lr", (1e-5, 0.1), default=2.5e-4),
                 "update_epochs": Integer("update_epochs", (1, int(1e5)), default=10),
                 # 0 = tanh, 1 = relu, see agents.models.ACTIVATIONS

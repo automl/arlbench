@@ -5,6 +5,7 @@ from typing import Optional, Union, Any, Dict, Callable
 from arlbench.agents import PPO, DQN, Agent, PPORunnerState, DQNRunnerState
 import gymnasium
 from arlbench.utils import config_space_to_gymnasium_space
+from flashbax.buffers.prioritised_trajectory_buffer import PrioritisedTrajectoryBufferState
 
 
 class AutoRLEnv(gymnasium.Env):
@@ -95,7 +96,10 @@ class AutoRLEnv(gymnasium.Env):
             return True
         return False
 
-    def make_agent(self, agent_config) -> tuple[Agent, Union[PPORunnerState, DQNRunnerState]]:
+    def make_agent(
+            self,
+            agent_config
+        ) -> tuple[Agent, tuple[Union[PPORunnerState, DQNRunnerState], PrioritisedTrajectoryBufferState]]:
         agent = self.algorithm_cls(
             agent_config,
             self.c_env_options,
@@ -105,8 +109,8 @@ class AutoRLEnv(gymnasium.Env):
             track_metrics=self.config["grad_obs"]
         )
         agent_rng = jax.random.PRNGKey(self.seed if self.seed else 0)
-        runner_state = agent.init(agent_rng)
-        return agent, runner_state
+        runner_state, buffer_state = agent.init(agent_rng)
+        return agent, (runner_state, buffer_state)
 
     def step(
         self,
@@ -114,8 +118,8 @@ class AutoRLEnv(gymnasium.Env):
     ) -> tuple[np.ndarray, float, bool, bool, dict[str, Any]]:
         done = self.step_()
 
-        agent, runner_state = self.make_agent(action)
-        runner_state, metrics = agent.train(runner_state)
+        agent, (runner_state, buffer_state) = self.make_agent(action)
+        (runner_state, buffer_state), metrics = agent.train(runner_state, buffer_state)
         
         if metrics:
             if self.config["track_trajectories"]:
