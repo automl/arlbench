@@ -1,5 +1,4 @@
 import jax
-import numpy as np
 import time
 
 from arlbench.agents import (
@@ -61,4 +60,6 @@ def test_oop_dqn():
     reward = agent.eval(runner_state, DQN_OPTIONS["n_eval_episodes"])
     assert reward > 400
     print(reward, training_time)
+
+test_oop_dqn()
 
