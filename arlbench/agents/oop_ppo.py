@@ -3,7 +3,7 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 import optax
-from typing import NamedTuple, Union, Any, Dict
+from typing import NamedTuple, Union, Any, Dict, Optional
 import chex
 from .common import TimeStep
 from flax.training.train_state import TrainState
@@ -21,7 +21,6 @@ class PPORunnerState(NamedTuple):
     train_state: Any
     env_state: Any
     obs: chex.Array
-    buffer_state: Any
 
 class PPOTrainState(TrainState):
     target_params: Union[None, chex.Array, dict] = None
@@ -57,7 +56,7 @@ class PPO(Agent):
         self,
         config: Union[Configuration, Dict],
         env_options: Dict,
-        env: gymnax.environments.environment.Environment,
+        env: Any,
         env_params: Any,
         track_metrics=False,
         track_trajectories=False
@@ -170,33 +169,40 @@ class PPO(Agent):
 
         rng, _rng = jax.random.split(rng)
 
-        return PPORunnerState(
+        runner_state = PPORunnerState(
             rng=_rng,
             train_state=train_state,
             env_state=last_env_state,
             obs=last_obsv,
-            buffer_state=buffer_state
         )
+
+        return runner_state, buffer_state
 
     @functools.partial(jax.jit, static_argnums=0)
     def predict(self, network_params, obsv, rng) -> int:
         pi, _ = self.network.apply(network_params, obsv)
         return pi.sample(seed=rng)
 
-    @functools.partial(jax.jit, static_argnums=0)
+    @functools.partial(jax.jit, static_argnums=0, donate_argnums=(2,))
     def train(
         self,
-        runner_state
-    ):
-        runner_state, out = jax.lax.scan(
-            self._update_step, runner_state, None, self.n_total_updates
+        runner_state,
+        buffer_state
+    ) -> tuple[tuple[PPORunnerState, Any], Optional[tuple]]:
+        (runner_state, buffer_state), out = jax.lax.scan(
+            self._update_step, (runner_state, buffer_state), None, self.n_total_updates
         )
-        return runner_state, out
+        return (runner_state, buffer_state), out
     
     @functools.partial(jax.jit, static_argnums=0)
-    def _update_step(self, runner_state, unused):
-        runner_state, traj_batch = jax.lax.scan(
-            self._env_step, runner_state, None, self.env_options["n_env_steps"]
+    def _update_step(
+        self,
+        carry,
+        _
+    ):
+        runner_state, buffer_state = carry
+        (runner_state, buffer_state), traj_batch = jax.lax.scan(
+            self._env_step, (runner_state, buffer_state), None, self.env_options["n_env_steps"]
         )
 
         # CALCULATE ADVANTAGE
@@ -204,8 +210,7 @@ class PPO(Agent):
             rng,
             train_state,
             env_state,
-            last_obs,
-            buffer_state
+            last_obs
         ) = runner_state
         _, last_val = self.network.apply(train_state.params, last_obs)
 
@@ -225,8 +230,7 @@ class PPO(Agent):
             rng=rng,
             train_state=train_state,
             env_state=env_state,
-            obs=last_obs,
-            buffer_state=buffer_state
+            obs=last_obs
         )
         if self.track_trajectories:
             out = (
@@ -247,16 +251,16 @@ class PPO(Agent):
             )
         else:
             out = None
-        return runner_state, out
+        return (runner_state, buffer_state), out
     
     @functools.partial(jax.jit, static_argnums=0)
-    def _env_step(self, runner_state, _):
+    def _env_step(self, carry, _):
+        runner_state, buffer_state = carry
         (
             rng,
             train_state,
             env_state,
-            last_obs,
-            buffer_state
+            last_obs
         ) = runner_state
 
         # SELECT ACTION
@@ -272,18 +276,8 @@ class PPO(Agent):
             self.env.step, in_axes=(0, 0, 0, None)
         )(rng_step, env_state, action, self.env_params)
 
-         # TODO copy code from DQN implementation
-        # https://github.com/instadeepai/flashbax?tab=readme-ov-file#quickstart-
-        # buffer_state = buffer.add(
-        #     buffer_state,
-        #     (
-        #         last_obs,
-        #         obsv,
-        #         jnp.expand_dims(action, -1),
-        #         jnp.expand_dims(reward, -1),
-        #         jnp.expand_dims(done, -1),   
-        #     ),
-        # )
+        timestep = TimeStep(last_obs=last_obs, obs=obsv, action=action, reward=reward, done=done)
+        buffer_state = self.buffer.add(buffer_state, timestep)
 
         transition = Transition(
             done, action, value, reward, log_prob, last_obs, info
@@ -292,10 +286,9 @@ class PPO(Agent):
             train_state=train_state,
             env_state=env_state,
             obs=obsv,
-            rng=rng,
-            buffer_state=buffer_state
+            rng=rng
         )
-        return runner_state, transition
+        return (runner_state, buffer_state), transition
     
     @functools.partial(jax.jit, static_argnums=0)
     def _calculate_gae(self, traj_batch, last_val):
