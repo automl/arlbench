@@ -1,5 +1,5 @@
 <p align="center">
-    <a href="./docs/img/logo.png2">
+    <a href="./docs/img/logo2.png">
         <img src="./docs/imgs/logo2.png" alt="ARLBench Logo" width="70%"/>
     </a>
 </p>
