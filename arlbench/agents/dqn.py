@@ -6,13 +6,11 @@ import optax
 from .common import TimeStep
 from flax.training.train_state import TrainState
 from typing import NamedTuple, Union
-import dejax.utils as utils
-from typing import Callable, Any, Tuple, Dict, Optional
-import gymnax
+from typing import Any, Dict, Optional
 import chex
 import jax.lax
 import flashbax as fbx
-from .abstract_agent import Agent
+from .agent import Agent
 import functools
 from .models import Q
 from ConfigSpace import Configuration, ConfigurationSpace, Float, Integer, Categorical

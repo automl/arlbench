@@ -1,7 +1,6 @@
 # The PPO Code is heavily based on PureJax: https://github.com/luchris429/purejaxrl
 import jax
 import jax.numpy as jnp
-import numpy as np
 import optax
 from typing import NamedTuple, Union, Any, Dict, Optional
 import chex
@@ -10,10 +9,9 @@ from flax.training.train_state import TrainState
 import flashbax as fbx
 import flax
 import functools
-from .abstract_agent import Agent
+from .agent import Agent
 from .models import ActorCritic
 from ConfigSpace import Configuration, ConfigurationSpace, Float, Integer, Categorical
-import gymnax
 
 
 class PPORunnerState(NamedTuple):

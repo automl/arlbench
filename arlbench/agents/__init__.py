@@ -2,7 +2,7 @@ from .common import TimeStep
 from .models import Q, ActorCritic
 from .ppo import PPO, PPORunnerState
 from .dqn import DQN, DQNRunnerState
-from .abstract_agent import Agent
+from .agent import Agent
 
 __all__ = [
     "Agent",
