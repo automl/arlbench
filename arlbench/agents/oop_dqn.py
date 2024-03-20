@@ -270,18 +270,28 @@ class DQN(Agent):
                 self.config["use_target_network"], target_td, no_target_td, train_state
             )
 
+            # td_error = (
+            #     reward
+            #     + (1 - done) * self.config["gamma"] * jnp.expand_dims(q_next_target, -1)    # why expand dims?
+            #     - self.network.apply(train_state.params, last_obs).take(action)
+            # )
             td_error = (
                 reward
-                + (1 - done) * self.config["gamma"] * jnp.expand_dims(q_next_target, -1)
+                + (1 - done) * self.config["gamma"] * q_next_target
                 - self.network.apply(train_state.params, last_obs).take(action)
             )
             transition_weight = jnp.power(
                 jnp.abs(td_error) + self.config["buffer_epsilon"], self.config["buffer_alpha"]
             )
             timestep = TimeStep(last_obs=last_obs, obs=obsv, action=action, reward=reward, done=done)
-            
             buffer_state = self.buffer.add(buffer_state, timestep)
-            # buffer_state = buffer.set_priorities(buffer_state, ...)
+
+            # compute indices of newly added buffer elements
+            added_indices = jnp.arange(
+                0,
+                len(obsv)
+            ) + buffer_state.current_index
+            buffer_state = self.buffer.set_priorities(buffer_state, added_indices, transition_weight)
             
             # global_step += 1
             global_step += self.env_options["n_envs"]
@@ -296,6 +306,7 @@ class DQN(Agent):
 
         def do_update(train_state, buffer_state):
             # batch = buffer.sample_fn(buffer_state, rng, config["batch_size"])
+            batch = self.buffer.sample(buffer_state, rng)
             batch = self.buffer.sample(buffer_state, rng).experience.first
             train_state, loss, q_pred, grads, opt_state = self.update(
                 train_state,
