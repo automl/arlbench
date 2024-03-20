@@ -13,8 +13,8 @@ class Agent(ABC):
             self,
             config: Union[Configuration, Dict], 
             env_options: Dict, 
-            env, 
-            env_params,
+            env: Any, 
+            env_params: Any,
             track_metrics=False,
             track_trajectories=False
         ) -> None:
@@ -55,11 +55,11 @@ class Agent(ABC):
         pass
     
     @abstractmethod
-    def init(self, rng) -> Tuple[Any, Any, Tuple]:
+    def init(self, rng) -> tuple[Any, Any]:
         pass
 
     @abstractmethod
-    def train(self, runner_state: NamedTuple) -> Tuple[TrainState, Optional[Tuple]]:
+    def train(self, runner_state: NamedTuple) -> Tuple[tuple[Any, TrainState], Optional[Tuple]]:
         pass
 
     @abstractmethod 

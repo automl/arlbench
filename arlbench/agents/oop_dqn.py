@@ -7,7 +7,7 @@ from .common import TimeStep
 from flax.training.train_state import TrainState
 from typing import NamedTuple, Union
 import dejax.utils as utils
-from typing import Callable, Any, Tuple, Dict
+from typing import Callable, Any, Tuple, Dict, Optional
 import gymnax
 import chex
 import jax.lax
@@ -23,7 +23,6 @@ class DQNRunnerState(NamedTuple):
     train_state: Any
     env_state: Any
     obs: chex.Array
-    buffer_state: Any
     global_step: int
 
 
@@ -61,8 +60,8 @@ class DQN(Agent):
         self,
         config: Union[Configuration, Dict],
         options: Dict,
-        env,
-        env_params,
+        env: Any,
+        env_params: Any,
         track_trajectories=False,
         track_metrics=False
     ) -> None:
@@ -108,14 +107,13 @@ class DQN(Agent):
                 # 0 = tanh, 1 = relu, see agents.models.ACTIVATIONS
                 "activation": Categorical("activation", [0, 1], default=0),
                 "hidden_size": Integer("hidden_size", (1, 1024), default=64),
-                "n_minibatches": Integer("n_minibatches", (1, 128), default=4),
                 "gamma": Float("gamma", (0., 1.), default=0.99),
                 "tau": Float("tau", (0., 1.), default=1.0),
                 "epsilon": Float("epsilon", (0., 1.), default=0.1),
                 "use_target_network": Categorical("use_target_network", [True, False], default=True),
-                "train_frequency": Integer("train_frequency", (1, int(1e5)), default=10),
+                "train_frequency": Integer("train_frequency", (1, int(1e5)), default=4),
                 "learning_starts": Integer("learning_starts", (1, int(1e5)), default=10000),
-                "target_network_update_freq": Integer("target_network_update_freq", (1, int(1e5)), default=500)
+                "target_network_update_freq": Integer("target_network_update_freq", (1, int(1e5)), default=100)
             },
         )
 
@@ -123,7 +121,7 @@ class DQN(Agent):
     def get_default_configuration() -> Configuration:
         return DQN.get_configuration_space().get_default_configuration()
 
-    def init(self, rng, network_params=None, target_params=None):
+    def init(self, rng, network_params=None, target_params=None) -> tuple[DQNRunnerState, Any]:
         rng, _rng = jax.random.split(rng)
         reset_rng = jax.random.split(_rng, self.env_options["n_envs"])
 
@@ -163,26 +161,26 @@ class DQN(Agent):
             train_state=train_state,
             env_state=last_env_state,
             obs=last_obsv,
-            buffer_state=buffer_state,
             global_step=global_step
         )    
 
-        return runner_state
+        return runner_state, buffer_state
 
     @functools.partial(jax.jit, static_argnums=0)
     def predict(self, network_params, obsv, _) -> int:
         q_values = self.network.apply(network_params, obsv)
         return q_values.argmax(axis=-1)
 
-    @functools.partial(jax.jit, static_argnums=0)
+    @functools.partial(jax.jit, static_argnums=0, donate_argnums=(2,))
     def train(
         self,
-        runner_state
-    ):
-        runner_state, out = jax.lax.scan(
-            self._update_step, runner_state, None, (self.env_options["n_total_timesteps"]//self.config["train_frequency"])//self.env_options["n_envs"]
+        runner_state,
+        buffer_state
+    )-> tuple[tuple[DQNRunnerState, Any], Optional[tuple]]:
+        (runner_state, buffer_state), out = jax.lax.scan(
+            self._update_step, (runner_state, buffer_state), None, (self.env_options["n_total_timesteps"]//self.config["train_frequency"])//self.env_options["n_envs"]
         )
-        return runner_state, out
+        return (runner_state, buffer_state), out
     
     def update(
         self,
@@ -221,15 +219,15 @@ class DQN(Agent):
 
     def _update_step(
         self,
-        runner_state,
+        carry,
         _
     ):
+        runner_state, buffer_state = carry
         (
             rng,
             train_state,
             env_state,
             last_obs,
-            buffer_state,
             global_step
         ) = runner_state
         rng, _rng = jax.random.split(rng)
@@ -361,7 +359,6 @@ class DQN(Agent):
             train_state=train_state,
             env_state=env_state,
             obs=last_obs,
-            buffer_state=buffer_state,
             global_step=global_step
         )
         if self.track_trajectories:
@@ -386,4 +383,4 @@ class DQN(Agent):
             )
         else:
             metric = None
-        return runner_state, metric
+        return (runner_state, buffer_state), metric
