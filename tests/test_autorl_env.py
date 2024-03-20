@@ -69,11 +69,14 @@ def test_autorl_env_dqn_grad_obs():
     init_obs, _ = env.reset()
     assert init_obs.shape == (4,)
 
-    action = dict(DQN.get_default_configuration())
+    done = False
+    steps = 0
+    while not done:
+        action = dict(DQN.get_configuration_space().sample_configuration())
 
-    n_obs, reward, done, _, _ = env.step(action)
-    assert n_obs.shape == (4,)
-    assert done is False
-    assert reward > 0
-
-test_autorl_env_dqn_grad_obs()
+        n_obs, reward, done, _, _ = env.step(action)
+        steps += 1
+        assert n_obs.shape == (4,)
+        assert reward > 0
+        if steps < 10:
+            assert done is False
