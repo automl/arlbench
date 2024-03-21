@@ -162,7 +162,7 @@ class DQN(Agent):
     def get_default_nas_config() -> Configuration:
         return DQN.get_nas_config_space().get_default_configuration()
 
-    def init(self, rng, network_params=None, target_params=None) -> tuple[DQNRunnerState, Any]:
+    def init(self, rng, buffer_state=None, network_params=None, target_params=None, opt_state=None) -> tuple[DQNRunnerState, Any]:
         rng, _rng = jax.random.split(rng)
         reset_rng = jax.random.split(_rng, self.env_options["n_envs"])
 
@@ -170,20 +170,20 @@ class DQN(Agent):
             reset_rng, self.env_params
         )
         
-        dummy_rng = jax.random.PRNGKey(0) 
-        _action = self.env.action_space().sample(dummy_rng)
-        _, _env_state = self.env.reset(rng, self.env_params)
-        _obs, _, _reward, _done, _ = self.env.step(rng, _env_state, _action, self.env_params)
+        if buffer_state is None:
+            dummy_rng = jax.random.PRNGKey(0) 
+            _action = self.env.action_space().sample(dummy_rng)
+            _, _env_state = self.env.reset(rng, self.env_params)
+            _obs, _, _reward, _done, _ = self.env.step(rng, _env_state, _action, self.env_params)
 
-        _timestep = TimeStep(last_obs=_obs, obs=_obs, action=_action, reward=_reward, done=_done)
-        buffer_state = self.buffer.init(_timestep)
+            _timestep = TimeStep(last_obs=_obs, obs=_obs, action=_action, reward=_reward, done=_done)
+            buffer_state = self.buffer.init(_timestep)
 
         _, _rng = jax.random.split(rng)
         if network_params is None:
             network_params = self.network.init(_rng, _obs)
         if target_params is None:
             target_params = self.network.init(_rng, _obs)
-        opt_state = None
 
         train_state_kwargs = {
             "apply_fn": self.network.apply,

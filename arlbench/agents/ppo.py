@@ -144,8 +144,7 @@ class PPO(Agent):
     def get_default_nas_config() -> Configuration:
         return PPO.get_nas_config_space().get_default_configuration()
 
-    @functools.partial(jax.jit, static_argnums=0)
-    def init(self, rng, network_params=None, opt_state=None):
+    def init(self, rng, buffer_state=None, network_params=None, opt_state=None):
         rng, _rng = jax.random.split(rng)
         reset_rng = jax.random.split(_rng, self.env_options["n_envs"])
 
@@ -153,13 +152,14 @@ class PPO(Agent):
             reset_rng, self.env_params
         )
         
-        dummy_rng = jax.random.PRNGKey(0) 
-        _action = self.env.action_space().sample(dummy_rng)
-        _, _env_state = self.env.reset(rng, self.env_params)
-        _obs, _, _reward, _done, _ = self.env.step(rng, _env_state, _action, self.env_params)
+        if buffer_state is None:
+            dummy_rng = jax.random.PRNGKey(0) 
+            _action = self.env.action_space().sample(dummy_rng)
+            _, _env_state = self.env.reset(rng, self.env_params)
+            _obs, _, _reward, _done, _ = self.env.step(rng, _env_state, _action, self.env_params)
 
-        _timestep = TimeStep(last_obs=_obs, obs=_obs, action=_action, reward=_reward, done=_done)
-        buffer_state = self.buffer.init(_timestep)
+            _timestep = TimeStep(last_obs=_obs, obs=_obs, action=_action, reward=_reward, done=_done)
+            buffer_state = self.buffer.init(_timestep)
 
         _, _rng = jax.random.split(rng)
         if network_params is None:
@@ -169,8 +169,6 @@ class PPO(Agent):
                 optax.clip_by_global_norm(self.hpo_config["max_grad_norm"]),
                 optax.adam(self.hpo_config["lr"], eps=1e-5),
             )
-        if opt_state is None:
-            opt_state = tx.init(network_params)
         
         train_state = PPOTrainState.create_with_opt_state(
             apply_fn=self.network.apply,

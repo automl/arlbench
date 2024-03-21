@@ -11,6 +11,9 @@ import orbax
 from flax.training import orbax_utils
 import orbax.checkpoint as ocp
 from flax.core.frozen_dict import FrozenDict
+from datetime import datetime
+import jax
+import chex
 
 
 class Checkpointer:
@@ -38,18 +41,17 @@ class Checkpointer:
     def save(
         runner_state: Union[PPORunnerState, DQNRunnerState],
         buffer_state: PrioritisedTrajectoryBufferState,
-        config: dict,
+        options: dict,
         hp_config: dict,
         done: bool,
         c_episode: int,
         c_step: int,
-        loss_info: Any,
-        metrics: tuple
-    ) -> None:
+        metrics: Optional[tuple]
+    ) -> str:
         # Checkpoint setup
-        checkpoint = config["checkpoint"]   # list of strings
-        checkpoint_name = config["checkpoint_name"]
-        checkpoint_dir = os.path.join(config["checkpoint_dir"], checkpoint_name)
+        checkpoint = options["checkpoint"]   # list of strings
+        checkpoint_name = options["checkpoint_name"]
+        checkpoint_dir = os.path.join(options["checkpoint_dir"], checkpoint_name)
         os.makedirs(checkpoint_dir, exist_ok=True)
 
         # Structure: 
@@ -64,56 +66,60 @@ class Checkpointer:
 
         train_state = runner_state.train_state
 
-        if "trajectory" in checkpoint:
-            (
-                loss_info,
-                grad_info,
-                traj,
-                additional_info,
-            ) = metrics
-
+        if "minibatches" in checkpoint or "trajectories" in checkpoint:
+            if metrics and len(metrics) == 4:
+                (
+                    loss_info,
+                    grad_info,
+                    traj,
+                    additional_info,
+                ) = metrics
+            else:
+                raise ValueError(f"'trajectories' in checkpoint but 'metrics' does not match.")
+        elif "loss" in checkpoint or "extras" in checkpoint:
+            if metrics and len(metrics) == 3:
+                (
+                    loss_info,
+                    grad_info,
+                    additional_info,
+                ) = metrics
+            else:
+                raise ValueError(f"'loss' or 'extras' in checkpoint but 'metrics' does not match.")
         
         network_params = train_state.params
-        last_obsv = runner_state.obs
-        last_env_state = runner_state.env_state
         opt_info = train_state.opt_state
 
         ckpt: dict[str, Any] = {
             "config": hp_config,
+            "options": options,
             "c_step": c_step,
             "c_episode": c_episode
         }
 
-        if "opt_state" in checkpoint:
+        if "opt_state" in checkpoint or checkpoint == "all":
             ckpt["optimizer_state"] = opt_info
 
         if "policy" in checkpoint:
             ckpt["params"] = network_params
-            if config["algorithm"] == "dqn":
+            if options["algorithm"] == "dqn":
                 ckpt["target"] = train_state.target_params
             # TODO add SAC
 
         if "buffer" in checkpoint:
-            ckpt["buffer"] = {}
-            ckpt["buffer"]["experience"] = buffer_state.experience
-            ckpt["buffer"]["current_index"] = buffer_state.current_index
-            ckpt["buffer"]["is_full"] = buffer_state.is_full
-            ckpt["buffer"]["priority_state"] = buffer_state.priority_state
-
-            # Checkpointer.save_buffer(buffer_state, checkpoint_dir, checkpoint_name)
+            ckpt["buffer"] = Checkpointer.save_buffer(buffer_state, checkpoint_dir, checkpoint_name)
 
         Checkpointer._save_orbax_checkpoint(ckpt, checkpoint_dir, checkpoint_name)
 
         if "loss" in checkpoint:
             ckpt = {}
-            if config["algorithm"] == "ppo":
+            if options["algorithm"] == "ppo":
                 ckpt["value_loss"] = jnp.concatenate(loss_info[0], axis=0)
                 ckpt["actor_loss"] = jnp.concatenate(loss_info[1], axis=0)
-            elif config["algorithm"]== "dqn":
+            elif options["algorithm"]== "dqn":
                 ckpt["loss"] = loss_info
             Checkpointer._save_orbax_checkpoint(ckpt, checkpoint_dir, checkpoint_name + "_loss")
 
-        if "minibatches" in checkpoint and "trajectory" in checkpoint:
+        if "minibatches" in checkpoint and "trajectory" in checkpoint and options["algorithm"] == "ppo":
             ckpt = {}
             ckpt["minibatches"] = {}
             ckpt["minibatches"]["states"] = jnp.concatenate(
@@ -153,92 +159,127 @@ class Checkpointer:
                     ckpt["gradient_history"] = grad_info["params"]
             Checkpointer._save_orbax_checkpoint(ckpt, checkpoint_dir, checkpoint_name + "_extras")
 
-        if "trajectory" in checkpoint:
+        if "trajectories" in checkpoint and options["algorithm"] == "dqn":
             ckpt = {}
-            ckpt["trajectory"] = {}
-            ckpt["trajectory"]["states"] = jnp.concatenate(traj.obs, axis=0)
-            ckpt["trajectory"]["action"] = jnp.concatenate(traj.action, axis=0)
-            ckpt["trajectory"]["reward"] = jnp.concatenate(traj.reward, axis=0)
-            ckpt["trajectory"]["dones"] = jnp.concatenate(traj.done, axis=0)
-            if config["algorithm"] == "ppo":
-                ckpt["trajectory"]["value"] = jnp.concatenate(
+            ckpt["trajectories"] = {}
+            ckpt["trajectories"]["states"] = jnp.concatenate(traj.obs, axis=0)
+            ckpt["trajectories"]["action"] = jnp.concatenate(traj.action, axis=0)
+            ckpt["trajectories"]["reward"] = jnp.concatenate(traj.reward, axis=0)
+            ckpt["trajectories"]["dones"] = jnp.concatenate(traj.done, axis=0)
+            if options["algorithm"] == "ppo":
+                ckpt["trajectories"]["value"] = jnp.concatenate(
                     traj.value, axis=0
                 )
-                ckpt["trajectory"]["log_prob"] = jnp.concatenate(
+                ckpt["trajectories"]["log_prob"] = jnp.concatenate(
                     traj.log_prob, axis=0
                 )
-            elif config["algorithm"] == "dqn":
-                ckpt["trajectory"]["q_pred"] = jnp.concatenate(
+            elif options["algorithm"] == "dqn":
+                ckpt["trajectories"]["q_pred"] = jnp.concatenate(
                     traj.q_pred, axis=0
                 )
             # TODO add SAC
 
             Checkpointer._save_orbax_checkpoint(ckpt, checkpoint_dir, checkpoint_name + "_trajectory")
 
+        return os.path.join(checkpoint_dir, checkpoint_name)
+
     @staticmethod
-    def load(options: dict[str, Any]) -> tuple[tuple, tuple]:
-        if "load" in options.keys():
-            checkpointer = ocp.PyTreeCheckpointer()
-            restored = checkpointer.restore(options["load"])
-            c_step = restored["c_step"]
-            c_episode = restored["c_episode"]
-            config = restored["config"]
+    def load(
+        checkpoint_path: str,
+        algorithm: str,
+        dummy_buffer_state: PrioritisedTrajectoryBufferState
+    ) -> tuple[tuple[dict[str, Any], int, int], dict]:
+        checkpointer = ocp.PyTreeCheckpointer()
+        restored = checkpointer.restore(checkpoint_path)
+        c_step = restored["c_step"]
+        c_episode = restored["c_episode"]
+        config = restored["config"]
 
-            network_params = restored["params"]
-            if isinstance(network_params, list):
-                network_params = network_params[0]
-            network_params = FrozenDict(network_params)
+        if "buffer" in restored.keys():
+            buffer_state = Checkpointer.load_buffer(
+                dummy_buffer_state,
+                restored["buffer"]["priority_state_path"],
+                restored["buffer"]["buffer_dir"],
+                restored["buffer"]["vault_uuid"]
+            )
 
-            if "target" in restored.keys():
-                target_params = restored["target"][0]
-                if isinstance(target_params, list):
-                    target_params = target_params[0]
-                target_params = FrozenDict(target_params)
+        network_params = restored["params"]
+        if isinstance(network_params, list):
+            network_params = network_params[0]
+        network_params = FrozenDict(network_params)
 
-            if "opt_state" in restored.keys():
-                opt_state = restored["opt_state"]
-            else:
-                opt_state = None
+        if "target" in restored.keys():
+            target_params = restored["target"]
+            if isinstance(target_params, list):
+                target_params = target_params[0]
+            target_params = FrozenDict(target_params)
+
+        if "opt_state" in restored.keys():
+            opt_state = restored["opt_state"]
+        else:
+            opt_state = None
         
-        if config["algorithm"] == "ppo":
-            return (c_step, c_episode), (config, network_params, opt_state)
-        elif config["algorithm"] == "dqn":
-            return (c_step, c_episode), (config, network_params, target_params, opt_state)
+        common = (config, c_step, c_episode)
+        if algorithm == "ppo":
+            algorithm_kw_args = {
+                "buffer_state": buffer_state,
+                "network_params": network_params,
+                "opt_state": opt_state
+            }
+        elif algorithm == "dqn":
+            algorithm_kw_args = {
+                "buffer_state": buffer_state,
+                "network_params": network_params,
+                "target_params": target_params,
+                "opt_state": opt_state
+            }
         else:
             raise ValueError(f"Invalid algorithm in checkpoint: {config['algorithm']}")
+        return common, algorithm_kw_args
             
     @staticmethod
-    def save_buffer(buffer_state: PrioritisedTrajectoryBufferState, checkpoint_dir: str, checkpoint_name: str) -> None:
+    def save_buffer(buffer_state: PrioritisedTrajectoryBufferState, checkpoint_dir: str, checkpoint_name: str) -> dict:
         buffer_dir = os.path.join(checkpoint_dir, checkpoint_name + "_buffer_state")
         os.makedirs(buffer_dir, exist_ok=True)
 
-        # write buffer
+        priority_state_path = os.path.join(buffer_dir, "buffer_priority_state")
+        Checkpointer._save_sum_tree_state(buffer_state.priority_state, priority_state_path)
+
+        vault_uuid = datetime.now().strftime("%Y%m%d%H%M%S")
         v = Vault(
             vault_name="buffer_state_vault",
             experience_structure=buffer_state.experience,
-            rel_dir=buffer_dir
+            rel_dir=buffer_dir,
+            vault_uid=vault_uuid
         )
-        v.write(buffer_state)
 
-        Checkpointer._save_sum_tree_state(buffer_state.priority_state, os.path.join(buffer_dir, "buffer_priority_state"))
+        # write buffer
+        _fbx_shape = jax.tree_util.tree_leaves(buffer_state.experience)[0].shape
+        buffer_size = _fbx_shape[1]
+        source_interval = (0, buffer_size)
+        v.write(buffer_state, source_interval=source_interval)
+
+        return {
+            "vault_uuid": vault_uuid,
+            "buffer_dir": buffer_dir,
+            "priority_state_path": priority_state_path
+        }
 
     @staticmethod
-    def load_buffer(dummy_buffer_state: PrioritisedTrajectoryBufferState, checkpoint_dir: str, checkpoint_name: str) -> PrioritisedTrajectoryBufferState:
-        buffer_dir = os.path.join(checkpoint_dir, checkpoint_name + "_buffer_state")
-
+    def load_buffer(dummy_buffer_state: PrioritisedTrajectoryBufferState, priority_state_path: str, buffer_dir: str, vault_uuid: str) -> PrioritisedTrajectoryBufferState:
         v = Vault(
             vault_name="buffer_state_vault",
             experience_structure=dummy_buffer_state.experience,
-            rel_dir=buffer_dir
+            rel_dir=buffer_dir,
+            vault_uid=vault_uuid
         )
         buffer_state = v.read()
-        print(buffer_state.experience.obs.shape)
 
-        priority_state = Checkpointer._load_sum_tree_state(os.path.join(buffer_dir, "buffer_priority_state"))
+        priority_state = Checkpointer._load_sum_tree_state(priority_state_path)
 
         return PrioritisedTrajectoryBufferState(
             experience=buffer_state.experience,
-            current_index=buffer_state.current_index,
+            current_index=0,
             is_full=buffer_state.is_full,
             priority_state=priority_state
         )
