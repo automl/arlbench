@@ -48,7 +48,7 @@ class Agent(ABC):
     
     @staticmethod
     @abstractmethod
-    def get_configuration_space() -> ConfigurationSpace:
+    def get_config_space(seed=None) -> ConfigurationSpace:
         pass
 
     @staticmethod
