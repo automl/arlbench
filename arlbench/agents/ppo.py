@@ -14,14 +14,7 @@ from .models import ActorCritic
 from ConfigSpace import Configuration, ConfigurationSpace, Float, Integer, Categorical
 
 
-class PPORunnerState(NamedTuple):
-    rng: chex.PRNGKey
-    train_state: Any
-    env_state: Any
-    obs: chex.Array
-
 class PPOTrainState(TrainState):
-    target_params: Union[None, chex.Array, dict] = None
     opt_state = None
 
     @classmethod
@@ -37,6 +30,12 @@ class PPOTrainState(TrainState):
             **kwargs,
         )
         return obj
+
+class PPORunnerState(NamedTuple):
+    rng: chex.PRNGKey
+    train_state: PPOTrainState
+    env_state: Any
+    obs: chex.Array
 
 
 class Transition(NamedTuple):
@@ -126,7 +125,7 @@ class PPO(Agent):
     
     @staticmethod
     def get_default_hpo_config() -> Configuration:
-        return PPO.get_config_space().get_default_configuration()
+        return PPO.get_hpo_config_space().get_default_configuration()
     
     @staticmethod
     def get_nas_config_space(seed=None) -> ConfigurationSpace:

@@ -17,14 +17,6 @@ from ConfigSpace import Configuration, ConfigurationSpace, Float, Integer, Categ
 from arlbench.agents.buffers import uniform_sample
 
 
-class DQNRunnerState(NamedTuple):
-    rng: chex.PRNGKey
-    train_state: Any
-    env_state: Any
-    obs: chex.Array
-    global_step: int
-
-
 class DQNTrainState(TrainState):
     target_params: Union[None, chex.Array, dict] = None
     opt_state = None
@@ -43,6 +35,15 @@ class DQNTrainState(TrainState):
             **kwargs,
         )
         return obj
+    
+
+class DQNRunnerState(NamedTuple):
+    rng: chex.PRNGKey
+    train_state: DQNTrainState
+    env_state: Any
+    obs: chex.Array
+    global_step: int
+
 
 
 class Transition(NamedTuple):
