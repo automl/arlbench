@@ -1,14 +1,5 @@
-from arlbench.autorl_env import AutoRLEnv
-import gymnax
-import pytest
 import jax
 import numpy as np
-import jax.numpy as jnp
-from flashbax.buffers.prioritised_trajectory_buffer import PrioritisedTrajectoryBufferState
-from arlbench.agents import TimeStep
-import flashbax as fbx
-import chex
-
 from arlbench.agents import (
     PPO,
     DQN
@@ -92,7 +83,6 @@ def test_checkpoints_dqn():
     (runner_state, buffer_state), metrics = algorithm.train(runner_state, init_buffer_state)
 
     reward = algorithm.eval(runner_state, DQN_OPTIONS["n_eval_episodes"])
-    print(reward)
     Checkpointer.save(runner_state, buffer_state, OPTIONS, config, DONE, C_EPISODE, C_STEP, metrics)
 
     (
@@ -109,4 +99,59 @@ def test_checkpoints_dqn():
     reward_reload = algorithm.eval(runner_state, DQN_OPTIONS["n_eval_episodes"])
     assert np.abs(reward - reward_reload) < 50
 
-test_checkpoints_dqn()
+
+def test_checkpoints_ppo():
+    C_STEP = 2
+    C_EPISODE = 4
+    DONE = False
+
+    OPTIONS = {
+        "algorithm": "ppo",
+        "checkpoint_dir": "/tmp/test_saves",
+        "checkpoint_name": "checkpoint_test",
+        "checkpoint": ["opt_state", "policy", "buffer", "loss", "extras", "minibatches", "trajectory"],
+        "load": "/tmp/test_saves/checkpoint_test/checkpoint_test_c_episode_4_step_2",
+        "grad_obs": False
+    }
+
+    PPO_OPTIONS = {
+        "n_total_timesteps": 1e5,
+        "n_envs": 10,
+        "n_env_steps": 500,
+        "n_eval_episodes": 10
+    }
+
+    env, env_params = make_env("gymnax", "CartPole-v1")
+    rng = jax.random.PRNGKey(42)
+
+    config = dict(PPO.get_default_hpo_config())
+    algorithm = PPO(
+        config,
+        PPO_OPTIONS,
+        env,
+        env_params,
+        track_metrics=True,
+        track_trajectories=True,
+    )
+    runner_state, init_buffer_state = algorithm.init(rng)
+
+    (runner_state, buffer_state), metrics = algorithm.train(runner_state, init_buffer_state)
+
+    reward = algorithm.eval(runner_state, PPO_OPTIONS["n_eval_episodes"])
+    Checkpointer.save(runner_state, buffer_state, OPTIONS, config, DONE, C_EPISODE, C_STEP, metrics)
+
+    (
+        config,
+        c_step,
+        c_episode
+    ), algorithm_kw_args = Checkpointer.load(OPTIONS["load"], OPTIONS["algorithm"], init_buffer_state)
+
+    assert c_step == C_STEP
+    assert c_episode == C_EPISODE
+    assert c_episode == C_EPISODE
+
+    runner_state, _ = algorithm.init(rng, **algorithm_kw_args)
+    reward_reload = algorithm.eval(runner_state, PPO_OPTIONS["n_eval_episodes"])
+    assert np.abs(reward - reward_reload) < 50
+
+

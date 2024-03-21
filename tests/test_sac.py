@@ -1,11 +1,11 @@
 import jax
 import time
 
-from arlbench.agents import DQN
+from arlbench.agents import SAC
 
 from arlbench.utils import (
     make_env,
 )
 
+# TODO implement SAC unit tests
 
-# TODO implement env tests
