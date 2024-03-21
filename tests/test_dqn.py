@@ -33,14 +33,12 @@ def test_default_dqn():
     print(reward, training_time)
 
 # uniform experience replay
-def test_uniform_dqn():
+def test_per_dqn():
     env, env_params = make_env("gymnax", "CartPole-v1")
     rng = jax.random.PRNGKey(42)
 
     config = DQN.get_default_configuration()
-    config["buffer_alpha"] = 0.
-    config["buffer_beta"] = 1.
-    config["buffer_epsilon"] = 0.
+    config["buffer_prio_sampling"] = True
     agent = DQN(config, DQN_OPTIONS, env, env_params)
     runner_state, buffer_state = agent.init(rng)
     
@@ -48,8 +46,8 @@ def test_uniform_dqn():
     (runner_state, _), _ = agent.train(runner_state, buffer_state)
     training_time = time.time() - start
     reward = agent.eval(runner_state, DQN_OPTIONS["n_eval_episodes"])
-    assert reward > 300
     print(reward, training_time)
+    assert reward > 300
 
 # no target network
 def test_no_target_dqn():
@@ -65,8 +63,8 @@ def test_no_target_dqn():
     (runner_state, _), _ = agent.train(runner_state, buffer_state)
     training_time = time.time() - start
     reward = agent.eval(runner_state, DQN_OPTIONS["n_eval_episodes"])
-    assert reward > 300
     print(reward, training_time)
+    assert reward > 300
 
 # ReLU activation
 def test_relu_dqn():
@@ -82,7 +80,9 @@ def test_relu_dqn():
     (runner_state, _), _ = agent.train(runner_state, buffer_state)
     training_time = time.time() - start
     reward = agent.eval(runner_state, DQN_OPTIONS["n_eval_episodes"])
-    assert reward > 300
     print(reward, training_time)
+    assert reward > 300
 
 
+test_default_dqn()
+test_per_dqn()

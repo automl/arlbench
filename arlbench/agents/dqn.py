@@ -3,17 +3,18 @@ import jax
 import jax.numpy as jnp
 import chex
 import optax
-from .common import TimeStep
+from arlbench.agents.common import TimeStep
 from flax.training.train_state import TrainState
 from typing import NamedTuple, Union
 from typing import Any, Dict, Optional
 import chex
 import jax.lax
 import flashbax as fbx
-from .agent import Agent
+from arlbench.agents.agent import Agent
 import functools
-from .models import Q
-from ConfigSpace import Configuration, ConfigurationSpace, Float, Integer, Categorical
+from arlbench.agents.models import Q
+from ConfigSpace import Configuration, ConfigurationSpace, Float, Integer, Categorical, EqualsCondition
+from arlbench.agents.buffers import uniform_sample
 
 
 class DQNRunnerState(NamedTuple):
@@ -79,31 +80,40 @@ class DQN(Agent):
             activation=self.config["activation"],
             hidden_size=self.config["hidden_size"],
         )
-
+        
+        priority_exponent = self.config["buffer_beta"] if "buffer_beta" in self.config.keys() else 1.
         self.buffer = fbx.make_prioritised_flat_buffer(
             max_length=self.config["buffer_size"],
             min_length=self.config["buffer_batch_size"],
             sample_batch_size=self.config["buffer_batch_size"],
             add_sequences=False,
             add_batch_size=self.env_options["n_envs"],
-            priority_exponent=self.config["buffer_beta"]    
+            priority_exponent=priority_exponent
         )
+        if self.config["buffer_prio_sampling"] is True:
+            sample_fn = functools.partial(
+                uniform_sample,
+                batch_size=self.config["buffer_batch_size"],
+                sequence_length=2,
+                period=1
+            )
+            self.buffer = self.buffer.replace(sample=sample_fn)
 
     @staticmethod
-    def get_configuration_space(seed=None) -> ConfigurationSpace:
-        return ConfigurationSpace(
-            name="PPOConfigSpace",
+    def get_config_space(seed=None) -> ConfigurationSpace:
+        cs = ConfigurationSpace(
+            name="DQNConfigSpace",
             seed=seed,
             space={
                 "buffer_size": Integer("buffer_size", (1, int(1e7)), default=int(1e6)),
                 "buffer_batch_size": Integer("buffer_batch_size", (1, 1024), default=64),
+                "buffer_prio_sampling": Categorical("buffer_prio_sampling", [True, False], default=False),
                 "buffer_alpha": Float("buffer_alpha", (0., 1.), default=0.9),
                 "buffer_beta": Float("buffer_beta", (0., 1.), default=0.9),
                 "buffer_epsilon": Float("buffer_epsilon", (0., 1e-3), default=1e-5),
                 "lr": Float("lr", (1e-5, 0.1), default=2.5e-4),
                 "update_epochs": Integer("update_epochs", (1, int(1e5)), default=10),
-                # 0 = tanh, 1 = relu, see agents.models.ACTIVATIONS
-                "activation": Categorical("activation", [0, 1], default=0),
+                "activation": Categorical("activation", ["tanh", "relu"], default="tanh"),
                 "hidden_size": Integer("hidden_size", (1, 1024), default=64),
                 "gamma": Float("gamma", (0., 1.), default=0.99),
                 "tau": Float("tau", (0., 1.), default=1.0),
@@ -115,9 +125,19 @@ class DQN(Agent):
             },
         )
 
+        # only use PER parameters if PER is enabled
+        # however, we still need the hyperparameters to add samples, even though we don't sampling based on priorities
+        # cs.add_conditions([
+        #     EqualsCondition(cs["buffer_alpha"], cs["buffer_prio_sampling"], True),
+        #     EqualsCondition(cs["buffer_beta"], cs["buffer_prio_sampling"], True),
+        #     EqualsCondition(cs["buffer_epsilon"], cs["buffer_prio_sampling"], True)
+        # ])
+
+        return cs
+    
     @staticmethod
     def get_default_configuration() -> Configuration:
-        return DQN.get_configuration_space().get_default_configuration()
+        return DQN.get_config_space().get_default_configuration()
 
     def init(self, rng, network_params=None, target_params=None) -> tuple[DQNRunnerState, Any]:
         rng, _rng = jax.random.split(rng)
@@ -268,23 +288,19 @@ class DQN(Agent):
                 self.config["use_target_network"], target_td, no_target_td, train_state
             )
 
-            # td_error = (
-            #     reward
-            #     + (1 - done) * self.config["gamma"] * jnp.expand_dims(q_next_target, -1)    # why expand dims?
-            #     - self.network.apply(train_state.params, last_obs).take(action)
-            # )
             td_error = (
                 reward
                 + (1 - done) * self.config["gamma"] * q_next_target
                 - self.network.apply(train_state.params, last_obs).take(action)
             )
-            transition_weight = jnp.power(
-                jnp.abs(td_error) + self.config["buffer_epsilon"], self.config["buffer_alpha"]
-            )
+
             timestep = TimeStep(last_obs=last_obs, obs=obsv, action=action, reward=reward, done=done)
             buffer_state = self.buffer.add(buffer_state, timestep)
 
-            # compute indices of newly added buffer elements
+            # PER: compute indices of newly added buffer elements
+            transition_weight = jnp.power(
+                jnp.abs(td_error) + self.config["buffer_epsilon"], self.config["buffer_alpha"]
+            )
             added_indices = jnp.arange(
                 0,
                 len(obsv)
@@ -303,8 +319,6 @@ class DQN(Agent):
             )
 
         def do_update(train_state, buffer_state):
-            # batch = buffer.sample_fn(buffer_state, rng, config["batch_size"])
-            batch = self.buffer.sample(buffer_state, rng)
             batch = self.buffer.sample(buffer_state, rng).experience.first
             train_state, loss, q_pred, grads, opt_state = self.update(
                 train_state,
