@@ -7,6 +7,7 @@ import gymnasium
 from arlbench.utils import config_space_to_gymnasium_space
 from flashbax.buffers.prioritised_trajectory_buffer import PrioritisedTrajectoryBufferState
 from ConfigSpace import Configuration
+import warnings
 
 
 class AutoRLEnv(gymnasium.Env):
@@ -26,6 +27,7 @@ class AutoRLEnv(gymnasium.Env):
         # instances = environments
         self.done = True
         self.c_step = 0     # current step
+        self.c_episode = 0
         self.envs = envs
         self.c_env_id = 0   # TODO improve
         self.c_env = self.envs[self.c_env_id]["env"]
@@ -137,19 +139,19 @@ class AutoRLEnv(gymnasium.Env):
         self,
         action: Union[Configuration, dict]
     ) -> tuple[np.ndarray, float, bool, bool, dict[str, Any]]:
-        if self.done:
+        if self.done or self.algorithm is None:
             raise ValueError("Called step() before reset().")
+        
+        if len(action.keys()) == 0:     # no action provided
+            warnings.warn("No agent configuration provided. Falling back to default configuration.")
 
-        config = self.get_algorithm_config(action)
-        self.algorithm = self.instantiate_algorithm(config)
-
+        # Initialize agent (runner state and buffer) if static HPO or first step in DAC
         if self.runner_state is None and self.buffer_state is None:  # equal to c_step == 0
-            print("### INITIALIZING AGENT ###")
-            # Static HPO or first step in DAC
             rng = jax.random.PRNGKey(self.seed)
             rng, init_rng = jax.random.split(rng)
             self.runner_state, self.buffer_state = self.algorithm.init(init_rng)
 
+        # Perform one iteration of training
         (self.runner_state, self.buffer_state), metrics = self.algorithm.train(self.runner_state, self.buffer_state)
         
         if metrics:
@@ -179,8 +181,12 @@ class AutoRLEnv(gymnasium.Env):
     ) -> tuple[np.ndarray, dict[str, Any]]:  # type: ignore
         self.done = False
         self.c_step = 0
+        self.c_episode += 1
         self.runner_state = None
         self.buffer_state = None
-        self.algorithm = None
+
+        # instantiate default algorithm
+        config = self.get_algorithm_config({})
+        self.algorithm = self.instantiate_algorithm(config)
 
         return self.get_obs(), {}
