@@ -20,7 +20,7 @@ def test_default_ppo():
     env, env_params = make_env("gymnax", "CartPole-v1")
     rng = jax.random.PRNGKey(42)
 
-    config = PPO.get_default_configuration()
+    config = PPO.get_default_hpo_config()
     agent = PPO(config, PPO_OPTIONS, env, env_params)
     runner_state, buffer_state = agent.init(rng)
     

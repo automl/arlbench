@@ -21,7 +21,7 @@ def test_default_dqn():
     env, env_params = make_env("gymnax", "CartPole-v1")
     rng = jax.random.PRNGKey(42)
 
-    config = DQN.get_default_configuration()
+    config = DQN.get_default_hpo_config()
     agent = DQN(config, DQN_OPTIONS, env, env_params)
     runner_state, buffer_state = agent.init(rng)
     
@@ -37,7 +37,7 @@ def test_per_dqn():
     env, env_params = make_env("gymnax", "CartPole-v1")
     rng = jax.random.PRNGKey(42)
 
-    config = DQN.get_default_configuration()
+    config = DQN.get_default_hpo_config()
     config["buffer_prio_sampling"] = True
     agent = DQN(config, DQN_OPTIONS, env, env_params)
     runner_state, buffer_state = agent.init(rng)
@@ -54,7 +54,7 @@ def test_no_target_dqn():
     env, env_params = make_env("gymnax", "CartPole-v1")
     rng = jax.random.PRNGKey(42)
 
-    config = DQN.get_default_configuration()
+    config = DQN.get_default_hpo_config()
     config["use_target_network"] = False
     agent = DQN(config, DQN_OPTIONS, env, env_params)
     runner_state, buffer_state = agent.init(rng)
@@ -71,8 +71,8 @@ def test_relu_dqn():
     env, env_params = make_env("gymnax", "CartPole-v1")
     rng = jax.random.PRNGKey(42)
 
-    config = DQN.get_default_configuration()
-    config["activation"] = 1    # + ReLU
+    config = DQN.get_default_hpo_config()
+    config["activation"] = "relu"
     agent = DQN(config, DQN_OPTIONS, env, env_params)
     runner_state, buffer_state = agent.init(rng)
     
@@ -82,7 +82,3 @@ def test_relu_dqn():
     reward = agent.eval(runner_state, DQN_OPTIONS["n_eval_episodes"])
     print(reward, training_time)
     assert reward > 300
-
-
-test_default_dqn()
-test_per_dqn()

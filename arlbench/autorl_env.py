@@ -6,24 +6,26 @@ from arlbench.agents import PPO, DQN, Agent, PPORunnerState, DQNRunnerState
 import gymnasium
 from arlbench.utils import config_space_to_gymnasium_space
 from flashbax.buffers.prioritised_trajectory_buffer import PrioritisedTrajectoryBufferState
+from ConfigSpace import Configuration
 
 
 class AutoRLEnv(gymnasium.Env):
     ALGORITHMS = {"ppo": PPO, "dqn": DQN}
+    algorithm: Optional[Agent]
     get_obs: Callable[[], np.ndarray]
     get_obs_space: Callable[[], gymnasium.spaces.Space]
-    agent_state: Optional[Union[PPORunnerState, DQNRunnerState]]
+    runner_state: Optional[Union[PPORunnerState, DQNRunnerState]]
+    buffer_state: Optional[PrioritisedTrajectoryBufferState]
 
-    def __init__(self, config, envs, seed=None) -> None:
+    def __init__(self, config, envs) -> None:
         super().__init__()
 
         self.config = config
-        self.seed = seed
-
-        self.c_step = 0
-        self.agent_state = None
+        self.seed = int(config["seed"])
 
         # instances = environments
+        self.done = True
+        self.c_step = 0     # current step
         self.envs = envs
         self.c_env_id = 0   # TODO improve
         self.c_env = self.envs[self.c_env_id]["env"]
@@ -32,7 +34,12 @@ class AutoRLEnv(gymnasium.Env):
 
         # init action space
         self.algorithm_cls = self.ALGORITHMS[config["algorithm"]]
-        self.action_space = config_space_to_gymnasium_space(self.algorithm_cls.get_configuration_space())
+        self.action_space = config_space_to_gymnasium_space(self.algorithm_cls.get_hpo_config_space())
+
+        # algorithm state
+        self.algorithm = None
+        self.runner_state = None
+        self.buffer_state = None
         
         # define observation method and init observation space
         if "obs_method" in config.keys() and "obs_space_method" in config.keys():
@@ -96,11 +103,11 @@ class AutoRLEnv(gymnasium.Env):
             return True
         return False
 
-    def make_agent(
+    def instantiate_algorithm(
             self,
             agent_config
-        ) -> tuple[Agent, tuple[Union[PPORunnerState, DQNRunnerState], PrioritisedTrajectoryBufferState]]:
-        agent = self.algorithm_cls(
+        ) -> Agent:
+        return self.algorithm_cls(
             agent_config,
             self.c_env_options,
             self.c_env,
@@ -108,18 +115,42 @@ class AutoRLEnv(gymnasium.Env):
             track_trajectories=self.config["track_trajectories"],
             track_metrics=self.config["grad_obs"]
         )
-        agent_rng = jax.random.PRNGKey(self.seed if self.seed else 0)
-        runner_state, buffer_state = agent.init(agent_rng)
-        return agent, (runner_state, buffer_state)
+    
+    def get_algorithm_config(self, action):
+        if isinstance(action, Configuration):
+            action = dict(action)
+        elif isinstance(action, dict):
+            # all good
+            pass
+        else:
+            raise ValueError(f"Illegal action type: {type(action)}")
+        
+        if self.algorithm is None:
+            cur_config = dict(self.algorithm_cls.get_default_hpo_config())
+        else:
+            cur_config = dict(self.algorithm.hpo_config)
+
+        cur_config.update(action)
+        return cur_config
 
     def step(
         self,
-        action: Dict
+        action: Union[Configuration, dict]
     ) -> tuple[np.ndarray, float, bool, bool, dict[str, Any]]:
-        done = self.step_()
+        if self.done:
+            raise ValueError("Called step() before reset().")
 
-        agent, (runner_state, buffer_state) = self.make_agent(action)
-        (runner_state, buffer_state), metrics = agent.train(runner_state, buffer_state)
+        config = self.get_algorithm_config(action)
+        self.algorithm = self.instantiate_algorithm(config)
+
+        if self.runner_state is None and self.buffer_state is None:  # equal to c_step == 0
+            print("### INITIALIZING AGENT ###")
+            # Static HPO or first step in DAC
+            rng = jax.random.PRNGKey(self.seed)
+            rng, init_rng = jax.random.split(rng)
+            self.runner_state, self.buffer_state = self.algorithm.init(init_rng)
+
+        (self.runner_state, self.buffer_state), metrics = self.algorithm.train(self.runner_state, self.buffer_state)
         
         if metrics:
             if self.config["track_trajectories"]:
@@ -136,14 +167,20 @@ class AutoRLEnv(gymnasium.Env):
                     self.additional_info,
                 ) = metrics
 
-        reward = agent.eval(runner_state, self.config["n_eval_episodes"])
-        return self.get_obs(), reward, done, False, {}
+        reward = self.algorithm.eval(self.runner_state, self.config["n_eval_episodes"])
+
+        self.done = self.step_()
+        return self.get_obs(), reward, self.done, False, {}
     
     def reset(
         self,
         seed: int | None = None,
         options: dict[str, Any] | None = None,
     ) -> tuple[np.ndarray, dict[str, Any]]:  # type: ignore
+        self.done = False
         self.c_step = 0
+        self.runner_state = None
+        self.buffer_state = None
+        self.algorithm = None
 
         return self.get_obs(), {}
