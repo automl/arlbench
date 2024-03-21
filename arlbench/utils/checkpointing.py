@@ -1,5 +1,6 @@
 from typing import Union, Optional, Any
 from flashbax.buffers.prioritised_trajectory_buffer import PrioritisedTrajectoryBufferState
+from flashbax.buffers.trajectory_buffer import TrajectoryBufferState
 from flashbax.buffers.sum_tree import SumTreeState
 from arlbench.agents import PPORunnerState, PPOTrainState, DQNRunnerState, DQNTrainState
 from flashbax.vault import Vault
@@ -238,12 +239,15 @@ class Checkpointer:
         return common, algorithm_kw_args
             
     @staticmethod
-    def save_buffer(buffer_state: PrioritisedTrajectoryBufferState, checkpoint_dir: str, checkpoint_name: str) -> dict:
+    def save_buffer(buffer_state: Union[TrajectoryBufferState, PrioritisedTrajectoryBufferState], checkpoint_dir: str, checkpoint_name: str) -> dict:
         buffer_dir = os.path.join(checkpoint_dir, checkpoint_name + "_buffer_state")
         os.makedirs(buffer_dir, exist_ok=True)
 
-        priority_state_path = os.path.join(buffer_dir, "buffer_priority_state")
-        Checkpointer._save_sum_tree_state(buffer_state.priority_state, priority_state_path)
+        if isinstance(buffer_state, PrioritisedTrajectoryBufferState):
+            priority_state_path = os.path.join(buffer_dir, "buffer_priority_state")
+            Checkpointer._save_sum_tree_state(buffer_state.priority_state, priority_state_path)
+        else:
+            priority_state_path = ""
 
         vault_uuid = datetime.now().strftime("%Y%m%d%H%M%S")
         v = Vault(
@@ -266,7 +270,7 @@ class Checkpointer:
         }
 
     @staticmethod
-    def load_buffer(dummy_buffer_state: PrioritisedTrajectoryBufferState, priority_state_path: str, buffer_dir: str, vault_uuid: str) -> PrioritisedTrajectoryBufferState:
+    def load_buffer(dummy_buffer_state: PrioritisedTrajectoryBufferState, priority_state_path: str, buffer_dir: str, vault_uuid: str) -> Union[TrajectoryBufferState, PrioritisedTrajectoryBufferState]:
         v = Vault(
             vault_name="buffer_state_vault",
             experience_structure=dummy_buffer_state.experience,
@@ -275,14 +279,21 @@ class Checkpointer:
         )
         buffer_state = v.read()
 
-        priority_state = Checkpointer._load_sum_tree_state(priority_state_path)
+        if priority_state_path != "":
+            priority_state = Checkpointer._load_sum_tree_state(priority_state_path)
 
-        return PrioritisedTrajectoryBufferState(
-            experience=buffer_state.experience,
-            current_index=0,
-            is_full=buffer_state.is_full,
-            priority_state=priority_state
-        )
+            return PrioritisedTrajectoryBufferState(
+                experience=buffer_state.experience,
+                current_index=0,
+                is_full=buffer_state.is_full,
+                priority_state=priority_state
+            )
+        else:
+            return TrajectoryBufferState(
+                experience=buffer_state.experience,
+                current_index=0,
+                is_full=buffer_state.is_full,
+            )
     
     @staticmethod
     def _save_sum_tree_state(sum_tree_state: SumTreeState, directory: str) -> None:

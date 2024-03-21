@@ -2,6 +2,7 @@ from .common import TimeStep
 from .models import Q, ActorCritic
 from .ppo import PPO, PPORunnerState, PPOTrainState
 from .dqn import DQN, DQNRunnerState, DQNTrainState
+from .sac import SAC
 from .agent import Agent
 
 __all__ = [
@@ -14,5 +15,6 @@ __all__ = [
     "DQN",
     "DQNRunnerState",
     "DQNTrainState",
+    "SAC",
     "TimeStep"
 ]
