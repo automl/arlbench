@@ -52,39 +52,40 @@ class Transition(NamedTuple):
 class PPO(Agent):
     def __init__(
         self,
-        config: Union[Configuration, Dict],
+        hpo_config: Union[Configuration, Dict],
         env_options: Dict,
         env: Any,
         env_params: Any,
-        track_metrics=False,
-        track_trajectories=False
+        nas_config: Optional[Union[Configuration, Dict]] = None, 
+        track_trajectories=False,
+        track_metrics=False
     ) -> None:
+        if nas_config is None:
+            nas_config = PPO.get_default_nas_config()
+
         super().__init__(
-            config,
+            hpo_config,
+            nas_config,
             env_options,
             env,
             env_params,
             track_metrics=track_metrics,
             track_trajectories=track_trajectories
         )
-        # self.minibatch_size = (
-        #     env_options["n_envs"] * env_options["n_env_steps"] // config["n_minibatches"]
-        # )
-        # TODO validate if it's okay to define minibatch_size rather than n_minibatches
-        self.n_minibatches = env_options["n_envs"] * env_options["n_env_steps"] // config["minibatch_size"]
+        self.n_minibatches = env_options["n_envs"] * env_options["n_env_steps"] // self.hpo_config["minibatch_size"]
 
         action_size, discrete = self.action_type
         self.network = ActorCritic(
             action_size,
             discrete=discrete,
-            activation=config["activation"],
-            hidden_size=config["hidden_size"],
+            activation=self.nas_config["activation"],
+            hidden_size=self.nas_config["hidden_size"],
         )
 
         self.buffer = fbx.make_flat_buffer(
-            max_length=config["buffer_size"],
-            min_length=config["buffer_batch_size"],
-            sample_batch_size=config["buffer_batch_size"],
+            max_length=self.hpo_config["buffer_size"],
+            min_length=self.hpo_config["buffer_batch_size"],
+            sample_batch_size=self.hpo_config["buffer_batch_size"],
             add_sequences=False,
             add_batch_size=env_options["n_envs"]  
         )
@@ -102,7 +103,7 @@ class PPO(Agent):
             )
 
     @staticmethod
-    def get_config_space(seed=None) -> ConfigurationSpace:
+    def get_hpo_config_space(seed=None) -> ConfigurationSpace:
         return ConfigurationSpace(
             name="PPOConfigSpace",
             seed=seed,
@@ -124,8 +125,25 @@ class PPO(Agent):
         )
     
     @staticmethod
-    def get_default_configuration() -> Configuration:
+    def get_default_hpo_config() -> Configuration:
         return PPO.get_config_space().get_default_configuration()
+    
+    @staticmethod
+    def get_nas_config_space(seed=None) -> ConfigurationSpace:
+        cs = ConfigurationSpace(
+            name="PPONASConfigSpace",
+            seed=seed,
+            space={
+                "activation": Categorical("activation", ["tanh", "relu"], default="tanh"),
+                "hidden_size": Integer("hidden_size", (1, 1024), default=64),
+            },
+        )
+
+        return cs
+    
+    @staticmethod
+    def get_default_nas_config() -> Configuration:
+        return PPO.get_nas_config_space().get_default_configuration()
 
     @functools.partial(jax.jit, static_argnums=0)
     def init(self, rng, network_params=None, opt_state=None):
@@ -149,8 +167,8 @@ class PPO(Agent):
             network_params = self.network.init(_rng, _obs)
 
         tx = optax.chain(
-                optax.clip_by_global_norm(self.config["max_grad_norm"]),
-                optax.adam(self.config["lr"], eps=1e-5),
+                optax.clip_by_global_norm(self.hpo_config["max_grad_norm"]),
+                optax.adam(self.hpo_config["lr"], eps=1e-5),
             )
         if opt_state is None:
             opt_state = tx.init(network_params)
@@ -217,7 +235,7 @@ class PPO(Agent):
             grads,
             minibatches,
             param_hist,
-        ) = jax.lax.scan(self._update_epoch, update_state, None, self.config["update_epochs"])
+        ) = jax.lax.scan(self._update_epoch, update_state, None, self.hpo_config["update_epochs"])
         train_state = update_state[0]
         rng = update_state[-1]
 
@@ -304,10 +322,10 @@ class PPO(Agent):
             transition.value,
             transition.reward,
         )
-        delta = reward + self.config["gamma"] * next_value * (1 - done) - value
+        delta = reward + self.hpo_config["gamma"] * next_value * (1 - done) - value
         gae = (
             delta
-            + self.config["gamma"] * self.config["gae_lambda"] * (1 - done) * gae
+            + self.hpo_config["gamma"] * self.hpo_config["gae_lambda"] * (1 - done) * gae
         )
         return (gae, value), gae
 
@@ -316,7 +334,7 @@ class PPO(Agent):
         train_state, traj_batch, advantages, targets, rng = update_state
         rng, _rng = jax.random.split(rng)
 
-        trimmed_batch_size = int(self.n_minibatches * self.config["minibatch_size"])
+        trimmed_batch_size = int(self.n_minibatches * self.hpo_config["minibatch_size"])
         batch_size = self.env_options["n_env_steps"] * self.env_options["n_envs"]
 
         permutation = jax.random.permutation(_rng, batch_size)
@@ -374,7 +392,7 @@ class PPO(Agent):
         # CALCULATE VALUE LOSS
         value_pred_clipped = traj_batch.value + (
             value - traj_batch.value
-        ).clip(-self.config["clip_eps"], self.config["clip_eps"])
+        ).clip(-self.hpo_config["clip_eps"], self.hpo_config["clip_eps"])
         value_losses = jnp.square(value - targets)
         value_losses_clipped = jnp.square(value_pred_clipped - targets)
         value_loss = (
@@ -388,8 +406,8 @@ class PPO(Agent):
         loss_actor2 = (
             jnp.clip(
                 ratio,
-                1.0 - self.config["clip_eps"],
-                1.0 + self.config["clip_eps"],
+                1.0 - self.hpo_config["clip_eps"],
+                1.0 + self.hpo_config["clip_eps"],
             )
             * gae
         )
@@ -399,8 +417,8 @@ class PPO(Agent):
 
         total_loss = (
             loss_actor
-            + self.config["vf_coef"] * value_loss
-            - self.config["ent_coef"] * entropy
+            + self.hpo_config["vf_coef"] * value_loss
+            - self.hpo_config["ent_coef"] * entropy
         )
         return total_loss, (value_loss, loss_actor, entropy)
 

@@ -13,7 +13,8 @@ from flashbax.buffers.prioritised_trajectory_buffer import PrioritisedTrajectory
 class Agent(ABC):
     def __init__(
             self,
-            config: Union[Configuration, Dict], 
+            hpo_config: Union[Configuration, Dict], 
+            nas_config: Union[Configuration, Dict], 
             env_options: Dict, 
             env: Any, 
             env_params: Any,
@@ -22,7 +23,8 @@ class Agent(ABC):
         ) -> None:
         super().__init__()
 
-        self.config = config
+        self.hpo_config = hpo_config
+        self.nas_config = nas_config
         self.env_options = env_options
         self.env = env
         self.env_params = env_params
@@ -48,12 +50,22 @@ class Agent(ABC):
     
     @staticmethod
     @abstractmethod
-    def get_config_space(seed=None) -> ConfigurationSpace:
+    def get_hpo_config_space(seed=None) -> ConfigurationSpace:
         pass
 
     @staticmethod
     @abstractmethod
-    def get_default_configuration() -> Configuration:
+    def get_default_hpo_config() -> Configuration:
+        pass
+
+    @staticmethod
+    @abstractmethod
+    def get_nas_config_space(seed=None) -> ConfigurationSpace:
+        pass
+
+    @staticmethod
+    @abstractmethod
+    def get_default_nas_config() -> Configuration:
         pass
     
     @abstractmethod
@@ -61,7 +73,7 @@ class Agent(ABC):
         pass
 
     @abstractmethod
-    def train(self, runner_state: NamedTuple, buffer_state: PrioritisedTrajectoryBufferState) -> Tuple[tuple[Any, TrainState], Optional[Tuple]]:
+    def train(self, runner_state: Any, buffer_state: Any) -> Tuple[tuple[Any, PrioritisedTrajectoryBufferState], Optional[Tuple]]:
         pass
 
     @abstractmethod 
