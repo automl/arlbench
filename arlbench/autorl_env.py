@@ -2,22 +2,24 @@ import numpy as np
 import jax.numpy as jnp
 import jax
 from typing import Optional, Union, Any, Dict, Callable
-from arlbench.agents import PPO, DQN, Agent, PPORunnerState, PPOTrainState, DQNRunnerState, DQNTrainState
+from arlbench.algorithms import PPO, DQN, Algorithm, PPORunnerState, DQNRunnerState
 import gymnasium
 from arlbench.utils import config_space_to_gymnasium_space
 from flashbax.buffers.prioritised_trajectory_buffer import PrioritisedTrajectoryBufferState
 from ConfigSpace import Configuration
 import warnings
 from arlbench.utils.checkpointing import Checkpointer
+from arlbench.objectives import track_emissions, track_reward, track_runtime
 
 
 class AutoRLEnv(gymnasium.Env):
     ALGORITHMS = {"ppo": PPO, "dqn": DQN}
-    algorithm: Optional[Agent]
+    algorithm: Optional[Algorithm]
     get_obs: Callable[[], np.ndarray]
     get_obs_space: Callable[[], gymnasium.spaces.Space]
     runner_state: Optional[Union[PPORunnerState, DQNRunnerState]]
     buffer_state: Optional[PrioritisedTrajectoryBufferState]
+    metrics: Optional[tuple]
 
     def __init__(self, config, envs) -> None:
         super().__init__()
@@ -43,11 +45,17 @@ class AutoRLEnv(gymnasium.Env):
         self.algorithm = None
         self.runner_state = None
         self.buffer_state = None
+        self.metrics = None
 
         # checkpointing
         self.track_metrics = self.config["grad_obs"] or "loss" in config["checkpoint"] or "extras" in config["checkpoint"]
         self.track_trajectories = "minibatches" in config["checkpoint"] or "trajectories" in config["checkpoint"]
         
+        # objectives
+        self.objectives = [str(o) for o in config["objectives"]]
+        if len(self.objectives) == 0:
+            raise ValueError("Please select at least one optimization objective.")
+
         # define observation method and init observation space
         if "obs_method" in config.keys() and "obs_space_method" in config.keys():
             self.get_obs = config["obs_method"]
@@ -75,7 +83,12 @@ class AutoRLEnv(gymnasium.Env):
             grad_norm = 0
             grad_var = 0
         else:
-            grad_info = self.grad_info["params"]
+            if self.metrics and len(self.metrics) >= 3:
+                grad_info = self.metrics[1]
+            else:
+                raise ValueError(f"Tying to extract grad_info but 'self.metrics' does not match.")
+    
+            grad_info = grad_info["params"]
             grad_info = {
                 k: v
                 for (k, v) in grad_info.items()
@@ -109,13 +122,10 @@ class AutoRLEnv(gymnasium.Env):
         if self.c_step >= self.config["n_steps"]:
             return True
         return False
-
-    def instantiate_algorithm(
-            self,
-            agent_config
-        ) -> Agent:
-        return self.algorithm_cls(
-            agent_config,
+    
+    def instantiate_algorithm_(self):
+        self.algorithm = self.algorithm_cls(
+            self.c_hp_config,
             self.c_env_options,
             self.c_env,
             self.c_env_params,
@@ -123,52 +133,63 @@ class AutoRLEnv(gymnasium.Env):
             track_metrics=self.track_metrics
         )
 
-    def step(
-        self,
-        action: Union[Configuration, dict]
-    ) -> tuple[np.ndarray, float, bool, bool, dict[str, Any]]:
-        if self.done or self.algorithm is None:
-            raise ValueError("Called step() before reset().")
-        self.done = self.step_()
-        
-        if len(action.keys()) == 0:     # no action provided
-            warnings.warn("No agent configuration provided. Falling back to default configuration.")
-        
-        # Apply changes to current hyperparameter configuration
-        self.c_hp_config.update(action)
-
+    def initialize_algorithm_(self, **init_kw_args):
         # Instantiate algorithm
-        self.algorithm = self.instantiate_algorithm(self.c_hp_config)
+        self.instantiate_algorithm_()
         
         # Initialize algorithm (runner state and buffer) if static HPO or first step in DAC
         if self.runner_state is None and self.buffer_state is None:  # equal to c_step == 0
             rng = jax.random.PRNGKey(self.seed)
             rng, init_rng = jax.random.split(rng)
-            self.runner_state, self.buffer_state = self.algorithm.init(init_rng)
+            self.runner_state, self.buffer_state = self.algorithm.init(init_rng, **init_kw_args)
+    
+    def train_(self):
+        if self.algorithm is None:
+            raise ValueError("You have to instantiate self.algorithm first.")
+        
+        objectives = {}
+        train_func = self.algorithm.train
+              
+        if "runtime" in self.objectives:
+            train_func = track_runtime(train_func, objectives)
+        if "emissions" in self.objectives:
+            train_func = track_emissions(train_func, objectives)
+        if "reward" in self.objectives:
+            train_func = track_reward(train_func, objectives, self.algorithm, self.config["n_eval_episodes"])
+        
+        (self.runner_state, self.buffer_state), self.metrics = train_func(self.runner_state, self.buffer_state)
+
+        return objectives
+
+    def step(
+        self,
+        action: Union[Configuration, dict]
+    ) -> tuple[np.ndarray, dict[str, float], bool, bool, dict[str, Any]]:
+        if len(action.keys()) == 0:     # no action provided
+            warnings.warn("No agent configuration provided. Falling back to default configuration.")
+
+        if self.done or self.algorithm is None:
+            raise ValueError("Called step() before reset().")
+        
+        # Set done if max. number of steps in DAC is reached or classic (one-step) HPO is performed
+        self.done = self.step_()
+        info = {}
+        
+        # Apply changes to current hyperparameter configuration
+        self.c_hp_config.update(action)
+
+        # Instantiate algorithm and apply current hyperparameter configuration
+        self.initialize_algorithm_()
 
         # Perform one iteration of training
-        (self.runner_state, self.buffer_state), metrics = self.algorithm.train(self.runner_state, self.buffer_state)
+        objectives = self.train_()
         
-        if metrics:
-            if len(metrics) == 4:
-                (
-                    self.loss_info,
-                    self.grad_info,
-                    self.traj,
-                    self.additional_info,
-                ) = metrics
-            elif len(metrics) == 3:
-                (
-                    self.loss_info,
-                    self.grad_info,
-                    self.additional_info,
-                ) = metrics
-
-        reward = self.algorithm.eval(self.runner_state, self.config["n_eval_episodes"])
-
         # Checkpointing
         if len(self.config["checkpoint"]) > 0:
-            checkpoint = Checkpointer.save(
+            assert self.runner_state is not None
+            assert self.buffer_state is not None
+
+            info["checkpoint"] = Checkpointer.save(
                 self.runner_state,
                 self.buffer_state,
                 self.config,
@@ -176,10 +197,10 @@ class AutoRLEnv(gymnasium.Env):
                 self.done,
                 self.c_episode,
                 self.c_step,
-                metrics
+                self.metrics
             )
-
-        return self.get_obs(), reward, self.done, False, { "checkpoint": checkpoint }
+            
+        return self.get_obs(), objectives, self.done, False, info
     
     def reset(
         self,
@@ -192,9 +213,9 @@ class AutoRLEnv(gymnasium.Env):
         self.runner_state = None
         self.buffer_state = None
 
-        # instantiate default algorithm
-        self.c_hp_config = self.algorithm_cls.get_default_hp_config()
-        self.algorithm = self.instantiate_algorithm(self.c_hp_config)
+        # Use default hyperparameter configuration
+        self.c_hp_config = dict(self.algorithm_cls.get_default_hpo_config())
+        self.instantiate_algorithm_()
 
         if checkpoint_path:
             _, dummy_buffer_state = self.algorithm.init(jax.random.PRNGKey(42))
@@ -204,8 +225,6 @@ class AutoRLEnv(gymnasium.Env):
                 self.c_episode, 
             ), algorithm_kw_args = Checkpointer.load(checkpoint_path, self.config["algorithm"], dummy_buffer_state)
 
-            rng = jax.random.PRNGKey(self.seed)
-            rng, init_rng = jax.random.split(rng)
-            self.runner_state, self.buffer_state = self.algorithm.init(init_rng, **algorithm_kw_args)
+            self.initialize_algorithm_(**algorithm_kw_args)
 
         return self.get_obs(), {}

@@ -9,7 +9,7 @@ from flax.training.train_state import TrainState
 import flashbax as fbx
 import flax
 import functools
-from .agent import Agent
+from .algorithm import Algorithm
 from .models import ActorCritic
 from ConfigSpace import Configuration, ConfigurationSpace, Float, Integer, Categorical
 
@@ -48,7 +48,7 @@ class Transition(NamedTuple):
     info: jnp.ndarray
 
 
-class PPO(Agent):
+class PPO(Algorithm):
     def __init__(
         self,
         hpo_config: Union[Configuration, Dict],

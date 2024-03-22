@@ -11,7 +11,7 @@ import chex
 import jax.lax
 import flashbax as fbx
 import functools
-from abstract_agent import Agent
+from arlbench.algorithms import Algorithm
 from .common import TimeStep
 
 
@@ -74,7 +74,7 @@ class Transition(NamedTuple):
     info: jnp.ndarray
 
 
-class SAC(Agent):
+class SAC(Algorithm):
     def __init__(
         self,
         config,
