@@ -25,7 +25,7 @@
 
 ---
 
-# Automated Reinforcement Learning Benchmark
+# 🦾 Automated Reinforcement Learning Benchmark
 
 ## Overview
 
