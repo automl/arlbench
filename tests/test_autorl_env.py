@@ -176,7 +176,7 @@ def test_autorl_env_dqn_hpo():
     CONFIG = {
         "seed": 0,
         "algorithm": "dqn",
-        "ojectives": ["reward"],
+        "objectives": ["reward"],
         "checkpoint": [],
         "n_steps": 1,   # Classic HPO
         "n_eval_episodes": 10,
@@ -204,12 +204,13 @@ def test_autorl_env_dqn_hpo():
     for _ in range(3):
         _, _ = env.reset()
         steps = 0
+        done = False
         while not done:
             action = dict(DQN.get_hpo_config_space().sample_configuration())
 
             n_obs, objectives, done, _, _ = env.step(action)
             steps += 1
-            assert n_obs.shape == (4,)
+            assert n_obs.shape == (2,)
             assert objectives["reward"] > 0
             assert done is True
         assert steps == 1
