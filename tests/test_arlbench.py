@@ -5,9 +5,6 @@
 import pytest
 
 
-from arlbench import arlbench
-
-
 @pytest.fixture
 def response():
     """Sample pytest fixture.
