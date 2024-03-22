@@ -1,7 +1,7 @@
 import jax
 import time
 
-from arlbench.agents import PPO
+from arlbench.algorithms import PPO
 
 from arlbench.utils import (
     make_env,

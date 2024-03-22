@@ -2,19 +2,17 @@ from typing import Union, Optional, Any
 from flashbax.buffers.prioritised_trajectory_buffer import PrioritisedTrajectoryBufferState
 from flashbax.buffers.trajectory_buffer import TrajectoryBufferState
 from flashbax.buffers.sum_tree import SumTreeState
-from arlbench.agents import PPORunnerState, PPOTrainState, DQNRunnerState, DQNTrainState
+from arlbench.algorithms import PPORunnerState, DQNRunnerState
 from flashbax.vault import Vault
 import numpy as np
 import jax.numpy as jnp
 import json
 import os
-import orbax
 from flax.training import orbax_utils
 import orbax.checkpoint as ocp
 from flax.core.frozen_dict import FrozenDict
 from datetime import datetime
 import jax
-import chex
 
 
 class Checkpointer:
@@ -24,12 +22,13 @@ class Checkpointer:
 
     @staticmethod
     def _save_orbax_checkpoint(checkpoint: dict[str, Any], checkpoint_dir: str, checkpoint_name: str) -> None:
-        save_args = orbax_utils.save_args_from_target(checkpoint)
+        checkpointer = ocp.StandardCheckpointer()
+        # save_args = orbax_utils.save_args_from_target(checkpoint)
         checkpointer = ocp.PyTreeCheckpointer()
         checkpointer.save(
             os.path.join(checkpoint_dir, checkpoint_name),
             checkpoint,
-            save_args=save_args,
+            #save_args=save_args,
             force=True  # TODO debug, remove later on
         )
 
@@ -284,14 +283,14 @@ class Checkpointer:
 
             return PrioritisedTrajectoryBufferState(
                 experience=buffer_state.experience,
-                current_index=0,
+                current_index=buffer_state.current_index,
                 is_full=buffer_state.is_full,
                 priority_state=priority_state
             )
         else:
             return TrajectoryBufferState(
                 experience=buffer_state.experience,
-                current_index=0,
+                current_index=buffer_state.current_index,
                 is_full=buffer_state.is_full,
             )
     

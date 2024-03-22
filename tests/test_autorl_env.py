@@ -1,17 +1,20 @@
 from arlbench.autorl_env import AutoRLEnv
 import gymnax
 import pytest
+import numpy as np
+import time
 
-from arlbench.agents import (
+from arlbench.algorithms import (
     PPO,
     DQN
 )
 
-def test_autorl_env_ppo_grad_obs():
+def test_autorl_env_dqn_single_objective():
     CONFIG = {
         "seed": 0,
-        "algorithm": "ppo",
-        "objective": "reward",
+        "algorithm": "dqn",
+        "objectives": ["reward"],
+        "checkpoint": [],
         "n_steps": 10,
         "n_eval_episodes": 10,
         "track_trajectories": False,
@@ -25,7 +28,7 @@ def test_autorl_env_ppo_grad_obs():
             "env": cartpole[0],
             "env_params": cartpole[1],
             "env_options": {
-                "n_total_timesteps": 1e5,
+                "n_total_timesteps": 1e6,
                 "n_env_steps": 500,
                 "n_envs": 10,
             }
@@ -36,18 +39,66 @@ def test_autorl_env_ppo_grad_obs():
     init_obs, _ = env.reset()
     assert init_obs.shape == (4,)
 
-    action = dict(PPO.get_hpo_config_space().sample_configuration())
+    action = dict(DQN.get_default_hpo_config())
 
-    n_obs, reward, done, _, _ = env.step(action)
+    n_obs, objectives, done, _, _ = env.step(action)
     assert n_obs.shape == (4,)
     assert done is False
-    assert reward > 0
+    assert isinstance(objectives, dict)
+    assert objectives["reward"] > 0
+
+    reward = env.algorithm.eval(env.runner_state, CONFIG["n_eval_episodes"])
+    assert np.abs(objectives["reward"] - reward) < 5
+
+def test_autorl_env_dqn_multi_objective():
+    CONFIG = {
+        "seed": 0,
+        "algorithm": "dqn",
+        "objectives": ["reward", "runtime", "emissions"],
+        "checkpoint": [],
+        "n_steps": 10,
+        "n_eval_episodes": 10,
+        "track_trajectories": False,
+        "grad_obs": True
+    }
+
+    cartpole = gymnax.make("CartPole-v1")
+
+    envs = {
+        0: {
+            "env": cartpole[0],
+            "env_params": cartpole[1],
+            "env_options": {
+                "n_total_timesteps": 1e6,
+                "n_env_steps": 500,
+                "n_envs": 10,
+            }
+        }
+    }
+
+    env = AutoRLEnv(CONFIG, envs)
+    init_obs, _ = env.reset()
+    assert init_obs.shape == (4,)
+
+    action = dict(DQN.get_default_hpo_config())
+    n_obs, objectives, done, _, _ = env.step(action)
+
+    assert n_obs.shape == (4,)
+    assert done is False
+    assert isinstance(objectives, dict)
+    assert objectives["reward"] > 0
+
+    reward = env.algorithm.eval(env.runner_state, CONFIG["n_eval_episodes"])
+    assert np.abs(objectives["reward"] - reward) < 5
+    assert objectives["runtime"] > 0    # TODO improve? How can we estimate inner runtime?
+    assert objectives["emissions"] > 0
 
 def test_autorl_env_dqn_grad_obs():
     CONFIG = {
         "seed": 0,
         "algorithm": "dqn",
-        "objective": "reward",
+        "objectives": ["reward"],
+        "checkpoint": [],
         "n_steps": 10,
         "n_eval_episodes": 10,
         "track_trajectories": False,
@@ -73,16 +124,17 @@ def test_autorl_env_dqn_grad_obs():
     assert init_obs.shape == (4,)
 
     action = dict(DQN.get_hpo_config_space().sample_configuration())
-    n_obs, reward, done, _, _ = env.step(action)
+    n_obs, objectives, done, _, _ = env.step(action)
     assert n_obs.shape == (4,)
     assert done is False
-    assert reward > 0
+    assert objectives["reward"] > 0
 
 def test_autorl_env_dqn_per_switch():
     CONFIG = {
         "seed": 0,
         "algorithm": "dqn",
-        "objective": "reward",
+        "objectives": ["reward"],
+        "checkpoint": [],
         "n_steps": 10,
         "n_eval_episodes": 10,
         "track_trajectories": False,
@@ -105,26 +157,27 @@ def test_autorl_env_dqn_per_switch():
 
     env = AutoRLEnv(CONFIG, envs)
     _, _ = env.reset()
-    _, reward, _, _, _ = env.step({ "buffer_per": True })
-    assert reward > 400, f"Reward = {reward}, but should be > 400"
-    _, reward, _, _, _ = env.step({ "buffer_per": False })
-    assert reward > 450, f"Reward = {reward}, but should be > 450"
-    _, reward, _, _, _ = env.step({ "buffer_per": True })
-    assert reward > 490, f"Reward = {reward}, but should be > 490"
+    _, objectives, _, _, _ = env.step({ "buffer_per": True })
+    assert objectives["reward"] > 400
+    _, objectives, _, _, _ = env.step({ "buffer_per": False })
+    assert objectives["reward"] > 450
+    _, objectives, _, _, _ = env.step({ "buffer_per": True })
+    assert objectives["reward"] > 490
 
     _, _ = env.reset()
-    _, reward, _, _, _ = env.step({ "buffer_per": False })
-    assert reward > 400, f"Reward = {reward}, but should be > 400"
-    _, reward, _, _, _ = env.step({ "buffer_per": True })
-    assert reward > 450, f"Reward = {reward}, but should be > 450"
-    _, reward, _, _, _ = env.step({ "buffer_per": False })
-    assert reward > 490, f"Reward = {reward}, but should be > 490"
+    _, objectives, _, _, _ = env.step({ "buffer_per": False })
+    assert objectives["reward"] > 400
+    _, objectives, _, _, _ = env.step({ "buffer_per": True })
+    assert objectives["reward"] > 450
+    _, objectives, _, _, _ = env.step({ "buffer_per": False })
+    assert objectives["reward"] > 490
 
 def test_autorl_env_dqn_hpo():
     CONFIG = {
         "seed": 0,
         "algorithm": "dqn",
-        "objective": "reward",
+        "ojectives": ["reward"],
+        "checkpoint": [],
         "n_steps": 1,   # Classic HPO
         "n_eval_episodes": 10,
         "track_trajectories": False,
@@ -154,10 +207,10 @@ def test_autorl_env_dqn_hpo():
         while not done:
             action = dict(DQN.get_hpo_config_space().sample_configuration())
 
-            n_obs, reward, done, _, _ = env.step(action)
+            n_obs, objectives, done, _, _ = env.step(action)
             steps += 1
             assert n_obs.shape == (4,)
-            assert reward > 0
+            assert objectives["reward"] > 0
             assert done is True
         assert steps == 1
 
@@ -166,7 +219,8 @@ def test_autorl_env_step_before_reset():
     CONFIG = {
         "seed": 0,
         "algorithm": "dqn",
-        "objective": "reward",
+        "objectives": ["reward"],
+        "checkpoint": [],
         "n_steps": 1,   # Classic HPO
         "n_eval_episodes": 10,
         "track_trajectories": False,
@@ -201,7 +255,8 @@ def test_autorl_env_forbidden_step():
     CONFIG = {
         "seed": 0,
         "algorithm": "dqn",
-        "objective": "reward",
+        "objectives": ["reward"],
+        "checkpoint": [],
         "n_steps": 1,   # Classic HPO
         "n_eval_episodes": 10,
         "track_trajectories": False,

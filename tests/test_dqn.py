@@ -1,7 +1,7 @@
 import jax
 import time
 
-from arlbench.agents import DQN
+from arlbench.algorithms import DQN
 
 from arlbench.utils import (
     make_env,

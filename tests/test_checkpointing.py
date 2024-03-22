@@ -1,6 +1,6 @@
 import jax
 import numpy as np
-from arlbench.agents import (
+from arlbench.algorithms import (
     PPO,
     DQN
 )
@@ -30,10 +30,15 @@ def test_read_write_buffer():
     runner_state, buffer_state = agent.init(rng)
 
     (runner_state, buffer_state), _ = agent.train(runner_state, buffer_state)
-    vault_uuid = Checkpointer.save_buffer(buffer_state, CHECKPOINT_DIR, CHECKPOINT_NAME)
+    buffer_checkpoint = Checkpointer.save_buffer(buffer_state, CHECKPOINT_DIR, CHECKPOINT_NAME)
 
     _, init_buffer_state = agent.init(rng)
-    disk_buffer_state = Checkpointer.load_buffer(init_buffer_state, CHECKPOINT_DIR, CHECKPOINT_NAME, vault_uuid)
+    disk_buffer_state = Checkpointer.load_buffer(
+        init_buffer_state,
+        buffer_checkpoint["priority_state_path"],
+        buffer_checkpoint["buffer_dir"],
+        buffer_checkpoint["vault_uuid"]
+    )
 
     assert np.allclose(buffer_state.experience.obs, disk_buffer_state.experience.obs, atol=1e-7)
     assert np.allclose(buffer_state.experience.last_obs, disk_buffer_state.experience.last_obs, atol=1e-7)
@@ -152,6 +157,6 @@ def test_checkpoints_ppo():
 
     runner_state, _ = algorithm.init(rng, **algorithm_kw_args)
     reward_reload = algorithm.eval(runner_state, PPO_OPTIONS["n_eval_episodes"])
-    assert np.abs(reward - reward_reload) < 50
+    assert np.abs(reward - reward_reload) < 50      # PPO is more stochastic
 
 

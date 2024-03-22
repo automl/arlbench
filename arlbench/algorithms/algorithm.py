@@ -1,6 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Tuple, Optional, Any, Sequence, Union, Dict, NamedTuple
-from flax.training.train_state import TrainState
+from typing import Tuple, Optional, Any, Sequence, Union, Dict
 import functools
 import jax
 import gymnax
@@ -10,7 +9,7 @@ from flashbax.buffers.prioritised_trajectory_buffer import PrioritisedTrajectory
 
 
 
-class Agent(ABC):
+class Algorithm(ABC):
     def __init__(
             self,
             hpo_config: Union[Configuration, Dict], 

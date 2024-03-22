@@ -3,18 +3,18 @@ import jax
 import jax.numpy as jnp
 import chex
 import optax
-from arlbench.agents.common import TimeStep
+from arlbench.algorithms.common import TimeStep
 from flax.training.train_state import TrainState
 from typing import NamedTuple, Union
 from typing import Any, Dict, Optional
 import chex
 import jax.lax
 import flashbax as fbx
-from arlbench.agents.agent import Agent
+from arlbench.algorithms.algorithm import Algorithm
 import functools
-from arlbench.agents.models import Q
+from arlbench.algorithms.models import Q
 from ConfigSpace import Configuration, ConfigurationSpace, Float, Integer, Categorical, EqualsCondition
-from arlbench.agents.buffers import uniform_sample
+from arlbench.algorithms.buffers import uniform_sample
 
 
 class DQNTrainState(TrainState):
@@ -55,7 +55,7 @@ class Transition(NamedTuple):
     info: jnp.ndarray
 
 
-class DQN(Agent):
+class DQN(Algorithm):
     def __init__(
         self,
         hpo_config: Union[Configuration, Dict],

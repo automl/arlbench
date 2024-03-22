@@ -1,6 +1,6 @@
 import jax
 import numpy as np
-from arlbench.agents import (
+from arlbench.algorithms import (
     PPO,
     DQN
 )
