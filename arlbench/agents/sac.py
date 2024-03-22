@@ -1,129 +1,149 @@
+# The SAC Code is heavily based on stable-baselines JAX
 import jax
 import jax.numpy as jnp
 import chex
 import optax
+from .common import TimeStep
+import flax.linen as nn
 from flax.training.train_state import TrainState
-from typing import NamedTuple
-import dejax.utils as utils
-from typing import Callable, Any, Tuple, Optional
-import gymnax
+from typing import NamedTuple, Union
+from typing import Any, Dict, Optional
 import chex
 import jax.lax
 import flashbax as fbx
+from .agent import Agent
 import functools
-from abstract_agent import Agent
-from .common import TimeStep
+from .models import ActorCritic
+from ConfigSpace import Configuration, ConfigurationSpace, Float, Integer, Categorical
+
+# todo: current implementation without double Q learning! Should be added
+# todo: separate learning rate for critic and actor??
+
+class SACRunnerState(NamedTuple):
+    rng: chex.PRNGKey
+    policy_train_state: Any
+    alpha_train_state: Any
+    env_state: Any
+    obs: chex.Array
+    global_step: int
 
 
-# TODO implement
 class SACTrainState(TrainState):
-    actor_apply_fn: Callable
-    critic_apply_fn: Callable
-    actor_params: chex.ArrayTree
-    critic_params: chex.ArrayTree
-    target_critic_params: chex.ArrayTree
-    actor_tx: Any
-    critic_tx: Any
-    actor_opt_state: Optional[chex.ArrayTree] = None
-    critic_opt_state: Optional[chex.ArrayTree] = None
+    target_params: Union[None, chex.Array, dict] = None
+    network_state = None
 
     @classmethod
-    def create_with_opt_state(
-        cls,
-        *,
-        actor_apply_fn,
-        critic_apply_fn,
-        actor_params, 
-        critic_params, 
-        actor_tx, 
-        critic_tx,
-        actor_opt_state, 
-        critic_opt_state, 
-        **kwargs
-    ):
-        if actor_opt_state is None:
-            actor_opt_state = actor_tx.init(actor_params)
-        if critic_opt_state is None:
-            critic_opt_state = critic_tx.init(critic_params)
-
-        target_critic_params = critic_params
-
+    def create_with_opt_state(cls, *, apply_fn, params, target_params, tx, opt_state, **kwargs):
+        if opt_state is None:
+            opt_state = tx.init(params)
         obj = cls(
             step=0,
-            actor_apply_fn=actor_apply_fn,
-            critic_apply_fn=critic_apply_fn,
-            actor_params=actor_params,
-            critic_params=critic_params,
-            target_critic_params=target_critic_params,
-            actor_tx=actor_tx,
-            critic_tx=critic_tx,
-            actor_opt_state=actor_opt_state,
-            critic_opt_state=critic_opt_state,
+            apply_fn=apply_fn,
+            params=params,
+            target_params=target_params,
+            tx=tx,
+            opt_state=opt_state,
             **kwargs,
         )
         return obj
-    
+
 
 class Transition(NamedTuple):
     done: jnp.ndarray
     action: jnp.ndarray
     value: jnp.ndarray
     reward: jnp.ndarray
-    log_prob: jnp.ndarray
+    log_prob: jnp
     obs: jnp.ndarray
     info: jnp.ndarray
 
 
+class EntropyCoef(nn.Module):
+    ent_coef_init: float = 1.0
+
+    @nn.compact
+    def __call__(self) -> jnp.ndarray:
+        log_ent_coef = self.param("log_ent_coef", init_fn=lambda rng: jnp.full((), jnp.log(self.ent_coef_init)))
+        return jnp.exp(log_ent_coef)
+
+
 class SAC(Agent):
     def __init__(
-        self,
-        config,
-        env,
-        env_params
+            self,
+            config: Union[Configuration, Dict],
+            options: Dict,
+            env: Any,
+            env_params: Any,
+            track_metrics=False,
+            track_trajectories=False,
     ) -> None:
-        super().__init__(config, env, env_params)
-
-        config["minibatch_size"] = (
-            config["num_envs"] * config["num_steps"] // config["num_minibatches"]
+        super().__init__(
+            config,
+            options,
+            env,
+            env_params,
+            track_trajectories=track_trajectories,
+            track_metrics=track_metrics
         )
-        self.config = config
 
         action_size, discrete = self.action_type
         self.network = ActorCritic(
             action_size,
             discrete=discrete,
+            activation=config["activation"],
+            hidden_size=config["hidden_size"],
         )
 
         self.buffer = fbx.make_prioritised_flat_buffer(
-            max_length=config["buffer_size"],
-            min_length=config["batch_size"],
-            sample_batch_size=config["batch_size"],
+            max_length=self.config["buffer_size"],
+            min_length=self.config["buffer_batch_size"],
+            sample_batch_size=self.config["buffer_batch_size"],
             add_sequences=False,
-            add_batch_size=config["num_envs"],
-            priority_exponent=config["beta"]    
+            add_batch_size=self.env_options["n_envs"],
+            priority_exponent=self.config["buffer_beta"]
         )
 
-        self.total_updates = (
-            config["total_timesteps"]
-            // config["num_steps"]
-            // config["num_envs"]
+    @staticmethod
+    def get_configuration_space(seed=None) -> ConfigurationSpace:
+        return ConfigurationSpace(
+            name="SACConfigSpace",
+            seed=seed,
+            space={
+                "buffer_size": Integer("buffer_size", (1, int(1e7)), default=int(1e6)),
+                "buffer_batch_size": Integer("buffer_batch_size", (1, 1024), default=64),
+                "buffer_alpha": Float("buffer_alpha", (0., 1.), default=0.9),
+                "buffer_beta": Float("buffer_beta", (0., 1.), default=0.9),
+                "buffer_epsilon": Float("buffer_epsilon", (0., 1e-3), default=1e-5),
+                "lr": Float("lr", (1e-5, 0.1), default=2.5e-4),
+                "gradient steps": Integer("gradient steps", (1, int(1e5)), default=1),
+                "policy_delay": Integer("policy_delay", (1, int(1e5)), default=1),
+                ## 0 = tanh, 1 = relu, see agents.models.ACTIVATIONS
+                "activation": Categorical("activation", [0, 1], default=0),
+                "hidden_size": Integer("hidden_size", (1, 1024), default=64),
+                "gamma": Float("gamma", (0., 1.), default=0.99),
+                "tau": Float("tau", (0., 1.), default=1.0),
+                "use_target_network": Categorical("use_target_network", [True, False], default=True),
+                "train_frequency": Integer("train_frequency", (1, int(1e5)), default=4),
+                "learning_starts": Integer("learning_starts", (1, int(1e5)), default=10000),
+                "target_network_update_freq": Integer("target_network_update_freq", (1, int(1e5)), default=100),
+                "ent_coef_auto": Categorical("ent_coef_auto", [True, False], default=True),
+                "ent_coef": Float("ent_coef", (0., 1.), default=0.2),
+            },
         )
-        update_interval = np.ceil(self.total_updates / config["num_steps"])
-        if update_interval < 1:
-            update_interval = 1
-            print(
-                "WARNING: The number of iterations selected in combination with your timestep, num_env and num_step settings results in 0 steps per iteration. Rounded up to 1, this means more total steps will be executed."
-            )
 
-    def init(self, rng, network_params=None):
+    @staticmethod
+    def get_default_configuration() -> Configuration:
+        return SAC.get_configuration_space().get_default_configuration()
+
+    def init(self, rng, network_params=None, target_params=None) -> tuple[SACRunnerState, Any]:
         rng, _rng = jax.random.split(rng)
-        reset_rng = jax.random.split(_rng, self.config["num_envs"])
+        reset_rng = jax.random.split(_rng, self.env_options["n_envs"])
 
         last_obsv, last_env_state = jax.vmap(self.env.reset, in_axes=(0, None))(
             reset_rng, self.env_params
         )
-        
-        dummy_rng = jax.random.PRNGKey(0) 
+
+        dummy_rng = jax.random.PRNGKey(0)
         _action = self.env.action_space().sample(dummy_rng)
         _, _env_state = self.env.reset(rng, self.env_params)
         _obs, _, _reward, _done, _ = self.env.step(rng, _env_state, _action, self.env_params)
@@ -134,245 +154,253 @@ class SAC(Agent):
         _, _rng = jax.random.split(rng)
         if network_params is None:
             network_params = self.network.init(_rng, _obs)
-        opt_state = None    
+        if target_params is None:
+            target_params = self.network.init(_rng, _obs)
 
-        return (
-            last_obsv,
-            last_env_state
-        ), (
-            network_params,
-            buffer_state,
-            opt_state
+        ent_coef_init = float(self.config["ent_coef"])
+        assert ent_coef_init > 0.0, "The initial value of ent_coef must be greater than 0"
+        self.ent_coef = EntropyCoef(ent_coef_init)
+
+        policy_train_state = SACTrainState.create_with_opt_state(
+            apply_fn=self.network.apply,
+            params=network_params,
+            target_params=target_params,
+            tx=optax.adam(self.config["lr"], eps=1e-5),
+            opt_state=None,
         )
+        _, _rng = jax.random.split(rng)
+        alpha_train_state = SACTrainState.create_with_opt_state(
+            apply_fn=self.ent_coef.apply,
+            params=self.ent_coef.init(_rng)["params"],
+            tx=optax.adam(self.config["lr"], eps=1e-5),
+            opt_state=None,
+        )
+        # target for automatic entropy tuning
+        self.target_entropy = -jnp.prod(self.action_space.shape).astype(jnp.float32)
+
+        rng, _rng = jax.random.split(rng)
+        global_step = 0
+
+        runner_state = SACRunnerState(
+            rng=rng,
+            policy_train_state=policy_train_state,
+            alpha_train_state=alpha_train_state,
+            env_state=last_env_state,
+            obs=last_obsv,
+            global_step=global_step
+        )
+
+        return runner_state, buffer_state
+
 
     @functools.partial(jax.jit, static_argnums=0)
     def predict(self, network_params, obsv, rng) -> int:
         pi, _ = self.network.apply(network_params, obsv)
         return pi.sample(seed=rng)
 
-    @functools.partial(jax.jit, static_argnums=0)
+    @functools.partial(jax.jit, static_argnums=0, donate_argnums=(2,))
     def train(
-        self,
-        rng,
-        obsv,
-        env_state,
-        agent_state
+            self,
+            runner_state,
+            buffer_state
+    )-> tuple[tuple[SACRunnerState, Any], Optional[tuple]]:
+        (runner_state, buffer_state), out = jax.lax.scan(
+            self._update_step, (runner_state, buffer_state), None, (self.env_options["n_total_timesteps"]//self.config["train_frequency"])//self.env_options["n_envs"]
+        )
+        return (runner_state, buffer_state), out
+
+    def _update_step(
+            self,
+            carry,
+            _
     ):
+        runner_state, buffer_state = carry
         (
-            network_params,
+            rng,
+            train_state,
+            env_state,
+            last_obs,
+            global_step
+        ) = runner_state
+        rng, _rng = jax.random.split(rng)
+
+        # todo: sample from actor
+        def greedy_action():
+            q_values = self.network.apply(train_state.params, last_obs)
+            action = q_values.argmax(axis=-1)
+            return action
+
+        def take_step(carry, _):
+            obsv, env_state, global_step, buffer_state = carry
+            action = jax.lax.cond(
+                jax.random.uniform(rng) < self.config["epsilon"],
+                random_action,
+                greedy_action,
+                )
+
+            rng_step = jax.random.split(_rng, self.env_options["n_envs"])
+            obsv, env_state, reward, done, info = jax.vmap(
+                self.env.step, in_axes=(0, 0, 0, None)
+            )(rng_step, env_state, action, self.env_params)
+
+            #def no_target_td(train_state):
+            #    return self.network.apply(train_state.params, obsv).argmax(axis=-1)
+
+            #def target_td(train_state):
+            #    return self.network.apply(train_state.target_params, obsv).argmax(
+            #        axis=-1
+            #    )
+
+            #q_next_target = jax.lax.cond(
+            #    self.config["use_target_network"], target_td, no_target_td, train_state
+            #)
+
+            #td_error = (
+            #        reward
+            #        + (1 - done) * self.config["gamma"] * q_next_target
+            #        - self.network.apply(train_state.params, last_obs).take(action)
+            #)
+            #transition_weight = jnp.power(
+            #    jnp.abs(td_error) + self.config["buffer_epsilon"], self.config["buffer_alpha"]
+            #)
+            # todo: compute td_error by using next action
+            td_error = jnp.zeros(self.env_options["n_envs"])
+            transition_weight = jnp.ones(self.env_options["n_envs"])
+
+            timestep = TimeStep(last_obs=last_obs, obs=obsv, action=action, reward=reward, done=done)
+            buffer_state = self.buffer.add(buffer_state, timestep)
+
+            # compute indices of newly added buffer elements
+            added_indices = jnp.arange(
+                0,
+                len(obsv)
+            ) + buffer_state.current_index
+            buffer_state = self.buffer.set_priorities(buffer_state, added_indices, transition_weight)
+
+            # global_step += 1
+            global_step += self.env_options["n_envs"]
+            return (obsv, env_state, global_step, buffer_state), (
+                obsv,
+                action,
+                reward,
+                done,
+                info,
+                td_error,
+            )
+
+        def do_update(rng, train_state, buffer_state):
+            # batch = buffer.sample_fn(buffer_state, rng, config["batch_size"])
+            # todo: should be batch_size * gradient_steps!?
+            batch = self.buffer.sample(buffer_state, rng).experience.first
+            # todo: for gradient many steps
+            rng, rng_alpha, rng_critic, rng_actor = jax.random.split(rng, 4)
+            alpha_loss, alpha_params, alpha_optimizer_state = alpha_update(
+                train_state.alpha_params,
+                train_state.policy_params,
+                train_state.normalizer_params,
+                batch,
+                rng_alpha,
+                optimizer_state=train_state.alpha_optimizer_state
+            )
+            alpha = jnp.exp(train_state.alpha_params)
+            critic_loss, q_params, q_optimizer_state = critic_update(
+                train_state.q_params,
+                train_state.policy_params,
+                train_state.normalizer_params,
+                train_state.target_q_params,
+                alpha,
+                batch,
+                rng_critic,
+                optimizer_state=train_state.q_optimizer_state
+            )
+            # todo: consider policy_delay here
+            actor_loss, policy_params, policy_optimizer_state = actor_update(
+                train_state.policy_params,
+                train_state.normalizer_params,
+                train_state.q_params,
+                alpha,
+                batch,
+                rng_actor,
+                optimizer_state=train_state.policy_optimizer_state
+            )
+
+            return train_state, loss, q_pred, grads, opt_state
+
+        def dont_update(train_state, _):
+            return (
+                train_state,
+                ((jnp.array([0]) - jnp.array([0])) ** 2).mean(),
+                jnp.ones(self.config["buffer_batch_size"]),
+                train_state.params,
+                train_state.opt_state
+            )
+
+        # soft update
+        def target_update():
+            return train_state.replace(
+                target_params=optax.incremental_update(
+                    train_state.params, train_state.target_params, self.config["tau"]
+                )
+            )
+
+        def dont_target_update():
+            return train_state
+
+        (last_obs, env_state, global_step, buffer_state), (
+            observations,
+            action,
+            reward,
+            done,
+            info,
+            td_error,
+        ) = jax.lax.scan(
+            take_step,
+            (last_obs, env_state, global_step, buffer_state), None,
+            self.config["train_frequency"],
+        )
+
+        rng, train_state, loss, q_pred, grads, opt_state = jax.lax.cond(
+            (global_step > self.config["learning_starts"])
+            & (global_step % self.config["train_frequency"] == 0),
+            do_update,
+            dont_update,
+            rng,
+            train_state,
             buffer_state,
-            opt_state
-        ) = agent_state
-        tx = optax.chain(
-                optax.clip_by_global_norm(self.config["max_grad_norm"]),
-                optax.adam(self.config["lr"], eps=1e-5),
             )
-        if opt_state is None:
-            opt_state = tx.init(network_params)
-        
-        train_state = PPOTrainState.create_with_opt_state(
-            apply_fn=self.network.apply,
-            params=network_params,
-            tx=tx,
-            opt_state=opt_state,
-        )
-
-        rng, _rng = jax.random.split(rng)
-        runner_state = (train_state, env_state, obsv, _rng, buffer_state)
-        runner_state, out = jax.lax.scan(
-            self._update_step, runner_state, None, self.total_updates
-        )
-        return runner_state, out
-    
-    @functools.partial(jax.jit, static_argnums=0)
-    def _update_step(self, runner_state, unused):
-        runner_state, traj_batch = jax.lax.scan(
-            self._env_step, runner_state, None, self.config["num_steps"]
-        )
-
-        # CALCULATE ADVANTAGE
-        train_state, env_state, last_obs, rng, buffer_state = runner_state
-        _, last_val = self.network.apply(train_state.params, last_obs)
-
-        advantages, targets = self._calculate_gae(traj_batch, last_val)
-    
-        update_state = (train_state, traj_batch, advantages, targets, rng)
-        update_state, (
-            loss_info,
-            grads,
-            minibatches,
-            param_hist,
-        ) = jax.lax.scan(self._update_epoch, update_state, None, self.config["update_epochs"])
-        train_state = update_state[0]
-        rng = update_state[-1]
-
-        runner_state = (train_state, env_state, last_obs, rng, buffer_state)
-        if self.config["track_traj"]:
-            out = (
-                loss_info,
-                grads,
-                traj_batch,
-                {
-                    "advantages": advantages,
-                    "param_history": param_hist["params"],
-                    "minibatches": minibatches,
-                },
+        train_state = jax.lax.cond(
+            (global_step > self.config["learning_starts"])
+            & (global_step % self.config["target_network_update_freq"] == 0),
+            target_update,
+            dont_target_update,
             )
-        elif self.config["track_metrics"]:
-            out = (
-                loss_info,
+        runner_state = SACRunnerState(
+            rng=rng,
+            train_state=train_state,
+            env_state=env_state,
+            obs=last_obs,
+            global_step=global_step
+        )
+        if self.track_trajectories:
+            metric = (
+                loss,
                 grads,
-                {"advantages": advantages, "param_history": param_hist["params"]},
+                Transition(
+                    obs=observations,
+                    action=action,
+                    reward=reward,
+                    done=done,
+                    info=info,
+                    q_pred=[q_pred],
+                ),
+                {"td_error": [td_error]},
+            )
+        elif self.track_metrics:
+            metric = (
+                loss,
+                grads,
+                {"q_pred": [q_pred], "td_error": [td_error]},
             )
         else:
-            out = None
-        return runner_state, out
-    
-    @functools.partial(jax.jit, static_argnums=0)
-    def _env_step(self, runner_state, unused):
-        train_state, env_state, last_obs, rng, buffer_state = runner_state
-
-        # SELECT ACTION
-        rng, _rng = jax.random.split(rng)
-        pi, value = self.network.apply(train_state.params, last_obs)
-        action = pi.sample(seed=_rng)
-        log_prob = pi.log_prob(action)
-
-        # STEP ENV
-        rng, _rng = jax.random.split(rng)
-        rng_step = jax.random.split(_rng, self.config["num_envs"])
-        obsv, env_state, reward, done, info = jax.vmap(
-            self.env.step, in_axes=(0, 0, 0, None)
-        )(rng_step, env_state, action, self.env_params)
-
-         # TODO make this running, apparently there is a problem with the shape of transitions
-        # https://github.com/instadeepai/flashbax?tab=readme-ov-file#quickstart-
-        # buffer_state = buffer.add(
-        #     buffer_state,
-        #     (
-        #         last_obs,
-        #         obsv,
-        #         jnp.expand_dims(action, -1),
-        #         jnp.expand_dims(reward, -1),
-        #         jnp.expand_dims(done, -1),   
-        #     ),
-        # )
-
-        transition = Transition(
-            done, action, value, reward, log_prob, last_obs, info
-        )
-        runner_state = (train_state, env_state, obsv, rng, buffer_state)
-        return runner_state, transition
-    
-    @functools.partial(jax.jit, static_argnums=0)
-    def _calculate_gae(self, traj_batch, last_val):
-        _, advantages = jax.lax.scan(
-            self._get_advantages,
-            (jnp.zeros_like(last_val), last_val),
-            traj_batch,
-            reverse=True,
-            unroll=16,
-        )
-        return advantages, advantages + traj_batch.value
-
-    @functools.partial(jax.jit, static_argnums=0)
-    def _get_advantages(self, gae_and_next_value, transition):
-        gae, next_value = gae_and_next_value
-        done, value, reward = (
-            transition.done,
-            transition.value,
-            transition.reward,
-        )
-        delta = reward + self.config["gamma"] * next_value * (1 - done) - value
-        gae = (
-            delta
-            + self.config["gamma"] * self.config["gae_lambda"] * (1 - done) * gae
-        )
-        return (gae, value), gae
-
-    @functools.partial(jax.jit, static_argnums=0)
-    def _update_epoch(self, update_state, unused):
-        train_state, traj_batch, advantages, targets, rng = update_state
-        rng, _rng = jax.random.split(rng)
-        batch_size = int(self.config["minibatch_size"] * self.config["num_minibatches"])
-        assert (
-            batch_size == self.config["num_steps"] * self.config["num_envs"]
-        ), "batch size must be equal to number of steps * number of envs"
-        permutation = jax.random.permutation(_rng, batch_size)
-        batch = (traj_batch, advantages, targets)
-        batch = jax.tree_util.tree_map(
-            lambda x: x.reshape((batch_size,) + x.shape[2:]), batch
-        )
-        shuffled_batch = jax.tree_util.tree_map(
-            lambda x: jnp.take(x, permutation, axis=0), batch
-        )
-        minibatches = jax.tree_util.tree_map(
-            lambda x: jnp.reshape(
-                x, [self.config["num_minibatches"], -1] + list(x.shape[1:])
-            ),
-            shuffled_batch,
-        )
-        train_state, (total_loss, grads) = jax.lax.scan(
-            self._update_minbatch, train_state, minibatches
-        )
-        update_state = (train_state, traj_batch, advantages, targets, rng)
-        return update_state, (
-            total_loss,
-            grads,
-            minibatches,
-            train_state.params.unfreeze().copy() if isinstance(train_state.params, flax.core.FrozenDict) else train_state.params.copy(),
-        )
-
-    @functools.partial(jax.jit, static_argnums=0)
-    def _update_minbatch(self, train_state, batch_info):
-        traj_batch, advantages, targets = batch_info
-
-        grad_fn = jax.value_and_grad(self._loss_fn, has_aux=True)
-        total_loss, grads = grad_fn(
-            train_state.params, traj_batch, advantages, targets
-        )
-        train_state = train_state.apply_gradients(grads=grads)
-        if self.config["track_metrics"]:
-            out = (total_loss, grads)
-        else:
-            out = (None, None)
-        return train_state, out
-
-    @functools.partial(jax.jit, static_argnums=0)
-    def _loss_fn(self, params, traj_batch, gae, targets):
-         # RERUN NETWORK
-        pi, value = self.network.apply(params, traj_batch.obs)
-        log_prob = pi.log_prob(traj_batch.action)
-
-        # CALCULATE VALUE LOSS
-        value_pred_clipped = traj_batch.value + (
-            value - traj_batch.value
-        ).clip(-self.config["clip_eps"], self.config["clip_eps"])
-        value_losses = jnp.square(value - targets)
-        value_losses_clipped = jnp.square(value_pred_clipped - targets)
-        value_loss = (
-            0.5 * jnp.maximum(value_losses, value_losses_clipped).mean()
-        )
-
-        # CALCULATE ACTOR LOSS
-        ratio = jnp.exp(log_prob - traj_batch.log_prob)
-        gae = (gae - gae.mean()) / (gae.std() + 1e-8)
-        loss_actor1 = ratio * gae
-        loss_actor2 = (
-            jnp.clip(
-                ratio,
-                1.0 - self.config["clip_eps"],
-                1.0 + self.config["clip_eps"],
-            )
-            * gae
-        )
-        loss_actor = -jnp.minimum(loss_actor1, loss_actor2)
-        loss_actor = loss_actor.mean()
-        entropy = pi.entropy().mean()
-
-        total_loss = (
-            loss_actor
-            + self.config["vf_coef"] * value_loss
-            - self.config["ent_coef"] * entropy
-        )
-        return total_loss, (value_loss, loss_actor, entropy)
+            metric = None
+        return (runner_state, buffer_state), metric
