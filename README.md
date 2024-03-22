@@ -25,7 +25,7 @@
 
 ---
 
-# Automated Reinforcement Learning Benchmark based on JAX
+# Automated Reinforcement Learning Benchmark
 
 ## Overview
 
