@@ -19,7 +19,7 @@
       <a href="#setup-">Setup</a> |
       <a href="#quickstart-">Quick Start</a> |
       <a href="#examples-">Examples</a> |
-      <a href="#citing">Citing</a> |
+      <a href="#citing">Citing</a>
     </h3>
 </div>
 
