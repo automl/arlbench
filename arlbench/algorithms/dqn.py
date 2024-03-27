@@ -170,12 +170,13 @@ class DQN(Algorithm):
             reset_rng, self.env_params
         )
         
-        if buffer_state is None:
+        if buffer_state is None or network_params is None or target_params is None:
             dummy_rng = jax.random.PRNGKey(0) 
             _action = self.env.action_space().sample(dummy_rng)
             _, _env_state = self.env.reset(rng, self.env_params)
             _obs, _, _reward, _done, _ = self.env.step(rng, _env_state, _action, self.env_params)
-
+            
+        if buffer_state is None:
             _timestep = TimeStep(last_obs=_obs, obs=_obs, action=_action, reward=_reward, done=_done)
             buffer_state = self.buffer.init(_timestep)
 
