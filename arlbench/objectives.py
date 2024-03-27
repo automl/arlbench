@@ -1,5 +1,6 @@
 from typing import Callable
 import time
+import numpy as np
 from arlbench.algorithms import Algorithm
 
 
@@ -15,7 +16,12 @@ def track_reward(train_func: Callable, objectives: dict, algorithm: Algorithm, n
     def wrapper(*args, **kwargs):
         result = train_func(*args, **kwargs)
         (runner_state, _), _ = result
-        objectives["reward"] = algorithm.eval(runner_state, n_eval_episodes)
+        rewards = algorithm.eval(runner_state, n_eval_episodes)
+        objectives["reward_mean"] = np.mean(rewards)
+        objectives["reward_std"] = np.std(rewards)
+
+        # TODO add more stability metrics
+
         return result
     return wrapper 
 
