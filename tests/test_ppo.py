@@ -1,5 +1,6 @@
 import jax
 import time
+import numpy as np
 
 from arlbench.algorithms import PPO
 
@@ -27,7 +28,9 @@ def test_default_ppo():
     start = time.time()
     (runner_state, _), _ = agent.train(runner_state, buffer_state)
     training_time = time.time() - start
-    reward = agent.eval(runner_state, PPO_OPTIONS["n_eval_episodes"])
+    rewards = agent.eval(runner_state, PPO_OPTIONS["n_eval_episodes"])
+    reward = np.mean(rewards)
+
     assert reward > 450    
     print(reward, training_time)
 

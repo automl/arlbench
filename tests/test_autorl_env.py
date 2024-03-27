@@ -45,10 +45,12 @@ def test_autorl_env_dqn_single_objective():
     assert n_obs.shape == (4,)
     assert done is False
     assert isinstance(objectives, dict)
-    assert objectives["reward"] > 0
+    assert objectives["reward_mean"] > 0
 
-    reward = env.algorithm.eval(env.runner_state, CONFIG["n_eval_episodes"])
-    assert np.abs(objectives["reward"] - reward) < 5
+    rewards = env.algorithm.eval(env.runner_state, CONFIG["n_eval_episodes"])
+    reward = np.mean(rewards)
+
+    assert np.abs(objectives["reward_mean"] - reward) < 5
 
 def test_autorl_env_dqn_multi_objective():
     CONFIG = {
@@ -86,10 +88,12 @@ def test_autorl_env_dqn_multi_objective():
     assert n_obs.shape == (4,)
     assert done is False
     assert isinstance(objectives, dict)
-    assert objectives["reward"] > 0
+    assert objectives["reward_mean"] > 0
 
-    reward = env.algorithm.eval(env.runner_state, CONFIG["n_eval_episodes"])
-    assert np.abs(objectives["reward"] - reward) < 5
+    rewards = env.algorithm.eval(env.runner_state, CONFIG["n_eval_episodes"])
+    reward = np.mean(rewards)
+
+    assert np.abs(objectives["reward_mean"] - reward) < 5
     assert objectives["runtime"] > 0    # TODO improve? How can we estimate inner runtime?
     assert objectives["emissions"] > 0
 
@@ -127,7 +131,7 @@ def test_autorl_env_dqn_grad_obs():
     n_obs, objectives, done, _, _ = env.step(action)
     assert n_obs.shape == (4,)
     assert done is False
-    assert objectives["reward"] > 0
+    assert objectives["reward_mean"] > 0
 
 def test_autorl_env_dqn_per_switch():
     CONFIG = {
@@ -158,19 +162,19 @@ def test_autorl_env_dqn_per_switch():
     env = AutoRLEnv(CONFIG, envs)
     _, _ = env.reset()
     _, objectives, _, _, _ = env.step({ "buffer_per": True })
-    assert objectives["reward"] > 400
+    assert objectives["reward_mean"] > 400
     _, objectives, _, _, _ = env.step({ "buffer_per": False })
-    assert objectives["reward"] > 450
+    assert objectives["reward_mean"] > 450
     _, objectives, _, _, _ = env.step({ "buffer_per": True })
-    assert objectives["reward"] > 490
+    assert objectives["reward_mean"] > 490
 
     _, _ = env.reset()
     _, objectives, _, _, _ = env.step({ "buffer_per": False })
-    assert objectives["reward"] > 400
+    assert objectives["reward_mean"] > 400
     _, objectives, _, _, _ = env.step({ "buffer_per": True })
-    assert objectives["reward"] > 450
+    assert objectives["reward_mean"] > 450
     _, objectives, _, _, _ = env.step({ "buffer_per": False })
-    assert objectives["reward"] > 490
+    assert objectives["reward_mean"] > 490
 
 def test_autorl_env_dqn_hpo():
     CONFIG = {
@@ -211,7 +215,7 @@ def test_autorl_env_dqn_hpo():
             n_obs, objectives, done, _, _ = env.step(action)
             steps += 1
             assert n_obs.shape == (2,)
-            assert objectives["reward"] > 0
+            assert objectives["reward_mean"] > 0
             assert done is True
         assert steps == 1
 
