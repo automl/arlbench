@@ -112,10 +112,18 @@ class Algorithm(ABC):
         _, _, total_reward, _, _, _ = final_state
         return total_reward
     
-    def eval(self, runner_state, num_eval_episodes) -> float:
+    def eval(self, runner_state, num_eval_episodes) -> jnp.ndarray:
         eval_rng = jax.random.split(runner_state.rng, num_eval_episodes)
         rewards = jax.vmap(self._env_episode, in_axes=(0, None))(
             eval_rng, runner_state.train_state.params
+        )
+        return jnp.array(rewards)
+
+    # unify the evaluation methods
+    def sac_eval(self, runner_state, num_eval_episodes) -> float:
+        eval_rng = jax.random.split(runner_state.rng, num_eval_episodes)
+        rewards = jax.vmap(self._env_episode, in_axes=(0, None))(
+            eval_rng, runner_state.actor_train_state.params
         )
         return float(jnp.mean(rewards))
 

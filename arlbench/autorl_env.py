@@ -27,36 +27,37 @@ class AutoRLEnv(gymnasium.Env):
         self.config = config
         self.seed = int(config["seed"])
 
-        # instances = environments
         self.done = True
         self.c_step = 0     # current step
         self.c_episode = 0
+
+        # Nested environments
         self.envs = envs
         self.c_env_id = 0   # TODO improve
         self.c_env = self.envs[self.c_env_id]["env"]
         self.c_env_params = self.envs[self.c_env_id]["env_params"]
         self.c_env_options = self.envs[self.c_env_id]["env_options"]
 
-        # init action space
+        # Init action space
         self.algorithm_cls = self.ALGORITHMS[config["algorithm"]]
         self.action_space = config_space_to_gymnasium_space(self.algorithm_cls.get_hpo_config_space())
 
-        # algorithm state
+        # Algorithm state
         self.algorithm = None
         self.runner_state = None
         self.buffer_state = None
         self.metrics = None
 
-        # checkpointing
+        # Checkpointing
         self.track_metrics = self.config["grad_obs"] or "loss" in config["checkpoint"] or "extras" in config["checkpoint"]
         self.track_trajectories = "minibatches" in config["checkpoint"] or "trajectories" in config["checkpoint"]
         
-        # objectives
+        # Objectives
         self.objectives = [str(o) for o in config["objectives"]]
         if len(self.objectives) == 0:
             raise ValueError("Please select at least one optimization objective.")
 
-        # define observation method and init observation space
+        # Define observation method and init observation space
         if "obs_method" in config.keys() and "obs_space_method" in config.keys():
             self.get_obs = config["obs_method"]
             self.get_obs_space = config["obs_space_method"]
