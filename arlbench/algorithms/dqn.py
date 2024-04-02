@@ -3,25 +3,18 @@ import jax
 import jax.numpy as jnp
 import chex
 import optax
-from .common import TimeStep
+from arlbench.algorithms.common import TimeStep
 from flax.training.train_state import TrainState
 from typing import NamedTuple, Union
 from typing import Any, Dict, Optional
 import chex
 import jax.lax
 import flashbax as fbx
-from .agent import Agent
+from arlbench.algorithms.algorithm import Algorithm
 import functools
-from .models import Q
-from ConfigSpace import Configuration, ConfigurationSpace, Float, Integer, Categorical
-
-
-class DQNRunnerState(NamedTuple):
-    rng: chex.PRNGKey
-    train_state: Any
-    env_state: Any
-    obs: chex.Array
-    global_step: int
+from arlbench.algorithms.models import Q
+from ConfigSpace import Configuration, ConfigurationSpace, Float, Integer, Categorical, EqualsCondition
+from arlbench.algorithms.buffers import uniform_sample
 
 
 class DQNTrainState(TrainState):
@@ -42,6 +35,15 @@ class DQNTrainState(TrainState):
             **kwargs,
         )
         return obj
+    
+
+class DQNRunnerState(NamedTuple):
+    rng: chex.PRNGKey
+    train_state: DQNTrainState
+    env_state: Any
+    obs: chex.Array
+    global_step: int
+
 
 
 class Transition(NamedTuple):
@@ -53,18 +55,23 @@ class Transition(NamedTuple):
     info: jnp.ndarray
 
 
-class DQN(Agent):
+class DQN(Algorithm):
     def __init__(
         self,
-        config: Union[Configuration, Dict],
+        hpo_config: Union[Configuration, Dict],
         options: Dict,
         env: Any,
         env_params: Any,
+        nas_config: Optional[Union[Configuration, Dict]] = None, 
         track_trajectories=False,
         track_metrics=False
     ) -> None:
+        if nas_config is None:
+            nas_config = DQN.get_default_nas_config()
+
         super().__init__(
-            config,
+            hpo_config,
+            nas_config,
             options,
             env,
             env_params,
@@ -76,50 +83,86 @@ class DQN(Agent):
         self.network = Q(
             action_size,
             discrete=discrete,
-            activation=self.config["activation"],
-            hidden_size=self.config["hidden_size"],
+            activation=self.nas_config["activation"],
+            hidden_size=self.nas_config["hidden_size"],
         )
-
+        
+        priority_exponent = self.hpo_config["buffer_beta"] if "buffer_beta" in self.hpo_config.keys() else 1.
         self.buffer = fbx.make_prioritised_flat_buffer(
-            max_length=self.config["buffer_size"],
-            min_length=self.config["buffer_batch_size"],
-            sample_batch_size=self.config["buffer_batch_size"],
+            max_length=self.hpo_config["buffer_size"],
+            min_length=self.hpo_config["buffer_batch_size"],
+            sample_batch_size=self.hpo_config["buffer_batch_size"],
             add_sequences=False,
             add_batch_size=self.env_options["n_envs"],
-            priority_exponent=self.config["buffer_beta"]    
+            priority_exponent=priority_exponent
         )
+        if self.hpo_config["buffer_prio_sampling"] is True:
+            sample_fn = functools.partial(
+                uniform_sample,
+                batch_size=self.hpo_config["buffer_batch_size"],
+                sequence_length=2,
+                period=1
+            )
+            self.buffer = self.buffer.replace(sample=sample_fn)
 
     @staticmethod
-    def get_configuration_space(seed=None) -> ConfigurationSpace:
-        return ConfigurationSpace(
-            name="PPOConfigSpace",
+    def get_hpo_config_space(seed=None) -> ConfigurationSpace:
+        cs = ConfigurationSpace(
+            name="DQNConfigSpace",
             seed=seed,
             space={
                 "buffer_size": Integer("buffer_size", (1, int(1e7)), default=int(1e6)),
                 "buffer_batch_size": Integer("buffer_batch_size", (1, 1024), default=64),
+                "buffer_prio_sampling": Categorical("buffer_prio_sampling", [True, False], default=False),
                 "buffer_alpha": Float("buffer_alpha", (0., 1.), default=0.9),
                 "buffer_beta": Float("buffer_beta", (0., 1.), default=0.9),
                 "buffer_epsilon": Float("buffer_epsilon", (0., 1e-3), default=1e-5),
                 "lr": Float("lr", (1e-5, 0.1), default=2.5e-4),
                 "update_epochs": Integer("update_epochs", (1, int(1e5)), default=10),
-                # 0 = tanh, 1 = relu, see agents.models.ACTIVATIONS
-                "activation": Categorical("activation", [0, 1], default=0),
+                "activation": Categorical("activation", ["tanh", "relu"], default="tanh"),
                 "hidden_size": Integer("hidden_size", (1, 1024), default=64),
                 "gamma": Float("gamma", (0., 1.), default=0.99),
                 "tau": Float("tau", (0., 1.), default=1.0),
                 "epsilon": Float("epsilon", (0., 1.), default=0.1),
                 "use_target_network": Categorical("use_target_network", [True, False], default=True),
                 "train_frequency": Integer("train_frequency", (1, int(1e5)), default=4),
-                "learning_starts": Integer("learning_starts", (1, int(1e5)), default=10000),
+                "learning_starts": Integer("learning_starts", (1024, int(1e5)), default=10000),
                 "target_network_update_freq": Integer("target_network_update_freq", (1, int(1e5)), default=100)
             },
         )
 
-    @staticmethod
-    def get_default_configuration() -> Configuration:
-        return DQN.get_configuration_space().get_default_configuration()
+        # only use PER parameters if PER is enabled
+        # however, we still need the hyperparameters to add samples, even though we don't sampling based on priorities
+        # cs.add_conditions([
+        #     EqualsCondition(cs["buffer_alpha"], cs["buffer_prio_sampling"], True),
+        #     EqualsCondition(cs["buffer_beta"], cs["buffer_prio_sampling"], True),
+        #     EqualsCondition(cs["buffer_epsilon"], cs["buffer_prio_sampling"], True)
+        # ])
 
-    def init(self, rng, network_params=None, target_params=None) -> tuple[DQNRunnerState, Any]:
+        return cs
+    
+    @staticmethod
+    def get_default_hpo_config() -> Configuration:
+        return DQN.get_hpo_config_space().get_default_configuration()
+    
+    @staticmethod
+    def get_nas_config_space(seed=None) -> ConfigurationSpace:
+        cs = ConfigurationSpace(
+            name="DQNNASConfigSpace",
+            seed=seed,
+            space={
+                "activation": Categorical("activation", ["tanh", "relu"], default="tanh"),
+                "hidden_size": Integer("hidden_size", (1, 1024), default=64),
+            },
+        )
+
+        return cs
+    
+    @staticmethod
+    def get_default_nas_config() -> Configuration:
+        return DQN.get_nas_config_space().get_default_configuration()
+
+    def init(self, rng, buffer_state=None, network_params=None, target_params=None, opt_state=None) -> tuple[DQNRunnerState, Any]:
         rng, _rng = jax.random.split(rng)
         reset_rng = jax.random.split(_rng, self.env_options["n_envs"])
 
@@ -127,26 +170,27 @@ class DQN(Agent):
             reset_rng, self.env_params
         )
         
-        dummy_rng = jax.random.PRNGKey(0) 
-        _action = self.env.action_space().sample(dummy_rng)
-        _, _env_state = self.env.reset(rng, self.env_params)
-        _obs, _, _reward, _done, _ = self.env.step(rng, _env_state, _action, self.env_params)
-
-        _timestep = TimeStep(last_obs=_obs, obs=_obs, action=_action, reward=_reward, done=_done)
-        buffer_state = self.buffer.init(_timestep)
+        if buffer_state is None or network_params is None or target_params is None:
+            dummy_rng = jax.random.PRNGKey(0) 
+            _action = self.env.action_space().sample(dummy_rng)
+            _, _env_state = self.env.reset(rng, self.env_params)
+            _obs, _, _reward, _done, _ = self.env.step(rng, _env_state, _action, self.env_params)
+            
+        if buffer_state is None:
+            _timestep = TimeStep(last_obs=_obs, obs=_obs, action=_action, reward=_reward, done=_done)
+            buffer_state = self.buffer.init(_timestep)
 
         _, _rng = jax.random.split(rng)
         if network_params is None:
             network_params = self.network.init(_rng, _obs)
         if target_params is None:
             target_params = self.network.init(_rng, _obs)
-        opt_state = None
 
         train_state_kwargs = {
             "apply_fn": self.network.apply,
             "params": network_params,
             "target_params": target_params,
-            "tx": optax.adam(self.config["lr"], eps=1e-5),
+            "tx": optax.adam(self.hpo_config["lr"], eps=1e-5),
             "opt_state": opt_state,
         }
         train_state = DQNTrainState.create_with_opt_state(**train_state_kwargs)
@@ -176,7 +220,7 @@ class DQN(Agent):
         buffer_state
     )-> tuple[tuple[DQNRunnerState, Any], Optional[tuple]]:
         (runner_state, buffer_state), out = jax.lax.scan(
-            self._update_step, (runner_state, buffer_state), None, (self.env_options["n_total_timesteps"]//self.config["train_frequency"])//self.env_options["n_envs"]
+            self._update_step, (runner_state, buffer_state), None, (self.env_options["n_total_timesteps"]//self.hpo_config["train_frequency"])//self.env_options["n_envs"]
         )
         return (runner_state, buffer_state), out
     
@@ -189,7 +233,7 @@ class DQN(Agent):
         rewards, 
         dones
     ):
-        if self.config["use_target_network"]:
+        if self.hpo_config["use_target_network"]:
             q_next_target = self.network.apply(
                 train_state.target_params, next_observations
             )  # (batch_size, num_actions)
@@ -198,7 +242,7 @@ class DQN(Agent):
                 train_state.params, next_observations
             )  # (batch_size, num_actions)
         q_next_target = jnp.max(q_next_target, axis=-1)  # (batch_size,)
-        next_q_value = rewards + (1 - dones) * self.config["gamma"] * q_next_target
+        next_q_value = rewards + (1 - dones) * self.hpo_config["gamma"] * q_next_target
 
         def mse_loss(params):
             q_pred = self.network.apply(
@@ -246,7 +290,7 @@ class DQN(Agent):
         def take_step(carry, _):
             obsv, env_state, global_step, buffer_state = carry
             action = jax.lax.cond(
-                jax.random.uniform(rng) < self.config["epsilon"],
+                jax.random.uniform(rng) < self.hpo_config["epsilon"],
                 random_action,
                 greedy_action,
             )
@@ -265,26 +309,22 @@ class DQN(Agent):
                 )
 
             q_next_target = jax.lax.cond(
-                self.config["use_target_network"], target_td, no_target_td, train_state
+                self.hpo_config["use_target_network"], target_td, no_target_td, train_state
             )
 
-            # td_error = (
-            #     reward
-            #     + (1 - done) * self.config["gamma"] * jnp.expand_dims(q_next_target, -1)    # why expand dims?
-            #     - self.network.apply(train_state.params, last_obs).take(action)
-            # )
             td_error = (
                 reward
-                + (1 - done) * self.config["gamma"] * q_next_target
+                + (1 - done) * self.hpo_config["gamma"] * q_next_target
                 - self.network.apply(train_state.params, last_obs).take(action)
             )
-            transition_weight = jnp.power(
-                jnp.abs(td_error) + self.config["buffer_epsilon"], self.config["buffer_alpha"]
-            )
+
             timestep = TimeStep(last_obs=last_obs, obs=obsv, action=action, reward=reward, done=done)
             buffer_state = self.buffer.add(buffer_state, timestep)
 
-            # compute indices of newly added buffer elements
+            # PER: compute indices of newly added buffer elements
+            transition_weight = jnp.power(
+                jnp.abs(td_error) + self.hpo_config["buffer_epsilon"], self.hpo_config["buffer_alpha"]
+            )
             added_indices = jnp.arange(
                 0,
                 len(obsv)
@@ -303,8 +343,6 @@ class DQN(Agent):
             )
 
         def do_update(train_state, buffer_state):
-            # batch = buffer.sample_fn(buffer_state, rng, config["batch_size"])
-            batch = self.buffer.sample(buffer_state, rng)
             batch = self.buffer.sample(buffer_state, rng).experience.first
             train_state, loss, q_pred, grads, opt_state = self.update(
                 train_state,
@@ -320,7 +358,7 @@ class DQN(Agent):
             return (
                 train_state,
                 ((jnp.array([0]) - jnp.array([0])) ** 2).mean(),
-                jnp.ones(self.config["buffer_batch_size"]),
+                jnp.ones(self.hpo_config["buffer_batch_size"]),
                 train_state.params,
                 train_state.opt_state
             )
@@ -328,7 +366,7 @@ class DQN(Agent):
         def target_update():
             return train_state.replace(
                 target_params=optax.incremental_update(
-                    train_state.params, train_state.target_params, self.config["tau"]
+                    train_state.params, train_state.target_params, self.hpo_config["tau"]
                 )
             )
 
@@ -346,20 +384,20 @@ class DQN(Agent):
             take_step,
             (last_obs, env_state, global_step, buffer_state),
             None,
-            self.config["train_frequency"],
+            self.hpo_config["train_frequency"],
         )
 
         train_state, loss, q_pred, grads, opt_state = jax.lax.cond(
-            (global_step > self.config["learning_starts"])
-            & (global_step % self.config["train_frequency"] == 0),
+            (global_step > self.hpo_config["learning_starts"])
+            & (global_step % self.hpo_config["train_frequency"] == 0),
             do_update,
             dont_update,
             train_state,
             buffer_state,
         )
         train_state = jax.lax.cond(
-            (global_step > self.config["learning_starts"])
-            & (global_step % self.config["target_network_update_freq"] == 0),
+            (global_step > self.hpo_config["learning_starts"])
+            & (global_step % self.hpo_config["target_network_update_freq"] == 0),
             target_update,
             dont_target_update,
         )

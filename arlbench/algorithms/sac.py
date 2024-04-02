@@ -3,15 +3,16 @@ import jax
 import jax.numpy as jnp
 import optax
 from .common import TimeStep
-import flax.linen as nn
 from flax.training.train_state import TrainState
 from typing import NamedTuple, Union
 from typing import Any, Dict, Optional
 import chex
 import jax.lax
 import flashbax as fbx
-from .agent import Agent
 import functools
+
+from arlbench.algorithms.algorithm import Algorithm
+
 from .models import SACActor, SACCritic, SACVectorCritic, AlphaCoef
 from ConfigSpace import Configuration, ConfigurationSpace, Float, Integer, Categorical
 
@@ -56,18 +57,22 @@ class Transition(NamedTuple):
     info: jnp.ndarray
 
 
-class SAC(Agent):
+class SAC(Algorithm):
     def __init__(
             self,
-            config: Union[Configuration, Dict],
+            hpo_config: Union[Configuration, Dict],
             options: Dict,
             env: Any,
             env_params: Any,
+            nas_config: Union[Configuration, Dict] = None,
             track_metrics=False,
             track_trajectories=False,
     ) -> None:
+        if nas_config is None:
+            nas_config = SAC.get_default_nas_config()
         super().__init__(
-            config,
+            hpo_config,
+            nas_config,
             options,
             env,
             env_params,
@@ -78,31 +83,31 @@ class SAC(Agent):
         action_size, discrete = self.action_type
         self.actor_network = SACActor(
             action_size,
-            activation=config["activation"],
-            hidden_size=config["hidden_size"],
+            activation=nas_config["activation"],
+            hidden_size=nas_config["hidden_size"],
         )
         self.critic_network = SACVectorCritic(
             action_size,
-            activation=config["activation"],
-            hidden_size=config["hidden_size"],
+            activation=nas_config["activation"],
+            hidden_size=nas_config["hidden_size"],
             n_critics=2,
         )
-        alpha_init = float(self.config["alpha"])
+        alpha_init = float(self.hpo_config["alpha"])
         assert alpha_init > 0.0, "The initial value of alpha must be greater than 0"
         self.alpha = AlphaCoef(alpha_init=alpha_init)
 
         self.buffer = fbx.make_prioritised_flat_buffer(
-            max_length=self.config["buffer_size"],
-            #min_length=self.config["buffer_batch_size"],
-            min_length=self.config["learning_starts"],
-            sample_batch_size=self.config["buffer_batch_size"],
+            max_length=self.hpo_config["buffer_size"],
+            #min_length=self.hpo_config["buffer_batch_size"],
+            min_length=self.hpo_config["learning_starts"],
+            sample_batch_size=self.hpo_config["buffer_batch_size"],
             add_sequences=False,
             add_batch_size=self.env_options["n_envs"],
-            priority_exponent=self.config["buffer_beta"]
+            priority_exponent=self.hpo_config["buffer_beta"]
         )
 
     @staticmethod
-    def get_configuration_space(seed=None) -> ConfigurationSpace:
+    def get_hpo_config_space(seed=None) -> ConfigurationSpace:
         return ConfigurationSpace(
             name="SACConfigSpace",
             seed=seed,
@@ -113,9 +118,6 @@ class SAC(Agent):
                 "lr": Float("lr", (1e-5, 0.1), default=3e-4),
                 "gradient steps": Integer("gradient steps", (1, int(1e5)), default=1),
                 "policy_delay": Integer("policy_delay", (1, int(1e5)), default=1),
-                ## 0 = tanh, 1 = relu, see agents.models.ACTIVATIONS
-                "activation": Categorical("activation", [0, 1], default=1),
-                "hidden_size": Integer("hidden_size", (1, 1024), default=256),
                 "gamma": Float("gamma", (0., 1.), default=0.99),
                 "tau": Float("tau", (0., 1.), default=0.005),
                 "use_target_network": Categorical("use_target_network", [True, False], default=True),
@@ -128,8 +130,24 @@ class SAC(Agent):
         )
 
     @staticmethod
-    def get_default_configuration() -> Configuration:
-        return SAC.get_configuration_space().get_default_configuration()
+    def get_default_hpo_config() -> Configuration:
+        return SAC.get_hpo_config_space().get_default_configuration()
+
+    @staticmethod
+    def get_nas_config_space(seed=None) -> ConfigurationSpace:
+        cs = ConfigurationSpace(
+            name="DQNNASConfigSpace",
+            seed=seed,
+            space={
+                "activation": Categorical("activation", ["tanh", "relu"], default="tanh"),
+                "hidden_size": Integer("hidden_size", (1, 1024), default=256),
+            },
+        )
+        return cs
+
+    @staticmethod
+    def get_default_nas_config() -> Configuration:
+        return SAC.get_nas_config_space().get_default_configuration()
 
     def init(
             self, rng, actor_network_params=None, critic_network_params=None, critic_target_params=None
@@ -161,14 +179,14 @@ class SAC(Agent):
             apply_fn=self.actor_network.apply,
             params=actor_network_params,
             target_params=None,
-            tx=optax.adam(self.config["lr"], eps=1e-5),  # todo: change to actor specific lr
+            tx=optax.adam(self.hpo_config["lr"], eps=1e-5),  # todo: change to actor specific lr
             opt_state=None,
         )
         critic_train_state = SACTrainState.create_with_opt_state(
             apply_fn=self.critic_network.apply,
             params=critic_network_params,
             target_params=critic_target_params,
-            tx=optax.adam(self.config["lr"], eps=1e-5),  # todo: change to critic specific lr
+            tx=optax.adam(self.hpo_config["lr"], eps=1e-5),  # todo: change to critic specific lr
             opt_state=None,
         )
         _, _rng = jax.random.split(rng)
@@ -176,7 +194,7 @@ class SAC(Agent):
             apply_fn=self.alpha.apply,
             params=self.alpha.init(_rng),
             target_params=None,
-            tx=optax.adam(self.config["lr"], eps=1e-5),  # todo: how to set lr, check with stable-baselines
+            tx=optax.adam(self.hpo_config["lr"], eps=1e-5),  # todo: how to set lr, check with stable-baselines
             opt_state=None,
         )
         # target for automatic entropy tuning
@@ -213,7 +231,7 @@ class SAC(Agent):
             buffer_state
     )-> tuple[tuple[SACRunnerState, Any], Optional[tuple]]:
         (runner_state, buffer_state), out = jax.lax.scan(
-            self._update_step, (runner_state, buffer_state), None, (self.env_options["n_total_timesteps"]//self.config["train_frequency"])//self.env_options["n_envs"]
+            self._update_step, (runner_state, buffer_state), None, (self.env_options["n_total_timesteps"]//self.hpo_config["train_frequency"])//self.env_options["n_envs"]
         )
         return (runner_state, buffer_state), out
 
@@ -235,7 +253,7 @@ class SAC(Agent):
         # td error + entropy term
         qf_next_target = qf_next_target - alpha_value * next_log_prob
         # shape is (batch_size, 1)
-        target_q_value = batch.reward + (1 - batch.done) * self.config["gamma"] * qf_next_target
+        target_q_value = batch.reward + (1 - batch.done) * self.hpo_config["gamma"] * qf_next_target
 
         def mse_loss(params):
             q_pred = self.critic_network.apply(
@@ -315,7 +333,7 @@ class SAC(Agent):
             #carry = (rng, actor_train_state, critic_train_state, alpha_train_state)
 
             # todo: fix this using scan and collecting loss statistics
-            #return jax.lax.fori_loop(0, self.config["gradient steps"], one_gradient_step, carry)
+            #return jax.lax.fori_loop(0, self.hpo_config["gradient steps"], one_gradient_step, carry)
             #return jax.lax.scan()
 
         def dont_update(rng, actor_train_state, critic_train_state, alpha_train_state, _):
@@ -329,7 +347,7 @@ class SAC(Agent):
         def target_update():
             return critic_train_state.replace(
                 target_params=optax.incremental_update(
-                    critic_train_state.params, critic_train_state.target_params, self.config["tau"]
+                    critic_train_state.params, critic_train_state.target_params, self.hpo_config["tau"]
                 )
             )
         def dont_target_update():
@@ -347,7 +365,7 @@ class SAC(Agent):
             self._env_step,
             (runner_state, buffer_state),
             None,
-            self.config["train_frequency"],
+            self.hpo_config["train_frequency"],
         )
         (
             rng,
@@ -362,8 +380,8 @@ class SAC(Agent):
 
         # todo: add loss logging
         rng, actor_train_state, critic_train_state, alpha_train_state, loss = jax.lax.cond(
-            (global_step > self.config["learning_starts"])
-            & (global_step % self.config["train_frequency"] == 0),
+            (global_step > self.hpo_config["learning_starts"])
+            & (global_step % self.hpo_config["train_frequency"] == 0),
             do_update,
             dont_update,
             rng,
@@ -373,8 +391,8 @@ class SAC(Agent):
             buffer_state,
             )
         critic_train_state = jax.lax.cond(
-            (global_step > self.config["learning_starts"])
-            & (global_step % self.config["target_network_update_freq"] == 0),
+            (global_step > self.hpo_config["learning_starts"])
+            & (global_step % self.hpo_config["target_network_update_freq"] == 0),
             target_update,
             dont_target_update,
             )

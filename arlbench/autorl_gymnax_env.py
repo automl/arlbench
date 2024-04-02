@@ -4,7 +4,7 @@ from flax import struct
 import chex
 from typing import Tuple, Union, Any, Dict
 from gymnax.environments.environment import Environment
-from agents import PPO, DQN
+from algorithms import PPO, DQN
 import functools
 from gymnax.wrappers.purerl import FlattenObservationWrapper
 

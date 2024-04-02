@@ -1,4 +1,11 @@
-# ARLBench
+<p align="center">
+    <a href="./docs/images/logo_lm.png#gh-light-mode-only">
+        <img src="./docs/images/logo_lm.png#gh-light-mode-only" alt="ARLBench Logo" width="70%"/>
+    </a>
+    <a href="./docs/images/logo_dm.png#gh-dark-mode-only">
+        <img src="./docs/images/logo_dm.png#gh-dark-mode-only" alt="ARLBench Logo" width="70%"/>
+    </a>
+</p>
 
 [![PyPI Version](https://img.shields.io/pypi/v/arlbench.svg)](https://pypi.python.org/pypi/arlbench)
 [![Test](https://github.com/automl/arlbench/actions/workflows/pytest.yaml/badge.svg)](https://github.com/automl/arlbench/actions/workflows/pytest.yaml)
@@ -6,20 +13,26 @@
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 [![Commitizen friendly](https://img.shields.io/badge/commitizen-friendly-brightgreen.svg)](http://commitizen.github.io/cz-cli/)
 
+<div align="center">
+    <h3>
+      <a href="#overview-">Overview</a> |
+      <a href="#setup-">Setup</a> |
+      <a href="#quickstart-">Quick Start</a> |
+      <a href="#examples-">Examples</a> |
+      <a href="#citing">Citing</a>
+    </h3>
+</div>
 
-Python Boilerplate that contains all the code you need to create a Python package.
+---
 
-- Free software: BSD license
-- Documentation: https://arlbench.readthedocs.io.
+# 🦾 Automated Reinforcement Learning Benchmark
 
+## Overview
 
-## Features
+## Setup
 
-- TODO
+## Quickstart
 
-## Credits
+## Examples
 
-This package was created with Cookiecutter_ and the `audreyr/cookiecutter-pypackage`_ project template.
-
-.. _Cookiecutter: https://github.com/audreyr/cookiecutter
-.. _`audreyr/cookiecutter-pypackage`: https://github.com/audreyr/cookiecutter-pypackage
+## Citing
