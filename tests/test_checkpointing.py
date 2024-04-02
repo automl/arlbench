@@ -46,7 +46,8 @@ def test_read_write_buffer():
     assert np.allclose(buffer_state.experience.action, disk_buffer_state.experience.action, atol=1e-7)
 
     (runner_state, disk_buffer_state), _ = agent.train(runner_state, disk_buffer_state)
-    reward = agent.eval(runner_state, DQN_OPTIONS["n_eval_episodes"])
+    rewards = agent.eval(runner_state, DQN_OPTIONS["n_eval_episodes"])
+    reward = np.mean(rewards)
     assert reward > 480
 
 
@@ -87,7 +88,8 @@ def test_checkpoints_dqn():
 
     (runner_state, buffer_state), metrics = algorithm.train(runner_state, init_buffer_state)
 
-    reward = algorithm.eval(runner_state, DQN_OPTIONS["n_eval_episodes"])
+    rewards = algorithm.eval(runner_state, DQN_OPTIONS["n_eval_episodes"])
+    reward = np.mean(rewards)
     Checkpointer.save(runner_state, buffer_state, OPTIONS, config, DONE, C_EPISODE, C_STEP, metrics)
 
     (
@@ -101,7 +103,9 @@ def test_checkpoints_dqn():
     assert c_episode == C_EPISODE
 
     runner_state, _ = algorithm.init(rng, **algorithm_kw_args)
-    reward_reload = algorithm.eval(runner_state, DQN_OPTIONS["n_eval_episodes"])
+    rewards_reload = algorithm.eval(runner_state, DQN_OPTIONS["n_eval_episodes"])
+    reward_reload = np.mean(rewards_reload)
+
     assert np.abs(reward - reward_reload) < 50
 
 
@@ -142,7 +146,8 @@ def test_checkpoints_ppo():
 
     (runner_state, buffer_state), metrics = algorithm.train(runner_state, init_buffer_state)
 
-    reward = algorithm.eval(runner_state, PPO_OPTIONS["n_eval_episodes"])
+    rewards = algorithm.eval(runner_state, PPO_OPTIONS["n_eval_episodes"])
+    reward = np.mean(rewards)
     Checkpointer.save(runner_state, buffer_state, OPTIONS, config, DONE, C_EPISODE, C_STEP, metrics)
 
     (
@@ -156,7 +161,8 @@ def test_checkpoints_ppo():
     assert c_episode == C_EPISODE
 
     runner_state, _ = algorithm.init(rng, **algorithm_kw_args)
-    reward_reload = algorithm.eval(runner_state, PPO_OPTIONS["n_eval_episodes"])
+    rewards_reload = algorithm.eval(runner_state, PPO_OPTIONS["n_eval_episodes"])
+    reward_reload = np.mean(rewards_reload)
     assert np.abs(reward - reward_reload) < 50      # PPO is more stochastic
 
 

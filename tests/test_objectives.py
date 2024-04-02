@@ -33,8 +33,10 @@ def test_reward():
     train_func = track_reward(train_func, objectives, agent, DQN_OPTIONS["n_eval_episodes"])
 
     (runner_state, _), _ = train_func(runner_state, buffer_state)
-    reward = agent.eval(runner_state, DQN_OPTIONS["n_eval_episodes"])
-    assert np.abs(reward - objectives["reward"]) < 0.01
+    rewards = agent.eval(runner_state, DQN_OPTIONS["n_eval_episodes"])
+    reward = np.mean(rewards)
+
+    assert np.abs(reward - objectives["reward_mean"]) < 0.01
 
 def test_runtime():
     env, env_params = make_env("gymnax", "CartPole-v1")
