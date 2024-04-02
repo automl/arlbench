@@ -1,5 +1,4 @@
 import chex
-from typing import Union
 
 @chex.dataclass(frozen=True)
 class TimeStep:

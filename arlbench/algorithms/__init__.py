@@ -3,10 +3,10 @@ from .models import Q, ActorCritic
 from .ppo import PPO, PPORunnerState
 from .dqn import DQN, DQNRunnerState
 from .sac import SAC, SACRunnerState
-from .agent import Agent
+from .algorithm import Algorithm
 
 __all__ = [
-    "Agent",
+    "Algorithm",
     "Q",
     "ActorCritic",
     "PPO",

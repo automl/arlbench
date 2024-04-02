@@ -1,8 +1,7 @@
 import jax
-from jax import config
 import time
 
-from arlbench.agents import SAC
+from arlbench.algorithms import SAC
 
 from stable_baselines3 import SAC as SB3SAC
 from stable_baselines3.common.evaluation import evaluate_policy
@@ -10,15 +9,15 @@ from stable_baselines3.common.vec_env import SubprocVecEnv, VecMonitor
 import gymnasium as gym
 
 from sbx.sac import SAC as SBXSAC
-
 from arlbench.utils import (
     make_env,
 )
 
+
 SAC_OPTIONS = {
     "n_total_timesteps": 1e5,
     "n_envs": 1,
-    "n_env_steps": 200,
+    "n_env_steps": 1000,
     "n_eval_episodes": 10,
     "track_metrics": False,
     "track_traj": False,
@@ -31,7 +30,7 @@ def test_default_sac():
     #env, env_params = make_env("brax", "ant")
     rng = jax.random.PRNGKey(42)
 
-    config = SAC.get_default_configuration()
+    config = SAC.get_default_hpo_config()
     agent = SAC(config, SAC_OPTIONS, env, env_params)
     runner_state, buffer_state = agent.init(rng)
     

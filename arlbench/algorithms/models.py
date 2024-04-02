@@ -6,12 +6,6 @@ from distrax._src.distributions.distribution import EventT, Array
 from flax.linen.initializers import constant, orthogonal
 import distrax
 
-from enum import Enum
-
-ACTIVATION = {
-    0: nn.tanh,
-    1: nn.relu
-}
 
 
 class TanhTransformedDistribution(distrax.Transformed):  # type: ignore[name-defined]
@@ -41,10 +35,12 @@ class SACActor(nn.Module):
     log_std_max: float = 2
 
     def setup(self):
-        if self.activation not in ACTIVATION.keys():
-            raise ValueError(f"Invalid activation_func id: {self.activation}")
+        if self.activation == "tanh":
+            self.activation_func = nn.tanh
+        elif self.activation == "relu":
+            self.activation_func = nn.relu
         else:
-            self.activation_func = ACTIVATION[self.activation]
+            raise ValueError(f"Invalid activation function: {self.activation}")
 
         self.dense0 = nn.Dense(
             self.hidden_size,
@@ -84,10 +80,12 @@ class SACCritic(nn.Module):
     hidden_size: int = 64
 
     def setup(self):
-        if self.activation not in ACTIVATION.keys():
-            raise ValueError(f"Invalid activation_func id: {self.activation}")
+        if self.activation == "tanh":
+            self.activation_func = nn.tanh
+        elif self.activation == "relu":
+            self.activation_func = nn.relu
         else:
-            self.activation_func = ACTIVATION[self.activation]
+            raise ValueError(f"Invalid activation function: {self.activation}")
 
         self.critic0 = nn.Dense(
             self.hidden_size,
@@ -137,15 +135,17 @@ class SACVectorCritic(nn.Module):
 
 class ActorCritic(nn.Module):
     action_dim: Sequence[int]
-    activation: int
+    activation: str = "tanh"
     hidden_size: int = 64
     discrete: bool = True
 
     def setup(self):
-        if self.activation not in ACTIVATION.keys():
-            raise ValueError(f"Invalid activation_func id: {self.activation}")
+        if self.activation == "tanh":
+            self.activation_func = nn.tanh
+        elif self.activation == "relu":
+            self.activation_func = nn.relu
         else:
-            self.activation_func = ACTIVATION[self.activation]
+            raise ValueError(f"Invalid activation function: {self.activation}")
 
         self.dense0 = nn.Dense(
             self.hidden_size,
@@ -201,15 +201,17 @@ class ActorCritic(nn.Module):
 
 class Q(nn.Module):
     action_dim: Sequence[int]
-    activation: int         # 0 = tanh, 1 = relu
+    activation: str = "tanh"    
     hidden_size: int = 64
     discrete: bool = True
 
     def setup(self):
-        if self.activation not in ACTIVATION.keys():
-            raise ValueError(f"Invalid activation_func id: {self.activation}")
+        if self.activation == "tanh":
+            self.activation_func = nn.tanh
+        elif self.activation == "relu":
+            self.activation_func = nn.relu
         else:
-            self.activation_func = ACTIVATION[self.activation]
+            raise ValueError(f"Invalid activation function: {self.activation}")
 
         self.dense0 = nn.Dense(
             self.hidden_size,

@@ -1,6 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Tuple, Optional, Any, Sequence, Union, Dict, NamedTuple
-from flax.training.train_state import TrainState
+from typing import Tuple, Optional, Any, Sequence, Union, Dict
 import functools
 import jax
 import gymnax
@@ -10,10 +9,11 @@ from flashbax.buffers.prioritised_trajectory_buffer import PrioritisedTrajectory
 
 
 
-class Agent(ABC):
+class Algorithm(ABC):
     def __init__(
             self,
-            config: Union[Configuration, Dict], 
+            hpo_config: Union[Configuration, Dict], 
+            nas_config: Union[Configuration, Dict], 
             env_options: Dict, 
             env: Any, 
             env_params: Any,
@@ -22,7 +22,8 @@ class Agent(ABC):
         ) -> None:
         super().__init__()
 
-        self.config = config
+        self.hpo_config = hpo_config
+        self.nas_config = nas_config
         self.env_options = env_options
         self.env = env
         self.env_params = env_params
@@ -48,12 +49,22 @@ class Agent(ABC):
     
     @staticmethod
     @abstractmethod
-    def get_configuration_space() -> ConfigurationSpace:
+    def get_hpo_config_space(seed=None) -> ConfigurationSpace:
         pass
 
     @staticmethod
     @abstractmethod
-    def get_default_configuration() -> Configuration:
+    def get_default_hpo_config() -> Configuration:
+        pass
+
+    @staticmethod
+    @abstractmethod
+    def get_nas_config_space(seed=None) -> ConfigurationSpace:
+        pass
+
+    @staticmethod
+    @abstractmethod
+    def get_default_nas_config() -> Configuration:
         pass
     
     @abstractmethod
@@ -61,7 +72,7 @@ class Agent(ABC):
         pass
 
     @abstractmethod
-    def train(self, runner_state: NamedTuple, buffer_state: PrioritisedTrajectoryBufferState) -> Tuple[tuple[Any, TrainState], Optional[Tuple]]:
+    def train(self, runner_state: Any, buffer_state: Any) -> Tuple[tuple[Any, PrioritisedTrajectoryBufferState], Optional[Tuple]]:
         pass
 
     @abstractmethod 
@@ -101,12 +112,12 @@ class Agent(ABC):
         _, _, total_reward, _, _, _ = final_state
         return total_reward
     
-    def eval(self, runner_state, num_eval_episodes) -> float:
+    def eval(self, runner_state, num_eval_episodes) -> jnp.ndarray:
         eval_rng = jax.random.split(runner_state.rng, num_eval_episodes)
         rewards = jax.vmap(self._env_episode, in_axes=(0, None))(
             eval_rng, runner_state.train_state.params
         )
-        return float(jnp.mean(rewards))
+        return jnp.array(rewards)
 
     # unify the evaluation methods
     def sac_eval(self, runner_state, num_eval_episodes) -> float:

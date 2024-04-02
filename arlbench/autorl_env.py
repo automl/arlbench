@@ -2,39 +2,62 @@ import numpy as np
 import jax.numpy as jnp
 import jax
 from typing import Optional, Union, Any, Dict, Callable
-from arlbench.agents import PPO, DQN, Agent, PPORunnerState, DQNRunnerState
+from arlbench.algorithms import PPO, DQN, Algorithm, PPORunnerState, DQNRunnerState
 import gymnasium
 from arlbench.utils import config_space_to_gymnasium_space
 from flashbax.buffers.prioritised_trajectory_buffer import PrioritisedTrajectoryBufferState
+from ConfigSpace import Configuration
+import warnings
+from arlbench.utils.checkpointing import Checkpointer
+from arlbench.objectives import track_emissions, track_reward, track_runtime
 
 
 class AutoRLEnv(gymnasium.Env):
     ALGORITHMS = {"ppo": PPO, "dqn": DQN}
+    algorithm: Optional[Algorithm]
     get_obs: Callable[[], np.ndarray]
     get_obs_space: Callable[[], gymnasium.spaces.Space]
-    agent_state: Optional[Union[PPORunnerState, DQNRunnerState]]
+    runner_state: Optional[Union[PPORunnerState, DQNRunnerState]]
+    buffer_state: Optional[PrioritisedTrajectoryBufferState]
+    metrics: Optional[tuple]
 
-    def __init__(self, config, envs, seed=None) -> None:
+    def __init__(self, config, envs) -> None:
         super().__init__()
 
         self.config = config
-        self.seed = seed
+        self.seed = int(config["seed"])
 
-        self.c_step = 0
-        self.agent_state = None
+        self.done = True
+        self.c_step = 0     # current step
+        self.c_episode = 0
 
-        # instances = environments
+        # Nested environments
         self.envs = envs
         self.c_env_id = 0   # TODO improve
         self.c_env = self.envs[self.c_env_id]["env"]
         self.c_env_params = self.envs[self.c_env_id]["env_params"]
         self.c_env_options = self.envs[self.c_env_id]["env_options"]
 
-        # init action space
+        # Init action space
         self.algorithm_cls = self.ALGORITHMS[config["algorithm"]]
-        self.action_space = config_space_to_gymnasium_space(self.algorithm_cls.get_configuration_space())
+        self.action_space = config_space_to_gymnasium_space(self.algorithm_cls.get_hpo_config_space())
+
+        # Algorithm state
+        self.algorithm = None
+        self.runner_state = None
+        self.buffer_state = None
+        self.metrics = None
+
+        # Checkpointing
+        self.track_metrics = self.config["grad_obs"] or "loss" in config["checkpoint"] or "extras" in config["checkpoint"]
+        self.track_trajectories = "minibatches" in config["checkpoint"] or "trajectories" in config["checkpoint"]
         
-        # define observation method and init observation space
+        # Objectives
+        self.objectives = [str(o) for o in config["objectives"]]
+        if len(self.objectives) == 0:
+            raise ValueError("Please select at least one optimization objective.")
+
+        # Define observation method and init observation space
         if "obs_method" in config.keys() and "obs_space_method" in config.keys():
             self.get_obs = config["obs_method"]
             self.get_obs_space = config["obs_space_method"]
@@ -61,7 +84,12 @@ class AutoRLEnv(gymnasium.Env):
             grad_norm = 0
             grad_var = 0
         else:
-            grad_info = self.grad_info["params"]
+            if self.metrics and len(self.metrics) >= 3:
+                grad_info = self.metrics[1]
+            else:
+                raise ValueError(f"Tying to extract grad_info but 'self.metrics' does not match.")
+    
+            grad_info = grad_info["params"]
             grad_info = {
                 k: v
                 for (k, v) in grad_info.items()
@@ -95,55 +123,109 @@ class AutoRLEnv(gymnasium.Env):
         if self.c_step >= self.config["n_steps"]:
             return True
         return False
-
-    def make_agent(
-            self,
-            agent_config
-        ) -> tuple[Agent, tuple[Union[PPORunnerState, DQNRunnerState], PrioritisedTrajectoryBufferState]]:
-        agent = self.algorithm_cls(
-            agent_config,
+    
+    def instantiate_algorithm_(self):
+        self.algorithm = self.algorithm_cls(
+            self.c_hp_config,
             self.c_env_options,
             self.c_env,
             self.c_env_params,
-            track_trajectories=self.config["track_trajectories"],
-            track_metrics=self.config["grad_obs"]
+            track_trajectories=self.track_trajectories,
+            track_metrics=self.track_metrics
         )
-        agent_rng = jax.random.PRNGKey(self.seed if self.seed else 0)
-        runner_state, buffer_state = agent.init(agent_rng)
-        return agent, (runner_state, buffer_state)
+
+    def initialize_algorithm_(self, **init_kw_args):
+        # Instantiate algorithm
+        self.instantiate_algorithm_()
+        
+        # Initialize algorithm (runner state and buffer) if static HPO or first step in DAC
+        if self.runner_state is None and self.buffer_state is None:  # equal to c_step == 0
+            rng = jax.random.PRNGKey(self.seed)
+            rng, init_rng = jax.random.split(rng)
+            self.runner_state, self.buffer_state = self.algorithm.init(init_rng, **init_kw_args)
+    
+    def train_(self):
+        if self.algorithm is None:
+            raise ValueError("You have to instantiate self.algorithm first.")
+        
+        objectives = {}
+        train_func = self.algorithm.train
+              
+        if "runtime" in self.objectives:
+            train_func = track_runtime(train_func, objectives)
+        if "emissions" in self.objectives:
+            train_func = track_emissions(train_func, objectives)
+        if "reward" in self.objectives:
+            train_func = track_reward(train_func, objectives, self.algorithm, self.config["n_eval_episodes"])
+        
+        (self.runner_state, self.buffer_state), self.metrics = train_func(self.runner_state, self.buffer_state)
+
+        return objectives
 
     def step(
         self,
-        action: Dict
-    ) -> tuple[np.ndarray, float, bool, bool, dict[str, Any]]:
-        done = self.step_()
+        action: Union[Configuration, dict]
+    ) -> tuple[np.ndarray, dict[str, float], bool, bool, dict[str, Any]]:
+        if len(action.keys()) == 0:     # no action provided
+            warnings.warn("No agent configuration provided. Falling back to default configuration.")
 
-        agent, (runner_state, buffer_state) = self.make_agent(action)
-        (runner_state, buffer_state), metrics = agent.train(runner_state, buffer_state)
+        if self.done or self.algorithm is None:
+            raise ValueError("Called step() before reset().")
         
-        if metrics:
-            if self.config["track_trajectories"]:
-                (
-                    self.loss_info,
-                    self.grad_info,
-                    self.traj,
-                    self.additional_info,
-                ) = metrics
-            elif self.config["grad_obs"]:
-                (
-                    self.loss_info,
-                    self.grad_info,
-                    self.additional_info,
-                ) = metrics
+        # Set done if max. number of steps in DAC is reached or classic (one-step) HPO is performed
+        self.done = self.step_()
+        info = {}
+        
+        # Apply changes to current hyperparameter configuration
+        self.c_hp_config.update(action)
 
-        reward = agent.eval(runner_state, self.config["n_eval_episodes"])
-        return self.get_obs(), reward, done, False, {}
+        # Instantiate algorithm and apply current hyperparameter configuration
+        self.initialize_algorithm_()
+
+        # Perform one iteration of training
+        objectives = self.train_()
+        
+        # Checkpointing
+        if len(self.config["checkpoint"]) > 0:
+            assert self.runner_state is not None
+            assert self.buffer_state is not None
+
+            info["checkpoint"] = Checkpointer.save(
+                self.runner_state,
+                self.buffer_state,
+                self.config,
+                self.c_hp_config,
+                self.done,
+                self.c_episode,
+                self.c_step,
+                self.metrics
+            )
+            
+        return self.get_obs(), objectives, self.done, False, info
     
     def reset(
         self,
         seed: int | None = None,
-        options: dict[str, Any] | None = None,
+        checkpoint_path: str = None,
     ) -> tuple[np.ndarray, dict[str, Any]]:  # type: ignore
+        self.done = False
         self.c_step = 0
+        self.c_episode += 1
+        self.runner_state = None
+        self.buffer_state = None
+
+        # Use default hyperparameter configuration
+        self.c_hp_config = dict(self.algorithm_cls.get_default_hpo_config())
+        self.instantiate_algorithm_()
+
+        if checkpoint_path:
+            _, dummy_buffer_state = self.algorithm.init(jax.random.PRNGKey(42))
+            (
+                self.c_hp_config,
+                self.c_step,
+                self.c_episode, 
+            ), algorithm_kw_args = Checkpointer.load(checkpoint_path, self.config["algorithm"], dummy_buffer_state)
+
+            self.initialize_algorithm_(**algorithm_kw_args)
 
         return self.get_obs(), {}

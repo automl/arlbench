@@ -1,7 +1,8 @@
 import jax
 import time
+import numpy as np
 
-from arlbench.agents import PPO
+from arlbench.algorithms import PPO
 
 from arlbench.utils import (
     make_env,
@@ -20,14 +21,16 @@ def test_default_ppo():
     env, env_params = make_env("gymnax", "CartPole-v1")
     rng = jax.random.PRNGKey(42)
 
-    config = PPO.get_default_configuration()
+    config = PPO.get_default_hpo_config()
     agent = PPO(config, PPO_OPTIONS, env, env_params)
     runner_state, buffer_state = agent.init(rng)
     
     start = time.time()
     (runner_state, _), _ = agent.train(runner_state, buffer_state)
     training_time = time.time() - start
-    reward = agent.eval(runner_state, PPO_OPTIONS["n_eval_episodes"])
+    rewards = agent.eval(runner_state, PPO_OPTIONS["n_eval_episodes"])
+    reward = np.mean(rewards)
+
     assert reward > 450    
     print(reward, training_time)
 
