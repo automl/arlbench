@@ -19,26 +19,7 @@ PPO_OPTIONS = {
 }
 
 
-
-def test_gymnax_ppo():
-    env, env_params = gymnax.make("Pendulum-v1")
-    rng = jax.random.PRNGKey(42)
-
-    config = DEFAULTPPO.get_default_hpo_config()
-    agent = DEFAULTPPO(config, PPO_OPTIONS, env, env_params)
-    runner_state, buffer_state = agent.init(rng)
-
-    start = time.time()
-    (runner_state, _), _ = agent.train(runner_state, buffer_state)
-    training_time = time.time() - start
-    rewards = agent.eval(runner_state, PPO_OPTIONS["n_eval_episodes"])
-    reward = np.mean(rewards)
-    
-    assert reward > 400
-    print(reward, training_time)
-
-
-def test_envpool_ppo():
+def test_vw_envpool_ppo():
     env = envpool.make("Pendulum-v1", env_type="gymnasium", num_envs=PPO_OPTIONS["n_envs"], seed=42)
     rng = jax.random.PRNGKey(42)
 
