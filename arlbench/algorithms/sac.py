@@ -116,7 +116,7 @@ class SAC(Algorithm):
                 "buffer_batch_size": Integer("buffer_batch_size", (1, 1024), default=256),
                 "buffer_beta": Float("buffer_beta", (0., 1.), default=0.0),
                 "lr": Float("lr", (1e-5, 0.1), default=3e-4),
-                "gradient steps": Integer("gradient steps", (1, int(1e5)), default=1),
+                "gradient steps": Integer("gradient steps", (1, int(1e5)), default=2),
                 "policy_delay": Integer("policy_delay", (1, int(1e5)), default=1),
                 "gamma": Float("gamma", (0., 1.), default=0.99),
                 "tau": Float("tau", (0., 1.), default=0.005),
@@ -260,13 +260,14 @@ class SAC(Algorithm):
             q_pred = self.critic_network.apply(
                 params, batch.last_obs, batch.action
             )  # (batch_size, 2)
-            return 0.5 * ((target_q_value - q_pred) ** 2).mean(axis=1).sum(), q_pred
+            td_error = target_q_value - q_pred
+            return 0.5 * ((td_error) ** 2).mean(axis=1).sum(), jnp.abs(td_error)
 
-        (loss_value, q_pred), grads = jax.value_and_grad(mse_loss, has_aux=True)(
+        (loss_value, td_error), grads = jax.value_and_grad(mse_loss, has_aux=True)(
             critic_train_state.params
         )
         critic_train_state = critic_train_state.apply_gradients(grads=grads)
-        return critic_train_state, loss_value, q_pred, grads, rng,
+        return critic_train_state, loss_value, td_error, grads, rng,
 
     @functools.partial(jax.jit, static_argnums=0)
     def update_actor(self, actor_train_state, critic_train_state, alpha_train_state, batch, rng):
@@ -311,23 +312,24 @@ class SAC(Algorithm):
             def gradient_step(carry, _):
                 rng, actor_train_state, critic_train_state, alpha_train_state = carry
                 rng, batch_sample_rng = jax.random.split(rng)
-                batch = self.buffer.sample(buffer_state, batch_sample_rng).experience.first
-                # todo: for gradient many steps
-                critic_train_state, critic_loss, q_pred, grads, rng = self.update_critic(
+                batch = self.buffer.sample(buffer_state, batch_sample_rng)
+                critic_train_state, critic_loss, td_error, grads, rng = self.update_critic(
                     actor_train_state,
                     critic_train_state,
                     alpha_train_state,
-                    batch,
+                    batch.experience.first,
                     rng,
                 )
+                self.buffer.set_priorities(buffer_state, batch.indices, jnp.min(td_error, axis=0))
                 # todo: consider policy_delay here!?
                 actor_train_state, actor_loss, entropy, grads, rng = self.update_actor(
                     actor_train_state,
                     critic_train_state,
                     alpha_train_state,
-                    batch,
+                    batch.experience.first,
                     rng,
                 )
+                # todo: check again if correct without using batch data
                 alpha_train_state, alpha_loss = self.update_alpha(alpha_train_state, entropy)
                 return (rng, actor_train_state, critic_train_state, alpha_train_state), (critic_loss, actor_loss, alpha_loss)
 
@@ -464,14 +466,6 @@ class SAC(Algorithm):
 
         timestep = TimeStep(last_obs=last_obs, obs=obsv, action=buffer_action, reward=reward, done=done)
         buffer_state = self.buffer.add(buffer_state, timestep)
-        transition_weight = jnp.ones(len(obsv))
-        # todo: add correct priorities here
-        # compute indices of newly added buffer elements
-        added_indices = jnp.arange(
-            0,
-            len(obsv)
-        ) + buffer_state.current_index
-        buffer_state = self.buffer.set_priorities(buffer_state, added_indices, transition_weight)
 
         transition = Transition(
             done, action, value, reward, last_obs, info
