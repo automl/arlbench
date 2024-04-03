@@ -1,68 +1,73 @@
-import chex
 import jax
 import gymnax
-from typing import Union, Any
-from flax import struct
-
-# handle0, states = loop_var
-#   action = policy(states)
-#   # for gym < 0.26
-#   handle1, (new_states, rew, done, info) = step(handle0, action)
-#   # for gym >= 0.26
-#   # handle1, (new_states, rew, term, trunc, info) = step(handle0, action)
-#   # for dm
-#   # handle1, new_states = step(handle0, action)
-#   return (handle1, new_states)
+import functools
+import jax.numpy as jnp
 
 
-@struct.dataclass
-class EnvState:
-    handle: Any     # TODO add type of "handle" from env.xla()
-    step: Any       # TODO add type of "step" from env.xla()
-
-
-@struct.dataclass
-class EnvParams:
-    dummy: int
-
-
-class VectorWrapper(gymnax.environments.environment.Environment):
-    def __init__(self, env, n_envs: int):
+class VectorWrapper:
+    def __init__(self, env, n_envs: int = -1, env_params=None):
         super().__init__()
         self.is_gymnax = isinstance(env, gymnax.environments.environment.Environment)
         self.env = env
+        self.xla_step_ = None
 
-    def step_env(
-        self,
-        key: chex.PRNGKey,
-        state: EnvState,
-        action: Union[int, float],
-        params: EnvParams,
-    ):
-        """Environment-specific step transition."""
-        new_handle, (obs, r, done, info) = state.step(state.handle, action)
-        new_state = EnvState(handle=new_handle, step=state.step)
+        if self.is_gymnax:
+            # TODO validate that env_params is not None
+            self.env_params = env_params
+        else:
+            self.handle0_, _, _, self.xla_step_ = self.env.xla()
 
-        return obs,new_state, r, done, info
-
-    def reset_env(self, key: chex.PRNGKey, params: EnvParams):
-        """Environment-specific reset."""
-        handle, _, _, step = self.env.xla()
-        state = EnvState(handle=handle, step=step)
-        return state, {}
-
-    def action_space(self, params: EnvParams):
-        """Action space of the environment."""
-        return self.env.action_space
-
-    def observation_space(self, params: EnvParams):
-        """Observation space of the environment."""
-        return gymnax.environments.spaces.Box(
-            self.env.observation_space.low,
-            self.env.observation_space.high,
-            self.env.observation_space.low.shape,
+    @functools.partial(jax.jit, static_argnums=0)
+    def reset_gymnax_(self, rng):
+        obs, env_state = jax.vmap(self.env.reset, in_axes=(0, None))(
+            rng, self.env_params
         )
+        return env_state, obs
+
+    @functools.partial(jax.jit, static_argnums=0)
+    def reset_envpool_(self):
+        obs, _ = self.env.reset()
+        return self.handle0_, obs
+
+    @functools.partial(jax.jit, static_argnums=0)
+    def reset(self, env_params=None, rng=None):
+        if self.is_gymnax:
+            return self.reset_gymnax_(rng)
+        else:
+            return self.reset_envpool_()
+
+    @functools.partial(jax.jit, static_argnums=0)
+    def step_gymnax_(self, env_state, action, rng):
+        obs, env_state, reward, done, info = jax.vmap(
+            self.env.step, in_axes=(0, 0, 0, None)
+        )(rng, env_state, action, self.env_params)
+
+        return env_state, (obs, reward, done, info)
+
+    @functools.partial(jax.jit, static_argnums=0)
+    def step_envpool_(self, handle, action):
+        handle1, (obs, reward, term, trunc, info) = self.step(handle, action)
+        done = jnp.logical_or(term, trunc)
+        return handle1, (obs, reward, done, info)
+
+    @functools.partial(jax.jit, static_argnums=0)
+    def step(self, env_state, action, rng=None):
+        if self.is_gymnax:
+            return self.step_gymnax_(env_state, action, rng=rng)
+        else:
+            return self.step_envpool_(env_state, action)
 
     @property
-    def default_params(self) -> EnvParams:
-        return EnvParams(500)
+    def action_space(self):
+        if self.is_gymnax:
+            return self.env.action_space(self.env_params)
+        else:
+            return self.env.action_space
+
+    @property
+    def observation_space(self):
+        if self.is_gymnax:
+            return self.env.observation_space(self.env_params)
+        else:
+            return self.env.observation_space
+    

@@ -12,23 +12,6 @@ import functools
 from .algorithm import Algorithm
 from .models import ActorCritic
 from ConfigSpace import Configuration, ConfigurationSpace, Float, Integer, Categorical
-import numpy as np
-
-
-# def actor_step(iter, loop_var):
-#   handle0, states = loop_var
-#   action = policy(states.observation.obs)
-#   handle1 = send(handle0, action, states.observation.env_id)
-#   handle1, new_states = recv(handle0)
-#   return handle1, new_states
-
-# @jit
-# def run_actor_loop(num_steps, init_var):
-#   return lax.fori_loop(0, num_steps, actor_step, init_var)
-
-# env.async_reset()
-# handle, states = recv(handle)
-# run_actor_loop(100, (handle, states))
 
 
 class PPOTrainState(TrainState):
@@ -51,7 +34,8 @@ class PPOTrainState(TrainState):
 class PPORunnerState(NamedTuple):
     rng: chex.PRNGKey
     train_state: PPOTrainState
-    step_loop_var: Any
+    env_state: Any
+    obs: chex.Array
 
 
 class Transition(NamedTuple):
@@ -162,13 +146,17 @@ class PPO(Algorithm):
 
     def init(self, rng, buffer_state=None, network_params=None, opt_state=None):
         rng, _rng = jax.random.split(rng)
+        reset_rng = jax.random.split(_rng, self.env_options["n_envs"])
 
-        _obs, env_states = self.env.reset()
+        last_obsv, last_env_state = self.env.reset(reset_rng, self.env_params)
+
+        if buffer_state is None or network_params is None:
+            dummy_rng = jax.random.PRNGKey(0) 
+            _action = self.env.action_space().sample(dummy_rng)
+            _, _env_state = self.env.reset(rng, self.env_params)
+            _obs, _, _reward, _done, _ = self.env.step(rng, _env_state, _action, self.env_params)
         
         if buffer_state is None:
-            _action = np.zeros(self.env_options["n_envs"], dtype=int).reshape((-1, 1))
-            _obs, _, _reward, _done, _ = self.env.step(_action)
-
             _timestep = TimeStep(last_obs=_obs, obs=_obs, action=_action, reward=_reward, done=_done)
             buffer_state = self.buffer.init(_timestep)
 
@@ -190,14 +178,11 @@ class PPO(Algorithm):
 
         rng, _rng = jax.random.split(rng)
 
-        # envpool
-        handle, self.recv, self.send, self.step = self.env.xla()
-        states = self.env.reset()
-
         runner_state = PPORunnerState(
             rng=_rng,
             train_state=train_state,
-            step_loop_var=(handle, states)
+            env_state=last_env_state,
+            obs=last_obsv,
         )
 
         return runner_state, buffer_state
@@ -233,11 +218,10 @@ class PPO(Algorithm):
         (
             rng,
             train_state,
-            step_loop_var
+            env_state,
+            last_obs
         ) = runner_state
-        _, (obs, _) = step_loop_var
-        _, last_val = self.network.apply(train_state.params, obs)
-     
+        _, last_val = self.network.apply(train_state.params, last_obs)
 
         advantages, targets = self._calculate_gae(traj_batch, last_val)
     
@@ -254,7 +238,8 @@ class PPO(Algorithm):
         runner_state = PPORunnerState(
             rng=rng,
             train_state=train_state,
-            step_loop_var=step_loop_var
+            env_state=env_state,
+            obs=last_obs
         )
         if self.track_trajectories:
             out = (
@@ -283,37 +268,34 @@ class PPO(Algorithm):
         (
             rng,
             train_state,
-            step_loop_var
+            env_state,
+            last_obs
         ) = runner_state
-
-        handle0, (obs, env_info) = step_loop_var
 
         # SELECT ACTION
         rng, _rng = jax.random.split(rng)
-        pi, value = self.network.apply(train_state.params, obs)
+        pi, value = self.network.apply(train_state.params, last_obs)
         action = pi.sample(seed=_rng)
         log_prob = pi.log_prob(action)
 
         # STEP ENV
-        handle1, (new_obs, reward, term, trunc, info) = self.step(handle0, action)
-        # rng, _rng = jax.random.split(rng)
-        # rng_step = jax.random.split(_rng, self.env_options["n_envs"])
-        # obsv, env_state, reward, done, info = jax.vmap(
-        #     self.env.step, in_axes=(0, 0, 0, None)
-        # )(rng_step, env_state, action, self.env_params)
+        rng, _rng = jax.random.split(rng)
+        rng_step = jax.random.split(_rng, self.env_options["n_envs"])
+        obsv, env_state, reward, done, info = jax.vmap(
+            self.env.step, in_axes=(0, 0, 0, None)
+        )(rng_step, env_state, action, self.env_params)
 
-        # TODO use buffer to append new_states.???
-
-        # timestep = TimeStep(last_obs=last_obs, obs=obsv, action=action, reward=reward, done=done)
-        # buffer_state = self.buffer.add(buffer_state, timestep)
+        timestep = TimeStep(last_obs=last_obs, obs=obsv, action=action, reward=reward, done=done)
+        buffer_state = self.buffer.add(buffer_state, timestep)
 
         transition = Transition(
-            jnp.logical_or(term, trunc), action, value, reward, log_prob, obs, info
+            done, action, value, reward, log_prob, last_obs, info
         )
         runner_state = PPORunnerState(
             train_state=train_state,
-            rng=rng,
-            step_loop_var=(handle1, (new_obs, env_info))
+            env_state=env_state,
+            obs=obsv,
+            rng=rng
         )
         return (runner_state, buffer_state), transition
     
