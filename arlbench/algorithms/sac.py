@@ -140,7 +140,7 @@ class SAC(Algorithm):
             seed=seed,
             space={
                 "activation": Categorical("activation", ["tanh", "relu"], default="tanh"),
-                "hidden_size": Integer("hidden_size", (1, 1024), default=256),
+                "hidden_size": Integer("hidden_size", (1, 1024), default=64),
             },
         )
         return cs
@@ -220,6 +220,7 @@ class SAC(Algorithm):
     def predict(self, actor_params, obsv, rng) -> int:
         pi = self.actor_network.apply(actor_params, obsv)
         action = pi.mode()
+        # todo: we need to check that the action spaces are finite
         low, high = self.env.action_space(self.env_params).low, self.env.action_space(self.env_params).high
         return low + (action + 1.0) * 0.5 * (high - low)
 
@@ -307,41 +308,43 @@ class SAC(Algorithm):
             _
     ):
         def do_update(rng, actor_train_state, critic_train_state, alpha_train_state, buffer_state):
-            #def one_gradient_step(rng, actor_train_state, critic_train_state, alpha_train_state):
-            rng, batch_sample_rng = jax.random.split(rng)
-            batch = self.buffer.sample(buffer_state, batch_sample_rng).experience.first
-            # todo: for gradient many steps
-            critic_train_state, critic_loss, q_pred, grads, rng = self.update_critic(
-                actor_train_state,
-                critic_train_state,
-                alpha_train_state,
-                batch,
-                rng,
-            )
-            # todo: consider policy_delay here!?
-            actor_train_state, actor_loss, entropy, grads, rng = self.update_actor(
-                actor_train_state,
-                critic_train_state,
-                alpha_train_state,
-                batch,
-                rng,
-            )
-            alpha_train_state, alpha_loss = self.update_alpha(alpha_train_state, entropy)
-            #alpha_loss = (jnp.array([0]) - jnp.array([0])).mean()
+            def gradient_step(carry, _):
+                rng, actor_train_state, critic_train_state, alpha_train_state = carry
+                rng, batch_sample_rng = jax.random.split(rng)
+                batch = self.buffer.sample(buffer_state, batch_sample_rng).experience.first
+                # todo: for gradient many steps
+                critic_train_state, critic_loss, q_pred, grads, rng = self.update_critic(
+                    actor_train_state,
+                    critic_train_state,
+                    alpha_train_state,
+                    batch,
+                    rng,
+                )
+                # todo: consider policy_delay here!?
+                actor_train_state, actor_loss, entropy, grads, rng = self.update_actor(
+                    actor_train_state,
+                    critic_train_state,
+                    alpha_train_state,
+                    batch,
+                    rng,
+                )
+                alpha_train_state, alpha_loss = self.update_alpha(alpha_train_state, entropy)
+                return (rng, actor_train_state, critic_train_state, alpha_train_state), (critic_loss, actor_loss, alpha_loss)
 
-            return rng, actor_train_state, critic_train_state, alpha_train_state, (critic_loss, actor_loss, alpha_loss)
-            #carry = (rng, actor_train_state, critic_train_state, alpha_train_state)
-
-            # todo: fix this using scan and collecting loss statistics
-            #return jax.lax.fori_loop(0, self.hpo_config["gradient steps"], one_gradient_step, carry)
-            #return jax.lax.scan()
+            carry, loss = jax.lax.scan(
+                gradient_step,
+                (rng, actor_train_state, critic_train_state, alpha_train_state),
+                None,
+                self.hpo_config["gradient steps"]
+            )
+            rng, actor_train_state, critic_train_state, alpha_train_state = carry
+            return rng, actor_train_state, critic_train_state, alpha_train_state, loss
 
         def dont_update(rng, actor_train_state, critic_train_state, alpha_train_state, _):
-            return rng, actor_train_state, critic_train_state, alpha_train_state, (
-                ((jnp.array([0]) - jnp.array([0])) ** 2).mean(),
-                ((jnp.array([0]) - jnp.array([0])) ** 2).mean(),
-                ((jnp.array([0]) - jnp.array([0])) ** 2).mean(),
-            )
+            single_loss = jnp.array([((jnp.array([0]) - jnp.array([0])) ** 2).mean()] * self.hpo_config["gradient steps"])
+            loss = (single_loss, single_loss, single_loss)
+            return rng, actor_train_state, critic_train_state, alpha_train_state, loss
+
 
         # soft update
         def target_update():
