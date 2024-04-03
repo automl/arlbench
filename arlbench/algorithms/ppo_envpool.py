@@ -12,6 +12,7 @@ import functools
 from .algorithm import Algorithm
 from .models import ActorCritic
 from ConfigSpace import Configuration, ConfigurationSpace, Float, Integer, Categorical
+import numpy as np
 
 
 # def actor_step(iter, loop_var):
@@ -50,8 +51,6 @@ class PPOTrainState(TrainState):
 class PPORunnerState(NamedTuple):
     rng: chex.PRNGKey
     train_state: PPOTrainState
-    env_state: Any
-    obs: chex.Array
     step_loop_var: Any
 
 
@@ -163,17 +162,12 @@ class PPO(Algorithm):
 
     def init(self, rng, buffer_state=None, network_params=None, opt_state=None):
         rng, _rng = jax.random.split(rng)
-        reset_rng = jax.random.split(_rng, self.env_options["n_envs"])
 
-        last_obsv, last_env_state = jax.vmap(self.env.reset, in_axes=(0, None))(
-            reset_rng, self.env_params
-        )
+        _obs, env_states = self.env.reset()
         
         if buffer_state is None:
-            dummy_rng = jax.random.PRNGKey(0) 
-            _action = self.env.action_space().sample(dummy_rng)
-            _, _env_state = self.env.reset(rng, self.env_params)
-            _obs, _, _reward, _done, _ = self.env.step(rng, _env_state, _action, self.env_params)
+            _action = np.zeros(self.env_options["n_envs"], dtype=int)
+            _obs, _, _reward, _done, _ = self.env.step(_action)
 
             _timestep = TimeStep(last_obs=_obs, obs=_obs, action=_action, reward=_reward, done=_done)
             buffer_state = self.buffer.init(_timestep)
@@ -197,15 +191,12 @@ class PPO(Algorithm):
         rng, _rng = jax.random.split(rng)
 
         # envpool
-        handle, self.recv, self.send, _ = self.env.xla()
-        self.env.async_reset()
-        handle, states = self.recv(handle)
+        handle, self.recv, self.send, self.step = self.env.xla()
+        states = self.env.reset()
 
         runner_state = PPORunnerState(
             rng=_rng,
             train_state=train_state,
-            env_state=last_env_state,
-            obs=last_obsv,
             step_loop_var=(handle, states)
         )
 
@@ -242,11 +233,10 @@ class PPO(Algorithm):
         (
             rng,
             train_state,
-            env_state,
-            last_obs,
             step_loop_var
         ) = runner_state
-        _, last_val = self.network.apply(train_state.params, last_obs)
+        handle0, (obs, env_info) = step_loop_var
+        _, last_val = self.network.apply(train_state.params, obs)
 
         advantages, targets = self._calculate_gae(traj_batch, last_val)
     
@@ -263,8 +253,6 @@ class PPO(Algorithm):
         runner_state = PPORunnerState(
             rng=rng,
             train_state=train_state,
-            env_state=env_state,
-            obs=last_obs,
             step_loop_var=step_loop_var
         )
         if self.track_trajectories:
@@ -294,22 +282,22 @@ class PPO(Algorithm):
         (
             rng,
             train_state,
-            env_state,
-            last_obs,
             step_loop_var
         ) = runner_state
 
-        handle0, states = step_loop_var
+        handle0, (obs, _env_info) = step_loop_var
 
         # SELECT ACTION
         rng, _rng = jax.random.split(rng)
-        pi, value = self.network.apply(train_state.params, states.observation.obs)
+        pi, value = self.network.apply(train_state.params, obs)
         action = pi.sample(seed=_rng)
         log_prob = pi.log_prob(action)
 
         # STEP ENV
-        handle1 = self.send(handle0, action, states.observation.env_id)
-        handle1, new_states = self.recv(handle0)
+        step_ret = self.step(handle0, action)
+        print(step_ret)
+        print(len(step_ret))
+        handle1, (new_states, reward, term, trunc, info) = step_ret
         # rng, _rng = jax.random.split(rng)
         # rng_step = jax.random.split(_rng, self.env_options["n_envs"])
         # obsv, env_state, reward, done, info = jax.vmap(
@@ -326,8 +314,6 @@ class PPO(Algorithm):
         # )
         runner_state = PPORunnerState(
             train_state=train_state,
-            env_state=env_state,
-            obs=new_states.observation.obs,
             rng=rng,
             step_loop_var=(handle1, new_states)
         )

@@ -6,7 +6,7 @@ import gymnax
 import jax.numpy as jnp
 from ConfigSpace import Configuration, ConfigurationSpace
 from flashbax.buffers.prioritised_trajectory_buffer import PrioritisedTrajectoryBufferState
-
+import gymnasium as gym
 
 
 class Algorithm(ABC):
@@ -32,17 +32,24 @@ class Algorithm(ABC):
 
     @property
     def action_type(self) -> Tuple[Sequence[int], bool]:
+        if callable(self.env.action_space):
+            action_space = self.env.action_space(self.env_params)
+        else:
+            action_space = self.env.action_space
+
         if isinstance(
-            self.env.action_space(self.env_params), gymnax.environments.spaces.Discrete
+            action_space, gymnax.environments.spaces.Discrete
+        ) or isinstance(
+            action_space, gym.spaces.Discrete
         ):
-            action_size = self.env.action_space(self.env_params).n
+            action_size = action_space.n
             discrete = True
-        elif isinstance(self.env.action_space(self.env_params), gymnax.environments.spaces.Box):
-            action_size = self.env.action_space(self.env_params).shape[0]
+        elif isinstance(action_space, gymnax.environments.spaces.Box) or isinstance(action_space, gym.spaces.Box):
+            action_size = action_space.shape[0]
             discrete = False
         else:
             raise NotImplementedError(
-                f"Only Discrete and Box action spaces are supported, got {self.env.action_space(self.env_params)}."
+                f"Only Discrete and Box action spaces are supported, got {self.env.action_space}."
             )
 
         return action_size, discrete
