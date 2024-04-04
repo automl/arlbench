@@ -1,12 +1,9 @@
 import jax
 import time
 import numpy as np
-
 from arlbench.algorithms import DQN
+from arlbench.environments import make_env
 
-from arlbench.utils import (
-    make_env,
-)
 
 DQN_OPTIONS = {
     "n_total_timesteps": 1e6,
@@ -19,11 +16,11 @@ DQN_OPTIONS = {
 
 # Default hyperparameter configuration
 def test_default_dqn():
-    env, env_params = make_env("gymnax", "CartPole-v1")
+    env = make_env("gymnax", "CartPole-v1", seed=42)
     rng = jax.random.PRNGKey(43)  # todo: fix this seed
 
     config = DQN.get_default_hpo_config()
-    agent = DQN(config, DQN_OPTIONS, env, env_params)
+    agent = DQN(config, DQN_OPTIONS, env)
     runner_state, buffer_state = agent.init(rng)
     
     start = time.time()
@@ -37,12 +34,12 @@ def test_default_dqn():
 
 # uniform experience replay
 def test_per_dqn():
-    env, env_params = make_env("gymnax", "CartPole-v1")
+    env = make_env("gymnax", "CartPole-v1", seed=42)
     rng = jax.random.PRNGKey(42)
 
     config = DQN.get_default_hpo_config()
     config["buffer_prio_sampling"] = True
-    agent = DQN(config, DQN_OPTIONS, env, env_params)
+    agent = DQN(config, DQN_OPTIONS, env)
     runner_state, buffer_state = agent.init(rng)
     
     start = time.time()
@@ -56,12 +53,12 @@ def test_per_dqn():
 
 # no target network
 def test_no_target_dqn():
-    env, env_params = make_env("gymnax", "CartPole-v1")
+    env = make_env("gymnax", "CartPole-v1", seed=42)
     rng = jax.random.PRNGKey(42)
 
     config = DQN.get_default_hpo_config()
     config["use_target_network"] = False
-    agent = DQN(config, DQN_OPTIONS, env, env_params)
+    agent = DQN(config, DQN_OPTIONS, env)
     runner_state, buffer_state = agent.init(rng)
     
     start = time.time()
@@ -75,12 +72,12 @@ def test_no_target_dqn():
 
 # ReLU activation
 def test_relu_dqn():
-    env, env_params = make_env("gymnax", "CartPole-v1")
+    env = make_env("gymnax", "CartPole-v1", seed=42)
     rng = jax.random.PRNGKey(42)
 
     config = DQN.get_default_hpo_config()
     config["activation"] = "relu"
-    agent = DQN(config, DQN_OPTIONS, env, env_params)
+    agent = DQN(config, DQN_OPTIONS, env)
     runner_state, buffer_state = agent.init(rng)
     
     start = time.time()

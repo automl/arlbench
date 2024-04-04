@@ -8,8 +8,8 @@ from arlbench.utils import config_space_to_gymnasium_space
 from flashbax.buffers.prioritised_trajectory_buffer import PrioritisedTrajectoryBufferState
 from ConfigSpace import Configuration
 import warnings
-from arlbench.utils.checkpointing import Checkpointer
-from arlbench.objectives import track_emissions, track_reward, track_runtime
+from arlbench.autorl_env.checkpointing import Checkpointer
+from arlbench.autorl_env.objectives import track_emissions, track_reward, track_runtime
 
 
 class AutoRLEnv(gymnasium.Env):
@@ -35,7 +35,6 @@ class AutoRLEnv(gymnasium.Env):
         self.envs = envs
         self.c_env_id = 0   # TODO improve
         self.c_env = self.envs[self.c_env_id]["env"]
-        self.c_env_params = self.envs[self.c_env_id]["env_params"]
         self.c_env_options = self.envs[self.c_env_id]["env_options"]
 
         # Init action space
@@ -129,7 +128,6 @@ class AutoRLEnv(gymnasium.Env):
             self.c_hp_config,
             self.c_env_options,
             self.c_env,
-            self.c_env_params,
             track_trajectories=self.track_trajectories,
             track_metrics=self.track_metrics
         )

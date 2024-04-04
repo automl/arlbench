@@ -3,10 +3,7 @@ import time
 import numpy as np
 
 from arlbench.algorithms import PPO
-
-from arlbench.utils import (
-    make_env,
-)
+from arlbench.environments import make_env
 
 PPO_OPTIONS = {
     "n_total_timesteps": 1e5,
@@ -17,12 +14,13 @@ PPO_OPTIONS = {
     "track_traj": False,
 }
 
-def test_default_ppo():
-    env, env_params = make_env("gymnax", "CartPole-v1")
+
+def test_default_ppo_discrete():
+    env = make_env("gymnax", "CartPole-v1", seed=42)
     rng = jax.random.PRNGKey(42)
 
     config = PPO.get_default_hpo_config()
-    agent = PPO(config, PPO_OPTIONS, env, env_params)
+    agent = PPO(config, PPO_OPTIONS, env)
     runner_state, buffer_state = agent.init(rng)
     
     start = time.time()
@@ -34,5 +32,25 @@ def test_default_ppo():
     assert reward > 450    
     print(reward, training_time)
 
-test_default_ppo()
 
+def test_default_ppo_continuous():
+    env = make_env("gymnax", "Pendulum-v1", seed=42)
+    rng = jax.random.PRNGKey(42)
+
+    config = PPO.get_default_hpo_config()
+    agent = PPO(config, PPO_OPTIONS, env)
+    runner_state, buffer_state = agent.init(rng)
+    
+    start = time.time()
+    (runner_state, _), _ = agent.train(runner_state, buffer_state)
+    training_time = time.time() - start
+    rewards = agent.eval(runner_state, PPO_OPTIONS["n_eval_episodes"])
+    reward = np.mean(rewards)
+
+    assert reward > -1200    
+    print(reward, training_time)
+
+
+if __name__ == "__main__":
+    test_default_ppo_discrete()
+    test_default_ppo_continuous()

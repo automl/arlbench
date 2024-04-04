@@ -5,8 +5,8 @@ from arlbench.algorithms import (
     DQN
 )
 
-from arlbench.utils.checkpointing import Checkpointer
-from arlbench.utils import make_env
+from arlbench.autorl_env.checkpointing import Checkpointer
+from arlbench.environments import make_env
 
 
 def test_read_write_buffer():
@@ -22,11 +22,11 @@ def test_read_write_buffer():
         "track_traj": False,
     }
 
-    env, env_params = make_env("gymnax", "CartPole-v1")
+    env = make_env("gymnax", "CartPole-v1", seed=42)
     rng = jax.random.PRNGKey(42)
 
     config = DQN.get_default_hpo_config()
-    agent = DQN(config, DQN_OPTIONS, env, env_params)
+    agent = DQN(config, DQN_OPTIONS, env)
     runner_state, buffer_state = agent.init(rng)
 
     (runner_state, buffer_state), _ = agent.train(runner_state, buffer_state)
@@ -72,7 +72,7 @@ def test_checkpoints_dqn():
         "n_eval_episodes": 10
     }
 
-    env, env_params = make_env("gymnax", "CartPole-v1")
+    env = make_env("gymnax", "CartPole-v1", seed=42)
     rng = jax.random.PRNGKey(42)
 
     config = dict(DQN.get_default_hpo_config())
@@ -80,7 +80,6 @@ def test_checkpoints_dqn():
         config,
         DQN_OPTIONS,
         env,
-        env_params,
         track_metrics=True,
         track_trajectories=True,
     )
@@ -130,7 +129,7 @@ def test_checkpoints_ppo():
         "n_eval_episodes": 10
     }
 
-    env, env_params = make_env("gymnax", "CartPole-v1")
+    env = make_env("gymnax", "CartPole-v1", seed=42)
     rng = jax.random.PRNGKey(42)
 
     config = dict(PPO.get_default_hpo_config())
@@ -138,7 +137,6 @@ def test_checkpoints_ppo():
         config,
         PPO_OPTIONS,
         env,
-        env_params,
         track_metrics=True,
         track_trajectories=True,
     )

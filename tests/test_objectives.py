@@ -1,14 +1,12 @@
 
-from arlbench.objectives import track_emissions, track_reward, track_runtime
+from arlbench.autorl_env.objectives import track_emissions, track_reward, track_runtime
 import jax
 import time
 import numpy as np
 
 from arlbench.algorithms import DQN
 
-from arlbench.utils import (
-    make_env,
-)
+from arlbench.environments import make_env
 
 
 DQN_OPTIONS = {
@@ -21,11 +19,11 @@ DQN_OPTIONS = {
 }
 
 def test_reward():
-    env, env_params = make_env("gymnax", "CartPole-v1")
+    env = make_env("gymnax", "CartPole-v1", seed=42)
     rng = jax.random.PRNGKey(42)
 
     config = DQN.get_default_hpo_config()
-    agent = DQN(config, DQN_OPTIONS, env, env_params)
+    agent = DQN(config, DQN_OPTIONS, env)
     runner_state, buffer_state = agent.init(rng)
 
     objectives = {}
@@ -39,11 +37,11 @@ def test_reward():
     assert np.abs(reward - objectives["reward_mean"]) < 0.01
 
 def test_runtime():
-    env, env_params = make_env("gymnax", "CartPole-v1")
+    env = make_env("gymnax", "CartPole-v1", seed=42)
     rng = jax.random.PRNGKey(42)
 
     config = DQN.get_default_hpo_config()
-    agent = DQN(config, DQN_OPTIONS, env, env_params)
+    agent = DQN(config, DQN_OPTIONS, env)
     runner_state, buffer_state = agent.init(rng)
 
     objectives = {}
@@ -57,11 +55,11 @@ def test_runtime():
     assert np.abs(runtime - objectives["runtime"]) < 0.05
 
 def test_emissions():
-    env, env_params = make_env("gymnax", "CartPole-v1")
+    env = make_env("gymnax", "CartPole-v1", seed=42)
     rng = jax.random.PRNGKey(42)
 
     config = DQN.get_default_hpo_config()
-    agent = DQN(config, DQN_OPTIONS, env, env_params)
+    agent = DQN(config, DQN_OPTIONS, env)
     runner_state, buffer_state = agent.init(rng)
 
     objectives = {}
