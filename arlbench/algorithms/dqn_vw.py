@@ -94,7 +94,7 @@ class DQN(Algorithm):
             add_batch_size=self.env_options["n_envs"],
             priority_exponent=priority_exponent
         )
-        if self.hpo_config["buffer_prio_sampling"] is True:  # todo: shouldn't this be the other way around?
+        if self.hpo_config["buffer_prio_sampling"] is True:
             sample_fn = functools.partial(
                 uniform_sample,
                 batch_size=self.hpo_config["buffer_batch_size"],
@@ -250,14 +250,13 @@ class DQN(Algorithm):
             q_pred = q_pred[
                 jnp.arange(q_pred.shape[0]), actions.squeeze().astype(int)
             ]  # (batch_size,)
-            td_error = q_pred - next_q_value
-            return (td_error ** 2).mean(), td_error
+            return ((q_pred - next_q_value) ** 2).mean(), q_pred
 
-        (loss_value, td_error), grads = jax.value_and_grad(mse_loss, has_aux=True)(
+        (loss_value, q_pred), grads = jax.value_and_grad(mse_loss, has_aux=True)(
             train_state.params
         )
         train_state = train_state.apply_gradients(grads=grads)
-        return train_state, loss_value, td_error, grads, train_state.opt_state
+        return train_state, loss_value, q_pred, grads, train_state.opt_state
 
     def _update_step(
         self,
@@ -297,9 +296,37 @@ class DQN(Algorithm):
 
             env_state, (obsv, reward, done, info) = self.env.step(env_state, action, _rng)
 
+            def no_target_td(train_state):
+                return self.network.apply(train_state.params, obsv).argmax(axis=-1)
+
+            def target_td(train_state):
+                return self.network.apply(train_state.target_params, obsv).argmax(
+                    axis=-1
+                )
+
+            q_next_target = jax.lax.cond(
+                self.hpo_config["use_target_network"], target_td, no_target_td, train_state
+            )
+
+            td_error = (
+                reward
+                + (1 - done) * self.hpo_config["gamma"] * q_next_target
+                - self.network.apply(train_state.params, last_obs).take(action)
+            )
+
             timestep = TimeStep(last_obs=last_obs, obs=obsv, action=action, reward=reward, done=done)
             buffer_state = self.buffer.add(buffer_state, timestep)
 
+            # PER: compute indices of newly added buffer elements
+            transition_weight = jnp.power(
+                jnp.abs(td_error) + self.hpo_config["buffer_epsilon"], self.hpo_config["buffer_alpha"]
+            )
+            added_indices = jnp.arange(
+                0,
+                len(obsv)
+            ) + buffer_state.current_index
+            buffer_state = self.buffer.set_priorities(buffer_state, added_indices, transition_weight)
+            
             # global_step += 1
             global_step += self.env_options["n_envs"]
             return (obsv, env_state, global_step, buffer_state), (
@@ -308,32 +335,28 @@ class DQN(Algorithm):
                 reward,
                 done,
                 info,
+                td_error,
             )
 
         def do_update(train_state, buffer_state):
-            batch = self.buffer.sample(buffer_state, rng)
-            train_state, loss, td_error, grads, opt_state = self.update(
+            batch = self.buffer.sample(buffer_state, rng).experience.first
+            train_state, loss, q_pred, grads, opt_state = self.update(
                 train_state,
-                batch.experience.first.last_obs,
-                batch.experience.first.action,
-                batch.experience.first.obs,
-                batch.experience.first.reward,
-                batch.experience.first.done,
+                batch.last_obs,
+                batch.action,
+                batch.obs,
+                batch.reward,
+                batch.done,
             )
-            new_prios = jnp.power(
-                jnp.abs(td_error) + self.hpo_config["buffer_epsilon"], self.hpo_config["buffer_alpha"]
-            )
-            buffer_state = self.buffer.set_priorities(buffer_state, batch.indices, new_prios)
-            return train_state, loss, td_error, grads, opt_state, buffer_state
+            return train_state, loss, q_pred, grads, opt_state
 
-        def dont_update(train_state, buffer_state):
+        def dont_update(train_state, _):
             return (
                 train_state,
                 ((jnp.array([0]) - jnp.array([0])) ** 2).mean(),
                 jnp.ones(self.hpo_config["buffer_batch_size"]),
                 train_state.params,
-                train_state.opt_state,
-                buffer_state,
+                train_state.opt_state
             )
 
         def target_update():
@@ -352,6 +375,7 @@ class DQN(Algorithm):
             reward,
             done,
             info,
+            td_error,
         ) = jax.lax.scan(
             take_step,
             (last_obs, env_state, global_step, buffer_state),
@@ -359,7 +383,7 @@ class DQN(Algorithm):
             self.hpo_config["train_frequency"],
         )
 
-        train_state, loss, td_error, grads, opt_state, buffer_state = jax.lax.cond(
+        train_state, loss, q_pred, grads, opt_state = jax.lax.cond(
             (global_step > self.hpo_config["learning_starts"])
             & (global_step % self.hpo_config["train_frequency"] == 0),
             do_update,
@@ -390,7 +414,7 @@ class DQN(Algorithm):
                     reward=reward,
                     done=done,
                     info=info,
-                    q_pred=[jnp.zeros_like(td_error)]  # todo: why are we logging q_pred here?
+                    q_pred=[q_pred],
                 ),
                 {"td_error": [td_error]},
             )
@@ -398,7 +422,7 @@ class DQN(Algorithm):
             metric = (
                 loss,
                 grads,
-                {"q_pred": [jnp.zeros_like(td_error)], "td_error": [td_error]},  # todo: why are we logging q_pred here?
+                {"q_pred": [q_pred], "td_error": [td_error]},
             )
         else:
             metric = None
