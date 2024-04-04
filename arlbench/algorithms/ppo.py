@@ -12,6 +12,7 @@ import functools
 from .algorithm import Algorithm
 from .models import ActorCritic
 from ConfigSpace import Configuration, ConfigurationSpace, Float, Integer, Categorical
+from arlbench.utils import Environment
 
 
 class PPOTrainState(TrainState):
@@ -53,8 +54,7 @@ class PPO(Algorithm):
         self,
         hpo_config: Union[Configuration, Dict],
         env_options: Dict,
-        env: Any,
-        env_params: Any,
+        env: Environment,
         nas_config: Optional[Union[Configuration, Dict]] = None, 
         track_trajectories=False,
         track_metrics=False
@@ -67,7 +67,6 @@ class PPO(Algorithm):
             nas_config,
             env_options,
             env,
-            env_params,
             track_metrics=track_metrics,
             track_trajectories=track_trajectories
         )
@@ -146,20 +145,20 @@ class PPO(Algorithm):
 
     def init(self, rng, buffer_state=None, network_params=None, opt_state=None):
         rng, _rng = jax.random.split(rng)
-        reset_rng = jax.random.split(_rng, self.env_options["n_envs"])
-
-        last_obsv, last_env_state = jax.vmap(self.env.reset, in_axes=(0, None))(
-            reset_rng, self.env_params
-        )
+        env_state, obs = self.env.reset(_rng)
 
         if buffer_state is None or network_params is None:
             dummy_rng = jax.random.PRNGKey(0) 
-            _action = self.env.action_space().sample(dummy_rng)
-            _, _env_state = self.env.reset(rng, self.env_params)
-            _obs, _, _reward, _done, _ = self.env.step(rng, _env_state, _action, self.env_params)
+            _action = jnp.array(
+                [
+                    self.env.sample_action(dummy_rng)
+                    for _ in range(self.env_options["n_envs"])
+                ]
+            )
+            _, (_obs, _reward, _done, _) = self.env.step(env_state, _action, dummy_rng)
         
         if buffer_state is None:
-            _timestep = TimeStep(last_obs=_obs, obs=_obs, action=_action, reward=_reward, done=_done)
+            _timestep = TimeStep(last_obs=_obs[0], obs=_obs[0], action=_action[0], reward=_reward[0], done=_done[0])
             buffer_state = self.buffer.init(_timestep)
 
         _, _rng = jax.random.split(rng)
@@ -183,15 +182,15 @@ class PPO(Algorithm):
         runner_state = PPORunnerState(
             rng=_rng,
             train_state=train_state,
-            env_state=last_env_state,
-            obs=last_obsv,
+            env_state=env_state,
+            obs=obs,
         )
 
         return runner_state, buffer_state
 
     @functools.partial(jax.jit, static_argnums=0)
-    def predict(self, network_params, obsv, rng) -> int:
-        pi, _ = self.network.apply(network_params, obsv)
+    def predict(self, network_params, obs, rng) -> int:
+        pi, _ = self.network.apply(network_params, obs)
         return pi.sample(seed=rng)
 
     @functools.partial(jax.jit, static_argnums=0, donate_argnums=(2,))
@@ -282,10 +281,7 @@ class PPO(Algorithm):
 
         # STEP ENV
         rng, _rng = jax.random.split(rng)
-        rng_step = jax.random.split(_rng, self.env_options["n_envs"])
-        obsv, env_state, reward, done, info = jax.vmap(
-            self.env.step, in_axes=(0, 0, 0, None)
-        )(rng_step, env_state, action, self.env_params)
+        env_state, (obsv, reward, done, info) = self.env.step(env_state, action, _rng)
 
         timestep = TimeStep(last_obs=last_obs, obs=obsv, action=action, reward=reward, done=done)
         buffer_state = self.buffer.add(buffer_state, timestep)
