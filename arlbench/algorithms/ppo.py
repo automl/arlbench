@@ -189,8 +189,8 @@ class PPO(Algorithm):
         return runner_state, buffer_state
 
     @functools.partial(jax.jit, static_argnums=0)
-    def predict(self, network_params, obs, rng) -> int:
-        pi, _ = self.network.apply(network_params, obs)
+    def predict(self, runner_state, obs, rng) -> int:
+        pi, _ = self.network.apply(runner_state.train_state.params, obs)
         return pi.sample(seed=rng)
 
     @functools.partial(jax.jit, static_argnums=0, donate_argnums=(2,))

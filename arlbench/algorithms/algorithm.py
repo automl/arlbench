@@ -33,10 +33,7 @@ class Algorithm(ABC):
 
     @property
     def action_type(self) -> Tuple[Sequence[int], bool]:
-        if callable(self.env.action_space):
-            action_space = self.env.action_space(self.env_params)
-        else:
-            action_space = self.env.action_space
+        action_space = self.env.action_space
 
         if isinstance(
             action_space, gymnax.environments.spaces.Discrete
@@ -93,21 +90,22 @@ class Algorithm(ABC):
 
     @abstractmethod 
     @functools.partial(jax.jit, static_argnums=0)
-    def predict(self, network_params, obsv, rng = None) -> Any:
+    def predict(self, runner_state, obsv, rng = None) -> Any:
         pass
 
     @functools.partial(jax.jit, static_argnums=0)
-    def _env_episode(self, carry, _):
-        rng, network_params = carry
+    def _env_episode(self, runner_state, _):
+        rng, _rng = jax.random.split(runner_state.rng)
+        _rng, reset_rng = jax.random.split(_rng)
 
-        env_state, obs = self.env.reset(rng) 
+        env_state, obs = self.env.reset(reset_rng) 
         initial_state = (
             env_state,
             obs,
             jnp.full((self.env.n_envs,), 0.), 
             jnp.full((self.env.n_envs,), False),
-            rng,
-            network_params
+            _rng,
+            runner_state
         )
 
         def cond_fn(state):
@@ -115,11 +113,11 @@ class Algorithm(ABC):
             return jnp.logical_not(jnp.all(done))
 
         def body_fn(state):
-            env_state, obs, reward, done, rng, network_params = state
+            env_state, obs, reward, done, rng, runner_state = state
 
             # SELECT ACTION
             rng, action_rng = jax.random.split(rng)
-            action = self.predict(network_params, obs, action_rng)
+            action = self.predict(runner_state, obs, action_rng)
 
             # STEP ENV
             rng, step_rng = jax.random.split(rng)
@@ -130,12 +128,12 @@ class Algorithm(ABC):
             
             done = jnp.logical_or(done, done_)
 
-            return env_state, obs, reward, done, rng, network_params
+            return env_state, obs, reward, done, rng, runner_state
 
         final_state = jax.lax.while_loop(cond_fn, body_fn, initial_state)
         _, _, reward, _, _, _ = final_state
 
-        return (rng, network_params), reward  
+        return runner_state, reward  
 
     def eval(self, runner_state, num_eval_episodes):
         # Number of parallel evaluations, each with n_envs environments
@@ -146,19 +144,10 @@ class Algorithm(ABC):
 
         rewards = []
 
-        carry = runner_state.rng, runner_state.train_state.params
-
-        (_, _), rewards = jax.lax.scan(
-            self._env_episode, carry, None, n_evals
+        _, rewards = jax.lax.scan(
+            self._env_episode, runner_state, None, n_evals
         )
 
         return jnp.concat(rewards)[:num_eval_episodes]
-    
-    # unify the evaluation methods
-    def sac_eval(self, runner_state, num_eval_episodes) -> float:
-        eval_rng = jax.random.split(runner_state.rng, num_eval_episodes)
-        rewards = jax.vmap(self._env_episode, in_axes=(0, None))(
-            eval_rng, runner_state.actor_train_state.params
-        )
-        return float(jnp.mean(rewards))
+
     
