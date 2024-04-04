@@ -4,6 +4,7 @@ import functools
 import jax
 import gymnax
 import jax.numpy as jnp
+import numpy as np
 from ConfigSpace import Configuration, ConfigurationSpace
 from flashbax.buffers.prioritised_trajectory_buffer import PrioritisedTrajectoryBufferState
 import gymnasium
@@ -18,7 +19,7 @@ class Algorithm(ABC):
             hpo_config: Union[Configuration, Dict], 
             nas_config: Union[Configuration, Dict], 
             env_options: Dict, 
-            env: Environment, 
+            env: Environment,
             track_metrics=False,
             track_trajectories=False
         ) -> None:
@@ -137,17 +138,10 @@ class Algorithm(ABC):
 
     def eval(self, runner_state, num_eval_episodes):
         # Number of parallel evaluations, each with n_envs environments
-        if num_eval_episodes > self.env.n_envs:
-            n_evals = int(jnp.ceil(num_eval_episodes / self.env.n_envs))
-        else:
-            n_evals = 1
-
-        rewards = []
-
+        n_evals = int(np.ceil(num_eval_episodes / self.env.n_envs))
         _, rewards = jax.lax.scan(
             self._env_episode, runner_state, None, n_evals
         )
-
         return jnp.concat(rewards)[:num_eval_episodes]
 
     
