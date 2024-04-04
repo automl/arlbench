@@ -9,6 +9,7 @@ from flashbax.buffers.prioritised_trajectory_buffer import PrioritisedTrajectory
 import gymnasium
 import gym
 import numpy as np
+from arlbench.utils import Environment
 
 
 class Algorithm(ABC):
@@ -17,8 +18,7 @@ class Algorithm(ABC):
             hpo_config: Union[Configuration, Dict], 
             nas_config: Union[Configuration, Dict], 
             env_options: Dict, 
-            env: Any, 
-            env_params: Any,
+            env: Environment, 
             track_metrics=False,
             track_trajectories=False
         ) -> None:
@@ -28,7 +28,6 @@ class Algorithm(ABC):
         self.nas_config = nas_config
         self.env_options = env_options
         self.env = env
-        self.env_params = env_params
         self.track_metrics = track_metrics
         self.track_trajectories = track_trajectories
 
@@ -97,44 +96,63 @@ class Algorithm(ABC):
     def predict(self, network_params, obsv, rng = None) -> Any:
         pass
 
-    def _env_episode(self, rng, network_params):
-        reset_rng = jax.random.split(rng, 1)
-        obsv, env_state = jax.vmap(self.env.reset, in_axes=(0, None))(reset_rng, self.env_params)
-        initial_state = (obsv, env_state, 0.0, False, rng, network_params)
+    @functools.partial(jax.jit, static_argnums=0)
+    def _env_episode(self, carry, _):
+        rng, network_params = carry
+
+        env_state, obs = self.env.reset(rng) 
+        initial_state = (
+            env_state,
+            obs,
+            jnp.full((self.env.n_envs,), 0.), 
+            jnp.full((self.env.n_envs,), False),
+            rng,
+            network_params
+        )
 
         def cond_fn(state):
             _, _, _, done, _, _ = state
-            return jnp.logical_not(done)
+            return jnp.logical_not(jnp.all(done))
 
         def body_fn(state):
-            obs, env_state, r, done, rng, network_params = state
+            env_state, obs, reward, done, rng, network_params = state
 
             # SELECT ACTION
             rng, action_rng = jax.random.split(rng)
             action = self.predict(network_params, obs, action_rng)
 
             # STEP ENV
-            rng, _rng = jax.random.split(rng)
-            rng_step = jax.random.split(_rng, 1)
-            obsv, env_state, reward, done_, _ = jax.vmap(
-                self.env.step, in_axes=(0, 0, 0, None)
-            )(rng_step, env_state, action, self.env_params)
+            rng, step_rng = jax.random.split(rng)
+            env_state, (obs, reward_, done_, _) = self.env.step(env_state, action, step_rng)
 
-            r += jnp.sum(reward)
-            done = jnp.any(done_) 
+            # Count rewards only for envs that are not already done
+            reward += reward_ * ~done
+            
+            done = jnp.logical_or(done, done_)
 
-            return obsv, env_state, r, done, rng, network_params
+            return env_state, obs, reward, done, rng, network_params
 
         final_state = jax.lax.while_loop(cond_fn, body_fn, initial_state)
-        _, _, total_reward, _, _, _ = final_state
-        return total_reward        
+        _, _, reward, _, _, _ = final_state
+
+        return (rng, network_params), reward  
 
     def eval(self, runner_state, num_eval_episodes):
-        eval_rng = jax.random.split(runner_state.rng, num_eval_episodes)
-        rewards = jax.vmap(self._env_episode, in_axes=(0, None))(
-            eval_rng, runner_state.train_state.params
+        # Number of parallel evaluations, each with n_envs environments
+        if num_eval_episodes > self.env.n_envs:
+            n_evals = int(jnp.ceil(num_eval_episodes / self.env.n_envs))
+        else:
+            n_evals = 1
+
+        rewards = []
+
+        carry = runner_state.rng, runner_state.train_state.params
+
+        (_, _), rewards = jax.lax.scan(
+            self._env_episode, carry, None, n_evals
         )
-        return jnp.array(rewards)
+
+        return jnp.concat(rewards)[:num_eval_episodes]
     
     # unify the evaluation methods
     def sac_eval(self, runner_state, num_eval_episodes) -> float:
@@ -144,29 +162,3 @@ class Algorithm(ABC):
         )
         return float(jnp.mean(rewards))
     
-    # dev function for envpool evaluation
-    def eval_(self, runner_state, num_eval_episodes, eval_env) -> jnp.ndarray:
-        def eval_episode(rng):
-            obs, _ = eval_env.reset()
-            done = False
-            r = 0
-
-            while not done:
-                rng, action_rng = jax.random.split(rng)
-                action = self.predict(runner_state.train_state.params, obs, action_rng)
-                action = np.array(action)
-                
-                obs, r_, term, trun, _ = eval_env.step(action)
-                r += r_
-                done = term or trun
-            
-            return r
-
-        rng = runner_state.rng 
-        rewards = []
-        for _ in range(num_eval_episodes):
-            rng, ep_rng = jax.random.split(rng)
-            rewards += [eval_episode(ep_rng)]
-
-        return jnp.array(rewards)
-
