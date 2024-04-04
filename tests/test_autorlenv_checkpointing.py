@@ -6,7 +6,7 @@ from arlbench.algorithms import (
 )
 
 from arlbench.autorl_env.checkpointing import Checkpointer
-from arlbench.utils import make_env
+from arlbench.environments import make_env
 from arlbench import AutoRLEnv
 
 
