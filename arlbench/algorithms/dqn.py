@@ -96,7 +96,7 @@ class DQN(Algorithm):
             add_batch_size=self.env_options["n_envs"],
             priority_exponent=priority_exponent
         )
-        if self.hpo_config["buffer_prio_sampling"] is True:
+        if self.hpo_config["buffer_prio_sampling"] is True:  # todo: shouldn't this be the other way around?
             sample_fn = functools.partial(
                 uniform_sample,
                 batch_size=self.hpo_config["buffer_batch_size"],
