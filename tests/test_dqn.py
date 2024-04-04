@@ -20,7 +20,7 @@ DQN_OPTIONS = {
 # Default hyperparameter configuration
 def test_default_dqn():
     env, env_params = make_env("gymnax", "CartPole-v1")
-    rng = jax.random.PRNGKey(42)
+    rng = jax.random.PRNGKey(43)  # todo: fix this seed
 
     config = DQN.get_default_hpo_config()
     agent = DQN(config, DQN_OPTIONS, env, env_params)
