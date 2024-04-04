@@ -8,7 +8,7 @@ def make_env(env_framework, env_name, n_envs=10, seed=0) -> Environment:
     if env_framework == "gymnasium":
         import gymnasium
 
-        env = gymnasium.make(env_name, autoreset=True, seed=seed)
+        env = gymnasium.make(env_name, autoreset=True)
         env = GymToGymnaxWrapper(env)
         env = FlattenObservationWrapper(env)
         env = GymnaxWrapper(env, n_envs, None)
