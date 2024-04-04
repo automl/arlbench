@@ -1,5 +1,5 @@
 
-from arlbench.objectives import track_emissions, track_reward, track_runtime
+from arlbench.autorl_env.objectives import track_emissions, track_reward, track_runtime
 import jax
 import time
 import numpy as np

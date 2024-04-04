@@ -180,7 +180,7 @@ class ActorCritic(nn.Module):
         actor_mean = self.activation_func(actor_mean)
         actor_mean = self.dense1(actor_mean)
         actor_mean = self.activation_func(actor_mean)
-        actor_mean = self.mean_out_layer(actor_mean)
+        actor_mean = self.out_layer(actor_mean)
         if self.discrete:
             pi = distrax.Categorical(logits=actor_mean)
         else:

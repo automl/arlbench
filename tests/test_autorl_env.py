@@ -1,13 +1,13 @@
-from arlbench.autorl_env import AutoRLEnv
+from arlbench import AutoRLEnv
 import gymnax
 import pytest
 import numpy as np
-import time
-
 from arlbench.algorithms import (
     PPO,
     DQN
 )
+from arlbench.environments import make_env 
+
 
 def test_autorl_env_dqn_single_objective():
     CONFIG = {
@@ -21,12 +21,9 @@ def test_autorl_env_dqn_single_objective():
         "grad_obs": True
     }
 
-    cartpole = gymnax.make("CartPole-v1")
-
     envs = {
         0: {
-            "env": cartpole[0],
-            "env_params": cartpole[1],
+            "env": make_env("gymnax", "CartPole-v1", n_envs=10, seed=42),
             "env_options": {
                 "n_total_timesteps": 1e6,
                 "n_env_steps": 500,
@@ -64,12 +61,9 @@ def test_autorl_env_dqn_multi_objective():
         "grad_obs": True
     }
 
-    cartpole = gymnax.make("CartPole-v1")
-
     envs = {
         0: {
-            "env": cartpole[0],
-            "env_params": cartpole[1],
+            "env": make_env("gymnax", "CartPole-v1", n_envs=10, seed=42),
             "env_options": {
                 "n_total_timesteps": 1e6,
                 "n_env_steps": 500,
@@ -109,14 +103,11 @@ def test_autorl_env_dqn_grad_obs():
         "grad_obs": True
     }
 
-    cartpole = gymnax.make("CartPole-v1")
-
     envs = {
         0: {
-            "env": cartpole[0],
-            "env_params": cartpole[1],
+            "env": make_env("gymnax", "CartPole-v1", n_envs=10, seed=42),
             "env_options": {
-                "n_total_timesteps": 1e5,
+                "n_total_timesteps": 1e6,
                 "n_env_steps": 500,
                 "n_envs": 10,
             }
@@ -145,12 +136,9 @@ def test_autorl_env_dqn_per_switch():
         "grad_obs": False
     }
 
-    cartpole = gymnax.make("CartPole-v1")
-
     envs = {
         0: {
-            "env": cartpole[0],
-            "env_params": cartpole[1],
+            "env": make_env("gymnax", "CartPole-v1", n_envs=10, seed=42),
             "env_options": {
                 "n_total_timesteps": 1e6,
                 "n_env_steps": 500,
@@ -176,6 +164,7 @@ def test_autorl_env_dqn_per_switch():
     _, objectives, _, _, _ = env.step({ "buffer_per": False })
     assert objectives["reward_mean"] > 490
 
+
 def test_autorl_env_dqn_hpo():
     CONFIG = {
         "seed": 0,
@@ -188,12 +177,9 @@ def test_autorl_env_dqn_hpo():
         "grad_obs": False
     }
 
-    cartpole = gymnax.make("CartPole-v1")
-
     envs = {
         0: {
-            "env": cartpole[0],
-            "env_params": cartpole[1],
+            "env": make_env("gymnax", "CartPole-v1", n_envs=10, seed=42),
             "env_options": {
                 "n_total_timesteps": 1e6,
                 "n_env_steps": 500,
@@ -201,7 +187,6 @@ def test_autorl_env_dqn_hpo():
             }
         }
     }
-
 
     env = AutoRLEnv(CONFIG, envs)
     # perform 3 HPO steps
@@ -232,12 +217,9 @@ def test_autorl_env_step_before_reset():
         "grad_obs": False
     }
 
-    cartpole = gymnax.make("CartPole-v1")
-
     envs = {
         0: {
-            "env": cartpole[0],
-            "env_params": cartpole[1],
+            "env": make_env("gymnax", "CartPole-v1", n_envs=10, seed=42),
             "env_options": {
                 "n_total_timesteps": 1e6,
                 "n_env_steps": 500,
@@ -245,7 +227,6 @@ def test_autorl_env_step_before_reset():
             }
         }
     }
-
 
     env = AutoRLEnv(CONFIG, envs)
     
@@ -268,12 +249,9 @@ def test_autorl_env_forbidden_step():
         "grad_obs": False
     }
 
-    cartpole = gymnax.make("CartPole-v1")
-
     envs = {
         0: {
-            "env": cartpole[0],
-            "env_params": cartpole[1],
+            "env": make_env("gymnax", "CartPole-v1", n_envs=10, seed=42),
             "env_options": {
                 "n_total_timesteps": 1e6,
                 "n_env_steps": 500,
@@ -281,7 +259,6 @@ def test_autorl_env_forbidden_step():
             }
         }
     }
-
 
     env = AutoRLEnv(CONFIG, envs)
     env.reset()
@@ -292,3 +269,7 @@ def test_autorl_env_forbidden_step():
         env.step(action)
     
     assert "Called step() before reset()" in str(excinfo.value)
+
+
+if __name__ == "__main__":
+    test_autorl_env_dqn_single_objective()
