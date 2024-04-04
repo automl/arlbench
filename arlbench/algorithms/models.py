@@ -1,11 +1,8 @@
-import jax
 import jax.numpy as jnp
 from typing import Sequence
 import flax.linen as nn
-from distrax._src.distributions.distribution import EventT, Array
 from flax.linen.initializers import constant, orthogonal
 import distrax
-
 
 
 class TanhTransformedDistribution(distrax.Transformed):  # type: ignore[name-defined]
@@ -29,7 +26,7 @@ class AlphaCoef(nn.Module):
 
 class SACActor(nn.Module):
     action_dim: Sequence[int]
-    activation: str = "tanh"
+    activation: int
     hidden_size: int = 64
     log_std_min: float = -20
     log_std_max: float = 2
@@ -70,13 +67,12 @@ class SACActor(nn.Module):
         actor_logstd = jnp.clip(actor_logstd, self.log_std_min, self.log_std_max)
 
         pi = TanhTransformedDistribution(distrax.MultivariateNormalDiag(actor_mean, jnp.exp(actor_logstd)))
-        #pi = distrax.MultivariateNormalDiag(actor_mean, jnp.exp(actor_logstd))
         return pi
 
 
 class SACCritic(nn.Module):
     action_dim: Sequence[int]
-    activation: str = "tanh"
+    activation: int
     hidden_size: int = 64
 
     def setup(self):
@@ -149,16 +145,16 @@ class ActorCritic(nn.Module):
 
         self.dense0 = nn.Dense(
             self.hidden_size,
-            #kernel_init=orthogonal(jnp.sqrt(2)),
-            #bias_init=constant(0.0),
+            kernel_init=orthogonal(jnp.sqrt(2)),
+            bias_init=constant(0.0),
         )
         self.dense1 = nn.Dense(
             self.hidden_size,
-            #kernel_init=orthogonal(jnp.sqrt(2)),
-            #bias_init=constant(0.0),
+            kernel_init=orthogonal(jnp.sqrt(2)),
+            bias_init=constant(0.0),
         )
         self.out_layer = nn.Dense(
-            self.action_dim, #kernel_init=orthogonal(0.01), bias_init=constant(0.0)
+            self.action_dim, kernel_init=orthogonal(0.01), bias_init=constant(0.0)
         )
 
         self.actor_logtstd = self.param(
@@ -167,16 +163,16 @@ class ActorCritic(nn.Module):
 
         self.critic0 = nn.Dense(
             self.hidden_size,
-            #kernel_init=orthogonal(jnp.sqrt(2)),
-            #bias_init=constant(0.0),
+            kernel_init=orthogonal(jnp.sqrt(2)),
+            bias_init=constant(0.0),
         )
         self.critic1 = nn.Dense(
             self.hidden_size,
-            #kernel_init=orthogonal(jnp.sqrt(2)),
-            #bias_init=constant(0.0),
+            kernel_init=orthogonal(jnp.sqrt(2)),
+            bias_init=constant(0.0),
         )
         self.critic_out = nn.Dense(
-            1, #kernel_init=orthogonal(1.0), bias_init=constant(0.0)
+            1, kernel_init=orthogonal(1.0), bias_init=constant(0.0)
         )
 
     def __call__(self, x):
@@ -215,16 +211,16 @@ class Q(nn.Module):
 
         self.dense0 = nn.Dense(
             self.hidden_size,
-            #kernel_init=orthogonal(jnp.sqrt(2)),
-            #bias_init=constant(0.0),
+            kernel_init=orthogonal(jnp.sqrt(2)),
+            bias_init=constant(0.0),
         )
         self.dense1 = nn.Dense(
             self.hidden_size,
-            #kernel_init=orthogonal(jnp.sqrt(2)),
-            #bias_init=constant(0.0),
+            kernel_init=orthogonal(jnp.sqrt(2)),
+            bias_init=constant(0.0),
         )
         self.out_layer = nn.Dense(
-            self.action_dim, #kernel_init=orthogonal(1.0), bias_init=constant(0.0)
+            self.action_dim, kernel_init=orthogonal(1.0), bias_init=constant(0.0)
         )
 
     def __call__(self, x):
