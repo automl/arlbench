@@ -44,8 +44,6 @@ class DQNRunnerState(NamedTuple):
     obs: chex.Array
     global_step: int
 
-
-
 class Transition(NamedTuple):
     done: jnp.ndarray
     action: jnp.ndarray
@@ -208,8 +206,8 @@ class DQN(Algorithm):
         return runner_state, buffer_state
 
     @functools.partial(jax.jit, static_argnums=0)
-    def predict(self, network_params, obsv, _) -> int:
-        q_values = self.network.apply(network_params, obsv)
+    def predict(self, runner_state, obs, _) -> int:
+        q_values = self.network.apply(runner_state.train_state.params, obs)
         return q_values.argmax(axis=-1)
 
     @functools.partial(jax.jit, static_argnums=0, donate_argnums=(2,))

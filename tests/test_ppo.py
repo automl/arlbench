@@ -51,3 +51,6 @@ def test_default_ppo_continuous():
     print(reward, training_time)
 
 
+if __name__ == "__main__":
+    test_default_ppo_discrete()
+    test_default_ppo_continuous()

@@ -218,11 +218,11 @@ class SAC(Algorithm):
 
 
     @functools.partial(jax.jit, static_argnums=0)
-    def predict(self, actor_params, obsv, rng) -> int:
-        pi = self.actor_network.apply(actor_params, obsv)
+    def predict(self, runner_state, obs, rng) -> int:
+        pi = self.actor_network.apply(runner_state.train_state.actor_params, obs)
         action = pi.mode()
         # todo: we need to check that the action spaces are finite
-        low, high = self.env.action_space(self.env_params).low, self.env.action_space(self.env_params).high
+        low, high = self.env.action_space.low, self.env.action_space.high
         return low + (action + 1.0) * 0.5 * (high - low)
 
 
