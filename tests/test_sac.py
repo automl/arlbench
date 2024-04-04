@@ -15,18 +15,18 @@ from arlbench.utils import (
 
 
 SAC_OPTIONS = {
-    "n_total_timesteps": 1e5,
-    "n_envs": 1,
-    "n_env_steps": 1000,
-    "n_eval_episodes": 10,
+    "n_total_timesteps": 2e5,
+    "n_envs": 10,
+    "n_env_steps": 200,
+    "n_eval_episodes": 100,
     "track_metrics": False,
     "track_traj": False,
 }
 
 # Default hyperparameter configuration
 def test_default_sac():
-    env, env_params = make_env("gym", "LunarLanderContinuous-v2")
-    #env, env_params = make_env("gymnax", "Pendulum-v1")
+    #env, env_params = make_env("gym", "LunarLanderContinuous-v2")
+    env, env_params = make_env("gymnax", "Pendulum-v1")
     #env, env_params = make_env("brax", "ant")
     rng = jax.random.PRNGKey(42)
 

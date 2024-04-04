@@ -122,7 +122,7 @@ class SAC(Algorithm):
                 "gamma": Float("gamma", (0., 1.), default=0.99),
                 "tau": Float("tau", (0., 1.), default=0.005),
                 "use_target_network": Categorical("use_target_network", [True, False], default=True),
-                "train_frequency": Integer("train_frequency", (1, int(1e5)), default=1),
+                "train_frequency": Integer("train_frequency", (1, int(1e5)), default=4),
                 "learning_starts": Integer("learning_starts", (1, int(1e5)), default=100),
                 "target_network_update_freq": Integer("target_network_update_freq", (1, int(1e5)), default=1),
                 "alpha_auto": Categorical("alpha_auto", [True, False], default=True),
@@ -140,8 +140,8 @@ class SAC(Algorithm):
             name="SACNASConfigSpace",
             seed=seed,
             space={
-                "activation": Categorical("activation", ["tanh", "relu"], default="relu"),
-                "hidden_size": Integer("hidden_size", (1, 1024), default=256),
+                "activation": Categorical("activation", ["tanh", "relu"], default="tanh"),
+                "hidden_size": Integer("hidden_size", (1, 1024), default=64),
             },
         )
         return cs
@@ -261,7 +261,7 @@ class SAC(Algorithm):
                 params, batch.last_obs, batch.action
             )  # (batch_size, 2)
             td_error = target_q_value - q_pred
-            return 0.5 * (td_error ** 2).mean(axis=1).sum(), td_error
+            return 0.5 * (td_error ** 2).mean(axis=1).sum(), jnp.abs(td_error)
 
         (loss_value, td_error), grads = jax.value_and_grad(mse_loss, has_aux=True)(
             critic_train_state.params
@@ -329,25 +329,33 @@ class SAC(Algorithm):
                 )
                 alpha_train_state, alpha_loss = self.update_alpha(alpha_train_state, entropy)
                 new_prios = jnp.power(
-                    jnp.abs(td_error.mean(axis=0)) + self.hpo_config["buffer_epsilon"], self.hpo_config["buffer_alpha"]
+                    td_error.mean(axis=0) + self.hpo_config["buffer_epsilon"], self.hpo_config["buffer_alpha"]
                 )
                 buffer_state = self.buffer.set_priorities(buffer_state, batch.indices, new_prios)
-                return (rng, actor_train_state, critic_train_state, alpha_train_state, buffer_state), (critic_loss, actor_loss, alpha_loss)
+                return (
+                    rng, actor_train_state, critic_train_state, alpha_train_state, buffer_state
+                ), (
+                    critic_loss, actor_loss, alpha_loss, td_error.mean(axis=0), actor_grads, critic_grads,
+                )
 
-            carry, loss = jax.lax.scan(
+            carry, metrics = jax.lax.scan(
                 gradient_step,
                 (rng, actor_train_state, critic_train_state, alpha_train_state, buffer_state),
                 None,
                 self.hpo_config["gradient steps"],
             )
             rng, actor_train_state, critic_train_state, alpha_train_state, buffer_state = carry
-            return rng, actor_train_state, critic_train_state, alpha_train_state, buffer_state, loss
+            return rng, actor_train_state, critic_train_state, alpha_train_state, buffer_state, metrics
 
         def dont_update(rng, actor_train_state, critic_train_state, alpha_train_state, buffer_state):
             single_loss = jnp.array([((jnp.array([0]) - jnp.array([0])) ** 2).mean()] * self.hpo_config["gradient steps"])
-            loss = (single_loss, single_loss, single_loss)
-            return rng, actor_train_state, critic_train_state, alpha_train_state, buffer_state, loss
-
+            td_error = jnp.array(
+                [[[0] * self.hpo_config["buffer_batch_size"]] * self.hpo_config["gradient steps"]]
+            ).mean(axis=0)
+            actor_grads = jax.tree_map(lambda x: jnp.stack([x] * self.hpo_config["gradient steps"]), actor_train_state.params)
+            critic_grads = jax.tree_map(lambda x: jnp.stack([x] * self.hpo_config["gradient steps"]), critic_train_state.params)
+            metrics = (single_loss, single_loss, single_loss, td_error, actor_grads, critic_grads)
+            return rng, actor_train_state, critic_train_state, alpha_train_state, buffer_state, metrics
 
         # soft update
         def target_update():
@@ -385,7 +393,7 @@ class SAC(Algorithm):
         rng, _rng = jax.random.split(rng)
 
         # todo: add loss logging
-        rng, actor_train_state, critic_train_state, alpha_train_state, buffer_state, loss = jax.lax.cond(
+        rng, actor_train_state, critic_train_state, alpha_train_state, buffer_state, metrics = jax.lax.cond(
             (global_step > self.hpo_config["learning_starts"])
             & (global_step % self.hpo_config["train_frequency"] == 0),
             do_update,
@@ -411,28 +419,28 @@ class SAC(Algorithm):
             obs=runner_state.obs,
             global_step=runner_state.global_step
         )
-        #if self.track_trajectories:
-        #    metric = (
-        #        loss,
-        #        grads,
-        #        Transition(
-        #            obs=last_obs,
-        #            action=action,
-        #            reward=reward,
-        #            done=done,
-        #            info=info,
-        #            #q_pred=[q_pred],
-        #        ),
-        #        #{"td_error": [td_error]},
-        #    )
-        #elif self.track_metrics:
-        #    metric = (
-        #        loss,
-        #        grads,
-        #        #{"q_pred": [q_pred], "td_error": [td_error]},
-        #    )
-        #else:
-        metric = None
+        actor_loss, critic_loss, alpha_loss, td_error, actor_grads, critic_grads = metrics
+        if self.track_trajectories:
+            metric = (
+                (actor_loss, critic_loss, alpha_loss),
+                (actor_grads, critic_grads),
+                Transition(
+                    obs=last_obs,
+                    action=action,
+                    reward=reward,
+                    done=done,
+                    info=info,
+                ),
+                {"td_error": [td_error]},
+            )
+        elif self.track_metrics:
+            metric = (
+                (actor_loss, critic_loss, alpha_loss),
+                (actor_grads, critic_grads),
+                {"td_error": [td_error]},
+            )
+        else:
+            metric = None
         return (runner_state, buffer_state), metric
 
     @functools.partial(jax.jit, static_argnums=0)
