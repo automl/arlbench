@@ -1,14 +1,11 @@
-from arlbench.utils.wrappers import EnvpoolToGymnaxWrapper
-import envpool
 import jax
 import time
 import numpy as np
-import gymnax
 import jax.numpy as jnp
 
 from arlbench.algorithms import PPO
 from arlbench.algorithms import DQN
-from arlbench.utils.environments import make_env
+from arlbench.environments import make_env
 
 
 PPO_OPTIONS = {
@@ -31,7 +28,7 @@ DQN_OPTIONS = {
 
 
 def test_vw_gymnax():
-    env = make_env("CartPoleGN", PPO_OPTIONS["n_envs"], 42)
+    env = make_env("gymnax", "CartPole-v1", n_envs=PPO_OPTIONS["n_envs"], seed=42)
     rng = jax.random.PRNGKey(42)
     env_state, obs = env.reset(rng)
     action = jnp.array(
@@ -50,7 +47,7 @@ def test_vw_gymnax():
 
 
 def test_vw_envpool():
-    env = make_env("CartPoleEP", PPO_OPTIONS["n_envs"], 42)
+    env = make_env("envpool", "CartPole-v1", n_envs=PPO_OPTIONS["n_envs"], seed=42)
     rng = None      # we don't need rng here, envpool handles seeding 
     env_state, obs = env.reset(rng)
     action = jnp.array(
@@ -69,7 +66,7 @@ def test_vw_envpool():
 
 
 def test_vw_envpool_ppo():
-    env = make_env("PendulumEP", PPO_OPTIONS["n_envs"], 42)
+    env = make_env("envpool", "Pendulum-v1", n_envs=PPO_OPTIONS["n_envs"], seed=42)
     rng = jax.random.PRNGKey(42)
 
     config = PPO.get_default_hpo_config()
@@ -88,7 +85,7 @@ def test_vw_envpool_ppo():
 
 
 def test_vw_gymnax_ppo():
-    env = make_env("PendulumGN", PPO_OPTIONS["n_envs"], 42)
+    env = make_env("gymnax", "Pendulum-v1", n_envs=PPO_OPTIONS["n_envs"], seed=42)
     rng = jax.random.PRNGKey(42)
 
     config = PPO.get_default_hpo_config()
@@ -107,7 +104,7 @@ def test_vw_gymnax_ppo():
 
 
 def test_vw_envpool_dqn():
-    env = make_env("CartPoleEP", DQN_OPTIONS["n_envs"], 42)
+    env = make_env("envpool", "CartPole-v1", n_envs=PPO_OPTIONS["n_envs"], seed=42)
     rng = jax.random.PRNGKey(42)
 
     config = DQN.get_default_hpo_config()
@@ -126,7 +123,7 @@ def test_vw_envpool_dqn():
 
 
 def test_vw_gymnax_dqn():
-    env = make_env("CartPoleGN", DQN_OPTIONS["n_envs"], 42)
+    env = make_env("gymnax", "CartPole-v1", n_envs=PPO_OPTIONS["n_envs"], seed=42)
     rng = jax.random.PRNGKey(42)
 
     config = DQN.get_default_hpo_config()
@@ -149,5 +146,5 @@ if __name__ == "__main__":
     #test_vw_envpool() 
     #test_vw_envpool_ppo()
     #test_vw_gymnax_ppo()
-    test_vw_envpool_dqn()
+    #test_vw_envpool_dqn()
     test_vw_gymnax_dqn()
