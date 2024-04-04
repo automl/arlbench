@@ -63,7 +63,6 @@ class SAC(Algorithm):
             hpo_config: Union[Configuration, Dict],
             options: Dict,
             env: Any,
-            env_params: Any,
             nas_config: Union[Configuration, Dict] = None,
             track_metrics=False,
             track_trajectories=False,
@@ -75,7 +74,6 @@ class SAC(Algorithm):
             nas_config,
             options,
             env,
-            env_params,
             track_trajectories=track_trajectories,
             track_metrics=track_metrics
         )
@@ -140,7 +138,7 @@ class SAC(Algorithm):
             name="SACNASConfigSpace",
             seed=seed,
             space={
-                "activation": Categorical("activation", ["tanh", "relu"], default="relu"),
+                "activation": Categorical("activation", ["tanh", "relu"], default="tanh"),
                 "hidden_size": Integer("hidden_size", (1, 1024), default=256),
             },
         )
@@ -153,19 +151,20 @@ class SAC(Algorithm):
     def init(
             self, rng, actor_network_params=None, critic_network_params=None, critic_target_params=None
     ) -> tuple[SACRunnerState, Any]:
-        rng, _rng = jax.random.split(rng)
-        reset_rng = jax.random.split(_rng, self.env_options["n_envs"])
+        rng, env_rng = jax.random.split(rng)
+        env_state, obs = self.env.reset(env_rng)
 
-        last_obsv, last_env_state = jax.vmap(self.env.reset, in_axes=(0, None))(
-            reset_rng, self.env_params
-        )
 
         dummy_rng = jax.random.PRNGKey(0)
-        _action = self.env.action_space(self.env_params).sample(dummy_rng)
-        _, _env_state = self.env.reset(rng, self.env_params)
-        _obs, _, _reward, _done, _ = self.env.step(rng, _env_state, _action, self.env_params)
+        _action = jnp.array(
+            [
+                self.env.sample_action(rng)
+                for _ in range(self.env_options["n_envs"])
+            ]
+        )
+        _, (_obs, _reward, _done, _) = self.env.step(env_state, _action, dummy_rng)
 
-        _timestep = TimeStep(last_obs=_obs, obs=_obs, action=_action, reward=_reward, done=_done)
+        _timestep = TimeStep(last_obs=_obs[0], obs=_obs[0], action=_action[0], reward=_reward[0], done=_done[0])
         buffer_state = self.buffer.init(_timestep)
 
         _, _rng = jax.random.split(rng)
@@ -199,7 +198,7 @@ class SAC(Algorithm):
             opt_state=None,
         )
         # target for automatic entropy tuning
-        self.target_entropy = -jnp.prod(jnp.array(self.env.action_space(self.env_params).shape)).astype(jnp.float32)
+        self.target_entropy = -jnp.prod(jnp.array(self.env.action_space.shape)).astype(jnp.float32)
 
         rng, _rng = jax.random.split(rng)
         global_step = 0
@@ -209,8 +208,8 @@ class SAC(Algorithm):
             actor_train_state=actor_train_state,
             critic_train_state=critic_train_state,
             alpha_train_state=alpha_train_state,
-            env_state=last_env_state,
-            obs=last_obsv,
+            env_state=env_state,
+            obs=obs,
             global_step=global_step
         )
 
@@ -219,7 +218,7 @@ class SAC(Algorithm):
 
     @functools.partial(jax.jit, static_argnums=0)
     def predict(self, runner_state, obs, rng) -> int:
-        pi = self.actor_network.apply(runner_state.train_state.actor_params, obs)
+        pi = self.actor_network.apply(runner_state.actor_train_state.params, obs)
         action = pi.mode()
         # todo: we need to check that the action spaces are finite
         low, high = self.env.action_space.low, self.env.action_space.high
@@ -232,14 +231,28 @@ class SAC(Algorithm):
             runner_state,
             buffer_state
     )-> tuple[tuple[SACRunnerState, Any], Optional[tuple]]:
-        (runner_state, buffer_state), out = jax.lax.scan(
-            self._update_step, (runner_state, buffer_state), None, (self.env_options["n_total_timesteps"]//self.hpo_config["train_frequency"])//self.env_options["n_envs"]
+        def train_eval_step(carry, _):
+            runner_state, buffer_state = carry
+            (runner_state, buffer_state), out = jax.lax.scan(
+                self._update_step,
+                (runner_state, buffer_state),
+                None,
+                ((self.env_options["n_total_timesteps"]//self.hpo_config["train_frequency"])//self.env_options["n_envs"])//self.env_options["n_eval_steps"],
+            )
+            reward = self.eval(runner_state, self.env_options["n_eval_episodes"])
+            jax.debug.print("Reward: {reward}", reward=reward.mean())
+
+            return (runner_state, buffer_state), (reward.mean(), out)
+
+        (runner_state, buffer_state), (reward, out) = jax.lax.scan(
+            train_eval_step,
+            (runner_state, buffer_state),
+            None,
+            self.env_options["n_eval_steps"],
         )
-        return (runner_state, buffer_state), out
+        return (runner_state, buffer_state), (reward, out)
 
     def update_critic(self, actor_train_state, critic_train_state, alpha_train_state, batch, rng):
-        # sample action from the actor
-        #dist = actor_state.apply_fn(actor_state.params, next_observations)
         rng, action_rng = jax.random.split(rng, 2)
         pi = self.actor_network.apply(actor_train_state.params, batch.obs)
         next_state_actions, next_log_prob = pi.sample_and_log_prob(seed=action_rng)
@@ -251,17 +264,15 @@ class SAC(Algorithm):
         )
 
         qf_next_target = jnp.min(qf_next_target, axis=0)
-        # td error + entropy term
         qf_next_target = qf_next_target - alpha_value * next_log_prob
-        # shape is (batch_size, 1)
         target_q_value = batch.reward + (1 - batch.done) * self.hpo_config["gamma"] * qf_next_target
 
         def mse_loss(params):
             q_pred = self.critic_network.apply(
                 params, batch.last_obs, batch.action
-            )  # (batch_size, 2)
+            )
             td_error = target_q_value - q_pred
-            return 0.5 * (td_error ** 2).mean(axis=1).sum(), td_error
+            return 0.5 * (td_error ** 2).mean(axis=1).sum(), jnp.abs(td_error)
 
         (loss_value, td_error), grads = jax.value_and_grad(mse_loss, has_aux=True)(
             critic_train_state.params
@@ -329,25 +340,33 @@ class SAC(Algorithm):
                 )
                 alpha_train_state, alpha_loss = self.update_alpha(alpha_train_state, entropy)
                 new_prios = jnp.power(
-                    jnp.abs(td_error.mean(axis=0)) + self.hpo_config["buffer_epsilon"], self.hpo_config["buffer_alpha"]
+                    td_error.mean(axis=0) + self.hpo_config["buffer_epsilon"], self.hpo_config["buffer_alpha"]
                 )
                 buffer_state = self.buffer.set_priorities(buffer_state, batch.indices, new_prios)
-                return (rng, actor_train_state, critic_train_state, alpha_train_state, buffer_state), (critic_loss, actor_loss, alpha_loss)
+                return (
+                    rng, actor_train_state, critic_train_state, alpha_train_state, buffer_state
+                ), (
+                    critic_loss, actor_loss, alpha_loss, td_error.mean(axis=0), actor_grads, critic_grads,
+                )
 
-            carry, loss = jax.lax.scan(
+            carry, metrics = jax.lax.scan(
                 gradient_step,
                 (rng, actor_train_state, critic_train_state, alpha_train_state, buffer_state),
                 None,
                 self.hpo_config["gradient steps"],
             )
             rng, actor_train_state, critic_train_state, alpha_train_state, buffer_state = carry
-            return rng, actor_train_state, critic_train_state, alpha_train_state, buffer_state, loss
+            return rng, actor_train_state, critic_train_state, alpha_train_state, buffer_state, metrics
 
         def dont_update(rng, actor_train_state, critic_train_state, alpha_train_state, buffer_state):
             single_loss = jnp.array([((jnp.array([0]) - jnp.array([0])) ** 2).mean()] * self.hpo_config["gradient steps"])
-            loss = (single_loss, single_loss, single_loss)
-            return rng, actor_train_state, critic_train_state, alpha_train_state, buffer_state, loss
-
+            td_error = jnp.array(
+                [[[0] * self.hpo_config["buffer_batch_size"]] * self.hpo_config["gradient steps"]]
+            ).mean(axis=0)
+            actor_grads = jax.tree_map(lambda x: jnp.stack([x] * self.hpo_config["gradient steps"]), actor_train_state.params)
+            critic_grads = jax.tree_map(lambda x: jnp.stack([x] * self.hpo_config["gradient steps"]), critic_train_state.params)
+            metrics = (single_loss, single_loss, single_loss, td_error, actor_grads, critic_grads)
+            return rng, actor_train_state, critic_train_state, alpha_train_state, buffer_state, metrics
 
         # soft update
         def target_update():
@@ -385,7 +404,7 @@ class SAC(Algorithm):
         rng, _rng = jax.random.split(rng)
 
         # todo: add loss logging
-        rng, actor_train_state, critic_train_state, alpha_train_state, buffer_state, loss = jax.lax.cond(
+        rng, actor_train_state, critic_train_state, alpha_train_state, buffer_state, metrics = jax.lax.cond(
             (global_step > self.hpo_config["learning_starts"])
             & (global_step % self.hpo_config["train_frequency"] == 0),
             do_update,
@@ -411,28 +430,28 @@ class SAC(Algorithm):
             obs=runner_state.obs,
             global_step=runner_state.global_step
         )
-        #if self.track_trajectories:
-        #    metric = (
-        #        loss,
-        #        grads,
-        #        Transition(
-        #            obs=last_obs,
-        #            action=action,
-        #            reward=reward,
-        #            done=done,
-        #            info=info,
-        #            #q_pred=[q_pred],
-        #        ),
-        #        #{"td_error": [td_error]},
-        #    )
-        #elif self.track_metrics:
-        #    metric = (
-        #        loss,
-        #        grads,
-        #        #{"q_pred": [q_pred], "td_error": [td_error]},
-        #    )
-        #else:
-        metric = None
+        actor_loss, critic_loss, alpha_loss, td_error, actor_grads, critic_grads = metrics
+        if self.track_trajectories:
+            metric = (
+                (actor_loss, critic_loss, alpha_loss),
+                (actor_grads, critic_grads),
+                Transition(
+                    obs=last_obs,
+                    action=action,
+                    reward=reward,
+                    done=done,
+                    info=info,
+                ),
+                {"td_error": [td_error]},
+            )
+        elif self.track_metrics:
+            metric = (
+                (actor_loss, critic_loss, alpha_loss),
+                (actor_grads, critic_grads),
+                {"td_error": [td_error]},
+            )
+        else:
+            metric = None
         return (runner_state, buffer_state), metric
 
     @functools.partial(jax.jit, static_argnums=0)
@@ -452,15 +471,12 @@ class SAC(Algorithm):
         rng, _rng = jax.random.split(rng)
         pi = self.actor_network.apply(actor_train_state.params, last_obs)
         buffer_action = pi.sample(seed=_rng)
-        low, high = self.env.action_space(self.env_params).low, self.env.action_space(self.env_params).high
+        low, high = self.env.action_space.low, self.env.action_space.high
         action = low + (buffer_action + 1.0) * 0.5 * (high - low)
 
         # STEP ENV
         rng, _rng = jax.random.split(rng)
-        rng_step = jax.random.split(_rng, self.env_options["n_envs"])
-        obsv, env_state, reward, done, info = jax.vmap(
-            self.env.step, in_axes=(0, 0, 0, None)
-        )(rng_step, env_state, action, self.env_params)
+        env_state, (obsv, reward, done, info) = self.env.step(env_state, action, _rng)
 
         timestep = TimeStep(last_obs=last_obs, obs=obsv, action=buffer_action, reward=reward, done=done)
         buffer_state = self.buffer.add(buffer_state, timestep)

@@ -9,35 +9,39 @@ from stable_baselines3.common.vec_env import SubprocVecEnv, VecMonitor
 import gymnasium as gym
 
 from sbx.sac import SAC as SBXSAC
-from arlbench.utils import (
-    make_env,
-)
-
+from arlbench.environments import make_env
 
 SAC_OPTIONS = {
-    "n_total_timesteps": 1e5,
+    "n_total_timesteps": 5e5,
     "n_envs": 1,
-    "n_env_steps": 1000,
-    "n_eval_episodes": 10,
+    "n_env_steps": 200,
+    "n_eval_steps": 100,
+    "n_eval_episodes": 100,
     "track_metrics": False,
     "track_traj": False,
 }
 
 # Default hyperparameter configuration
 def test_default_sac():
-    env, env_params = make_env("gym", "LunarLanderContinuous-v2")
-    #env, env_params = make_env("gymnax", "Pendulum-v1")
+    #env, env_params = make_env("gym", "LunarLanderContinuous-v2")
+    env = make_env("gymnasium", "LunarLanderContinuous-v2", n_envs=SAC_OPTIONS["n_envs"], seed=42)
     #env, env_params = make_env("brax", "ant")
     rng = jax.random.PRNGKey(42)
 
-    config = SAC.get_default_hpo_config()
-    agent = SAC(config, SAC_OPTIONS, env, env_params)
+    hpo_config = SAC.get_default_hpo_config()
+    hpo_config["tau"] = 0.01
+    hpo_config["learning_starts"] = 10000
+    nas_config = SAC.get_default_nas_config()
+    nas_config["activation"] = "relu"
+    nas_config["hidden_size"] = 400
+
+    agent = SAC(hpo_config, SAC_OPTIONS, env, nas_config)
     runner_state, buffer_state = agent.init(rng)
     
     start = time.time()
-    (runner_state, _), _ = agent.train(runner_state, buffer_state)
+    (runner_state, _), (reward, _) = agent.train(runner_state, buffer_state)
     training_time = time.time() - start
-    reward = agent.sac_eval(runner_state, SAC_OPTIONS["n_eval_episodes"])
+    #reward = agent.sac_eval(runner_state, SAC_OPTIONS["n_eval_episodes"])
     #assert reward > -200
     print(reward, training_time)
 
