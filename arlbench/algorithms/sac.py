@@ -98,12 +98,11 @@ class SAC(Algorithm):
 
         self.buffer = fbx.make_prioritised_flat_buffer(
             max_length=self.hpo_config["buffer_size"],
-            #min_length=self.hpo_config["buffer_batch_size"],
-            min_length=self.hpo_config["learning_starts"],
+            min_length=self.hpo_config["buffer_batch_size"],
             sample_batch_size=self.hpo_config["buffer_batch_size"],
             add_sequences=False,
             add_batch_size=self.env_options["n_envs"],
-            priority_exponent=self.hpo_config["buffer_beta"]
+            priority_exponent=self.hpo_config["buffer_beta"],
         )
 
     @staticmethod
@@ -114,7 +113,9 @@ class SAC(Algorithm):
             space={
                 "buffer_size": Integer("buffer_size", (1, int(1e7)), default=int(1e6)),
                 "buffer_batch_size": Integer("buffer_batch_size", (1, 1024), default=256),
+                "buffer_alpha": Float("buffer_alpha", (0., 1.), default=0.9),
                 "buffer_beta": Float("buffer_beta", (0., 1.), default=0.0),
+                "buffer_epsilon": Float("buffer_epsilon", (0., 1e-3), default=1e-5),
                 "lr": Float("lr", (1e-5, 0.1), default=3e-4),
                 "gradient steps": Integer("gradient steps", (1, int(1e5)), default=1),
                 "policy_delay": Integer("policy_delay", (1, int(1e5)), default=1),
@@ -136,10 +137,10 @@ class SAC(Algorithm):
     @staticmethod
     def get_nas_config_space(seed=None) -> ConfigurationSpace:
         cs = ConfigurationSpace(
-            name="DQNNASConfigSpace",
+            name="SACNASConfigSpace",
             seed=seed,
             space={
-                "activation": Categorical("activation", ["tanh", "relu"], default="tanh"),
+                "activation": Categorical("activation", ["tanh", "relu"], default="relu"),
                 "hidden_size": Integer("hidden_size", (1, 1024), default=256),
             },
         )
@@ -236,7 +237,6 @@ class SAC(Algorithm):
         )
         return (runner_state, buffer_state), out
 
-    @functools.partial(jax.jit, static_argnums=0)
     def update_critic(self, actor_train_state, critic_train_state, alpha_train_state, batch, rng):
         # sample action from the actor
         #dist = actor_state.apply_fn(actor_state.params, next_observations)
@@ -261,7 +261,7 @@ class SAC(Algorithm):
                 params, batch.last_obs, batch.action
             )  # (batch_size, 2)
             td_error = target_q_value - q_pred
-            return 0.5 * ((td_error) ** 2).mean(axis=1).sum(), jnp.abs(td_error)
+            return 0.5 * (td_error ** 2).mean(axis=1).sum(), td_error
 
         (loss_value, td_error), grads = jax.value_and_grad(mse_loss, has_aux=True)(
             critic_train_state.params
@@ -269,7 +269,6 @@ class SAC(Algorithm):
         critic_train_state = critic_train_state.apply_gradients(grads=grads)
         return critic_train_state, loss_value, td_error, grads, rng,
 
-    @functools.partial(jax.jit, static_argnums=0)
     def update_actor(self, actor_train_state, critic_train_state, alpha_train_state, batch, rng):
         rng, action_rng = jax.random.split(rng, 2)
 
@@ -278,10 +277,10 @@ class SAC(Algorithm):
             actor_actions, log_prob = pi.sample_and_log_prob(seed=action_rng)
 
             qf_pi = self.critic_network.apply(critic_params,batch.last_obs, actor_actions)
-            qf_pi = jnp.min(qf_pi, axis=0)
+            min_qf_pi = jnp.min(qf_pi, axis=0)
 
             alpha_value = self.alpha.apply(alpha_params)
-            actor_loss = (alpha_value * log_prob - qf_pi).mean()
+            actor_loss = (alpha_value * log_prob - min_qf_pi).mean()
             return actor_loss, -log_prob.mean()
 
         (loss_value, entropy), grads = jax.value_and_grad(actor_loss, has_aux=True)(
@@ -291,7 +290,6 @@ class SAC(Algorithm):
 
         return actor_train_state, loss_value, entropy, grads, rng
 
-    @functools.partial(jax.jit, static_argnums=0)
     def update_alpha(self, alpha_train_state, entropy):
         def alpha_loss(params):
             alpha_value = self.alpha.apply(params)
@@ -313,6 +311,7 @@ class SAC(Algorithm):
                 rng, actor_train_state, critic_train_state, alpha_train_state, buffer_state = carry
                 rng, batch_sample_rng = jax.random.split(rng)
                 batch = self.buffer.sample(buffer_state, batch_sample_rng)
+                # todo: for gradient many steps
                 critic_train_state, critic_loss, td_error, critic_grads, rng = self.update_critic(
                     actor_train_state,
                     critic_train_state,
@@ -328,16 +327,18 @@ class SAC(Algorithm):
                     batch.experience.first,
                     rng,
                 )
-                # todo: check again if correct without using batch data
                 alpha_train_state, alpha_loss = self.update_alpha(alpha_train_state, entropy)
-                buffer_state = self.buffer.set_priorities(buffer_state, batch.indices, jnp.min(td_error, axis=0))
+                new_prios = jnp.power(
+                    jnp.abs(td_error.mean(axis=0)) + self.hpo_config["buffer_epsilon"], self.hpo_config["buffer_alpha"]
+                )
+                buffer_state = self.buffer.set_priorities(buffer_state, batch.indices, new_prios)
                 return (rng, actor_train_state, critic_train_state, alpha_train_state, buffer_state), (critic_loss, actor_loss, alpha_loss)
 
             carry, loss = jax.lax.scan(
                 gradient_step,
                 (rng, actor_train_state, critic_train_state, alpha_train_state, buffer_state),
                 None,
-                self.hpo_config["gradient steps"]
+                self.hpo_config["gradient steps"],
             )
             rng, actor_train_state, critic_train_state, alpha_train_state, buffer_state = carry
             return rng, actor_train_state, critic_train_state, alpha_train_state, buffer_state, loss
@@ -452,10 +453,7 @@ class SAC(Algorithm):
         pi = self.actor_network.apply(actor_train_state.params, last_obs)
         buffer_action = pi.sample(seed=_rng)
         low, high = self.env.action_space(self.env_params).low, self.env.action_space(self.env_params).high
-        action =  low + (buffer_action + 1.0) * 0.5 * (high - low)
-
-        #value = self.critic_network.apply(critic_train_state.params, last_obs, action)
-        value = jnp.array([0.0] * self.env_options["n_envs"])
+        action = low + (buffer_action + 1.0) * 0.5 * (high - low)
 
         # STEP ENV
         rng, _rng = jax.random.split(rng)
@@ -467,6 +465,7 @@ class SAC(Algorithm):
         timestep = TimeStep(last_obs=last_obs, obs=obsv, action=buffer_action, reward=reward, done=done)
         buffer_state = self.buffer.add(buffer_state, timestep)
 
+        value = jnp.zeros_like(reward)
         transition = Transition(
             done, action, value, reward, last_obs, info
         )
