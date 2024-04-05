@@ -14,7 +14,7 @@ from arlbench.environments import make_env
 SAC_OPTIONS = {
     "n_total_timesteps": 5e5,
     "n_envs": 1,
-    "n_env_steps": 200,
+    "n_env_steps": 1000,
     "n_eval_steps": 100,
     "n_eval_episodes": 100,
     "track_metrics": False,
@@ -31,6 +31,8 @@ def test_default_sac():
     hpo_config = SAC.get_default_hpo_config()
     hpo_config["tau"] = 0.01
     hpo_config["learning_starts"] = 10000
+    hpo_config["buffer_alpha"] = 0.0
+    hpo_config["buffer_beta"] = 0.0
     nas_config = SAC.get_default_nas_config()
     nas_config["activation"] = "relu"
     nas_config["hidden_size"] = 400
