@@ -5,7 +5,7 @@ from arlbench.algorithms import (
     DQN
 )
 
-from arlbench.autorl_env.checkpointing import Checkpointer
+from arlbench.autorl.checkpointing import Checkpointer
 from arlbench.environments import make_env
 
 

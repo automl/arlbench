@@ -1,17 +1,20 @@
 import jax
 import functools
-from arlbench.environments.environment import Environment
+from arlbench.environments.autorl_env import AutoRLEnv
+from gymnax.environments.environment import Environment, EnvParams
+from chex import PRNGKey
+from typing import Any
 
 
-class GymnaxWrapper(Environment):
-    def __init__(self, env, n_envs, env_params):
+class GymnaxEnv(AutoRLEnv):
+    def __init__(self, env: Environment, n_envs: int, env_params: EnvParams):
         super().__init__(env, n_envs)
 
         self.n_envs = n_envs
         self.env_params = env_params
 
     @functools.partial(jax.jit, static_argnums=0)
-    def reset(self, rng):
+    def reset(self, rng: PRNGKey):
         reset_rng = jax.random.split(rng, self.n_envs)
         obs, env_state = jax.vmap(self.env.reset, in_axes=(0, None))(
             reset_rng, self.env_params
@@ -19,7 +22,7 @@ class GymnaxWrapper(Environment):
         return env_state, obs
 
     @functools.partial(jax.jit, static_argnums=0)
-    def step(self, env_state, action, rng):
+    def step(self, env_state: Any, action: Any, rng: PRNGKey):
         step_rng = jax.random.split(rng, self.n_envs)
         obs, env_state, reward, done, info = jax.vmap(
             self.env.step, in_axes=(0, 0, 0, None)
@@ -32,7 +35,7 @@ class GymnaxWrapper(Environment):
         return self.env.action_space(self.env_params)
     
     @functools.partial(jax.jit, static_argnums=0)
-    def sample_action(self, rng):
+    def sample_action(self, rng: PRNGKey):
         return self.action_space.sample(rng)
 
     @property

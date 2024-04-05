@@ -33,7 +33,7 @@ def test_vw_gymnax():
     env_state, obs = env.reset(rng)
     action = jnp.array(
                 [
-                    env.sample_action(rng)
+                    env.action_space.sample(rng)
                     for _ in range(PPO_OPTIONS["n_envs"])
                 ]
     )
@@ -52,7 +52,7 @@ def test_vw_envpool():
     env_state, obs = env.reset(rng)
     action = jnp.array(
                 [
-                    env.sample_action(rng)
+                    env.action_space.sample(rng)
                     for _ in range(PPO_OPTIONS["n_envs"])
                 ]
     )

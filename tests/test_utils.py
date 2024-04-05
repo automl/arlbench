@@ -1,4 +1,4 @@
-from arlbench.utils import config_space_to_gymnasium_space
+from arlbench.utils import config_space_to_gymnasium_space, gym_space_to_gymnax_space
 from ConfigSpace import ConfigurationSpace, Integer, Float, Categorical
 import gymnasium
 import numpy as np
@@ -29,3 +29,8 @@ def test_config_space_to_gymnasium_space():
 
     assert isinstance(gym_space["catHP"], gymnasium.spaces.Discrete)
     assert gym_space["catHP"].n == 3
+
+
+def test_gym_space_to_gymnax_space():
+    # TODO implement
+    pass

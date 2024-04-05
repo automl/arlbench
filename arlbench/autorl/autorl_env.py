@@ -8,8 +8,8 @@ from arlbench.utils import config_space_to_gymnasium_space
 from flashbax.buffers.prioritised_trajectory_buffer import PrioritisedTrajectoryBufferState
 from ConfigSpace import Configuration
 import warnings
-from arlbench.autorl_env.checkpointing import Checkpointer
-from arlbench.autorl_env.objectives import track_emissions, track_reward, track_runtime
+from arlbench.autorl.checkpointing import Checkpointer
+from arlbench.autorl.objectives import track_emissions, track_reward, track_runtime
 
 
 class AutoRLEnv(gymnasium.Env):
