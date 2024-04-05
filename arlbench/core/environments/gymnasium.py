@@ -1,9 +1,6 @@
 import jax
-import gymnax
-import numpy as np
-import jax.numpy as jnp
 from gymnasium.vector import VectorEnv
-from arlbench.environments import AutoRLEnv
+from ..environments import AutoRLEnv
 import functools
 
 

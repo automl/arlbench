@@ -1,6 +1,6 @@
 import jax
 import functools
-from arlbench.environments.autorl_env import AutoRLEnv
+from ..environments import AutoRLEnv
 from gymnax.environments.environment import Environment, EnvParams
 from chex import PRNGKey
 from typing import Any

@@ -1,4 +1,4 @@
-from arlbench.utils import HandleTermination
+from .utils import HandleTermination
 import os
 
 

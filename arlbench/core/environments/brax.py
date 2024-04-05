@@ -1,7 +1,7 @@
 import jax
 import numpy as np
 import jax.numpy as jnp
-from arlbench.environments import AutoRLEnv
+from .autorl_env import AutoRLEnv
 import functools
 from brax import BraxEnv
 import gymnax

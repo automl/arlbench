@@ -1,4 +1,4 @@
-from arlbench.environments import AutoRLEnv
+from ..environments import AutoRLEnv
 
 
 class AutoRLWrapper(object):

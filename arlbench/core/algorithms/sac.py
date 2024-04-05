@@ -11,7 +11,7 @@ import jax.lax
 import flashbax as fbx
 import functools
 
-from arlbench.algorithms.algorithm import Algorithm
+from .algorithm import Algorithm
 
 from .models import SACActor, SACVectorCritic, AlphaCoef
 from ConfigSpace import Configuration, ConfigurationSpace, Float, Integer, Categorical

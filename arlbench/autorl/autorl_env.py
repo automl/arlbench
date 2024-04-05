@@ -2,7 +2,7 @@ import numpy as np
 import jax.numpy as jnp
 import jax
 from typing import Optional, Union, Any, Dict, Callable
-from arlbench.algorithms import PPO, DQN, Algorithm, PPORunnerState, DQNRunnerState
+from arlbench.core.algorithms import Algorithm, PPO, DQN, SAC, PPORunnerState, DQNRunnerState, SACRunnerState
 import gymnasium
 from arlbench.utils import config_space_to_gymnasium_space
 from flashbax.buffers.prioritised_trajectory_buffer import PrioritisedTrajectoryBufferState
@@ -13,11 +13,11 @@ from arlbench.autorl.objectives import track_emissions, track_reward, track_runt
 
 
 class AutoRLEnv(gymnasium.Env):
-    ALGORITHMS = {"ppo": PPO, "dqn": DQN}
+    ALGORITHMS = {"ppo": PPO, "dqn": DQN, "sac": SAC}
     algorithm: Optional[Algorithm]
     get_obs: Callable[[], np.ndarray]
     get_obs_space: Callable[[], gymnasium.spaces.Space]
-    runner_state: Optional[Union[PPORunnerState, DQNRunnerState]]
+    runner_state: Optional[Union[PPORunnerState, DQNRunnerState, SACRunnerState]]
     buffer_state: Optional[PrioritisedTrajectoryBufferState]
     metrics: Optional[tuple]
 

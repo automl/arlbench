@@ -12,7 +12,7 @@ import functools
 from .algorithm import Algorithm
 from .models import ActorCritic
 from ConfigSpace import Configuration, ConfigurationSpace, Float, Integer, Categorical
-from arlbench.environments import AutoRLEnv
+from ..environments import AutoRLEnv
 
 
 class PPOTrainState(TrainState):

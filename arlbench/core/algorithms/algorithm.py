@@ -10,7 +10,7 @@ from flashbax.buffers.prioritised_trajectory_buffer import PrioritisedTrajectory
 import gymnasium
 import gym
 import numpy as np
-from arlbench.environments import AutoRLEnv
+from ..environments import AutoRLEnv
 
 
 class Algorithm(ABC):

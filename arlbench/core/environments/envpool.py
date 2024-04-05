@@ -1,8 +1,8 @@
 import jax
 import functools
 import jax.numpy as jnp
-from arlbench.environments.autorl_env import AutoRLEnv
-from arlbench.utils import gym_space_to_gymnax_space
+from .autorl_env import AutoRLEnv
+from ...utils import gym_space_to_gymnax_space
 from typing import Any
 
 
