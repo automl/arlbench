@@ -3,18 +3,18 @@ import jax
 import jax.numpy as jnp
 import chex
 import optax
-from arlbench.algorithms.common import TimeStep
+from .common import TimeStep
 from flax.training.train_state import TrainState
 from typing import NamedTuple, Union
 from typing import Any, Dict, Optional
 import chex
 import jax.lax
 import flashbax as fbx
-from arlbench.algorithms.algorithm import Algorithm
+from .algorithm import Algorithm
 import functools
-from arlbench.algorithms.models import Q
+from arlbench.core.algorithms.models import Q
 from ConfigSpace import Configuration, ConfigurationSpace, Float, Integer, Categorical, EqualsCondition
-from arlbench.algorithms.buffers import uniform_sample
+from .buffers import uniform_sample
 
 
 class DQNTrainState(TrainState):

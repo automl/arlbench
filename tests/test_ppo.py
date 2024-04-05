@@ -2,8 +2,8 @@ import jax
 import time
 import numpy as np
 
-from arlbench.algorithms import PPO
-from arlbench.environments import make_env
+from arlbench.core.algorithms import PPO
+from arlbench.core.environments import make_env
 
 PPO_OPTIONS = {
     "n_total_timesteps": 1e5,

@@ -1,7 +1,7 @@
 from typing import Callable
 import time
 import numpy as np
-from arlbench.algorithms import Algorithm
+from arlbench.core.algorithms import Algorithm
 
 
 def track_runtime(train_func: Callable, objectives: dict) -> Callable:

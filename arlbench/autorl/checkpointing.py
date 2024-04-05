@@ -2,7 +2,7 @@ from typing import Union, Optional, Any
 from flashbax.buffers.prioritised_trajectory_buffer import PrioritisedTrajectoryBufferState
 from flashbax.buffers.trajectory_buffer import TrajectoryBufferState
 from flashbax.buffers.sum_tree import SumTreeState
-from arlbench.algorithms import PPORunnerState, DQNRunnerState
+from arlbench.core.algorithms import PPORunnerState, DQNRunnerState, SACRunnerState
 from flashbax.vault import Vault
 import numpy as np
 import jax.numpy as jnp
@@ -39,7 +39,7 @@ class Checkpointer:
 
     @staticmethod
     def save(
-        runner_state: Union[PPORunnerState, DQNRunnerState],
+        runner_state: Union[PPORunnerState, DQNRunnerState, SACRunnerState],
         buffer_state: PrioritisedTrajectoryBufferState,
         options: dict,
         hp_config: dict,
@@ -117,6 +117,7 @@ class Checkpointer:
                 ckpt["actor_loss"] = jnp.concatenate(loss_info[1], axis=0)
             elif options["algorithm"]== "dqn":
                 ckpt["loss"] = loss_info
+            # TODO add SAC
             Checkpointer._save_orbax_checkpoint(ckpt, checkpoint_dir, checkpoint_name + "_loss")
 
         if "minibatches" in checkpoint and "trajectory" in checkpoint and options["algorithm"] == "ppo":
@@ -233,6 +234,7 @@ class Checkpointer:
                 "target_params": target_params,
                 "opt_state": opt_state
             }
+        # TODO add SAC
         else:
             raise ValueError(f"Invalid algorithm in checkpoint: {config['algorithm']}")
         return common, algorithm_kw_args

@@ -4,9 +4,9 @@ import jax
 import time
 import numpy as np
 
-from arlbench.algorithms import DQN
+from arlbench.core.algorithms import DQN
 
-from arlbench.environments import make_env
+from arlbench.core.environments import make_env
 
 
 DQN_OPTIONS = {

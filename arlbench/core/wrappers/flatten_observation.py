@@ -1,7 +1,6 @@
-from arlbench.wrappers.autorl_wrapper import AutoRLWrapper
-from arlbench.environments import AutoRLEnv
+from .autorl_wrapper import AutoRLWrapper
+from ..environments import AutoRLEnv
 from gymnax.environments import spaces
-import jax.numpy as jnp
 import numpy as np
 import jax
 import functools

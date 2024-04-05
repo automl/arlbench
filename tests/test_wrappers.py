@@ -3,9 +3,8 @@ import time
 import numpy as np
 import jax.numpy as jnp
 
-from arlbench.algorithms import PPO
-from arlbench.algorithms import DQN
-from arlbench.environments import make_env
+from arlbench.core.algorithms import PPO, DQN
+from arlbench.core.environments import make_env
 
 
 PPO_OPTIONS = {

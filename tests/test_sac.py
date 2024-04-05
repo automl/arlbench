@@ -9,7 +9,7 @@ from stable_baselines3.common.vec_env import SubprocVecEnv, VecMonitor
 import gymnasium as gym
 
 from sbx.sac import SAC as SBXSAC
-from arlbench.environments import make_env
+from arlbench.core.environments import make_env
 
 SAC_OPTIONS = {
     "n_total_timesteps": 5e5,

@@ -1,6 +1,6 @@
 
-from arlbench.environments import AutoRLEnv, GymnaxEnv, BraxEnv, GymnasiumEnv, EnvpoolEnv
-from arlbench.wrappers import FlattenObservationWrapper, AutoRLWrapper
+from . import AutoRLEnv, GymnaxEnv, BraxEnv, GymnasiumEnv, EnvpoolEnv
+from ..wrappers import FlattenObservationWrapper, AutoRLWrapper
 from typing import Union
 
 
