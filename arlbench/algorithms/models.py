@@ -41,19 +41,19 @@ class SACActor(nn.Module):
 
         self.dense0 = nn.Dense(
             self.hidden_size,
-            kernel_init=orthogonal(jnp.sqrt(2)),
-            bias_init=constant(0.0),
+            #kernel_init=orthogonal(jnp.sqrt(2)),
+            #bias_init=constant(0.0),
         )
         self.dense1 = nn.Dense(
             self.hidden_size,
-            kernel_init=orthogonal(jnp.sqrt(2)),
-            bias_init=constant(0.0),
+            #kernel_init=orthogonal(jnp.sqrt(2)),
+            #bias_init=constant(0.0),
         )
         self.mean_out_layer = nn.Dense(
-            self.action_dim, kernel_init=orthogonal(0.01), bias_init=constant(0.0)
+            self.action_dim, #kernel_init=orthogonal(0.01), bias_init=constant(0.0)
         )
         self.log_std_out_layer = nn.Dense(
-            self.action_dim, kernel_init=orthogonal(0.01), bias_init=constant(0.0)
+            self.action_dim, #kernel_init=orthogonal(0.01), bias_init=constant(0.0)
         )
 
 
@@ -85,16 +85,16 @@ class SACCritic(nn.Module):
 
         self.critic0 = nn.Dense(
             self.hidden_size,
-            kernel_init=orthogonal(jnp.sqrt(2)),
-            bias_init=constant(0.0),
+            #kernel_init=orthogonal(jnp.sqrt(2)),
+            #bias_init=constant(0.0),
         )
         self.critic1 = nn.Dense(
             self.hidden_size,
-            kernel_init=orthogonal(jnp.sqrt(2)),
-            bias_init=constant(0.0),
+            #kernel_init=orthogonal(jnp.sqrt(2)),
+            #bias_init=constant(0.0),
         )
         self.critic_out = nn.Dense(
-            1, kernel_init=orthogonal(1.0), bias_init=constant(0.0)
+            1, #kernel_init=orthogonal(1.0), bias_init=constant(0.0)
         )
 
     def __call__(self, x, action):

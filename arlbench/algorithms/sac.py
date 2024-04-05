@@ -112,7 +112,7 @@ class SAC(Algorithm):
                 "buffer_size": Integer("buffer_size", (1, int(1e7)), default=int(1e6)),
                 "buffer_batch_size": Integer("buffer_batch_size", (1, 1024), default=256),
                 "buffer_alpha": Float("buffer_alpha", (0., 1.), default=0.9),
-                "buffer_beta": Float("buffer_beta", (0., 1.), default=0.0),
+                "buffer_beta": Float("buffer_beta", (0., 1.), default=0.9),
                 "buffer_epsilon": Float("buffer_epsilon", (0., 1e-3), default=1e-5),
                 "lr": Float("lr", (1e-5, 0.1), default=3e-4),
                 "gradient steps": Integer("gradient steps", (1, int(1e5)), default=1),
@@ -173,7 +173,7 @@ class SAC(Algorithm):
         if critic_network_params is None:
             critic_network_params = self.critic_network.init(_rng, _obs, _action)
         if critic_target_params is None:
-            critic_target_params = self.critic_network.init(_rng, _obs, _action)
+            critic_target_params = critic_network_params
 
         actor_train_state = SACTrainState.create_with_opt_state(
             apply_fn=self.actor_network.apply,
@@ -268,9 +268,7 @@ class SAC(Algorithm):
         target_q_value = batch.reward + (1 - batch.done) * self.hpo_config["gamma"] * qf_next_target
 
         def mse_loss(params):
-            q_pred = self.critic_network.apply(
-                params, batch.last_obs, batch.action
-            )
+            q_pred = self.critic_network.apply(params, batch.last_obs, batch.action)
             td_error = target_q_value - q_pred
             return 0.5 * (td_error ** 2).mean(axis=1).sum(), jnp.abs(td_error)
 
@@ -322,7 +320,6 @@ class SAC(Algorithm):
                 rng, actor_train_state, critic_train_state, alpha_train_state, buffer_state = carry
                 rng, batch_sample_rng = jax.random.split(rng)
                 batch = self.buffer.sample(buffer_state, batch_sample_rng)
-                # todo: for gradient many steps
                 critic_train_state, critic_loss, td_error, critic_grads, rng = self.update_critic(
                     actor_train_state,
                     critic_train_state,
@@ -403,7 +400,6 @@ class SAC(Algorithm):
         ) = runner_state
         rng, _rng = jax.random.split(rng)
 
-        # todo: add loss logging
         rng, actor_train_state, critic_train_state, alpha_train_state, buffer_state, metrics = jax.lax.cond(
             (global_step > self.hpo_config["learning_starts"])
             & (global_step % self.hpo_config["train_frequency"] == 0),
