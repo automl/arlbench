@@ -158,7 +158,7 @@ class SAC(Algorithm):
         dummy_rng = jax.random.PRNGKey(0)
         _action = jnp.array(
             [
-                self.env.sample_action(rng)
+                self.env.action_space.sample(rng)
                 for _ in range(self.env_options["n_envs"])
             ]
         )

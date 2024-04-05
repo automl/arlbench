@@ -10,7 +10,7 @@ from flashbax.buffers.prioritised_trajectory_buffer import PrioritisedTrajectory
 import gymnasium
 import gym
 import numpy as np
-from arlbench.environments import Environment
+from arlbench.environments import AutoRLEnv
 
 
 class Algorithm(ABC):
@@ -19,7 +19,7 @@ class Algorithm(ABC):
             hpo_config: Union[Configuration, Dict], 
             nas_config: Union[Configuration, Dict], 
             env_options: Dict, 
-            env: Environment,
+            env: AutoRLEnv,
             track_metrics=False,
             track_trajectories=False
         ) -> None:

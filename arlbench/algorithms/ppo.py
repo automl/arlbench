@@ -12,7 +12,7 @@ import functools
 from .algorithm import Algorithm
 from .models import ActorCritic
 from ConfigSpace import Configuration, ConfigurationSpace, Float, Integer, Categorical
-from arlbench.environments import Environment
+from arlbench.environments import AutoRLEnv
 
 
 class PPOTrainState(TrainState):
@@ -54,7 +54,7 @@ class PPO(Algorithm):
         self,
         hpo_config: Union[Configuration, Dict],
         env_options: Dict,
-        env: Environment,
+        env: AutoRLEnv,
         nas_config: Optional[Union[Configuration, Dict]] = None, 
         track_trajectories=False,
         track_metrics=False
@@ -151,7 +151,7 @@ class PPO(Algorithm):
             dummy_rng = jax.random.PRNGKey(0) 
             _action = jnp.array(
                 [
-                    self.env.sample_action(dummy_rng)
+                    self.env.action_space.sample(rng)
                     for _ in range(self.env_options["n_envs"])
                 ]
             )

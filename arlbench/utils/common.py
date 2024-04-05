@@ -1,6 +1,8 @@
 import numpy as np
 import ConfigSpace
 import gymnasium
+import gymnasium.spaces as gym_spaces
+import gymnax.environments.spaces as gymnax_spaces
 
 
 def to_gymnasium_space(space):
@@ -31,3 +33,29 @@ def config_space_to_gymnasium_space(config_space: ConfigSpace.ConfigurationSpace
             raise ValueError(f"Invalid Hyperparameter type for {hp_name}: f{type(hp)}")
 
     return gymnasium.spaces.Dict(spaces, seed=seed)
+
+
+def gym_space_to_gymnax_space(space: gym_spaces.Space) -> gymnax_spaces.Space:
+    """Convert Gym space to equivalent Gymnax space."""
+    if isinstance(space, gym_spaces.Discrete):
+        return gymnax_spaces.Discrete(int(space.n))
+    elif isinstance(space, gym_spaces.Box):
+        low = (
+            float(space.low)
+            if (np.isscalar(space.low) or space.low.size == 1)
+            else np.array(space.low)
+        )
+        high = (
+            float(space.high)
+            if (np.isscalar(space.high) or space.low.size == 1)
+            else np.array(space.high)
+        )
+        return gymnax_spaces.Box(low, high, space.shape, space.dtype)
+    elif isinstance(space, gym_spaces.Dict):
+        return gymnax_spaces.Dict({k: gymnax_space_to_gym_space(v) for k, v in space.spaces})
+    elif isinstance(space, gym_spaces.Tuple):
+        return gymnax_spaces.Tuple(space.spaces)
+    else:
+        raise NotImplementedError(
+            f"Conversion of {space.__class__.__name__} not supported"
+        )
