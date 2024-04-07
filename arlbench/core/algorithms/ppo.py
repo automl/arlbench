@@ -9,8 +9,11 @@ import flax
 import jax
 import jax.numpy as jnp
 import optax
-from ConfigSpace import Categorical, Configuration, ConfigurationSpace, Float, Integer
+from ConfigSpace import (Categorical, Configuration, ConfigurationSpace, Float,
+                         Integer)
 from flax.training.train_state import TrainState
+
+from arlbench.core.environments import AutoRLEnv
 
 from .algorithm import Algorithm
 from .common import TimeStep
@@ -20,6 +23,7 @@ if TYPE_CHECKING:
     import chex
 
     from arlbench.core.environments import AutoRLEnv
+    from arlbench.core.wrappers import AutoRLWrapper
 
 
 class PPOTrainState(TrainState):
@@ -60,7 +64,7 @@ class PPO(Algorithm):
         self,
         hpo_config: Configuration | dict,
         env_options: dict,
-        env: AutoRLEnv,
+        env: AutoRLEnv | AutoRLWrapper,
         nas_config: Configuration | dict | None = None,
         track_trajectories=False,
         track_metrics=False
@@ -76,7 +80,7 @@ class PPO(Algorithm):
             track_metrics=track_metrics,
             track_trajectories=track_trajectories
         )
-        self.n_minibatches = env_options["n_envs"] * env_options["n_env_steps"] // self.hpo_config["minibatch_size"]
+        self.n_minibatches = self.env.n_envs * env_options["n_env_steps"] // self.hpo_config["minibatch_size"]
 
         action_size, discrete = self.action_type
         self.network = ActorCritic(
@@ -91,13 +95,13 @@ class PPO(Algorithm):
             min_length=self.hpo_config["buffer_batch_size"],
             sample_batch_size=self.hpo_config["buffer_batch_size"],
             add_sequences=False,
-            add_batch_size=env_options["n_envs"]
+            add_batch_size=self.env.n_envs
         )
 
         self.n_total_updates = (
             env_options["n_total_timesteps"]
             // env_options["n_env_steps"]
-            // env_options["n_envs"]
+            // self.env.n_envs
         )
         update_interval = jnp.ceil(self.n_total_updates / env_options["n_env_steps"])
         if update_interval < 1:
@@ -329,7 +333,7 @@ class PPO(Algorithm):
         rng, _rng = jax.random.split(rng)
 
         trimmed_batch_size = int(self.n_minibatches * self.hpo_config["minibatch_size"])
-        batch_size = self.env_options["n_env_steps"] * self.env_options["n_envs"]
+        batch_size = self.env_options["n_env_steps"] * self.env.n_envs
 
         permutation = jax.random.permutation(_rng, batch_size)
         batch = (traj_batch, advantages, targets)

@@ -1,14 +1,13 @@
-import jax
 import time
 
-from arlbench.algorithms import SAC
-
+import gymnasium as gym
+import jax
+from sbx.sac import SAC as SBXSAC
 from stable_baselines3 import SAC as SB3SAC
 from stable_baselines3.common.evaluation import evaluate_policy
 from stable_baselines3.common.vec_env import SubprocVecEnv, VecMonitor
-import gymnasium as gym
 
-from sbx.sac import SAC as SBXSAC
+from arlbench.algorithms import SAC
 from arlbench.core.environments import make_env
 
 SAC_OPTIONS = {

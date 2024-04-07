@@ -9,7 +9,8 @@ import jax
 import jax.lax
 import jax.numpy as jnp
 import optax
-from ConfigSpace import Categorical, Configuration, ConfigurationSpace, Float, Integer
+from ConfigSpace import (Categorical, Configuration, ConfigurationSpace, Float,
+                         Integer)
 from flax.training.train_state import TrainState
 
 from .algorithm import Algorithm
@@ -18,6 +19,9 @@ from .models import AlphaCoef, SACActor, SACVectorCritic
 
 if TYPE_CHECKING:
     import chex
+
+    from arlbench.core.environments import AutoRLEnv
+    from arlbench.core.wrappers import AutoRLWrapper
 
 # todo: separate learning rate for critic and actor??
 
@@ -64,7 +68,7 @@ class SAC(Algorithm):
             self,
             hpo_config: Configuration | dict,
             options: dict,
-            env: Any,
+            env: AutoRLEnv | AutoRLWrapper,
             nas_config: Configuration | dict = None,
             track_metrics=False,
             track_trajectories=False,
@@ -101,7 +105,7 @@ class SAC(Algorithm):
             min_length=self.hpo_config["buffer_batch_size"],
             sample_batch_size=self.hpo_config["buffer_batch_size"],
             add_sequences=False,
-            add_batch_size=self.env_options["n_envs"],
+            add_batch_size=self.env.n_envs,
             priority_exponent=self.hpo_config["buffer_beta"],
         )
 
@@ -233,7 +237,7 @@ class SAC(Algorithm):
                 self._update_step,
                 (runner_state, buffer_state),
                 None,
-                ((self.env_options["n_total_timesteps"]//self.hpo_config["train_frequency"])//self.env_options["n_envs"])//self.env_options["n_eval_steps"],
+                ((self.env_options["n_total_timesteps"]//self.hpo_config["train_frequency"])//self.env.n_envs)//self.env_options["n_eval_steps"],
             )
             reward = self.eval(runner_state, self.env_options["n_eval_episodes"])
             jax.debug.print("Reward: {reward}", reward=reward.mean())
@@ -483,6 +487,6 @@ class SAC(Algorithm):
             env_state=env_state,
             obs=obsv,
             rng=rng,
-            global_step=global_step + self.env_options["n_envs"]
+            global_step=global_step + self.env.n_envs
         )
         return (runner_state, buffer_state), transition

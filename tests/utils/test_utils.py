@@ -1,7 +1,10 @@
-from arlbench.utils import config_space_to_gymnasium_space, gym_space_to_gymnax_space
-from ConfigSpace import ConfigurationSpace, Integer, Float, Categorical
 import gymnasium
 import numpy as np
+from ConfigSpace import Categorical, ConfigurationSpace, Float, Integer
+
+from arlbench.utils import (config_space_to_gymnasium_space,
+                            gym_space_to_gymnax_space)
+
 
 def test_config_space_to_gymnasium_space():
     config_space = ConfigurationSpace(

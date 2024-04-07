@@ -9,13 +9,8 @@ import jax
 import jax.lax
 import jax.numpy as jnp
 import optax
-from ConfigSpace import (
-    Categorical,
-    Configuration,
-    ConfigurationSpace,
-    Float,
-    Integer,
-)
+from ConfigSpace import (Categorical, Configuration, ConfigurationSpace, Float,
+                         Integer)
 from flax.training.train_state import TrainState
 
 from arlbench.core.algorithms.models import Q
@@ -99,7 +94,7 @@ class DQN(Algorithm):
             min_length=self.hpo_config["buffer_batch_size"],
             sample_batch_size=self.hpo_config["buffer_batch_size"],
             add_sequences=False,
-            add_batch_size=self.env_options["n_envs"],
+            add_batch_size=self.env.n_envs,
             priority_exponent=priority_exponent
         )
         if self.hpo_config["buffer_prio_sampling"] is True:  # todo: shouldn't this be the other way around?
@@ -220,7 +215,7 @@ class DQN(Algorithm):
         buffer_state
     )-> tuple[tuple[DQNRunnerState, Any], tuple | None]:
         (runner_state, buffer_state), out = jax.lax.scan(
-            self._update_step, (runner_state, buffer_state), None, (self.env_options["n_total_timesteps"]//self.hpo_config["train_frequency"])//self.env_options["n_envs"]
+            self._update_step, (runner_state, buffer_state), None, (self.env_options["n_total_timesteps"]//self.hpo_config["train_frequency"])//self.env.n_envs
         )
         return (runner_state, buffer_state), out
 
@@ -296,7 +291,7 @@ class DQN(Algorithm):
             buffer_state = self.buffer.add(buffer_state, timestep)
 
             # global_step += 1
-            global_step += self.env_options["n_envs"]
+            global_step += self.env.n_envs
             return (obsv, env_state, global_step, buffer_state), (
                 obsv,
                 action,

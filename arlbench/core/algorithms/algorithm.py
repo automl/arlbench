@@ -14,11 +14,11 @@ import numpy as np
 
 if TYPE_CHECKING:
     from ConfigSpace import Configuration, ConfigurationSpace
-    from flashbax.buffers.prioritised_trajectory_buffer import (
-        PrioritisedTrajectoryBufferState,
-    )
+    from flashbax.buffers.prioritised_trajectory_buffer import \
+        PrioritisedTrajectoryBufferState
 
     from arlbench.core.environments import AutoRLEnv
+    from arlbench.core.wrappers import AutoRLWrapper
 
 
 class Algorithm(ABC):
@@ -27,7 +27,7 @@ class Algorithm(ABC):
             hpo_config: Configuration | dict,
             nas_config: Configuration | dict,
             env_options: dict,
-            env: AutoRLEnv,
+            env: AutoRLEnv | AutoRLWrapper,
             track_metrics=False,
             track_trajectories=False
         ) -> None:
@@ -92,8 +92,7 @@ class Algorithm(ABC):
 
     @functools.partial(jax.jit, static_argnums=0)
     def _env_episode(self, runner_state, _):
-        rng, _rng = jax.random.split(runner_state.rng)
-        _rng, reset_rng = jax.random.split(_rng)
+        _rng, reset_rng = jax.random.split(runner_state.rng)
 
         env_state, obs = self.env.reset(reset_rng)
         initial_state = (

@@ -1,12 +1,10 @@
-from arlbench import AutoRLEnv
 import gymnax
-import pytest
 import numpy as np
-from arlbench.core.algorithms import (
-    PPO,
-    DQN
-)
-from arlbench.core.environments import make_env 
+import pytest
+
+from arlbench import AutoRLEnv
+from arlbench.core.algorithms import DQN, PPO
+from arlbench.core.environments import make_env
 
 
 def test_autorl_env_dqn_single_objective():

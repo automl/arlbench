@@ -1,4 +1,5 @@
-from .common import config_space_to_gymnasium_space, gymnasium_space_to_gymnax_space
+from .common import (config_space_to_gymnasium_space,
+                     gymnasium_space_to_gymnax_space)
 from .handle_termination import HandleTermination
 
 __all__ = [

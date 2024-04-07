@@ -1,5 +1,6 @@
-import jax
 import time
+
+import jax
 import numpy as np
 
 from arlbench.core.algorithms import PPO
@@ -7,7 +8,6 @@ from arlbench.core.environments import make_env
 
 PPO_OPTIONS = {
     "n_total_timesteps": 1e5,
-    "n_envs": 10,
     "n_env_steps": 500,
     "n_eval_episodes": 10,
     "track_metrics": False,

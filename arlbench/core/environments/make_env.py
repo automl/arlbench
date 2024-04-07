@@ -1,31 +1,26 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
-
+import warnings
 from arlbench.core.wrappers import AutoRLWrapper, FlattenObservationWrapper
 
 from .brax_env import BraxEnv
 from .envpool_env import EnvpoolEnv
 from .gymnasium_env import GymnasiumEnv
-from .gymnasium_vector_env import GymnasiumVectorEnv
 from .gymnax_env import GymnaxEnv
 
 if TYPE_CHECKING:
     from .autorl_env import AutoRLEnv
 
 
-def make_env(env_framework, env_name, n_envs=10, seed=0) -> AutoRLEnv | AutoRLWrapper:
+def make_env(env_framework, env_name, n_envs=1, seed=0) -> AutoRLEnv | AutoRLWrapper:
     if env_framework == "gymnasium":
+        if n_envs > 1:
+            warnings.warn(f"For gymnasium only n_envs must be set to 1 but actual value is {n_envs}. n_envs will be set to 1.")
         import gymnasium
 
         env = gymnasium.make(env_name)
-        env = GymnasiumEnv(env, n_envs, seed)
-    elif env_framework == "gymnasium_vector":
-        # experimental
-        import gymnasium
-
-        env = gymnasium.vector.make(env_name)
-        env = GymnasiumVectorEnv(env, n_envs)
+        env = GymnasiumEnv(env, seed)
     elif env_framework == "gymnax":
         import gymnax
 

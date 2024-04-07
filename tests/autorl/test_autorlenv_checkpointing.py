@@ -1,13 +1,10 @@
 import jax
 import numpy as np
-from arlbench.core.algorithms import (
-    PPO,
-    DQN
-)
 
-from arlbench.autorl.checkpointing import Checkpointer
-from arlbench.core.environments import make_env
 from arlbench import AutoRLEnv
+from arlbench.autorl.checkpointing import Checkpointer
+from arlbench.core.algorithms import DQN, PPO
+from arlbench.core.environments import make_env
 
 
 def test_autorlenv_checkpoints_dqn():

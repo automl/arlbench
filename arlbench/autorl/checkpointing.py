@@ -9,16 +9,16 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 import orbax.checkpoint as ocp
-from flashbax.buffers.prioritised_trajectory_buffer import (
-    PrioritisedTrajectoryBufferState,
-)
+from flashbax.buffers.prioritised_trajectory_buffer import \
+    PrioritisedTrajectoryBufferState
 from flashbax.buffers.sum_tree import SumTreeState
 from flashbax.buffers.trajectory_buffer import TrajectoryBufferState
 from flashbax.vault import Vault
 from flax.core.frozen_dict import FrozenDict
 
 if TYPE_CHECKING:
-    from arlbench.core.algorithms import DQNRunnerState, PPORunnerState, SACRunnerState
+    from arlbench.core.algorithms import (DQNRunnerState, PPORunnerState,
+                                          SACRunnerState)
 
 
 class Checkpointer:
