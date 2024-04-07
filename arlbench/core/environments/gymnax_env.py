@@ -1,9 +1,15 @@
-import jax
+from __future__ import annotations
+
 import functools
+from typing import TYPE_CHECKING, Any
+
+import jax
+
 from .autorl_env import AutoRLEnv
-from gymnax.environments.environment import Environment
-from chex import PRNGKey
-from typing import Any
+
+if TYPE_CHECKING:
+    from chex import PRNGKey
+    from gymnax.environments.environment import Environment
 
 
 class GymnaxEnv(AutoRLEnv):
@@ -33,7 +39,7 @@ class GymnaxEnv(AutoRLEnv):
     @property
     def action_space(self):
         return self.env.action_space(self.env_params)
-    
+
     @functools.partial(jax.jit, static_argnums=0)
     def sample_action(self, rng: PRNGKey):
         return self.action_space.sample(rng)
@@ -41,4 +47,4 @@ class GymnaxEnv(AutoRLEnv):
     @property
     def observation_space(self):
         return self.env.observation_space(self.env_params)
-    
+

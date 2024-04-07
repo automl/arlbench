@@ -1,9 +1,16 @@
-from .autorl_wrapper import AutoRLWrapper
-from ..environments import AutoRLEnv
-from gymnax.environments import spaces
-import numpy as np
-import jax
+from __future__ import annotations
+
 import functools
+from typing import TYPE_CHECKING
+
+import jax
+import numpy as np
+from gymnax.environments import spaces
+
+from .autorl_wrapper import AutoRLWrapper
+
+if TYPE_CHECKING:
+    from arlbench.core.environments import AutoRLEnv
 
 
 # TODO add test cases
@@ -24,7 +31,7 @@ class FlattenObservationWrapper(AutoRLWrapper):
             shape=(np.prod(self._env.observation_space.shape),),
             dtype=self._env.observation_space.dtype,
         )
-    
+
     @functools.partial(jax.jit, static_argnums=(0,))
     def __flatten(self, obs):
         # since we have a stack of <n_envs> observations,

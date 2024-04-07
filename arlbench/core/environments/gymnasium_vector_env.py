@@ -5,17 +5,12 @@ from typing import TYPE_CHECKING
 
 import gymnasium
 import jax
-import jax.numpy as jnp
 import numpy as np
-from gymnasium import Env
-
-from arlbench.utils import gymnasium_space_to_gymnax_space
 
 from .autorl_env import AutoRLEnv
 
 if TYPE_CHECKING:
-    import chex
-    from chex import PRNGKey
+    from gymnasium.experimental.vector import AsyncVectorEnv
 
 
 class JaxifyGymOutput(gymnasium.Wrapper):
@@ -30,68 +25,37 @@ def make_bool(data):
     return np.array([bool(data)])
 
 
-class GymnasiumEnv(AutoRLEnv):
-    def __init__(self, env: Env, n_envs: int, seed: int):
+class GymnasiumVectorEnv(AutoRLEnv):
+    def __init__(self, env: AsyncVectorEnv, n_envs: int):
         super().__init__(env, n_envs)
 
-        self.seed = seed
+        # TODO implement
 
-        self.reset_result = jnp.array(self.env.observation_space.sample())
-
-        self.step_result = (
-            jnp.array(self.env.observation_space.sample()),
-            1.,
-            False,
-            False,
-            {}
-        )
 
     @functools.partial(jax.jit, static_argnums=0)
-    def __reset(self, _) -> chex.Array:
-        def reset_env():
-            return self.env.reset(seed=self.seed)
-    
-        return jax.pure_callback(
-            reset_env, self.reset_result
-        )
+    def reset(self, rng):
+        # TODO implement
+        raise NotImplementedError
 
     @functools.partial(jax.jit, static_argnums=0)
-    def reset(self, rng: PRNGKey) -> tuple[None, chex.Array]:
-        obs = jax.vmap(
-            self.__reset, in_axes=(0)
-        )(jnp.arange(self.n_envs))
-        return None, obs
-
-    @functools.partial(jax.jit, static_argnums=0)
-    def __step(self, action: chex.Array) -> tuple[chex.Array, chex.Array, chex.Array, dict]:
-        def step():
-            obs, reward, term, trunc, info = self.env.step(action)
-            return obs, reward, term or trunc, info
-
-        return jax.pure_callback(
-            step, self.step_result)
-
-    @functools.partial(jax.jit, static_argnums=0)
-    def step(
-            self,
-            env_state: None,
-            action: chex.Array,
-            rng: PRNGKey
-        ) -> tuple[None, tuple[chex.Array, chex.Array, chex.Array, dict]]:
-        step_rng = jax.random.split(rng, self.n_envs)
-        obs, reward, done, info = jax.vmap(
-            self.__step, in_axes=(0)
-        )(action)
-
-        return None, (obs, reward, done, info)
+    def step(self, env_state, action, rng):
+        # TODO implement
+        raise NotImplementedError
 
     @property
     def action_space(self):
-        return gymnasium_space_to_gymnax_space(self.env.action_space)
+        # TODO implement
+        raise NotImplementedError
+
+    @functools.partial(jax.jit, static_argnums=0)
+    def sample_action(self, rng):
+        # TODO implement
+        raise NotImplementedError
 
     @property
     def observation_space(self):
-        return gymnasium_space_to_gymnax_space(self.env.observation_space)
+        # TODO implement
+        raise NotImplementedError
 
 
 

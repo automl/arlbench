@@ -1,7 +1,12 @@
-from ..environments import AutoRLEnv
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from arlbench.core.environments import AutoRLEnv
 
 
-class AutoRLWrapper(object):
+class AutoRLWrapper:
     """Base class for AutoRL wrappers."""
 
     def __init__(self, env: AutoRLEnv):
