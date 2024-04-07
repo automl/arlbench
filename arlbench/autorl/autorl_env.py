@@ -10,23 +10,16 @@ import jax.numpy as jnp
 import numpy as np
 
 from arlbench.autorl.checkpointing import Checkpointer
-from arlbench.autorl.objectives import track_emissions, track_reward, track_runtime
-from arlbench.core.algorithms import (
-    DQN,
-    PPO,
-    SAC,
-    Algorithm,
-    DQNRunnerState,
-    PPORunnerState,
-    SACRunnerState,
-)
+from arlbench.autorl.objectives import (track_emissions, track_reward,
+                                        track_runtime)
+from arlbench.core.algorithms import (DQN, PPO, SAC, Algorithm, DQNRunnerState,
+                                      PPORunnerState, SACRunnerState)
 from arlbench.utils import config_space_to_gymnasium_space
 
 if TYPE_CHECKING:
     from ConfigSpace import Configuration
-    from flashbax.buffers.prioritised_trajectory_buffer import (
-        PrioritisedTrajectoryBufferState,
-    )
+    from flashbax.buffers.prioritised_trajectory_buffer import \
+        PrioritisedTrajectoryBufferState
 
 
 class AutoRLEnv(gymnasium.Env):
