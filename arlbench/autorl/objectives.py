@@ -28,7 +28,11 @@ def track_reward(train_func: Callable, objectives: dict, algorithm: Algorithm, n
 def track_emissions(train_func: Callable, objectives: dict) -> Callable:
     def wrapper(*args, **kwargs):
         from codecarbon import EmissionsTracker
-        tracker = EmissionsTracker()
+        tracker = EmissionsTracker(
+            save_to_file=False,
+            output_dir="/tmp",
+            logging_logger=None
+        )
         tracker.start()
         try:
             result = train_func(*args, **kwargs)

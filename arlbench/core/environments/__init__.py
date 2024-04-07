@@ -1,9 +1,9 @@
 from .autorl_env import AutoRLEnv
 from .make_env import make_env
-from .envpool import EnvpoolEnv
-from .gymnax import GymnaxEnv
-from .gymnasium import GymnasiumEnv
-from .brax import BraxEnv
+from .envpool_env import EnvpoolEnv
+from .gymnax_env import GymnaxEnv
+from .gymnasium_env import GymnasiumEnv
+from .brax_env import BraxEnv
 
 
 __all__ = [

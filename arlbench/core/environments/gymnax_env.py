@@ -1,13 +1,13 @@
 import jax
 import functools
-from ..environments import AutoRLEnv
-from gymnax.environments.environment import Environment, EnvParams
+from .autorl_env import AutoRLEnv
+from gymnax.environments.environment import Environment
 from chex import PRNGKey
 from typing import Any
 
 
 class GymnaxEnv(AutoRLEnv):
-    def __init__(self, env: Environment, n_envs: int, env_params: EnvParams):
+    def __init__(self, env: Environment, n_envs: int, env_params: Any):
         super().__init__(env, n_envs)
 
         self.n_envs = n_envs
