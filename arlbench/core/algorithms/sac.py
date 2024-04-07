@@ -1,20 +1,23 @@
 # The SAC Code is heavily based on stable-baselines JAX
+from __future__ import annotations
+
+import functools
+from typing import TYPE_CHECKING, Any, NamedTuple
+
+import flashbax as fbx
 import jax
+import jax.lax
 import jax.numpy as jnp
 import optax
-from .common import TimeStep
+from ConfigSpace import Categorical, Configuration, ConfigurationSpace, Float, Integer
 from flax.training.train_state import TrainState
-from typing import NamedTuple, Union
-from typing import Any, Dict, Optional
-import chex
-import jax.lax
-import flashbax as fbx
-import functools
 
 from .algorithm import Algorithm
+from .common import TimeStep
+from .models import AlphaCoef, SACActor, SACVectorCritic
 
-from .models import SACActor, SACVectorCritic, AlphaCoef
-from ConfigSpace import Configuration, ConfigurationSpace, Float, Integer, Categorical
+if TYPE_CHECKING:
+    import chex
 
 # todo: separate learning rate for critic and actor??
 
@@ -29,14 +32,14 @@ class SACRunnerState(NamedTuple):
 
 
 class SACTrainState(TrainState):
-    target_params: Union[None, chex.Array, dict] = None
+    target_params: None | chex.Array | dict = None
     network_state = None
 
     @classmethod
     def create_with_opt_state(cls, *, apply_fn, params, target_params, tx, opt_state, **kwargs):
         if opt_state is None:
             opt_state = tx.init(params)
-        obj = cls(
+        return cls(
             step=0,
             apply_fn=apply_fn,
             params=params,
@@ -45,7 +48,6 @@ class SACTrainState(TrainState):
             opt_state=opt_state,
             **kwargs,
         )
-        return obj
 
 
 class Transition(NamedTuple):
@@ -60,10 +62,10 @@ class Transition(NamedTuple):
 class SAC(Algorithm):
     def __init__(
             self,
-            hpo_config: Union[Configuration, Dict],
-            options: Dict,
+            hpo_config: Configuration | dict,
+            options: dict,
             env: Any,
-            nas_config: Union[Configuration, Dict] = None,
+            nas_config: Configuration | dict = None,
             track_metrics=False,
             track_trajectories=False,
     ) -> None:
@@ -134,7 +136,7 @@ class SAC(Algorithm):
 
     @staticmethod
     def get_nas_config_space(seed=None) -> ConfigurationSpace:
-        cs = ConfigurationSpace(
+        return ConfigurationSpace(
             name="SACNASConfigSpace",
             seed=seed,
             space={
@@ -142,7 +144,6 @@ class SAC(Algorithm):
                 "hidden_size": Integer("hidden_size", (1, 1024), default=256),
             },
         )
-        return cs
 
     @staticmethod
     def get_default_nas_config() -> Configuration:
@@ -156,12 +157,7 @@ class SAC(Algorithm):
 
 
         dummy_rng = jax.random.PRNGKey(0)
-        _action = jnp.array(
-            [
-                self.env.action_space.sample(rng)
-                for _ in range(self.env_options["n_envs"])
-            ]
-        )
+        _action = self.env.sample_actions(dummy_rng)
         _, (_obs, _reward, _done, _) = self.env.step(env_state, _action, dummy_rng)
 
         _timestep = TimeStep(last_obs=_obs[0], obs=_obs[0], action=_action[0], reward=_reward[0], done=_done[0])
@@ -230,7 +226,7 @@ class SAC(Algorithm):
             self,
             runner_state,
             buffer_state
-    )-> tuple[tuple[SACRunnerState, Any], Optional[tuple]]:
+    )-> tuple[tuple[SACRunnerState, Any], tuple | None]:
         def train_eval_step(carry, _):
             runner_state, buffer_state = carry
             (runner_state, buffer_state), out = jax.lax.scan(
@@ -302,8 +298,7 @@ class SAC(Algorithm):
     def update_alpha(self, alpha_train_state, entropy):
         def alpha_loss(params):
             alpha_value = self.alpha.apply(params)
-            loss = alpha_value * (entropy - self.target_entropy).mean()  # type: ignore[union-attr]
-            return loss
+            return alpha_value * (entropy - self.target_entropy).mean()  # type: ignore[union-attr]
 
         alpha_loss, grads = jax.value_and_grad(alpha_loss)(alpha_train_state.params)
         alpha_train_state = alpha_train_state.apply_gradients(grads=grads)

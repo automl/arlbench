@@ -1,9 +1,14 @@
-import jax
+from __future__ import annotations
+
 import functools
-import jax.numpy as jnp
-from .autorl_env import AutoRLEnv
-from ...utils import gym_space_to_gymnax_space
 from typing import Any
+
+import jax
+import jax.numpy as jnp
+
+from arlbench.utils import gymnasium_space_to_gymnax_space
+
+from .autorl_env import AutoRLEnv
 
 
 class EnvpoolEnv(AutoRLEnv):
@@ -24,12 +29,9 @@ class EnvpoolEnv(AutoRLEnv):
 
     @property
     def action_space(self):
-        # TODO test
-        return gym_space_to_gymnax_space(self.env.action_space)
-        #return self.env.action_space
+        return gymnasium_space_to_gymnax_space(self.env.action_space)
 
     @property
     def observation_space(self):
-        # TODO test
-        return gym_space_to_gymnax_space(self.env.observation_space)
-    
+        return gymnasium_space_to_gymnax_space(self.env.observation_space)
+

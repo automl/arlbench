@@ -1,8 +1,11 @@
-import jax.numpy as jnp
-from typing import Sequence
-import flax.linen as nn
-from flax.linen.initializers import constant, orthogonal
+from __future__ import annotations
+
+from collections.abc import Sequence
+
 import distrax
+import flax.linen as nn
+import jax.numpy as jnp
+from flax.linen.initializers import constant, orthogonal
 
 
 class TanhTransformedDistribution(distrax.Transformed):  # type: ignore[name-defined]
@@ -66,8 +69,7 @@ class SACActor(nn.Module):
         actor_logstd = self.log_std_out_layer(actor_hidden)
         actor_logstd = jnp.clip(actor_logstd, self.log_std_min, self.log_std_max)
 
-        pi = TanhTransformedDistribution(distrax.MultivariateNormalDiag(actor_mean, jnp.exp(actor_logstd)))
-        return pi
+        return TanhTransformedDistribution(distrax.MultivariateNormalDiag(actor_mean, jnp.exp(actor_logstd)))
 
 
 class SACCritic(nn.Module):
@@ -125,8 +127,7 @@ class SACVectorCritic(nn.Module):
             out_axes=0,
             axis_size=self.n_critics,
         )(self.action_dim, self.activation, self.hidden_size)
-        q_values = vmap_critic(x, action)
-        return q_values
+        return vmap_critic(x, action)
 
 
 class ActorCritic(nn.Module):
@@ -197,7 +198,7 @@ class ActorCritic(nn.Module):
 
 class Q(nn.Module):
     action_dim: Sequence[int]
-    activation: str = "tanh"    
+    activation: str = "tanh"
     hidden_size: int = 64
     discrete: bool = True
 
@@ -228,6 +229,5 @@ class Q(nn.Module):
         q = self.activation_func(q)
         q = self.dense1(q)
         q = self.activation_func(q)
-        q = self.out_layer(q)
+        return self.out_layer(q)
 
-        return q

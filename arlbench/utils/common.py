@@ -1,8 +1,10 @@
-import numpy as np
+from __future__ import annotations
+
 import ConfigSpace
 import gymnasium
 import gymnasium.spaces as gym_spaces
 import gymnax.environments.spaces as gymnax_spaces
+import numpy as np
 
 
 def to_gymnasium_space(space):
@@ -18,7 +20,7 @@ def to_gymnasium_space(space):
         raise NotImplementedError
     return new_space
 
-    
+
 def config_space_to_gymnasium_space(config_space: ConfigSpace.ConfigurationSpace, seed=None) -> gymnasium.spaces.Dict:
     spaces = {}
 
@@ -35,7 +37,7 @@ def config_space_to_gymnasium_space(config_space: ConfigSpace.ConfigurationSpace
     return gymnasium.spaces.Dict(spaces, seed=seed)
 
 
-def gym_space_to_gymnax_space(space: gym_spaces.Space) -> gymnax_spaces.Space:
+def gymnasium_space_to_gymnax_space(space: gym_spaces.Space) -> gymnax_spaces.Space:
     """Convert Gym space to equivalent Gymnax space."""
     if isinstance(space, gym_spaces.Discrete):
         return gymnax_spaces.Discrete(int(space.n))

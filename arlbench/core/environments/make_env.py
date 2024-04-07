@@ -1,26 +1,38 @@
+from __future__ import annotations
 
-from .autorl_env import AutoRLEnv
-from .gymnax_env import GymnaxEnv
+from typing import TYPE_CHECKING
+
+from arlbench.core.wrappers import AutoRLWrapper, FlattenObservationWrapper
+
 from .brax_env import BraxEnv
-from .gymnasium_env import GymnasiumEnv
 from .envpool_env import EnvpoolEnv
-from ..wrappers import FlattenObservationWrapper, AutoRLWrapper
-from typing import Union
+from .gymnasium_env import GymnasiumEnv
+from .gymnasium_vector_env import GymnasiumVectorEnv
+from .gymnax_env import GymnaxEnv
+
+if TYPE_CHECKING:
+    from .autorl_env import AutoRLEnv
 
 
-def make_env(env_framework, env_name, n_envs=10, seed=0) -> Union[AutoRLEnv, AutoRLWrapper]:
+def make_env(env_framework, env_name, n_envs=10, seed=0) -> AutoRLEnv | AutoRLWrapper:
     if env_framework == "gymnasium":
         import gymnasium
 
-        env = gymnasium.vector.make(env_name, num_envs=n_envs)
-        env = GymnasiumEnv(env, n_envs)
+        env = gymnasium.make(env_name)
+        env = GymnasiumEnv(env, n_envs, seed)
+    elif env_framework == "gymnasium_vector":
+        # experimental
+        import gymnasium
+
+        env = gymnasium.vector.make(env_name)
+        env = GymnasiumVectorEnv(env, n_envs)
     elif env_framework == "gymnax":
         import gymnax
 
         env, env_params = gymnax.make(env_name)
         env = GymnaxEnv(env, n_envs, env_params)
     elif env_framework == "envpool":
-        import arlbench.core.environments.envpool_env as envpool_env
+        from arlbench.core.environments import envpool_env
 
         env = envpool_env.make(env_name, env_type="gymnasium", num_envs=n_envs, seed=seed)
         env = EnvpoolEnv(env, n_envs)
@@ -32,6 +44,5 @@ def make_env(env_framework, env_name, n_envs=10, seed=0) -> Union[AutoRLEnv, Aut
         env = BraxEnv(env, n_envs)
     else:
         raise ValueError(f"Invalid framework: {env_framework}")
-    
-    env = FlattenObservationWrapper(env)
-    return env
+
+    return FlattenObservationWrapper(env)
