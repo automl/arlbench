@@ -44,7 +44,7 @@ class FlattenObservationWrapper(AutoRLWrapper):
     def step(
        self, env_state, action, rng
     ):  # TODO improve typing
-        env_state, (obs, reward, done, info) = self.env.step(env_state, action, rng)
+        env_state, (obs, reward, done, info) = self._env.step(env_state, action, rng)
 
         obs = self.__flatten(obs)
         return env_state, (obs, reward, done, info)

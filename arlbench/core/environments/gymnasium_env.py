@@ -1,6 +1,6 @@
 import jax
 from gymnasium.vector import VectorEnv
-from ..environments import AutoRLEnv
+from .autorl_env import AutoRLEnv
 import functools
 
 

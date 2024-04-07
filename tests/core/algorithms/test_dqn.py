@@ -88,3 +88,7 @@ def test_relu_dqn():
 
     print(reward, training_time)
     assert reward > 300
+
+
+if __name__ == "__main__":
+    test_default_dqn()

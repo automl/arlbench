@@ -1,5 +1,9 @@
 
-from . import AutoRLEnv, GymnaxEnv, BraxEnv, GymnasiumEnv, EnvpoolEnv
+from .autorl_env import AutoRLEnv
+from .gymnax_env import GymnaxEnv
+from .brax_env import BraxEnv
+from .gymnasium_env import GymnasiumEnv
+from .envpool_env import EnvpoolEnv
 from ..wrappers import FlattenObservationWrapper, AutoRLWrapper
 from typing import Union
 
@@ -16,9 +20,9 @@ def make_env(env_framework, env_name, n_envs=10, seed=0) -> Union[AutoRLEnv, Aut
         env, env_params = gymnax.make(env_name)
         env = GymnaxEnv(env, n_envs, env_params)
     elif env_framework == "envpool":
-        import envpool
+        import arlbench.core.environments.envpool_env as envpool_env
 
-        env = envpool.make(env_name, env_type="gymnasium", num_envs=n_envs, seed=seed)
+        env = envpool_env.make(env_name, env_type="gymnasium", num_envs=n_envs, seed=seed)
         env = EnvpoolEnv(env, n_envs)
     elif env_framework == "brax":
         from brax import envs
