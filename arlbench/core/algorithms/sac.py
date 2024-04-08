@@ -8,6 +8,7 @@ import flashbax as fbx
 import jax
 import jax.lax
 import jax.numpy as jnp
+import numpy as np
 import optax
 from ConfigSpace import (Categorical, Configuration, ConfigurationSpace, Float,
                          Integer)
@@ -222,6 +223,11 @@ class SAC(Algorithm):
         action = pi.mode()
         # todo: we need to check that the action spaces are finite
         low, high = self.env.action_space.low, self.env.action_space.high
+        # check if low or high are none, nan or inf and set to 1
+        if low is None or np.isnan(low).any() or np.isinf(low).any():
+            low = -jnp.ones_like(action)
+        if high is None or np.isnan(high).any() or np.isinf(high).any():
+            high = jnp.ones_like(action)
         return low + (action + 1.0) * 0.5 * (high - low)
 
 
@@ -239,10 +245,10 @@ class SAC(Algorithm):
                 None,
                 ((self.env_options["n_total_timesteps"]//self.hpo_config["train_frequency"])//self.env.n_envs)//self.env_options["n_eval_steps"],
             )
-            reward = self.eval(runner_state, self.env_options["n_eval_episodes"])
-            jax.debug.print("Reward: {reward}", reward=reward.mean())
+            eval_returns = self.eval(runner_state, self.env_options["n_eval_episodes"])
+            jax.debug.print("Return: {ret}+-{std}", ret=eval_returns.mean(), std=eval_returns.std())
 
-            return (runner_state, buffer_state), (reward.mean(), out)
+            return (runner_state, buffer_state), (eval_returns, out)
 
         (runner_state, buffer_state), (reward, out) = jax.lax.scan(
             train_eval_step,
@@ -467,6 +473,10 @@ class SAC(Algorithm):
         pi = self.actor_network.apply(actor_train_state.params, last_obs)
         buffer_action = pi.sample(seed=_rng)
         low, high = self.env.action_space.low, self.env.action_space.high
+        if low is None or np.isnan(low).any() or np.isinf(low).any():
+            low = -jnp.ones_like(buffer_action)
+        if high is None or np.isnan(high).any() or np.isinf(high).any():
+            high = jnp.ones_like(buffer_action)
         action = low + (buffer_action + 1.0) * 0.5 * (high - low)
 
         # STEP ENV
