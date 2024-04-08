@@ -1,36 +1,17 @@
 import jax
 import time
+import os
+import logging
+import argparse
+import pandas as pd
 
 from arlbench.algorithms import SAC
-
-from stable_baselines3 import SAC as SB3SAC
-from stable_baselines3.common.evaluation import evaluate_policy
-from stable_baselines3.common.vec_env import SubprocVecEnv, VecMonitor, DummyVecEnv
-import gymnasium as gym
-
-from brax import envs as brax_envs
-
-from brax.envs.wrappers import gym as gym_wrapper
-
-from sbx.sac import SAC as SBXSAC
 from arlbench.environments import make_env
 
-SAC_OPTIONS = {
-    "n_total_timesteps": 1e6,
-    "n_envs": 1,
-    "n_env_steps": 1000,
-    "n_eval_steps": 100,
-    "n_eval_episodes": 100,
-    "track_metrics": False,
-    "track_traj": False,
-}
 
-# Default hyperparameter configuration
-def test_default_sac():
-    #env, env_params = make_env("gym", "LunarLanderContinuous-v2")
-    env = make_env("brax", "ant", n_envs=SAC_OPTIONS["n_envs"], seed=42)
-    #env, env_params = make_env("brax", "ant")
-    rng = jax.random.PRNGKey(42)
+def test_sac(log, framework, env_name, sac_config, seed):
+    env = make_env(framework, env_name, n_envs=sac_config["n_envs"], seed=seed)
+    rng = jax.random.PRNGKey(seed)
 
     hpo_config = SAC.get_default_hpo_config()
     hpo_config["tau"] = 0.005
@@ -41,84 +22,64 @@ def test_default_sac():
     nas_config["activation"] = "relu"
     nas_config["hidden_size"] = 256
 
-    agent = SAC(hpo_config, SAC_OPTIONS, env, nas_config)
+    agent = SAC(hpo_config, sac_config, env, nas_config)
     runner_state, buffer_state = agent.init(rng)
 
     start = time.time()
-    (runner_state, _), (reward, _) = agent.train(runner_state, buffer_state)
-    training_time = time.time() - start
-    #reward = agent.sac_eval(runner_state, SAC_OPTIONS["n_eval_episodes"])
-    #assert reward > -200
-    print(reward, training_time)
-
-
-def test_sb3_sac():
-    # Function to create the environment
-    def make_env():
-        def _init():
-            #return gym.make("LunarLanderContinuous-v2")
-            return env
-        return _init
-
-    # Create multiple environments
-    env = brax_envs.create("ant",
-                           episode_length=SAC_OPTIONS["n_env_steps"],
-                           backend='spring')
-    env = gym_wrapper.GymWrapper(env)
-    #env = torch_wrapper.TorchWrapper(env, device="cpu")
-
-
-    policy_kwargs = dict(
-        net_arch=[256, 256]  # Two hidden layers with 64 units each
-    )
-    model = SB3SAC("MlpPolicy", env, policy_kwargs=policy_kwargs, verbose=5)
-
-    start = time.time()
-    model.learn(total_timesteps=int(SAC_OPTIONS["n_total_timesteps"]))
+    log.info(f"training started")
+    (runner_state, _), (eval_returns, _) = agent.train(runner_state, buffer_state)
+    log.info(f"training finished")
     training_time = time.time() - start
 
-    mean_reward, std_reward = evaluate_policy(model, env, n_eval_episodes=SAC_OPTIONS["n_eval_episodes"])
-    #assert mean_reward > -200
-    print(mean_reward, training_time)
+    mean_return = eval_returns.mean(axis=1)
+    std_return = eval_returns.std(axis=1)
+    str_results = [f"{mean:.2f}+-{std:.2f}" for mean, std in zip(mean_return, std_return)]
+    log.info(f"{training_time}, {str_results}")
 
+    train_info_df = pd.DataFrame()
+    for i in range(len(mean_return)):
+        train_info_df[f"return_{i}"] = eval_returns[i]
 
-def test_sb3_jax_sac():
-    # Function to create the environment
-    #def make_env():
-    #    def _init():
-    #        return GymWrapper(brax_envs.training.wrap(
-    #            brax_envs.get_environment("ant", backend="spring"), episode_length=SAC_OPTIONS["n_env_steps"], action_repeat=1)
-    #        )
-    #        #return gym.make("Pendulum-v1")
-    #    return _init
-
-    # Create multiple environments
-    #env = VecMonitor(SubprocVecEnv([make_env() for _ in range(1)]))
-    env = brax_envs.create("ant", batch_size=None,
-                           episode_length=SAC_OPTIONS["n_env_steps"],
-                           backend='spring')
-    env = gym_wrapper.GymWrapper(env)
-    # env = torch_wrapper.TorchWrapper(env, device="cpu")
-    #env = VecMonitor(env)
-    # automatically convert between jax ndarrays and torch tensors:
-    #env = torch_wrapper.TorchWrapper(env, device=device)
-
-    policy_kwargs = dict(
-        net_arch=[256, 256]  # Two hidden layers with 64 units each
-    )
-    model = SBXSAC("MlpPolicy", env, policy_kwargs=policy_kwargs, verbose=5)
-
-    start = time.time()
-    model.learn(total_timesteps=int(SAC_OPTIONS["n_total_timesteps"]))
-    training_time = time.time() - start
-
-    mean_reward, std_reward = evaluate_policy(model, env, n_eval_episodes=SAC_OPTIONS["n_eval_episodes"])
-    #assert mean_reward > -200
-    print(mean_reward, training_time)
+    os.makedirs(os.path.join("sac_results", f"{framework}_{env_name}"), exist_ok=True)
+    train_info_df.to_csv(os.path.join("sac_results", f"{framework}_{env_name}", f"{seed}_results.csv"))
+    with open(os.path.join("sac_results", f"{framework}_{env_name}", f"{seed}_info"), "w") as f:
+        f.write(f"sac_config: {sac_config}\n")
+        f.write(f"hpo_config: {hpo_config}\n")
+        f.write(f"nas_config: {nas_config}\n")
+        f.write(f"time: {training_time}\n")
+        f.write(f"returns: {str_results}")
 
 
 if __name__ == "__main__":
-    #test_sb3_sac()
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--training-steps", type=int)
+    parser.add_argument("--n-eval-steps", type=int)
+    parser.add_argument("--n-eval-episodes", type=int)
+    parser.add_argument("--n-envs", type=int)
+    parser.add_argument("--seed", type=int)
+    parser.add_argument("--env-framework", type=str)
+    parser.add_argument("--env", type=str)
+    parser.add_argument("--n-env-steps", type=int)
+    args = parser.parse_args()
+
+    logger = logging.getLogger(__name__)
+    logger.setLevel(logging.INFO)
+
+    sac_config = {
+        "n_total_timesteps": args.training_steps,
+        "n_envs": args.n_envs,
+        "n_env_steps": args.n_env_steps,
+        "n_eval_steps": args.n_eval_steps,
+        "n_eval_episodes": args.n_eval_episodes,
+        "track_metrics": False,
+        "track_traj": False,
+    }
+
     with jax.disable_jit(disable=False):
-        #test_sb3_jax_sac()
-        test_default_sac()
+        test_sac(
+            log=logger,
+            framework=args.env_framework,
+            env_name=args.env,
+            sac_config=sac_config,
+            seed=args.seed,
+        )
