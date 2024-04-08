@@ -31,8 +31,8 @@ class BraxEnv(AutoRLEnv):
     @functools.partial(jax.jit, static_argnums=0)
     def reset(self, rng: PRNGKey) -> tuple[BraxEnvState, chex.Array]:
         reset_rng = jax.random.split(rng, self._n_envs)
-        env_state, obs = jax.vmap(self.__reset, in_axes=(0, None))(
-            reset_rng, None
+        env_state, obs = jax.vmap(self.__reset, in_axes=(0))(
+            reset_rng
         )
         return env_state, obs
 
@@ -53,10 +53,9 @@ class BraxEnv(AutoRLEnv):
             action: chex.Array,
             rng: PRNGKey
         ) -> tuple[BraxEnvState, tuple[chex.Array, chex.Array, chex.Array, dict]]:
-        step_rng = jax.random.split(rng, self._n_envs)
         env_state, (obs, reward, done, info) = jax.vmap(
-            self.__step, in_axes=(0, 0, 0)
-        )(step_rng, env_state, action)
+            self.__step, in_axes=(0, 0)
+        )(env_state, action)
 
         return env_state, (obs, reward, done, info)
 
