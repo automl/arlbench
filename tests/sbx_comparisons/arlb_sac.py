@@ -5,11 +5,11 @@ import logging
 import argparse
 import pandas as pd
 
-from arlbench.algorithms import SAC
-from arlbench.environments import make_env
+from arlbench.core.algorithms import SAC
+from arlbench.core.environments import make_env
 
 
-def test_sac(log, framework, env_name, sac_config, seed):
+def test_sac(dir_name, log, framework, env_name, sac_config, seed):
     env = make_env(framework, env_name, n_envs=sac_config["n_envs"], seed=seed)
     rng = jax.random.PRNGKey(seed)
 
@@ -40,10 +40,9 @@ def test_sac(log, framework, env_name, sac_config, seed):
     for i in range(len(mean_return)):
         train_info_df[f"return_{i}"] = eval_returns[i]
 
-    cur_time = time.strftime("%Y%m%d-%H%M%S")
-    os.makedirs(os.path.join("sac_results", f"{framework}_{env_name}", cur_time), exist_ok=True)
-    train_info_df.to_csv(os.path.join("sac_results", f"{framework}_{env_name}", cur_time, f"{seed}_results.csv"))
-    with open(os.path.join("sac_results", f"{framework}_{env_name}", cur_time, f"{seed}_info"), "w") as f:
+    os.makedirs(os.path.join("sac_results", f"{framework}_{env_name}", dir_name), exist_ok=True)
+    train_info_df.to_csv(os.path.join("sac_results", f"{framework}_{env_name}", dir_name, f"{seed}_results.csv"))
+    with open(os.path.join("sac_results", f"{framework}_{env_name}", dir_name, f"{seed}_info"), "w") as f:
         f.write(f"sac_config: {sac_config}\n")
         f.write(f"hpo_config: {hpo_config}\n")
         f.write(f"nas_config: {nas_config}\n")
@@ -53,6 +52,7 @@ def test_sac(log, framework, env_name, sac_config, seed):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
+    parser.add_argument("--dir-name", type=str)
     parser.add_argument("--training-steps", type=int)
     parser.add_argument("--n-eval-steps", type=int)
     parser.add_argument("--n-eval-episodes", type=int)
@@ -78,6 +78,7 @@ if __name__ == "__main__":
 
     with jax.disable_jit(disable=False):
         test_sac(
+            dir_name=args.dir_name,
             log=logger,
             framework=args.env_framework,
             env_name=args.env,
