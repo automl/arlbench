@@ -40,9 +40,10 @@ def test_sac(log, framework, env_name, sac_config, seed):
     for i in range(len(mean_return)):
         train_info_df[f"return_{i}"] = eval_returns[i]
 
-    os.makedirs(os.path.join("sac_results", f"{framework}_{env_name}"), exist_ok=True)
-    train_info_df.to_csv(os.path.join("sac_results", f"{framework}_{env_name}", f"{seed}_results.csv"))
-    with open(os.path.join("sac_results", f"{framework}_{env_name}", f"{seed}_info"), "w") as f:
+    cur_time = time.strftime("%Y%m%d-%H%M%S")
+    os.makedirs(os.path.join("sac_results", f"{framework}_{env_name}", cur_time), exist_ok=True)
+    train_info_df.to_csv(os.path.join("sac_results", f"{framework}_{env_name}", cur_time, f"{seed}_results.csv"))
+    with open(os.path.join("sac_results", f"{framework}_{env_name}", cur_time, f"{seed}_info"), "w") as f:
         f.write(f"sac_config: {sac_config}\n")
         f.write(f"hpo_config: {hpo_config}\n")
         f.write(f"nas_config: {nas_config}\n")
