@@ -34,7 +34,7 @@ def make_env(env_framework, env_name, n_envs=1, seed=0) -> AutoRLEnv | AutoRLWra
     elif env_framework == "brax":
         from brax import envs
 
-        env = envs.get_environment(env_name, backend="generalized")
+        env = envs.get_environment(env_name, backend="spring")
         env = envs.training.wrap(env)
         env = BraxEnv(env, n_envs)
     else:
