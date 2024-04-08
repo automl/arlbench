@@ -91,8 +91,9 @@ class Algorithm(ABC):
         pass
 
     @functools.partial(jax.jit, static_argnums=0)
-    def _env_episode(self, runner_state, _):
-        _rng, reset_rng = jax.random.split(runner_state.rng)
+    def _env_episode(self, state, _):
+        rng, runner_state = state
+        rng, reset_rng = jax.random.split(rng)
 
         env_state, obs = self.env.reset(reset_rng)
         initial_state = (
@@ -100,7 +101,7 @@ class Algorithm(ABC):
             obs,
             jnp.full((self.env.n_envs,), 0.),
             jnp.full((self.env.n_envs,), False),
-            _rng,
+            rng,
             runner_state
         )
 
@@ -127,15 +128,14 @@ class Algorithm(ABC):
             return env_state, obs, reward, done, rng, runner_state
 
         final_state = jax.lax.while_loop(cond_fn, body_fn, initial_state)
-        _, _, reward, _, _, _ = final_state
+        _, _, reward, _, rng, _ = final_state
 
-        return runner_state, reward
+        return (rng, runner_state), reward
 
     def eval(self, runner_state, num_eval_episodes):
         # Number of parallel evaluations, each with n_envs environments
         n_evals = int(np.ceil(num_eval_episodes / self.env.n_envs))
         _, rewards = jax.lax.scan(
-            self._env_episode, runner_state, None, n_evals
+            self._env_episode, (runner_state.rng, runner_state), None, n_evals
         )
         return jnp.concat(rewards)[:num_eval_episodes]
-
