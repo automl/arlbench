@@ -61,3 +61,15 @@ def gymnasium_space_to_gymnax_space(space: gym_spaces.Space) -> gymnax_spaces.Sp
         raise NotImplementedError(
             f"Conversion of {space.__class__.__name__} not supported"
         )
+    
+def flatten_dict(d):
+    """
+    Flatten a nested dictionary into a tuple containing all items.
+    """
+    values = []
+    for value in d.values():
+        if isinstance(value, dict):
+            values.extend(flatten_dict(value))
+        else:
+            values.append(value)
+    return tuple(values)
