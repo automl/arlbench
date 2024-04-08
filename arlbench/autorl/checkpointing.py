@@ -1,18 +1,24 @@
-from typing import Union, Optional, Any
-from flashbax.buffers.prioritised_trajectory_buffer import PrioritisedTrajectoryBufferState
-from flashbax.buffers.trajectory_buffer import TrajectoryBufferState
-from flashbax.buffers.sum_tree import SumTreeState
-from arlbench.algorithms import PPORunnerState, DQNRunnerState
-from flashbax.vault import Vault
-import numpy as np
-import jax.numpy as jnp
+from __future__ import annotations
+
 import json
 import os
-from flax.training import orbax_utils
-import orbax.checkpoint as ocp
-from flax.core.frozen_dict import FrozenDict
 from datetime import datetime
+from typing import TYPE_CHECKING, Any
+
 import jax
+import jax.numpy as jnp
+import numpy as np
+import orbax.checkpoint as ocp
+from flashbax.buffers.prioritised_trajectory_buffer import \
+    PrioritisedTrajectoryBufferState
+from flashbax.buffers.sum_tree import SumTreeState
+from flashbax.buffers.trajectory_buffer import TrajectoryBufferState
+from flashbax.vault import Vault
+from flax.core.frozen_dict import FrozenDict
+
+if TYPE_CHECKING:
+    from arlbench.core.algorithms import (DQNRunnerState, PPORunnerState,
+                                          SACRunnerState)
 
 
 class Checkpointer:
@@ -39,14 +45,14 @@ class Checkpointer:
 
     @staticmethod
     def save(
-        runner_state: Union[PPORunnerState, DQNRunnerState],
+        runner_state: PPORunnerState | DQNRunnerState | SACRunnerState,
         buffer_state: PrioritisedTrajectoryBufferState,
         options: dict,
         hp_config: dict,
         done: bool,
         c_episode: int,
         c_step: int,
-        metrics: Optional[tuple]
+        metrics: tuple | None
     ) -> str:
         # Checkpoint setup
         checkpoint = options["checkpoint"]   # list of strings
@@ -54,7 +60,7 @@ class Checkpointer:
         checkpoint_dir = os.path.join(options["checkpoint_dir"], checkpoint_name)
         os.makedirs(checkpoint_dir, exist_ok=True)
 
-        # Structure: 
+        # Structure:
         # /.../checkpoint_name/checkpoint_name_c_episode_0_step_0
         # /.../checkpoint_name/checkpoint_name_c_episode_0_step_1
         # ...
@@ -75,7 +81,7 @@ class Checkpointer:
                     additional_info,
                 ) = metrics
             else:
-                raise ValueError(f"'trajectories' in checkpoint but 'metrics' does not match.")
+                raise ValueError("'trajectories' in checkpoint but 'metrics' does not match.")
         elif "loss" in checkpoint or "extras" in checkpoint:
             if metrics and len(metrics) == 3:
                 (
@@ -84,8 +90,8 @@ class Checkpointer:
                     additional_info,
                 ) = metrics
             else:
-                raise ValueError(f"'loss' or 'extras' in checkpoint but 'metrics' does not match.")
-        
+                raise ValueError("'loss' or 'extras' in checkpoint but 'metrics' does not match.")
+
         network_params = train_state.params
         opt_info = train_state.opt_state
 
@@ -117,6 +123,7 @@ class Checkpointer:
                 ckpt["actor_loss"] = jnp.concatenate(loss_info[1], axis=0)
             elif options["algorithm"]== "dqn":
                 ckpt["loss"] = loss_info
+            # TODO add SAC
             Checkpointer._save_orbax_checkpoint(ckpt, checkpoint_dir, checkpoint_name + "_loss")
 
         if "minibatches" in checkpoint and "trajectory" in checkpoint and options["algorithm"] == "ppo":
@@ -195,7 +202,7 @@ class Checkpointer:
         c_episode = restored["c_episode"]
         config = restored["config"]
 
-        if "buffer" in restored.keys():
+        if "buffer" in restored:
             buffer_state = Checkpointer.load_buffer(
                 dummy_buffer_state,
                 restored["buffer"]["priority_state_path"],
@@ -208,17 +215,14 @@ class Checkpointer:
             network_params = network_params[0]
         network_params = FrozenDict(network_params)
 
-        if "target" in restored.keys():
+        if "target" in restored:
             target_params = restored["target"]
             if isinstance(target_params, list):
                 target_params = target_params[0]
             target_params = FrozenDict(target_params)
 
-        if "opt_state" in restored.keys():
-            opt_state = restored["opt_state"]
-        else:
-            opt_state = None
-        
+        opt_state = restored.get("opt_state", None)
+
         common = (config, c_step, c_episode)
         if algorithm == "ppo":
             algorithm_kw_args = {
@@ -233,12 +237,13 @@ class Checkpointer:
                 "target_params": target_params,
                 "opt_state": opt_state
             }
+        # TODO add SAC
         else:
             raise ValueError(f"Invalid algorithm in checkpoint: {config['algorithm']}")
         return common, algorithm_kw_args
-            
+
     @staticmethod
-    def save_buffer(buffer_state: Union[TrajectoryBufferState, PrioritisedTrajectoryBufferState], checkpoint_dir: str, checkpoint_name: str) -> dict:
+    def save_buffer(buffer_state: TrajectoryBufferState | PrioritisedTrajectoryBufferState, checkpoint_dir: str, checkpoint_name: str) -> dict:
         buffer_dir = os.path.join(checkpoint_dir, checkpoint_name + "_buffer_state")
         os.makedirs(buffer_dir, exist_ok=True)
 
@@ -269,7 +274,7 @@ class Checkpointer:
         }
 
     @staticmethod
-    def load_buffer(dummy_buffer_state: PrioritisedTrajectoryBufferState, priority_state_path: str, buffer_dir: str, vault_uuid: str) -> Union[TrajectoryBufferState, PrioritisedTrajectoryBufferState]:
+    def load_buffer(dummy_buffer_state: PrioritisedTrajectoryBufferState, priority_state_path: str, buffer_dir: str, vault_uuid: str) -> TrajectoryBufferState | PrioritisedTrajectoryBufferState:
         v = Vault(
             vault_name="buffer_state_vault",
             experience_structure=dummy_buffer_state.experience,
@@ -293,16 +298,16 @@ class Checkpointer:
                 current_index=buffer_state.current_index,
                 is_full=buffer_state.is_full,
             )
-    
+
     @staticmethod
     def _save_sum_tree_state(sum_tree_state: SumTreeState, directory: str) -> None:
         # Ensure the directory exists
         os.makedirs(directory, exist_ok=True)
-        
+
         # Serialize and save the JAX arrays as .npy files
         np.save(os.path.join(directory, Checkpointer.NODES_FILE), np.array(sum_tree_state.nodes))
         np.save(os.path.join(directory, Checkpointer.MRP_FILE), np.array(sum_tree_state.max_recorded_priority))
-        
+
         # Serialize scalar values to JSON
         scalar_values = {
             "tree_depth": sum_tree_state.tree_depth,
@@ -316,11 +321,11 @@ class Checkpointer:
         # Load the JAX arrays from .npy files
         nodes = jnp.array(np.load(os.path.join(directory, Checkpointer.NODES_FILE)))
         max_recorded_priority = jnp.array(np.load(os.path.join(directory, Checkpointer.MRP_FILE)))
-        
+
         # Load scalar values from JSON
-        with open(os.path.join(directory, Checkpointer.SCALARS_FILE), "r") as json_file:
+        with open(os.path.join(directory, Checkpointer.SCALARS_FILE)) as json_file:
             scalar_values = json.load(json_file)
-        
+
         # Reconstruct the SumTreeState object
         return SumTreeState(
             nodes=nodes,

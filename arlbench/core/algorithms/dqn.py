@@ -1,31 +1,37 @@
 # The DQN Code is heavily based on PureJax: https://github.com/luchris429/purejaxrl
-import jax
-import jax.numpy as jnp
-import chex
-import optax
-from arlbench.algorithms.common import TimeStep
-from flax.training.train_state import TrainState
-from typing import NamedTuple, Union
-from typing import Any, Dict, Optional
-import chex
-import jax.lax
-import flashbax as fbx
-from arlbench.algorithms.algorithm import Algorithm
+from __future__ import annotations
+
 import functools
-from arlbench.algorithms.models import Q
-from ConfigSpace import Configuration, ConfigurationSpace, Float, Integer, Categorical, EqualsCondition
-from arlbench.algorithms.buffers import uniform_sample
+from typing import TYPE_CHECKING, Any, NamedTuple
+
+import flashbax as fbx
+import jax
+import jax.lax
+import jax.numpy as jnp
+import optax
+from ConfigSpace import (Categorical, Configuration, ConfigurationSpace, Float,
+                         Integer)
+from flax.training.train_state import TrainState
+
+from arlbench.core.algorithms.models import Q
+
+from .algorithm import Algorithm
+from .buffers import uniform_sample
+from .common import TimeStep
+
+if TYPE_CHECKING:
+    import chex
 
 
 class DQNTrainState(TrainState):
-    target_params: Union[None, chex.Array, dict] = None
+    target_params: None | chex.Array | dict = None
     opt_state = None
 
     @classmethod
     def create_with_opt_state(cls, *, apply_fn, params, target_params, tx, opt_state, **kwargs):
         if opt_state is None:
             opt_state = tx.init(params)
-        obj = cls(
+        return cls(
             step=0,
             apply_fn=apply_fn,
             params=params,
@@ -34,8 +40,7 @@ class DQNTrainState(TrainState):
             opt_state=opt_state,
             **kwargs,
         )
-        return obj
-    
+
 
 class DQNRunnerState(NamedTuple):
     rng: chex.PRNGKey
@@ -56,10 +61,10 @@ class Transition(NamedTuple):
 class DQN(Algorithm):
     def __init__(
         self,
-        hpo_config: Union[Configuration, Dict],
-        options: Dict,
+        hpo_config: Configuration | dict,
+        options: dict,
         env: Any,
-        nas_config: Optional[Union[Configuration, Dict]] = None, 
+        nas_config: Configuration | dict | None = None,
         track_trajectories=False,
         track_metrics=False
     ) -> None:
@@ -82,14 +87,14 @@ class DQN(Algorithm):
             activation=self.nas_config["activation"],
             hidden_size=self.nas_config["hidden_size"],
         )
-        
-        priority_exponent = self.hpo_config["buffer_beta"] if "buffer_beta" in self.hpo_config.keys() else 1.
+
+        priority_exponent = self.hpo_config.get("buffer_beta", 1.0)
         self.buffer = fbx.make_prioritised_flat_buffer(
             max_length=self.hpo_config["buffer_size"],
             min_length=self.hpo_config["buffer_batch_size"],
             sample_batch_size=self.hpo_config["buffer_batch_size"],
             add_sequences=False,
-            add_batch_size=self.env_options["n_envs"],
+            add_batch_size=self.env.n_envs,
             priority_exponent=priority_exponent
         )
         if self.hpo_config["buffer_prio_sampling"] is True:  # todo: shouldn't this be the other way around?
@@ -103,7 +108,7 @@ class DQN(Algorithm):
 
     @staticmethod
     def get_hpo_config_space(seed=None) -> ConfigurationSpace:
-        cs = ConfigurationSpace(
+        return ConfigurationSpace(
             name="DQNConfigSpace",
             seed=seed,
             space={
@@ -135,15 +140,14 @@ class DQN(Algorithm):
         #     EqualsCondition(cs["buffer_epsilon"], cs["buffer_prio_sampling"], True)
         # ])
 
-        return cs
-    
+
     @staticmethod
     def get_default_hpo_config() -> Configuration:
         return DQN.get_hpo_config_space().get_default_configuration()
-    
+
     @staticmethod
     def get_nas_config_space(seed=None) -> ConfigurationSpace:
-        cs = ConfigurationSpace(
+        return ConfigurationSpace(
             name="DQNNASConfigSpace",
             seed=seed,
             space={
@@ -152,8 +156,7 @@ class DQN(Algorithm):
             },
         )
 
-        return cs
-    
+
     @staticmethod
     def get_default_nas_config() -> Configuration:
         return DQN.get_nas_config_space().get_default_configuration()
@@ -162,17 +165,12 @@ class DQN(Algorithm):
         rng, _rng = jax.random.split(rng)
 
         env_state, obs = self.env.reset(rng)
-        
+
         if buffer_state is None or network_params is None or target_params is None:
-            dummy_rng = jax.random.PRNGKey(0) 
-            _action = jnp.array(
-                [
-                    self.env.sample_action(rng)
-                    for _ in range(self.env_options["n_envs"])
-                ]
-            )
+            dummy_rng = jax.random.PRNGKey(0)
+            _action = self.env.sample_actions(dummy_rng)
             _, (_obs, _reward, _done, _) = self.env.step(env_state, _action, dummy_rng)
-        
+
         if buffer_state is None:
             _timestep = TimeStep(last_obs=_obs[0], obs=_obs[0], action=_action[0], reward=_reward[0], done=_done[0])
             buffer_state = self.buffer.init(_timestep)
@@ -201,7 +199,7 @@ class DQN(Algorithm):
             env_state=env_state,
             obs=obs,
             global_step=global_step
-        )    
+        )
 
         return runner_state, buffer_state
 
@@ -215,19 +213,19 @@ class DQN(Algorithm):
         self,
         runner_state,
         buffer_state
-    )-> tuple[tuple[DQNRunnerState, Any], Optional[tuple]]:
+    )-> tuple[tuple[DQNRunnerState, Any], tuple | None]:
         (runner_state, buffer_state), out = jax.lax.scan(
-            self._update_step, (runner_state, buffer_state), None, (self.env_options["n_total_timesteps"]//self.hpo_config["train_frequency"])//self.env_options["n_envs"]
+            self._update_step, (runner_state, buffer_state), None, (self.env_options["n_total_timesteps"]//self.hpo_config["train_frequency"])//self.env.n_envs
         )
         return (runner_state, buffer_state), out
-    
+
     def update(
         self,
         train_state,
-        observations, 
+        observations,
         actions,
-        next_observations, 
-        rewards, 
+        next_observations,
+        rewards,
         dones
     ):
         if self.hpo_config["use_target_network"]:
@@ -273,17 +271,11 @@ class DQN(Algorithm):
         rng, _rng = jax.random.split(rng)
 
         def random_action():
-            return jnp.array(
-                [
-                    self.env.sample_action(rng)
-                    for _ in range(self.env_options["n_envs"])
-                ]
-            )
+            return self.env.sample_actions(rng)
 
         def greedy_action():
             q_values = self.network.apply(train_state.params, last_obs)
-            action = q_values.argmax(axis=-1)
-            return action
+            return q_values.argmax(axis=-1)
 
         def take_step(carry, _):
             obsv, env_state, global_step, buffer_state = carry
@@ -299,7 +291,7 @@ class DQN(Algorithm):
             buffer_state = self.buffer.add(buffer_state, timestep)
 
             # global_step += 1
-            global_step += self.env_options["n_envs"]
+            global_step += self.env.n_envs
             return (obsv, env_state, global_step, buffer_state), (
                 obsv,
                 action,

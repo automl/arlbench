@@ -1,9 +1,9 @@
-from .common import TimeStep
-from .models import Q, ActorCritic
-from .ppo import PPO, PPORunnerState
-from .dqn import DQN, DQNRunnerState
-from .sac import SAC, SACRunnerState
 from .algorithm import Algorithm
+from .common import TimeStep
+from .dqn import DQN, DQNRunnerState
+from .models import ActorCritic, Q
+from .ppo import PPO, PPORunnerState
+from .sac import SAC, SACRunnerState
 
 __all__ = [
     "Algorithm",

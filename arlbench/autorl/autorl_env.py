@@ -1,25 +1,35 @@
-import numpy as np
-import jax.numpy as jnp
-import jax
-from typing import Optional, Union, Any, Dict, Callable
-from arlbench.algorithms import PPO, DQN, Algorithm, PPORunnerState, DQNRunnerState
-import gymnasium
-from arlbench.utils import config_space_to_gymnasium_space
-from flashbax.buffers.prioritised_trajectory_buffer import PrioritisedTrajectoryBufferState
-from ConfigSpace import Configuration
+from __future__ import annotations
+
 import warnings
-from arlbench.autorl_env.checkpointing import Checkpointer
-from arlbench.autorl_env.objectives import track_emissions, track_reward, track_runtime
+from collections.abc import Callable
+from typing import TYPE_CHECKING, Any
+
+import gymnasium
+import jax
+import jax.numpy as jnp
+import numpy as np
+
+from arlbench.autorl.checkpointing import Checkpointer
+from arlbench.autorl.objectives import (track_emissions, track_reward,
+                                        track_runtime)
+from arlbench.core.algorithms import (DQN, PPO, SAC, Algorithm, DQNRunnerState,
+                                      PPORunnerState, SACRunnerState)
+from arlbench.utils import config_space_to_gymnasium_space
+
+if TYPE_CHECKING:
+    from ConfigSpace import Configuration
+    from flashbax.buffers.prioritised_trajectory_buffer import \
+        PrioritisedTrajectoryBufferState
 
 
 class AutoRLEnv(gymnasium.Env):
-    ALGORITHMS = {"ppo": PPO, "dqn": DQN}
-    algorithm: Optional[Algorithm]
+    ALGORITHMS = {"ppo": PPO, "dqn": DQN, "sac": SAC}
+    algorithm: Algorithm | None
     get_obs: Callable[[], np.ndarray]
     get_obs_space: Callable[[], gymnasium.spaces.Space]
-    runner_state: Optional[Union[PPORunnerState, DQNRunnerState]]
-    buffer_state: Optional[PrioritisedTrajectoryBufferState]
-    metrics: Optional[tuple]
+    runner_state: PPORunnerState | DQNRunnerState | SACRunnerState | None
+    buffer_state: PrioritisedTrajectoryBufferState | None
+    metrics: tuple | None
 
     def __init__(self, config, envs) -> None:
         super().__init__()
@@ -50,17 +60,17 @@ class AutoRLEnv(gymnasium.Env):
         # Checkpointing
         self.track_metrics = self.config["grad_obs"] or "loss" in config["checkpoint"] or "extras" in config["checkpoint"]
         self.track_trajectories = "minibatches" in config["checkpoint"] or "trajectories" in config["checkpoint"]
-        
+
         # Objectives
         self.objectives = [str(o) for o in config["objectives"]]
         if len(self.objectives) == 0:
             raise ValueError("Please select at least one optimization objective.")
 
         # Define observation method and init observation space
-        if "obs_method" in config.keys() and "obs_space_method" in config.keys():
+        if "obs_method" in config and "obs_space_method" in config:
             self.get_obs = config["obs_method"]
             self.get_obs_space = config["obs_space_method"]
-        elif "grad_obs" in config.keys() and config["grad_obs"]:
+        elif config.get("grad_obs"):
             self.get_obs = self.get_gradient_obs
             self.get_obs_space = self.get_gradient_obs_space
         else:
@@ -73,8 +83,8 @@ class AutoRLEnv(gymnasium.Env):
 
     def get_default_obs_space(self) -> gymnasium.spaces.Space:
         return gymnasium.spaces.Box(
-            low=np.array([0, 0]), 
-            high=np.array([np.inf, np.inf]), 
+            low=np.array([0, 0]),
+            high=np.array([np.inf, np.inf]),
             seed=self.seed
         )
 
@@ -86,17 +96,17 @@ class AutoRLEnv(gymnasium.Env):
             if self.metrics and len(self.metrics) >= 3:
                 grad_info = self.metrics[1]
             else:
-                raise ValueError(f"Tying to extract grad_info but 'self.metrics' does not match.")
-    
+                raise ValueError("Tying to extract grad_info but 'self.metrics' does not match.")
+
             grad_info = grad_info["params"]
             grad_info = {
                 k: v
                 for (k, v) in grad_info.items()
                 if isinstance(v, dict)
             }
-            
+
             grad_info = [
-                grad_info[g][k] for g in grad_info.keys() for k in grad_info[g].keys()
+                grad_info[g][k] for g in grad_info for k in grad_info[g]
             ]
 
             grad_norm = np.mean([jnp.linalg.norm(g) for g in grad_info])
@@ -112,17 +122,17 @@ class AutoRLEnv(gymnasium.Env):
 
     def get_gradient_obs_space(self) -> gymnasium.spaces.Space:
         return gymnasium.spaces.Box(
-            low=np.array([0, 0, -np.inf, -np.inf]), 
-            high=np.array([np.inf, np.inf, np.inf, np.inf]), 
+            low=np.array([0, 0, -np.inf, -np.inf]),
+            high=np.array([np.inf, np.inf, np.inf, np.inf]),
             seed=self.seed
         )
-    
+
     def step_(self):
         self.c_step += 1
         if self.c_step >= self.config["n_steps"]:
             return True
         return False
-    
+
     def instantiate_algorithm_(self):
         self.algorithm = self.algorithm_cls(
             self.c_hp_config,
@@ -135,45 +145,45 @@ class AutoRLEnv(gymnasium.Env):
     def initialize_algorithm_(self, **init_kw_args):
         # Instantiate algorithm
         self.instantiate_algorithm_()
-        
+
         # Initialize algorithm (runner state and buffer) if static HPO or first step in DAC
         if self.runner_state is None and self.buffer_state is None:  # equal to c_step == 0
             rng = jax.random.PRNGKey(self.seed)
             rng, init_rng = jax.random.split(rng)
             self.runner_state, self.buffer_state = self.algorithm.init(init_rng, **init_kw_args)
-    
+
     def train_(self):
         if self.algorithm is None:
             raise ValueError("You have to instantiate self.algorithm first.")
-        
+
         objectives = {}
         train_func = self.algorithm.train
-              
+
         if "runtime" in self.objectives:
             train_func = track_runtime(train_func, objectives)
         if "emissions" in self.objectives:
             train_func = track_emissions(train_func, objectives)
         if "reward" in self.objectives:
             train_func = track_reward(train_func, objectives, self.algorithm, self.config["n_eval_episodes"])
-        
+
         (self.runner_state, self.buffer_state), self.metrics = train_func(self.runner_state, self.buffer_state)
 
         return objectives
 
     def step(
         self,
-        action: Union[Configuration, dict]
+        action: Configuration | dict
     ) -> tuple[np.ndarray, dict[str, float], bool, bool, dict[str, Any]]:
         if len(action.keys()) == 0:     # no action provided
             warnings.warn("No agent configuration provided. Falling back to default configuration.")
 
         if self.done or self.algorithm is None:
             raise ValueError("Called step() before reset().")
-        
+
         # Set done if max. number of steps in DAC is reached or classic (one-step) HPO is performed
         self.done = self.step_()
         info = {}
-        
+
         # Apply changes to current hyperparameter configuration
         self.c_hp_config.update(action)
 
@@ -182,7 +192,7 @@ class AutoRLEnv(gymnasium.Env):
 
         # Perform one iteration of training
         objectives = self.train_()
-        
+
         # Checkpointing
         if len(self.config["checkpoint"]) > 0:
             assert self.runner_state is not None
@@ -198,13 +208,13 @@ class AutoRLEnv(gymnasium.Env):
                 self.c_step,
                 self.metrics
             )
-            
+
         return self.get_obs(), objectives, self.done, False, info
-    
+
     def reset(
         self,
         seed: int | None = None,
-        checkpoint_path: str = None,
+        checkpoint_path: str | None = None,
     ) -> tuple[np.ndarray, dict[str, Any]]:  # type: ignore
         self.done = False
         self.c_step = 0
@@ -221,7 +231,7 @@ class AutoRLEnv(gymnasium.Env):
             (
                 self.c_hp_config,
                 self.c_step,
-                self.c_episode, 
+                self.c_episode,
             ), algorithm_kw_args = Checkpointer.load(checkpoint_path, self.config["algorithm"], dummy_buffer_state)
 
             self.initialize_algorithm_(**algorithm_kw_args)

@@ -1,7 +1,13 @@
-from typing import Callable
+from __future__ import annotations
+
 import time
+from collections.abc import Callable
+from typing import TYPE_CHECKING
+
 import numpy as np
-from arlbench.algorithms import Algorithm
+
+if TYPE_CHECKING:
+    from arlbench.core.algorithms import Algorithm
 
 
 def track_runtime(train_func: Callable, objectives: dict) -> Callable:
@@ -10,7 +16,7 @@ def track_runtime(train_func: Callable, objectives: dict) -> Callable:
         result = train_func(*args, **kwargs)
         objectives["runtime"] = time.time() - start_time
         return result
-    return wrapper 
+    return wrapper
 
 def track_reward(train_func: Callable, objectives: dict, algorithm: Algorithm, n_eval_episodes: int) -> Callable:
     def wrapper(*args, **kwargs):
@@ -23,12 +29,16 @@ def track_reward(train_func: Callable, objectives: dict, algorithm: Algorithm, n
         # TODO add more stability metrics
 
         return result
-    return wrapper 
+    return wrapper
 
 def track_emissions(train_func: Callable, objectives: dict) -> Callable:
     def wrapper(*args, **kwargs):
         from codecarbon import EmissionsTracker
-        tracker = EmissionsTracker()
+        tracker = EmissionsTracker(
+            save_to_file=False,
+            output_dir="/tmp",
+            logging_logger=None
+        )
         tracker.start()
         try:
             result = train_func(*args, **kwargs)
