@@ -1,4 +1,5 @@
-from typing import  Tuple, Callable
+import io
+from typing import Callable, Tuple
 
 import matplotlib as mpl
 import matplotlib.pyplot as plt
@@ -6,11 +7,9 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 from matplotlib.backends.backend_agg import FigureCanvasAgg
-from rliable import library as rly
-from rliable import metrics
-from rliable import plot_utils
-import io 
 from PIL import Image
+from rliable import library as rly
+from rliable import metrics, plot_utils
 
 
 def set_rc_params():
