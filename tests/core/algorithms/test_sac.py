@@ -23,7 +23,7 @@ SAC_OPTIONS = {
 # Default hyperparameter configuration
 def test_default_sac():
     #env, env_params = make_env("gym", "LunarLanderContinuous-v2")
-    env = make_env("gymnasium", "LunarLanderContinuous-v2", n_envs=SAC_OPTIONS["n_envs"], seed=42)
+    env = make_env("envpool", "LunarLanderContinuous-v2", n_envs=SAC_OPTIONS["n_envs"], seed=42)
     #env, env_params = make_env("brax", "ant")
     rng = jax.random.PRNGKey(42)
 
