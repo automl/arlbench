@@ -18,6 +18,7 @@ from arlbench.core.environments import AutoRLEnv
 from .algorithm import Algorithm
 from .common import TimeStep
 from .models import ActorCritic
+from ...utils import flatten_dict
 import warnings
 
 if TYPE_CHECKING:
@@ -48,6 +49,7 @@ class PPORunnerState(NamedTuple):
     train_state: PPOTrainState
     env_state: Any
     obs: chex.Array
+    global_step: int
 
 
 class Transition(NamedTuple):
@@ -196,6 +198,7 @@ class PPO(Algorithm):
             train_state=train_state,
             env_state=env_state,
             obs=obs,
+            global_step=0
         )
 
         return runner_state, buffer_state
@@ -232,7 +235,8 @@ class PPO(Algorithm):
             rng,
             train_state,
             env_state,
-            last_obs
+            last_obs,
+            global_step
         ) = runner_state
         _, last_val = self.network.apply(train_state.params, last_obs)
 
@@ -242,8 +246,7 @@ class PPO(Algorithm):
         update_state, (
             loss_info,
             grads,
-            minibatches,
-            param_hist,
+            minibatches
         ) = jax.lax.scan(self._update_epoch, update_state, None, self.hpo_config["update_epochs"])
         train_state = update_state[0]
         rng = update_state[-1]
@@ -252,24 +255,21 @@ class PPO(Algorithm):
             rng=rng,
             train_state=train_state,
             env_state=env_state,
-            obs=last_obs
+            obs=last_obs,
+            global_step=global_step
         )
         if self.track_trajectories:
             out = (
                 loss_info,
                 grads,
                 traj_batch,
-                {
-                    "advantages": advantages,
-                    "param_history": param_hist["params"],
-                    "minibatches": minibatches,
-                },
+                (advantages, minibatches)
             )
         elif self.track_metrics:
             out = (
                 loss_info,
                 grads,
-                {"advantages": advantages, "param_history": param_hist["params"]},
+                (advantages)
             )
         else:
             out = None
@@ -282,7 +282,8 @@ class PPO(Algorithm):
             rng,
             train_state,
             env_state,
-            last_obs
+            last_obs,
+            global_step
         ) = runner_state
 
         # SELECT ACTION
@@ -294,6 +295,7 @@ class PPO(Algorithm):
         # STEP ENV
         rng, _rng = jax.random.split(rng)
         env_state, (obsv, reward, done, info) = self.env.step(env_state, action, _rng)
+        global_step += self.env.n_envs
 
         timestep = TimeStep(last_obs=last_obs, obs=obsv, action=action, reward=reward, done=done)
         buffer_state = self.buffer.add(buffer_state, timestep)
@@ -305,7 +307,8 @@ class PPO(Algorithm):
             train_state=train_state,
             env_state=env_state,
             obs=obsv,
-            rng=rng
+            rng=rng,
+            global_step=global_step
         )
         return (runner_state, buffer_state), transition
 
@@ -366,12 +369,29 @@ class PPO(Algorithm):
         train_state, (total_loss, grads) = jax.lax.scan(
             self._update_minbatch, train_state, minibatches
         )
+
+        if self.n_minibatches * self.hpo_config["minibatch_size"] < batch_size:
+            remaining_batch = jax.tree_util.tree_map(
+                lambda x: x[trimmed_batch_size:], shuffled_batch
+            )    
+            remaining_minibatch = jax.tree_util.tree_map(
+                lambda x: jnp.reshape(
+                    x, [1, -1, *list(x.shape[1:])]
+                ),
+                remaining_batch,
+            )
+            train_state, (remaining_total_loss, remaining_grads) = jax.lax.scan(
+                self._update_minbatch, train_state, remaining_minibatch
+            )
+            if self.track_metrics:
+                total_loss = (*total_loss, *remaining_total_loss)
+                grads = (*grads, *remaining_grads)
+
         update_state = (train_state, traj_batch, advantages, targets, rng)
         return update_state, (
             total_loss,
             grads,
-            minibatches,
-            train_state.params.unfreeze().copy() if isinstance(train_state.params, flax.core.FrozenDict) else train_state.params.copy(),
+            minibatches
         )
 
     @functools.partial(jax.jit, static_argnums=0)
@@ -382,7 +402,12 @@ class PPO(Algorithm):
         total_loss, grads = grad_fn(
             train_state.params, traj_batch, advantages, targets
         )
+
         train_state = train_state.apply_gradients(grads=grads)
+
+        # TODO find a better way of doing this
+        grads = flatten_dict(grads)
+
         out = (total_loss, grads) if self.track_metrics else (None, None)
         return train_state, out
 

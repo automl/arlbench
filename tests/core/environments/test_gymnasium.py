@@ -36,18 +36,19 @@ def test_gymnasium_dqn():
 
 def test_gymnasium_ppo():
     options = {
-        "n_total_timesteps": 1e6,
+        "n_total_timesteps": 1e5,
         "n_env_steps": 200,
         "n_eval_episodes": 10,
-        "track_metrics": False,
-        "track_traj": False,
+        "track_metrics": True,
+        "track_traj": True,
     }
         
     env = make_env("gymnasium", "Pendulum-v1", seed=42)
     rng = jax.random.PRNGKey(43)  # todo: fix this seed
 
     config = PPO.get_default_hpo_config()
-    agent = PPO(config, options, env)
+    config["minibatch_size"] = 64
+    agent = PPO(config, options, env, track_metrics=options["track_metrics"], track_trajectories=options["track_traj"])
     runner_state, buffer_state = agent.init(rng)
     
     start = time.time()
@@ -55,6 +56,7 @@ def test_gymnasium_ppo():
     training_time = time.time() - start
     rewards = agent.eval(runner_state, options["n_eval_episodes"])
     reward = np.mean(rewards)
+    print(runner_state.global_step)
     
     #assert reward > -500
     print(reward, training_time)
