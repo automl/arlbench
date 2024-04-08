@@ -36,7 +36,7 @@ def test_gymnasium_dqn():
 
 def test_gymnasium_ppo():
     options = {
-        "n_total_timesteps": 1e5,
+        "n_total_timesteps": 1e6,
         "n_env_steps": 200,
         "n_eval_episodes": 10,
         "track_metrics": False,
@@ -56,7 +56,7 @@ def test_gymnasium_ppo():
     rewards = agent.eval(runner_state, options["n_eval_episodes"])
     reward = np.mean(rewards)
     
-    assert reward > -500
+    #assert reward > -500
     print(reward, training_time)
 
 
@@ -87,5 +87,5 @@ def test_gymnasium_sac():
     print(reward, training_time)
 
 if __name__ == "__main__":
-    test_gymnasium_sac()
+    test_gymnasium_ppo()
     

@@ -18,6 +18,7 @@ from arlbench.core.environments import AutoRLEnv
 from .algorithm import Algorithm
 from .common import TimeStep
 from .models import ActorCritic
+import warnings
 
 if TYPE_CHECKING:
     import chex
@@ -80,6 +81,13 @@ class PPO(Algorithm):
             track_metrics=track_metrics,
             track_trajectories=track_trajectories
         )
+
+        # ensure that at least one minibatch is available after each rollout
+        rollout_size = self.env.n_envs * env_options["n_env_steps"]
+        if self.hpo_config["minibatch_size"] > rollout_size:
+            warnings.warn(f"minibatch_size hyperparameter is set to {self.hpo_config['minibatch_size']} but n_envs * n_env_steps = {rollout_size}. minibatch_size is set to {rollout_size}.")
+            self.hpo_config["minibatch_size"] = rollout_size
+
         self.n_minibatches = self.env.n_envs * env_options["n_env_steps"] // self.hpo_config["minibatch_size"]
 
         action_size, discrete = self.action_type
@@ -332,7 +340,7 @@ class PPO(Algorithm):
         train_state, traj_batch, advantages, targets, rng = update_state
         rng, _rng = jax.random.split(rng)
 
-        trimmed_batch_size = int(self.n_minibatches * self.hpo_config["minibatch_size"])
+        trimmed_batch_size = self.n_minibatches * self.hpo_config["minibatch_size"]
         batch_size = self.env_options["n_env_steps"] * self.env.n_envs
 
         permutation = jax.random.permutation(_rng, batch_size)
