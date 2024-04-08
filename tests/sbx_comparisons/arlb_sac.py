@@ -15,7 +15,7 @@ def test_sac(dir_name, log, framework, env_name, sac_config, seed):
 
     hpo_config = SAC.get_default_hpo_config()
     hpo_config["tau"] = 0.005
-    hpo_config["learning_starts"] = 10000
+    hpo_config["learning_starts"] = 100
     hpo_config["buffer_alpha"] = 0.0
     hpo_config["buffer_beta"] = 0.0
     nas_config = SAC.get_default_nas_config()
