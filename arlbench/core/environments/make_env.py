@@ -5,7 +5,7 @@ import warnings
 from arlbench.core.wrappers import AutoRLWrapper, FlattenObservationWrapper
 
 from .brax_env import BraxEnv
-from .envpool_env import EnvpoolEnv
+from .envpool_env import EnvpoolEnv, ATARI_ENVS
 from .gymnasium_env import GymnasiumEnv
 from .gymnax_env import GymnaxEnv
 
@@ -13,13 +13,13 @@ if TYPE_CHECKING:
     from .autorl_env import AutoRLEnv
 
 
-def make_env(env_framework, env_name, n_envs=1, seed=0) -> AutoRLEnv | AutoRLWrapper:
+def make_env(env_framework, env_name, cnn_policy=False, n_envs=1, seed=0) -> AutoRLEnv | AutoRLWrapper:
     if env_framework == "gymnasium":
         if n_envs > 1:
             warnings.warn(f"For gymnasium only n_envs must be set to 1 but actual value is {n_envs}. n_envs will be set to 1.")
         import gymnasium
 
-        env = gymnasium.make(env_name)
+        env = gymnasium.make(env_name, obs_type="grayscale")
         env = GymnasiumEnv(env, seed)
     elif env_framework == "gymnax":
         import gymnax
@@ -40,4 +40,7 @@ def make_env(env_framework, env_name, n_envs=1, seed=0) -> AutoRLEnv | AutoRLWra
     else:
         raise ValueError(f"Invalid framework: {env_framework}")
 
-    return FlattenObservationWrapper(env)
+    if cnn_policy:
+        return env
+    else:
+        return FlattenObservationWrapper(env)
