@@ -214,10 +214,24 @@ class DQN(Algorithm):
         runner_state,
         buffer_state
     )-> tuple[tuple[DQNRunnerState, Any], tuple | None]:
-        (runner_state, buffer_state), out = jax.lax.scan(
-            self._update_step, (runner_state, buffer_state), None, (self.env_options["n_total_timesteps"]//self.hpo_config["train_frequency"])//self.env.n_envs
+        def train_eval_step(carry, _):
+            runner_state, buffer_state = carry
+            (runner_state, buffer_state), out = jax.lax.scan(
+                self._update_step,
+                (runner_state, buffer_state),
+                None,
+                (self.env_options["n_total_timesteps"]//self.hpo_config["train_frequency"])//self.env.n_envs//self.env_options["n_eval_steps"]
+            )
+            eval_returns = self.eval(runner_state, self.env_options["n_eval_episodes"])
+            return (runner_state, buffer_state), (eval_returns, out)
+
+        (runner_state, buffer_state), (reward, out) = jax.lax.scan(
+            train_eval_step,
+            (runner_state, buffer_state),
+            None,
+            self.env_options["n_eval_steps"],
         )
-        return (runner_state, buffer_state), out
+        return (runner_state, buffer_state), (reward, out)
 
     def update(
         self,
