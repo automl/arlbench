@@ -7,7 +7,7 @@ import functools
 import numpy as np
 import pandas as pd
 
-from sbx import SAC
+from sbx import DQN
 from stable_baselines3.common.callbacks import BaseCallback
 from stable_baselines3.common.evaluation import evaluate_policy
 
@@ -107,7 +107,7 @@ def test_sac(dir_name, log, framework, env_name, sac_config, seed):
 
     hpo_config = {}
     nas_config = dict(net_arch=[256, 256])
-    model = SAC("MlpPolicy", env, policy_kwargs=nas_config, verbose=4, seed=seed)
+    model = DQN("MlpPolicy", env, policy_kwargs=nas_config, verbose=4, seed=seed)
 
     start = time.time()
     model.learn(total_timesteps=int(sac_config["n_total_timesteps"]), callback=eval_callback)
