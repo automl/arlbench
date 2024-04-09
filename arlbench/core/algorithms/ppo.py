@@ -83,15 +83,25 @@ class PPO(Algorithm):
             track_metrics=track_metrics,
             track_trajectories=track_trajectories
         )
+        
+        # compute actual update interval based on n_envs * env_steps
+        self.update_interval = int(self.hpo_config["update_interval"])
+                
+        self.env_steps = int(self.update_interval // self.env.n_envs)
+        self.update_interval = self.env_steps * self.env.n_envs
 
         # ensure that at least one minibatch is available after each rollout
-        rollout_size = self.env.n_envs * env_options["n_env_steps"]
-        if self.hpo_config["minibatch_size"] > rollout_size:
-            warnings.warn(f"minibatch_size hyperparameter is set to {self.hpo_config['minibatch_size']} but n_envs * n_env_steps = {rollout_size}. minibatch_size is set to {rollout_size}.")
-            self.hpo_config["minibatch_size"] = rollout_size
+        if self.hpo_config["minibatch_size"] > self.update_interval:
+            self.minibatch_size = self.update_interval
+        else:
+            self.minibatch_size = int(self.hpo_config["minibatch_size"])
 
-        self.n_minibatches = self.env.n_envs * env_options["n_env_steps"] // self.hpo_config["minibatch_size"]
+        self.n_minibatches = int(self.update_interval // self.minibatch_size)
 
+        self.n_total_updates = int(
+            env_options["n_total_timesteps"] // self.update_interval
+        )
+        
         action_size, discrete = self.action_type
         self.network = ActorCritic(
             action_size,
@@ -108,18 +118,6 @@ class PPO(Algorithm):
             add_batch_size=self.env.n_envs
         )
 
-        self.n_total_updates = (
-            env_options["n_total_timesteps"]
-            // env_options["n_env_steps"]
-            // self.env.n_envs
-        )
-        update_interval = jnp.ceil(self.n_total_updates / env_options["n_env_steps"])
-        if update_interval < 1:
-            update_interval = 1
-            print(
-                "WARNING: The number of iterations selected in combination with your timestep, n_envs and n_env_steps settings results in 0 steps per iteration. Rounded up to 1, this means more total steps will be executed."
-            )
-
     @staticmethod
     def get_hpo_config_space(seed=None) -> ConfigurationSpace:
         return ConfigurationSpace(
@@ -130,6 +128,7 @@ class PPO(Algorithm):
                 "buffer_batch_size": Integer("buffer_batch_size", (1, 1024), default=64),
                 "minibatch_size": Integer("minibatch_size", (4, 1024), default=256),
                 "lr": Float("lr", (1e-5, 0.1), default=2.5e-4),
+                "update_interval": Integer("update_interval", (1, int(1e5)), default=1024),
                 "update_epochs": Integer("update_epochs", (1, int(1e5)), default=10),
                 "activation": Categorical("activation", ["tanh", "relu"], default="tanh"),
                 "hidden_size": Integer("hidden_size", (1, 1024), default=64),
@@ -227,7 +226,7 @@ class PPO(Algorithm):
     ):
         runner_state, buffer_state = carry
         (runner_state, buffer_state), traj_batch = jax.lax.scan(
-            self._env_step, (runner_state, buffer_state), None, self.env_options["n_env_steps"]
+            self._env_step, (runner_state, buffer_state), None, self.env_steps
         )
 
         # CALCULATE ADVANTAGE
@@ -343,8 +342,8 @@ class PPO(Algorithm):
         train_state, traj_batch, advantages, targets, rng = update_state
         rng, _rng = jax.random.split(rng)
 
-        trimmed_batch_size = self.n_minibatches * self.hpo_config["minibatch_size"]
-        batch_size = self.env_options["n_env_steps"] * self.env.n_envs
+        batch_size = self.update_interval
+        trimmed_batch_size = self.n_minibatches * self.minibatch_size
 
         permutation = jax.random.permutation(_rng, batch_size)
         batch = (traj_batch, advantages, targets)
@@ -370,7 +369,7 @@ class PPO(Algorithm):
             self._update_minbatch, train_state, minibatches
         )
 
-        if self.n_minibatches * self.hpo_config["minibatch_size"] < batch_size:
+        if trimmed_batch_size < batch_size:
             remaining_batch = jax.tree_util.tree_map(
                 lambda x: x[trimmed_batch_size:], shuffled_batch
             )    
