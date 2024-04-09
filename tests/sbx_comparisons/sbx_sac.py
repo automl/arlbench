@@ -8,14 +8,13 @@ import numpy as np
 import pandas as pd
 
 from sbx import SAC
-from stable_baselines3.common.monitor import Monitor
-from stable_baselines3.common.evaluation import evaluate_policy
 from stable_baselines3.common.callbacks import BaseCallback
+from stable_baselines3.common.evaluation import evaluate_policy
 
 import jax
 import jax.numpy as jnp
 from brax import envs
-from brax.envs.wrappers.gym import GymWrapper, VectorGymWrapper
+from brax.envs.wrappers.gym import GymWrapper
 
 
 class EvalTrainingMetricsCallback(BaseCallback):
@@ -35,7 +34,8 @@ class EvalTrainingMetricsCallback(BaseCallback):
         self.rng = jax.random.PRNGKey(seed)
 
     @functools.partial(jax.jit, static_argnums=0)
-    def _env_episode(self, rng, _):
+    def _env_episode(self, carry, _):
+        rng, actor_params = carry
         rng, reset_rng = jax.random.split(rng)
 
         env_state = self.eval_env.reset(reset_rng)
@@ -47,41 +47,41 @@ class EvalTrainingMetricsCallback(BaseCallback):
         )
 
         def cond_fn(carry):
-            env_state, ret, done = carry
+            state, ret, done = carry
             return jnp.logical_not(jnp.all(done))
 
         def body_fn(carry):
-            env_state, ret, done = carry
-            obs = jnp.expand_dims(env_state.obs, axis=0)
-            action = self.model.policy.select_action(self.model.policy.actor_state, obs)
-            env_state = self.eval_env.step(env_state, action[0])
+            state, ret, done = carry
+            obs = jnp.expand_dims(state.obs, axis=0)
+            action = self.model.policy.actor_state.apply_fn(actor_params, obs).mode()
+            state = self.eval_env.step(state, action[0])
 
             # Count rewards only for envs that are not already done
-            ret += env_state.reward * ~done
+            ret += state.reward * ~done
 
-            done = jnp.logical_or(done, jnp.bool(env_state.done))
+            done = jnp.logical_or(done, jnp.bool(state.done))
 
-            return env_state, ret, done
+            return (state, ret, done)
 
         final_state = jax.lax.while_loop(cond_fn, body_fn, initial_state)
         _, returns, _ = final_state
 
-        return rng, returns
+        return (rng, actor_params), returns
 
     def eval(self, num_eval_episodes):
         # Number of parallel evaluations, each with n_envs environments
         #n_evals = int(np.ceil(num_eval_episodes / self.eval_env.n_envs))
-        n_evals = num_eval_episodes
-        self.rng, eval_rng = jax.random.split(self.rng)
-        self.rng, returns = jax.lax.scan(
-            self._env_episode, eval_rng, None, n_evals
-        )
+        with jax.disable_jit(disable=False):
+            (self.rng, _), returns = jax.lax.scan(
+                self._env_episode, (self.rng, self.model.policy.actor_state.params), None, num_eval_episodes
+            )
         return jnp.concat(returns)[:num_eval_episodes]
 
     def _on_step(self) -> bool:
         if self.eval_freq > 0 and self.n_calls % self.eval_freq == 0:
             returns = self.eval(self.n_eval_episodes)
             self.return_list.append(returns)
+            jax.debug.print("{returns}", returns=returns.mean())
         return True
 
     def _on_training_end(self) -> None:
@@ -108,7 +108,7 @@ def test_sac(dir_name, log, framework, env_name, sac_config, seed):
 
     hpo_config = {}
     nas_config = dict(net_arch=[256, 256])
-    model = SAC("MlpPolicy", env, policy_kwargs=nas_config, verbose=4, seed=seed)
+    model = SAC("MlpPolicy", env, policy_kwargs=nas_config, verbose=100000, seed=seed)
 
     start = time.time()
     model.learn(total_timesteps=int(sac_config["n_total_timesteps"]), callback=eval_callback)
