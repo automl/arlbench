@@ -24,8 +24,8 @@ if TYPE_CHECKING:
 class Algorithm(ABC):
     def __init__(
             self,
-            hpo_config: Configuration | dict,
-            nas_config: Configuration | dict,
+            hpo_config: Configuration,
+            nas_config: Configuration,
             env_options: dict,
             env: AutoRLEnv | AutoRLWrapper,
             track_metrics=False,
