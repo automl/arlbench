@@ -1,20 +1,18 @@
-import os
-import logging
-import time
 import argparse
 import functools
-
-import numpy as np
-import pandas as pd
-
-from sbx import SAC
-from stable_baselines3.common.callbacks import BaseCallback
-from stable_baselines3.common.evaluation import evaluate_policy
+import logging
+import os
+import time
 
 import jax
 import jax.numpy as jnp
+import numpy as np
+import pandas as pd
 from brax import envs
 from brax.envs.wrappers.gym import GymWrapper
+from sbx import SAC
+from stable_baselines3.common.callbacks import BaseCallback
+from stable_baselines3.common.evaluation import evaluate_policy
 
 
 class EvalTrainingMetricsCallback(BaseCallback):

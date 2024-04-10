@@ -2,15 +2,13 @@ from __future__ import annotations
 
 import functools
 from typing import Any
-import envpool
 
 import jax
 import jax.numpy as jnp
 
-from ...utils import gymnasium_space_to_gymnax_space
+from arlbench.utils import gymnasium_space_to_gymnax_space
 
-from .autorl_env import AutoRLEnv
-
+from .autorl_env import Environment
 
 ATARI_ENVS = [
     "Adventure-v5",
@@ -119,8 +117,10 @@ ATARI_ENVS = [
     "Zaxxon-v5"
 ]
 
-class EnvpoolEnv(AutoRLEnv):
+class EnvpoolEnv(Environment):
     def __init__(self, env_name: str, n_envs: int, seed: int):
+        import envpool
+
         env = envpool.make(env_name, env_type="gymnasium", num_envs=n_envs, seed=seed)
         super().__init__(env_name, env, n_envs, seed)
         self._handle0, _, _, self._xla_step = self._env.xla()

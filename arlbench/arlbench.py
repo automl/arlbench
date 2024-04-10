@@ -1,5 +1,7 @@
-from .utils import HandleTermination
+from __future__ import annotations
+
 from .autorl import AutoRLEnv
+from .utils import HandleTermination
 
 
 def cool_things(cfg):
@@ -7,7 +9,7 @@ def cool_things(cfg):
     # TODO this is a dummy
     with HandleTermination(AutoRLEnv({}, {})):
         print(f"Your current config is: {cfg}")
-        
+
 
 AUTORL_DEFAULTS = {
     "seed": 0,
@@ -22,8 +24,7 @@ AUTORL_DEFAULTS = {
 
 class AutoRLBenchmark:
     def __init__(self, config=None):
-        """
-        Initialize AutoRL Benchmark
+        """Initialize AutoRL Benchmark.
 
         Parameters
         -------
@@ -41,10 +42,9 @@ class AutoRLBenchmark:
                 self.config[key] = AUTORL_DEFAULTS[key]
 
     def get_environment(self):
-        """
-        Return AutoRL env with current configuration
+        """Return AutoRL env with current configuration.
 
-        Returns
+        Returns:
         -------
         AutoRLEnv
             AutoRL environment

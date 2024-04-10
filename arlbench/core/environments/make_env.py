@@ -1,15 +1,15 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
 import warnings
+from typing import TYPE_CHECKING
+
 from arlbench.core.wrappers import AutoRLWrapper, FlattenObservationWrapper
 
-
 if TYPE_CHECKING:
-    from .autorl_env import AutoRLEnv
+    from .autorl_env import Environment
 
 
-def make_env(env_framework, env_name, cnn_policy: bool =False, n_envs: int = 1, seed: int = 0) -> AutoRLEnv | AutoRLWrapper:
+def make_env(env_framework, env_name, cnn_policy: bool =False, n_envs: int = 1, seed: int = 0) -> Environment | AutoRLWrapper:
     if env_framework == "gymnasium":
         if n_envs > 1:
             warnings.warn(f"For gymnasium only n_envs must be set to 1 but actual value is {n_envs}. n_envs will be set to 1.")
@@ -22,7 +22,7 @@ def make_env(env_framework, env_name, cnn_policy: bool =False, n_envs: int = 1, 
         env = GymnaxEnv(env_name, n_envs)
     elif env_framework == "envpool":
         from .envpool_env import EnvpoolEnv
-        
+
         env = EnvpoolEnv(env_name, n_envs, seed)
     elif env_framework == "brax":
         from .brax_env import BraxEnv

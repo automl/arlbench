@@ -17,7 +17,7 @@ if TYPE_CHECKING:
     from flashbax.buffers.prioritised_trajectory_buffer import \
         PrioritisedTrajectoryBufferState
 
-    from arlbench.core.environments import AutoRLEnv
+    from arlbench.core.environments import Environment
     from arlbench.core.wrappers import AutoRLWrapper
 
 
@@ -26,8 +26,7 @@ class Algorithm(ABC):
             self,
             hpo_config: Configuration,
             nas_config: Configuration,
-            env_options: dict,
-            env: AutoRLEnv | AutoRLWrapper,
+            env: Environment | AutoRLWrapper,
             track_metrics=False,
             track_trajectories=False
         ) -> None:
@@ -35,7 +34,6 @@ class Algorithm(ABC):
 
         self.hpo_config = hpo_config
         self.nas_config = nas_config
-        self.env_options = env_options
         self.env = env
         self.track_metrics = track_metrics
         self.track_trajectories = track_trajectories
@@ -82,7 +80,14 @@ class Algorithm(ABC):
         pass
 
     @abstractmethod
-    def train(self, runner_state: Any, buffer_state: Any) -> tuple[tuple[Any, PrioritisedTrajectoryBufferState], tuple | None]:
+    def train(
+        self,
+        runner_state: Any,
+        buffer_state: PrioritisedTrajectoryBufferState,
+        n_total_timesteps: int = 1000000,
+        n_eval_steps:  int= 100,
+        n_eval_episodes: int = 10,
+    ) -> Any:
         pass
 
     @abstractmethod
@@ -132,7 +137,7 @@ class Algorithm(ABC):
 
         return (rng, runner_state), reward
 
-    def eval(self, runner_state, num_eval_episodes):
+    def eval(self, runner_state, num_eval_episodes) -> jnp.ndarray:
         # Number of parallel evaluations, each with n_envs environments
         n_evals = int(np.ceil(num_eval_episodes / self.env.n_envs))
         _, rewards = jax.lax.scan(

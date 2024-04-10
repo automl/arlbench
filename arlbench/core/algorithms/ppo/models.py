@@ -75,7 +75,7 @@ class MLPActorCritic(nn.Module):
 
 
 class CNNActorCritic(nn.Module):
-    """Based on NatureCNN https://github.com/DLR-RM/stable-baselines3/blob/master/stable_baselines3/common/torch_layers.py#L48"""
+    """Based on NatureCNN https://github.com/DLR-RM/stable-baselines3/blob/master/stable_baselines3/common/torch_layers.py#L48."""
     action_dim: Sequence[int]
     activation: str = "tanh"
     hidden_size: int = 64
@@ -88,16 +88,16 @@ class CNNActorCritic(nn.Module):
             self.activation_func = nn.relu
         else:
             raise ValueError(f"Invalid activation function: {self.activation}")
-        
+
         self.actor_conv1 = nn.Conv(
             features=32,
-            kernel_size=(8, 8), 
+            kernel_size=(8, 8),
             strides=(4, 4),
             kernel_init=orthogonal(jnp.sqrt(2)),
             bias_init=constant(0.0),
         )
         self.actor_conv2 = nn.Conv(
-            features=64, 
+            features=64,
             kernel_size=(4, 4),
             strides=(2, 2),
             kernel_init=orthogonal(jnp.sqrt(2)),
@@ -124,13 +124,13 @@ class CNNActorCritic(nn.Module):
 
         self.critic_conv1 = nn.Conv(
             features=32,
-            kernel_size=(8, 8), 
+            kernel_size=(8, 8),
             strides=(4, 4),
             kernel_init=orthogonal(jnp.sqrt(2)),
             bias_init=constant(0.0),
         )
         self.critic_conv2 = nn.Conv(
-            features=64, 
+            features=64,
             kernel_size=(4, 4),
             strides=(2, 2),
             kernel_init=orthogonal(jnp.sqrt(2)),

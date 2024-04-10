@@ -13,15 +13,19 @@ import optax
 from ConfigSpace import (Categorical, Configuration, ConfigurationSpace, Float,
                          Integer)
 from flax.training.train_state import TrainState
+from gymnax.environments import spaces
 
-from ..algorithm import Algorithm
-from ..common import TimeStep
+from arlbench.core.algorithms.algorithm import Algorithm
+from arlbench.core.algorithms.common import TimeStep
+
 from .models import AlphaCoef, SACActor, SACVectorCritic
 
 if TYPE_CHECKING:
     import chex
+    from flashbax.buffers.prioritised_trajectory_buffer import \
+        PrioritisedTrajectoryBufferState
 
-    from arlbench.core.environments import AutoRLEnv
+    from arlbench.core.environments import Environment
     from arlbench.core.wrappers import AutoRLWrapper
 
 # todo: separate learning rate for critic and actor??
@@ -54,6 +58,11 @@ class SACTrainState(TrainState):
             **kwargs,
         )
 
+class SACTrainingResult(NamedTuple):
+    runner_state: SACRunnerState
+    buffer_state: PrioritisedTrajectoryBufferState
+    eval_rewards: jnp.ndarray
+    metrics: tuple | None
 
 class Transition(NamedTuple):
     done: jnp.ndarray
@@ -67,10 +76,9 @@ class Transition(NamedTuple):
 class SAC(Algorithm):
     def __init__(
             self,
-            hpo_config: Configuration | dict,
-            options: dict,
-            env: AutoRLEnv | AutoRLWrapper,
-            nas_config: Configuration | dict = None,
+            hpo_config: Configuration,
+            env: Environment | AutoRLWrapper,
+            nas_config: Configuration | None = None,
             track_metrics=False,
             track_trajectories=False,
     ) -> None:
@@ -79,7 +87,6 @@ class SAC(Algorithm):
         super().__init__(
             hpo_config,
             nas_config,
-            options,
             env,
             track_trajectories=track_trajectories,
             track_metrics=track_metrics
@@ -168,11 +175,12 @@ class SAC(Algorithm):
         _timestep = TimeStep(last_obs=_obs[0], obs=_obs[0], action=_action[0], reward=_reward[0], done=_done[0])
         buffer_state = self.buffer.init(_timestep)
 
-        _, _rng = jax.random.split(rng)
         if actor_network_params is None:
-            actor_network_params = self.actor_network.init(_rng, _obs)
+            rng, actor_rng = jax.random.split(rng)
+            actor_network_params = self.actor_network.init(actor_rng, _obs)
         if critic_network_params is None:
-            critic_network_params = self.critic_network.init(_rng, _obs, _action)
+            rng, critic_rng = jax.random.split(rng)
+            critic_network_params = self.critic_network.init(critic_rng, _obs, _action)
         if critic_target_params is None:
             critic_target_params = critic_network_params
 
@@ -190,10 +198,10 @@ class SAC(Algorithm):
             tx=optax.adam(self.hpo_config["lr"], eps=1e-5),  # todo: change to critic specific lr
             opt_state=None,
         )
-        _, _rng = jax.random.split(rng)
+        rng, init_rng = jax.random.split(rng)
         alpha_train_state = SACTrainState.create_with_opt_state(
             apply_fn=self.alpha.apply,
-            params=self.alpha.init(_rng),
+            params=self.alpha.init(init_rng),
             target_params=None,
             tx=optax.adam(self.hpo_config["lr"], eps=1e-5),  # todo: how to set lr, check with stable-baselines
             opt_state=None,
@@ -201,7 +209,6 @@ class SAC(Algorithm):
         # target for automatic entropy tuning
         self.target_entropy = -jnp.prod(jnp.array(self.env.action_space.shape)).astype(jnp.float32)
 
-        rng, _rng = jax.random.split(rng)
         global_step = 0
 
         runner_state = SACRunnerState(
@@ -220,32 +227,41 @@ class SAC(Algorithm):
     @functools.partial(jax.jit, static_argnums=0)
     def predict(self, runner_state, obs, rng) -> int:
         pi = self.actor_network.apply(runner_state.actor_train_state.params, obs)
+
         action = pi.mode()
-        # todo: we need to check that the action spaces are finite
-        low, high = self.env.action_space.low, self.env.action_space.high
-        # check if low or high are none, nan or inf and set to 1
-        if low is None or np.isnan(low).any() or np.isinf(low).any():
-            low = -jnp.ones_like(action)
-        if high is None or np.isnan(high).any() or np.isinf(high).any():
-            high = jnp.ones_like(action)
-        return low + (action + 1.0) * 0.5 * (high - low)
+        
+        # @Julian TODO pls add discrete action spaces
+        if isinstance(self.env.action_space, spaces.Discrete):
+            raise ValueError("Discrete action spaces are not (yet) supported :-)")
+        else:
+            # todo: we need to check that the action spaces are finite
+            low, high = self.env.action_space.low, self.env.action_space.high
+            # check if low or high are none, nan or inf and set to 1
+            if low is None or np.isnan(low).any() or np.isinf(low).any():
+                low = -jnp.ones_like(action)
+            if high is None or np.isnan(high).any() or np.isinf(high).any():
+                high = jnp.ones_like(action)
+            return low + (action + 1.0) * 0.5 * (high - low)
 
 
-    @functools.partial(jax.jit, static_argnums=0, donate_argnums=(2,))
+    @functools.partial(jax.jit, static_argnums=(0,3,4,5), donate_argnums=(2,))
     def train(
-            self,
-            runner_state,
-            buffer_state
-    )-> tuple[tuple[SACRunnerState, Any], tuple | None]:
+        self,
+        runner_state,
+        buffer_state: PrioritisedTrajectoryBufferState,
+        n_total_timesteps: int,
+        n_eval_steps: int,
+        n_eval_episodes: int
+    )-> tuple[tuple[SACRunnerState, PrioritisedTrajectoryBufferState], tuple | None]:
         def train_eval_step(carry, _):
             runner_state, buffer_state = carry
             (runner_state, buffer_state), out = jax.lax.scan(
                 self._update_step,
                 (runner_state, buffer_state),
                 None,
-                ((self.env_options["n_total_timesteps"]//self.hpo_config["train_frequency"])//self.env.n_envs)//self.env_options["n_eval_steps"],
+                ((n_total_timesteps//self.hpo_config["train_frequency"])//self.env.n_envs)//n_eval_steps,
             )
-            eval_returns = self.eval(runner_state, self.env_options["n_eval_episodes"])
+            eval_returns = self.eval(runner_state, n_eval_episodes)
 
             return (runner_state, buffer_state), (eval_returns, out)
 
@@ -253,7 +269,7 @@ class SAC(Algorithm):
             train_eval_step,
             (runner_state, buffer_state),
             None,
-            self.env_options["n_eval_steps"],
+            n_eval_steps,
         )
         return (runner_state, buffer_state), (reward, out)
 
@@ -470,13 +486,18 @@ class SAC(Algorithm):
         # SELECT ACTION
         rng, _rng = jax.random.split(rng)
         pi = self.actor_network.apply(actor_train_state.params, last_obs)
-        buffer_action = pi.sample(seed=_rng)
-        low, high = self.env.action_space.low, self.env.action_space.high
-        if low is None or np.isnan(low).any() or np.isinf(low).any():
-            low = -jnp.ones_like(buffer_action)
-        if high is None or np.isnan(high).any() or np.isinf(high).any():
-            high = jnp.ones_like(buffer_action)
-        action = low + (buffer_action + 1.0) * 0.5 * (high - low)
+
+        # @Julian TODO pls add discrete action spaces
+        if isinstance(self.env.action_space, spaces.Discrete):
+            raise ValueError("Discrete action spaces are not (yet) supported :-)")
+        else:
+            buffer_action = pi.sample(seed=_rng)
+            low, high = self.env.action_space.low, self.env.action_space.high
+            if low is None or np.isnan(low).any() or np.isinf(low).any():
+                low = -jnp.ones_like(buffer_action)
+            if high is None or np.isnan(high).any() or np.isinf(high).any():
+                high = jnp.ones_like(buffer_action)
+            action = low + (buffer_action + 1.0) * 0.5 * (high - low)
 
         # STEP ENV
         rng, _rng = jax.random.split(rng)

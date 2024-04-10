@@ -1,10 +1,10 @@
-import jax
 import time
+
+import jax
 import jax.numpy as jnp
 import numpy as np
 
 from arlbench.core.algorithms import DQN, PPO, SAC
-
 from arlbench.core.environments import make_env
 
 
