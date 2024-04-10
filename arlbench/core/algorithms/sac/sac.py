@@ -246,7 +246,6 @@ class SAC(Algorithm):
                 ((self.env_options["n_total_timesteps"]//self.hpo_config["train_frequency"])//self.env.n_envs)//self.env_options["n_eval_steps"],
             )
             eval_returns = self.eval(runner_state, self.env_options["n_eval_episodes"])
-            #jax.debug.print("Return: {ret}+-{std}", ret=eval_returns.mean(), std=eval_returns.std())
 
             return (runner_state, buffer_state), (eval_returns, out)
 

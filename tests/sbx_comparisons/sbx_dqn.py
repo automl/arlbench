@@ -7,13 +7,15 @@ import functools
 import numpy as np
 import pandas as pd
 
-from sbx import SAC
+from sbx import DQN
 from stable_baselines3.common.callbacks import BaseCallback
 from stable_baselines3.common.evaluation import evaluate_policy
 
 import jax
 import jax.numpy as jnp
-from brax import envs
+from brax import envs as brax_envs
+import gymnax
+from gymnax.wrappers.gym import GymnaxToGymWrapper
 from brax.envs.wrappers.gym import GymWrapper
 
 
@@ -78,9 +80,12 @@ class EvalTrainingMetricsCallback(BaseCallback):
 
     def _on_step(self) -> bool:
         if self.eval_freq > 0 and self.n_calls % self.eval_freq == 0:
-            returns = self.eval(self.n_eval_episodes)
+            #returns = self.eval(self.n_eval_episodes)
+            returns, _ = evaluate_policy(
+                self.model, self.eval_env, n_eval_episodes=self.n_eval_episodes, return_episode_rewards=True
+            )
             self.return_list.append(returns)
-            jax.debug.print("{returns}", returns=returns.mean())
+            jax.debug.print("{returns}", returns=np.array(returns).mean())
         return True
 
     def _on_training_end(self) -> None:
@@ -97,9 +102,14 @@ class EvalTrainingMetricsCallback(BaseCallback):
 def test_sac(dir_name, log, framework, env_name, sac_config, seed):
 
     if framework == "brax":
-        env = envs.create(env_name, backend="spring", episode_length=1000)
+        env = brax_envs.create(env_name, backend="spring", episode_length=1000)
         env = GymWrapper(env)
-        eval_env = envs.create(env_name, backend="spring", episode_length=1000)
+        eval_env = brax_envs.create(env_name, backend="spring", episode_length=1000)
+    if framework == "gymnax":
+        env, env_params = gymnax.make(env_name)
+        env = GymnaxToGymWrapper(env)
+        eval_env, eval_env_params = gymnax.make(env_name)
+        eval_env = GymnaxToGymWrapper(eval_env)
 
     eval_callback = EvalTrainingMetricsCallback(
         eval_env=eval_env, eval_freq=sac_config["eval_freq"], n_eval_episodes=128, seed=seed
@@ -107,7 +117,17 @@ def test_sac(dir_name, log, framework, env_name, sac_config, seed):
 
     hpo_config = {}
     nas_config = dict(net_arch=[256, 256])
-    model = SAC("MlpPolicy", env, policy_kwargs=nas_config, verbose=4, seed=seed)
+    model = DQN(
+        "MlpPolicy",
+        env,
+        policy_kwargs=nas_config,
+        verbose=4,
+        seed=seed,
+        learning_starts=1024,
+        target_update_interval=1000,
+        exploration_final_eps=0.1,
+        exploration_initial_eps=0.1
+    )
 
     start = time.time()
     model.learn(total_timesteps=int(sac_config["n_total_timesteps"]), callback=eval_callback)
@@ -123,9 +143,9 @@ def test_sac(dir_name, log, framework, env_name, sac_config, seed):
     for i in range(len(mean_return)):
         train_info_df[f"return_{i}"] = eval_returns[i]
 
-    os.makedirs(os.path.join("sac_results", f"{framework}_{env_name}", dir_name), exist_ok=True)
-    train_info_df.to_csv(os.path.join("sac_results", f"{framework}_{env_name}", dir_name, f"{seed}_results.csv"))
-    with open(os.path.join("sac_results", f"{framework}_{env_name}", dir_name, f"{seed}_info"), "w") as f:
+    os.makedirs(os.path.join("dqn_results", f"{framework}_{env_name}", dir_name), exist_ok=True)
+    train_info_df.to_csv(os.path.join("dqn_results", f"{framework}_{env_name}", dir_name, f"{seed}_results.csv"))
+    with open(os.path.join("dqn_results", f"{framework}_{env_name}", dir_name, f"{seed}_info"), "w") as f:
         f.write(f"sac_config: {sac_config}\n")
         f.write(f"hpo_config: {hpo_config}\n")
         f.write(f"nas_config: {nas_config}\n")
