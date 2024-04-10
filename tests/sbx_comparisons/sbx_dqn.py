@@ -143,9 +143,9 @@ def test_sac(dir_name, log, framework, env_name, sac_config, seed):
     for i in range(len(mean_return)):
         train_info_df[f"return_{i}"] = eval_returns[i]
 
-    os.makedirs(os.path.join("sac_results", f"{framework}_{env_name}", dir_name), exist_ok=True)
-    train_info_df.to_csv(os.path.join("sac_results", f"{framework}_{env_name}", dir_name, f"{seed}_results.csv"))
-    with open(os.path.join("sac_results", f"{framework}_{env_name}", dir_name, f"{seed}_info"), "w") as f:
+    os.makedirs(os.path.join("dqn_results", f"{framework}_{env_name}", dir_name), exist_ok=True)
+    train_info_df.to_csv(os.path.join("dqn_results", f"{framework}_{env_name}", dir_name, f"{seed}_results.csv"))
+    with open(os.path.join("dqn_results", f"{framework}_{env_name}", dir_name, f"{seed}_info"), "w") as f:
         f.write(f"sac_config: {sac_config}\n")
         f.write(f"hpo_config: {hpo_config}\n")
         f.write(f"nas_config: {nas_config}\n")
