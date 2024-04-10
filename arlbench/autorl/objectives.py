@@ -2,9 +2,12 @@ from __future__ import annotations
 
 import time
 from abc import ABC, abstractmethod
-from typing import Any, Union, Callable, Optional
-from ..core.algorithms import TrainFunc
+from typing import TYPE_CHECKING
+
 import numpy as np
+
+if TYPE_CHECKING:
+    from arlbench.core.algorithms import TrainFunc
 
 # SORTING RANKS
 # Runtime = 0
@@ -80,7 +83,7 @@ class RewardMean(Objective):
             "lower": None,
             "optimize": "upper"
         }
-    
+
 
 class RewardStd(Objective):
     KEY = "reward_std"

@@ -2,14 +2,14 @@ from __future__ import annotations
 
 import warnings
 from collections.abc import Callable
-from typing import TYPE_CHECKING, Any, List, Union
+from typing import Any
 
 import gymnasium
 import jax
-import jax.numpy as jnp
 import numpy as np
 
-from arlbench.core.algorithms import (DQN, PPO, SAC, Algorithm, RunnerState, TrainResult, BufferState)
+from arlbench.core.algorithms import (DQN, PPO, SAC, Algorithm, BufferState,
+                                      RunnerState)
 from arlbench.core.environments import make_env
 from arlbench.utils import config_space_to_gymnasium_space
 
@@ -22,7 +22,6 @@ ObjectivesT = dict[str, float]
 InfoT = dict[str, Any]
 
 from ConfigSpace import Configuration, ConfigurationSpace
-
 
 DEFAULT_AUTO_RL_CONFIG = {
     "seed": 42,
@@ -123,7 +122,7 @@ class AutoRLEnv(gymnasium.Env):
             if f not in STATE_FEATURES:
                 raise ValueError(f"Invalid state feature: {f}")
             self._state_features += [STATE_FEATURES[f]]
-        
+
         self._observation_space = self._get_obs_space()
 
     def _get_obs_space(self) -> gymnasium.spaces.Dict:
@@ -134,7 +133,7 @@ class AutoRLEnv(gymnasium.Env):
         obs_space["steps"] = gymnasium.spaces.Box(
             low=np.array([0, 0]),
             high=np.array([np.inf, np.inf])
-        )  
+        )
 
         return gymnasium.spaces.Dict(obs_space)
 
@@ -329,7 +328,7 @@ class AutoRLEnv(gymnasium.Env):
     @property
     def observation_space(self) -> gymnasium.spaces.Space:
         return self._observation_space
-    
+
     @property
     def hpo_config(self) -> Configuration:
         return self._hpo_config
@@ -345,10 +344,10 @@ class AutoRLEnv(gymnasium.Env):
     @property
     def config(self) -> dict:
         return self._config.copy()
-    
+
     @property
     def algorithm(self) -> Algorithm:
         return self._algorithm
-    
+
     def eval(self, num_eval_episodes) -> np.ndarray:
         return np.array(self._algorithm.eval(self._runner_state, num_eval_episodes))
