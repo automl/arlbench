@@ -4,8 +4,8 @@ from __future__ import annotations
 import logging
 import signal
 import sys
-from pathlib import Path
-from ..autorl import AutoRLEnv
+from typing import Any
+
 
 logger = logging.getLogger(__name__)
 
@@ -16,7 +16,7 @@ class HandleTermination:
     even if there's an error in the code.
     """
 
-    def __init__(self, env: AutoRLEnv):
+    def __init__(self, env: Any):
         """Initialize the context manager with logdir."""
         self.env = env
 

@@ -3,11 +3,10 @@ from abc import ABC, abstractmethod
 
 import time
 from collections.abc import Callable
-from typing import TYPE_CHECKING, Optional, List
+from typing import TYPE_CHECKING, Optional, List, Any
 
 import numpy as np
 
-from .autorl_env import AutoRLEnv
 
 if TYPE_CHECKING:
     from ..core.algorithms import Algorithm
@@ -26,7 +25,7 @@ class Objective(ABC):
 
     @staticmethod
     @abstractmethod
-    def __call__(train_func: Callable, objectives: dict, env: AutoRLEnv) -> Callable:
+    def __call__(train_func: Callable, objectives: dict, env: Any) -> Callable:
         raise NotImplementedError
     
     @staticmethod
@@ -64,7 +63,7 @@ class RewardObjective(Objective):
     RANK = 2
 
     @staticmethod
-    def __call__(train_func: Callable, objectives: dict, env: AutoRLEnv) -> Callable:
+    def __call__(train_func: Callable, objectives: dict, env: Any) -> Callable:
         def wrapper(*args, **kwargs):
             result = train_func(*args, **kwargs)
             (runner_state, _), _ = result
