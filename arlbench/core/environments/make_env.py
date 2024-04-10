@@ -4,39 +4,30 @@ from typing import TYPE_CHECKING
 import warnings
 from arlbench.core.wrappers import AutoRLWrapper, FlattenObservationWrapper
 
-from .brax_env import BraxEnv
-from .envpool_env import EnvpoolEnv, ATARI_ENVS
-from .gymnasium_env import GymnasiumEnv
-from .gymnax_env import GymnaxEnv
 
 if TYPE_CHECKING:
     from .autorl_env import AutoRLEnv
 
 
-def make_env(env_framework, env_name, cnn_policy=False, n_envs=1, seed=0) -> AutoRLEnv | AutoRLWrapper:
+def make_env(env_framework, env_name, cnn_policy: bool =False, n_envs: int = 1, seed: int = 0) -> AutoRLEnv | AutoRLWrapper:
     if env_framework == "gymnasium":
         if n_envs > 1:
             warnings.warn(f"For gymnasium only n_envs must be set to 1 but actual value is {n_envs}. n_envs will be set to 1.")
-        import gymnasium
+        from .gymnasium_env import GymnasiumEnv
 
-        env = gymnasium.make(env_name, obs_type="grayscale")
-        env = GymnasiumEnv(env, seed)
+        env = GymnasiumEnv(env_name, seed)
     elif env_framework == "gymnax":
-        import gymnax
+        from .gymnax_env import GymnaxEnv
 
-        env, env_params = gymnax.make(env_name)
-        env = GymnaxEnv(env, n_envs, env_params)
+        env = GymnaxEnv(env_name, n_envs)
     elif env_framework == "envpool":
-        from arlbench.core.environments import envpool_env
-
-        env = envpool_env.make(env_name, env_type="gymnasium", num_envs=n_envs, seed=seed)
-        env = EnvpoolEnv(env, n_envs)
+        from .envpool_env import EnvpoolEnv
+        
+        env = EnvpoolEnv(env_name, n_envs, seed)
     elif env_framework == "brax":
-        from brax import envs
+        from .brax_env import BraxEnv
 
-        env = envs.get_environment(env_name, backend="spring")
-        env = envs.training.wrap(env)
-        env = BraxEnv(env, n_envs)
+        env = BraxEnv(env_name, n_envs)
     else:
         raise ValueError(f"Invalid framework: {env_framework}")
 

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import functools
 from typing import Any
+import envpool
 
 import jax
 import jax.numpy as jnp
@@ -119,8 +120,9 @@ ATARI_ENVS = [
 ]
 
 class EnvpoolEnv(AutoRLEnv):
-    def __init__(self, env: Any, n_envs: int):
-        super().__init__(env, n_envs)
+    def __init__(self, env_name: str, n_envs: int, seed: int):
+        env = envpool.make(env_name, env_type="gymnasium", num_envs=n_envs, seed=seed)
+        super().__init__(env_name, env, n_envs, seed)
         self._handle0, _, _, self._xla_step = self._env.xla()
 
     @functools.partial(jax.jit, static_argnums=0)
