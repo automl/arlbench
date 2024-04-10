@@ -1,15 +1,10 @@
 from __future__ import annotations
-from abc import ABC, abstractmethod
 
 import time
-from collections.abc import Callable
-from typing import TYPE_CHECKING, Optional, List, Any
-
+from abc import ABC, abstractmethod
+from typing import Any, Union, Callable, Optional
+from ..core.algorithms import TrainFunc
 import numpy as np
-
-
-if TYPE_CHECKING:
-    from ..core.algorithms import Algorithm
 
 # SORTING RANKS
 # Runtime = 0
@@ -17,7 +12,8 @@ if TYPE_CHECKING:
 # Reward = 2
 
 class Objective(ABC):
-    RANK: int   # Sorting rank 
+    KEY: str    # Unique identifier
+    RANK: int   # Sorting rank
 
     def __new__(cls, *args, **kwargs):
         instance = super().__new__(cls)
@@ -25,30 +21,34 @@ class Objective(ABC):
 
     @staticmethod
     @abstractmethod
-    def __call__(train_func: Callable, objectives: dict, env: Any) -> Callable:
+    def __call__(
+        train_func: TrainFunc,
+        objectives: dict
+    ) -> TrainFunc:
         raise NotImplementedError
-    
+
     @staticmethod
     @abstractmethod
     def get_spec() -> dict:
         raise NotImplementedError
-    
+
     def __lt__(self, other: Objective) -> bool:
         return self.RANK < other.RANK
-    
 
-class RuntimeObjective(Objective):
+
+class Runtime(Objective):
+    KEY = "runtime"
     RANK = 0
 
     @staticmethod
-    def __call__(train_func: Callable, objectives: dict, _) -> Callable:
+    def __call__(train_func: TrainFunc, objectives: dict) -> TrainFunc:
         def wrapper(*args, **kwargs):
             start_time = time.time()
             result = train_func(*args, **kwargs)
             objectives["runtime"] = time.time() - start_time
             return result
         return wrapper
-    
+
     @staticmethod
     def get_spec() -> dict:
         return {
@@ -59,36 +59,58 @@ class RuntimeObjective(Objective):
         }
 
 
-class RewardObjective(Objective):
+class RewardMean(Objective):
+    KEY = "reward_mean"
     RANK = 2
 
     @staticmethod
-    def __call__(train_func: Callable, objectives: dict, env: Any) -> Callable:
+    def __call__(train_func: TrainFunc, objectives: dict) -> TrainFunc:
         def wrapper(*args, **kwargs):
             result = train_func(*args, **kwargs)
-            (runner_state, _), _ = result
-            rewards = env.algorithm.eval(runner_state, env.config["reward_eval_episodes"])
-            objectives["reward"] = np.mean(rewards)
-            objectives["episode_rewards"] = list(rewards)
+            objectives[RewardMean.KEY] = np.mean(result.eval_rewards[-1])
 
             return result
         return wrapper
-    
+
     @staticmethod
     def get_spec() -> dict:
         return {
-            "name": "reward",
+            "name": RewardMean.KEY,
             "upper": None,
             "lower": None,
             "optimize": "upper"
         }
     
 
-class EmissionsObjective(Objective):
+class RewardStd(Objective):
+    KEY = "reward_std"
+    RANK = 2
+
+    @staticmethod
+    def __call__(train_func: TrainFunc, objectives: dict) -> TrainFunc:
+        def wrapper(*args, **kwargs):
+            result = train_func(*args, **kwargs)
+            objectives[RewardMean.KEY] = np.mean(result.eval_rewards[-1])
+
+            return result
+        return wrapper
+
+    @staticmethod
+    def get_spec() -> dict:
+        return {
+            "name": RewardStd.KEY,
+            "upper": None,
+            "lower": None,
+            "optimize": "upper"
+        }
+
+
+class Emissions(Objective):
+    KEY = "emissions"
     RANK = 1
 
     @staticmethod
-    def __call__(train_func: Callable, objectives: dict, _) -> Callable:
+    def __call__(train_func: TrainFunc, objectives: dict) -> TrainFunc:
         def wrapper(*args, **kwargs):
             from codecarbon import EmissionsTracker
             tracker = EmissionsTracker(
@@ -103,7 +125,7 @@ class EmissionsObjective(Objective):
                 objectives["emissions"] = tracker.stop()
             return result
         return wrapper
-    
+
     @staticmethod
     def get_spec() -> dict:
         return {
@@ -115,7 +137,5 @@ class EmissionsObjective(Objective):
 
 
 OBJECTIVES = {
-    "runtime": RuntimeObjective,
-    "reward": RewardObjective,
-    "emissions": EmissionsObjective
+    o.KEY: o for o in [Runtime, RewardMean, RewardStd, Emissions]
 }

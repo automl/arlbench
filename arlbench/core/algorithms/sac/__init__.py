@@ -1,7 +1,7 @@
-from .sac import SAC, SACRunnerState
-
+from .sac import SAC, SACRunnerState, SACTrainingResult
 
 __all__ = [
     "SAC",
-    "SACRunnerState"
+    "SACRunnerState",
+    "SACTrainingResult"
 ]

@@ -10,14 +10,14 @@ from gymnax.environments import spaces
 from .autorl_wrapper import AutoRLWrapper
 
 if TYPE_CHECKING:
-    from arlbench.core.environments import AutoRLEnv
+    from arlbench.core.environments import Environment
 
 
 # TODO add test cases
 class FlattenObservationWrapper(AutoRLWrapper):
     """Flatten the observations of the environment."""
 
-    def __init__(self, env: AutoRLEnv):
+    def __init__(self, env: Environment):
         super().__init__(env)
 
     @property

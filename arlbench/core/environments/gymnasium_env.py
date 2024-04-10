@@ -9,13 +9,13 @@ import jax.numpy as jnp
 
 from arlbench.utils import gymnasium_space_to_gymnax_space
 
-from .autorl_env import AutoRLEnv
+from .autorl_env import Environment
 
 if TYPE_CHECKING:
     import chex
     from chex import PRNGKey
 
-class GymnasiumEnv(AutoRLEnv):
+class GymnasiumEnv(Environment):
     def __init__(self, env_name: str, seed: int):
         env = gymnasium.make(env_name, seed=seed)
         super().__init__(env_name, env, 1, seed)
@@ -52,7 +52,7 @@ class GymnasiumEnv(AutoRLEnv):
             obs, reward, term, trunc, _ = self._env.step(_action)
 
             # Autoreset
-            # https://gymnasium.farama.org/main/_modules/gymnasium/wrappers/autoreset/ 
+            # https://gymnasium.farama.org/main/_modules/gymnasium/wrappers/autoreset/
             if term or trunc:
                 obs, _ = self._env.reset(seed=self._seed)
 

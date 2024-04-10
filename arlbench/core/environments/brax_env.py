@@ -7,10 +7,9 @@ import gymnax
 import jax
 import jax.numpy as jnp
 import numpy as np
-
 from brax import envs
 
-from .autorl_env import AutoRLEnv
+from .autorl_env import Environment
 
 if TYPE_CHECKING:
     import chex
@@ -18,7 +17,7 @@ if TYPE_CHECKING:
     from chex import PRNGKey
 
 
-class BraxEnv(AutoRLEnv):
+class BraxEnv(Environment):
     def __init__(self, env_name: str, n_envs: int):
         env = envs.get_environment(env_name, backend="spring")
         env = envs.training.wrap(env)

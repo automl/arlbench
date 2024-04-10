@@ -1,7 +1,7 @@
-from .ppo import PPO, PPORunnerState
-
+from .ppo import PPO, PPORunnerState, PPOTrainingResult
 
 __all__ = [
     "PPO",
-    "PPORunnerState"
+    "PPORunnerState",
+    "PPOTrainingResult"
 ]

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import functools
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING, Any, Optional
+from typing import TYPE_CHECKING, Any
 
 import jax
 import jax.numpy as jnp
@@ -11,8 +11,8 @@ if TYPE_CHECKING:
     from chex import PRNGKey
 
 
-class AutoRLEnv(ABC):
-    def __init__(self, env_name: str, env: Any, n_envs: int, seed: Optional[int] = None):
+class Environment(ABC):
+    def __init__(self, env_name: str, env: Any, n_envs: int, seed: int | None = None):
         self._env_name = env_name
         self._env = env
         self._n_envs = n_envs
@@ -47,7 +47,7 @@ class AutoRLEnv(ABC):
     @property
     def n_envs(self):
         return self._n_envs
-    
+
     @property
     def env_name(self):
         return self._env_name
