@@ -13,11 +13,10 @@ from ConfigSpace import (Categorical, Configuration, ConfigurationSpace, Float,
                          Integer)
 from flax.training.train_state import TrainState
 
-from arlbench.core.algorithms.models import Q
-
-from .algorithm import Algorithm
-from .buffers import uniform_sample
-from .common import TimeStep
+from .models import MLPQ, CNNQ
+from ..algorithm import Algorithm
+from ..buffers import uniform_sample
+from ..common import TimeStep
 
 if TYPE_CHECKING:
     import chex
@@ -64,6 +63,7 @@ class DQN(Algorithm):
         hpo_config: Configuration | dict,
         options: dict,
         env: Any,
+        cnn_policy: bool = False,
         nas_config: Configuration | dict | None = None,
         track_trajectories=False,
         track_metrics=False
@@ -81,12 +81,20 @@ class DQN(Algorithm):
         )
 
         action_size, discrete = self.action_type
-        self.network = Q(
-            action_size,
-            discrete=discrete,
-            activation=self.nas_config["activation"],
-            hidden_size=self.nas_config["hidden_size"],
-        )
+        if cnn_policy:            
+            self.network = CNNQ(
+                action_size,
+                discrete=discrete,
+                activation=self.nas_config["activation"],
+                hidden_size=self.nas_config["hidden_size"],
+            )
+        else:
+            self.network = MLPQ(
+                action_size,
+                discrete=discrete,
+                activation=self.nas_config["activation"],
+                hidden_size=self.nas_config["hidden_size"],
+            )
 
         priority_exponent = self.hpo_config.get("buffer_beta", 1.0)
         self.buffer = fbx.make_prioritised_flat_buffer(
