@@ -27,9 +27,8 @@ def make_env(env_framework, env_name, n_envs=1, seed=0) -> AutoRLEnv | AutoRLWra
         env, env_params = gymnax.make(env_name)
         env = GymnaxEnv(env, n_envs, env_params)
     elif env_framework == "envpool":
-        from arlbench.core.environments import envpool_env
-
-        env = envpool_env.make(env_name, env_type="gymnasium", num_envs=n_envs, seed=seed)
+        import envpool
+        env = envpool.make(env_name, env_type="gymnasium", num_envs=n_envs, seed=seed)
         env = EnvpoolEnv(env, n_envs)
     elif env_framework == "brax":
         from brax import envs
