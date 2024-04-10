@@ -12,9 +12,9 @@ def test_autorl_env_dqn_single_objective():
         "seed": 0,
         "algorithm": "dqn",
         "objectives": ["reward"],
+        "reward_eval_episodes": 10,
         "checkpoint": [],
         "n_steps": 10,
-        "n_eval_episodes": 10,
         "track_trajectories": False,
         "grad_obs": True
     }
