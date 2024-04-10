@@ -1,13 +1,14 @@
 from __future__ import annotations
 
-import time
 from abc import ABC, abstractmethod
-from ..core.algorithms import TrainFunc
+from typing import TYPE_CHECKING
 
-import numpy as np
-import jax.numpy as jnp
 import gymnasium
-from typing import List
+import jax.numpy as jnp
+import numpy as np
+
+if TYPE_CHECKING:
+    from arlbench.core.algorithms import TrainFunc
 
 
 class StateFeature(ABC):
@@ -21,7 +22,7 @@ class StateFeature(ABC):
     @abstractmethod
     def __call__(train_func: TrainFunc, objectives: dict) -> TrainFunc:
         raise NotImplementedError
-    
+
     @staticmethod
     @abstractmethod
     def get_state_space() -> gymnasium.spaces.Space:

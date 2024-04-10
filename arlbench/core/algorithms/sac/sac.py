@@ -229,7 +229,7 @@ class SAC(Algorithm):
         pi = self.actor_network.apply(runner_state.actor_train_state.params, obs)
 
         action = pi.mode()
-        
+
         # @Julian TODO pls add discrete action spaces
         if isinstance(self.env.action_space, spaces.Discrete):
             raise ValueError("Discrete action spaces are not (yet) supported :-)")

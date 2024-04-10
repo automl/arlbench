@@ -6,7 +6,6 @@ import numpy as np
 from arlbench.core.algorithms import PPO
 from arlbench.core.environments import make_env
 
-
 N_TOTAL_TIMESTEPS = 1e5
 EVAL_STEPS = 10
 EVAL_EPISODES = 1

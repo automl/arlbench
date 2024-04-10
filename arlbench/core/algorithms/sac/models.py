@@ -100,10 +100,10 @@ class SACCritic(nn.Module):
 
     def __call__(self, x, action):
         #x = x.reshape((x.shape[0], -1))
-        
+
         # @Julian this helped with an error for discrete action spaces
         if len(action.shape) == 1:
-            action = action[:, jnp.newaxis]    
+            action = action[:, jnp.newaxis]
 
         x = jnp.concatenate([x, action], -1)
         critic = self.critic0(x)
