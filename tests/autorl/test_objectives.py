@@ -4,16 +4,18 @@ import time
 import jax
 import numpy as np
 
-from arlbench.autorl.objectives import (track_emissions, track_reward,
-                                        track_runtime)
+from arlbench.autorl.objectives import (EmissionsObjective, RewardObjective,
+                                        RuntimeObjective)
 from arlbench.core.algorithms import DQN
 from arlbench.core.environments import make_env
 
 DQN_OPTIONS = {
     "n_total_timesteps": 1e6,
+    "n_eval_steps": 1e5,
+    "n_eval_episodes": 10,
     "n_envs": 10,
     "n_env_steps": 500,
-    "n_eval_episodes": 10,
+    "reward_eval_episodes": 10,
     "track_metrics": False,
     "track_traj": False,
 }
@@ -28,13 +30,13 @@ def test_reward():
 
     objectives = {}
     train_func = agent.train
-    train_func = track_reward(train_func, objectives, agent, DQN_OPTIONS["n_eval_episodes"])
+    train_func = RewardObjective(train_func, objectives, env)
 
     (runner_state, _), _ = train_func(runner_state, buffer_state)
-    rewards = agent.eval(runner_state, DQN_OPTIONS["n_eval_episodes"])
+    rewards = agent.eval(runner_state, DQN_OPTIONS["reward_eval_episodes"])
     reward = np.mean(rewards)
 
-    assert np.abs(reward - objectives["reward_mean"]) < 0.01
+    assert np.abs(reward - objectives["reward"]) < 0.01
 
 def test_runtime():
     env = make_env("gymnax", "CartPole-v1", seed=42)
@@ -46,7 +48,7 @@ def test_runtime():
 
     objectives = {}
     train_func = agent.train
-    train_func = track_runtime(train_func, objectives)
+    train_func = RuntimeObjective(train_func, objectives, None)
 
     start = time.time()
     train_func(runner_state, buffer_state)
@@ -64,7 +66,11 @@ def test_emissions():
 
     objectives = {}
     train_func = agent.train
-    train_func = track_emissions(train_func, objectives)
+    train_func = EmissionsObjective(train_func, objectives, None)
     train_func(runner_state, buffer_state)
     assert objectives["emissions"] > 0
     assert objectives["emissions"] < 1
+
+
+if __name__ == "__main__":
+    test_reward()
