@@ -6,9 +6,6 @@ from typing import TYPE_CHECKING
 import gymnasium
 import jax
 import jax.numpy as jnp
-import numpy as np
-from gymnasium import Env
-from gymnasium.wrappers.autoreset import AutoResetWrapper
 
 from arlbench.utils import gymnasium_space_to_gymnax_space
 
@@ -19,10 +16,9 @@ if TYPE_CHECKING:
     from chex import PRNGKey
 
 class GymnasiumEnv(AutoRLEnv):
-    def __init__(self, env: Env, seed: int):
-        super().__init__(env, 1)
-
-        self._seed = seed
+    def __init__(self, env_name: str, seed: int):
+        env = gymnasium.make(env_name, seed=seed)
+        super().__init__(env_name, env, 1, seed)
 
         self._reset_result = jnp.array(self._env.observation_space.sample())
 

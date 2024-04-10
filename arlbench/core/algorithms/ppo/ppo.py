@@ -5,7 +5,6 @@ import functools
 from typing import TYPE_CHECKING, Any, NamedTuple
 
 import flashbax as fbx
-import flax
 import jax
 import jax.numpy as jnp
 import optax
@@ -15,10 +14,10 @@ from flax.training.train_state import TrainState
 
 from arlbench.core.environments import AutoRLEnv
 
-from .algorithm import Algorithm
-from .common import TimeStep
-from .models import ActorCritic
-from ...utils import flatten_dict
+from ..algorithm import Algorithm
+from ..common import TimeStep
+from .models import MLPActorCritic, CNNActorCritic
+from ....utils import flatten_dict
 import warnings
 
 if TYPE_CHECKING:
@@ -68,6 +67,7 @@ class PPO(Algorithm):
         hpo_config: Configuration | dict,
         env_options: dict,
         env: AutoRLEnv | AutoRLWrapper,
+        cnn_policy: bool = False,
         nas_config: Configuration | dict | None = None,
         track_trajectories=False,
         track_metrics=False
@@ -103,12 +103,20 @@ class PPO(Algorithm):
         )
         
         action_size, discrete = self.action_type
-        self.network = ActorCritic(
-            action_size,
-            discrete=discrete,
-            activation=self.nas_config["activation"],
-            hidden_size=self.nas_config["hidden_size"],
-        )
+        if cnn_policy:
+            self.network = CNNActorCritic(
+                action_size,
+                discrete=discrete,
+                activation=self.nas_config["activation"],
+                hidden_size=self.nas_config["hidden_size"],
+            )
+        else:
+            self.network = MLPActorCritic(
+                action_size,
+                discrete=discrete,
+                activation=self.nas_config["activation"],
+                hidden_size=self.nas_config["hidden_size"],
+            )
 
         self.buffer = fbx.make_flat_buffer(
             max_length=self.hpo_config["buffer_size"],
@@ -172,7 +180,7 @@ class PPO(Algorithm):
 
         if buffer_state is None:
             _timestep = TimeStep(last_obs=_obs[0], obs=_obs[0], action=_action[0], reward=_reward[0], done=_done[0])
-            buffer_state = self.buffer.init(_timestep)
+            buffer_state = self.buffer.init(_timestep)  
 
         _, _rng = jax.random.split(rng)
         if network_params is None:

@@ -14,8 +14,8 @@ from ConfigSpace import (Categorical, Configuration, ConfigurationSpace, Float,
                          Integer)
 from flax.training.train_state import TrainState
 
-from .algorithm import Algorithm
-from .common import TimeStep
+from ..algorithm import Algorithm
+from ..common import TimeStep
 from .models import AlphaCoef, SACActor, SACVectorCritic
 
 if TYPE_CHECKING:
