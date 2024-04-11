@@ -3,6 +3,7 @@ import functools
 import logging
 import os
 import time
+from typing import Optional
 
 import jax
 import jax.numpy as jnp
@@ -13,6 +14,55 @@ from brax.envs.wrappers.gym import GymWrapper
 from sbx import SAC
 from stable_baselines3.common.callbacks import BaseCallback
 from stable_baselines3.common.evaluation import evaluate_policy
+from stable_baselines3.common.vec_env import VecEnvWrapper, VecMonitor
+from stable_baselines3.common.vec_env.base_vec_env import (
+  VecEnvObs,
+  VecEnvStepReturn,
+)
+import envpool
+from envpool.python.protocol import EnvPool
+
+
+class VecAdapter(VecEnvWrapper):
+  """
+  Convert EnvPool object to a Stable-Baselines3 (SB3) VecEnv.
+
+  :param venv: The envpool object.
+  """
+
+  def __init__(self, venv: EnvPool):
+    # Retrieve the number of environments from the config
+    venv.num_envs = venv.spec.config.num_envs
+    super().__init__(venv=venv)
+
+  def step_async(self, actions: np.ndarray) -> None:
+    self.actions = actions
+
+  def reset(self) -> VecEnvObs:
+    return self.venv.reset()[0]
+
+  def seed(self, seed: Optional[int] = None) -> None:
+    # You can only seed EnvPool env by calling envpool.make()
+    pass
+
+  def step_wait(self) -> VecEnvStepReturn:
+    obs, rewards, terms, truncs, info_dict = self.venv.step(self.actions)
+    dones = terms + truncs
+    infos = []
+    # Convert dict to list of dict
+    # and add terminal observation
+    for i in range(self.num_envs):
+      infos.append(
+        {
+          key: info_dict[key][i]
+          for key in info_dict.keys()
+          if isinstance(info_dict[key], np.ndarray)
+        }
+      )
+      if dones[i]:
+        infos[i]["terminal_observation"] = obs[i]
+        obs[i] = self.venv.reset(np.array([i]))[0]
+    return obs, rewards, dones, infos
 
 
 class EvalTrainingMetricsCallback(BaseCallback):
@@ -107,11 +157,11 @@ def test_sac(dir_name, log, framework, env_name, sac_config, seed):
         eval_env = envs.create(env_name, backend="spring", episode_length=1000)
     if framework == "envpool":
         import envpool
-        env = envpool.make(env_name, env_type="gymnasium", num_envs=sac_config["n_envs"], seed=seed)
-        eval_env = envpool.make(env_name, env_type="gymnasium", num_envs=128, seed=seed)
+        env = VecMonitor(VecAdapter(envpool.make(env_name, env_type="gymnasium", num_envs=sac_config["n_envs"], seed=seed)))
+        eval_env = VecMonitor(VecAdapter(envpool.make(env_name, env_type="gymnasium", num_envs=128, seed=seed)))
 
     eval_callback = EvalTrainingMetricsCallback(
-        eval_env=eval_env, eval_freq=sac_config["eval_freq"], n_eval_episodes=128, seed=seed
+        framework=framework, eval_env=eval_env, eval_freq=sac_config["eval_freq"], n_eval_episodes=128, seed=seed
     )
 
     hpo_config = {}
