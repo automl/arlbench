@@ -141,7 +141,6 @@ class Checkpointer:
     @staticmethod
     def load(
         checkpoint_path: str,
-        algorithm: str,
         dummy_buffer_state: PrioritisedTrajectoryBufferState
     ) -> tuple[tuple[dict[str, Any], int, int], dict]:
         checkpointer = ocp.PyTreeCheckpointer()
