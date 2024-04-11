@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 import functools
-from typing import TYPE_CHECKING, Any, NamedTuple
+from typing import TYPE_CHECKING, Any, NamedTuple, Optional, Callable
 
 import flashbax as fbx
 import jax
@@ -52,10 +52,14 @@ class PPORunnerState(NamedTuple):
     global_step: int
 
 class PPOTrainingResult(NamedTuple):
-    runner_state: PPORunnerState
-    buffer_state: PrioritisedTrajectoryBufferState
     eval_rewards: jnp.ndarray
-    metrics: tuple | None
+    trajectories: Transition | None
+    metrics: PPOMetrics | None
+
+class PPOMetrics(NamedTuple):
+    loss: Any
+    grads: Any
+    advantages: Any
 
 class Transition(NamedTuple):
     done: jnp.ndarray
@@ -164,10 +168,37 @@ class PPO(Algorithm):
             },
         )
 
-
     @staticmethod
     def get_default_nas_config() -> Configuration:
         return PPO.get_nas_config_space().get_default_configuration()
+    
+    @staticmethod
+    def get_checkpoint_factory(
+        runner_state: PPORunnerState,
+        train_result: PPOTrainingResult,
+    ) -> dict[str, Callable]:
+        train_state = runner_state.train_state
+
+        def get_trajectories():
+            traj = train_result.trajectories
+            assert traj is not None
+
+            trajectories = {}
+            trajectories["states"] = jnp.concatenate(traj.obs, axis=0)
+            trajectories["action"] = jnp.concatenate(traj.action, axis=0)
+            trajectories["reward"] = jnp.concatenate(traj.reward, axis=0)
+            trajectories["dones"] = jnp.concatenate(traj.done, axis=0)
+            trajectories["value"] = jnp.concatenate(traj.value, axis=0)
+            trajectories["log_prob"] = jnp.concatenate(traj.log_prob, axis=0)
+
+            return trajectories
+
+        return {
+            "opt_state": lambda _: train_state.opt_state,
+            "params": lambda _: train_state.params,
+            "loss": lambda _: train_result.metrics.loss if train_result.metrics else None,
+            "trajectories": get_trajectories
+        }
 
     def init(self, rng, buffer_state=None, network_params=None, opt_state=None):
         rng, reset_rng = jax.random.split(rng)
@@ -221,19 +252,37 @@ class PPO(Algorithm):
         n_total_timesteps: int = 1000000,
         n_eval_steps:  int= 100,
         n_eval_episodes: int = 10,
-    ) -> tuple[tuple[PPORunnerState, PrioritisedTrajectoryBufferState], tuple | None]:
-        # TODO @Julian add train_eval step as in DQN and SAC
-        (runner_state, buffer_state), out = jax.lax.scan(
-            self._update_step, (runner_state, buffer_state), None, n_total_timesteps // self.update_interval
+    ) -> tuple[PPORunnerState, PrioritisedTrajectoryBufferState, PPOTrainingResult]:
+        def train_eval_step(carry, _):
+            runner_state, buffer_state = carry
+            (runner_state, buffer_state), (metrics, trajectories) = jax.lax.scan(
+                self._update_step,
+                (runner_state, buffer_state),
+                None,
+                n_total_timesteps // self.update_interval // n_eval_steps
+            )
+            eval_returns = self.eval(runner_state, n_eval_episodes)
+
+            return (runner_state, buffer_state), (metrics, trajectories, eval_returns)
+
+        (runner_state, buffer_state), (metrics, trajectories, eval_returns) = jax.lax.scan(
+            train_eval_step,
+            (runner_state, buffer_state),
+            None,
+            10,
         )
-        return (runner_state, buffer_state), out
+        return runner_state, buffer_state, PPOTrainingResult(
+            eval_rewards=eval_returns,
+            metrics=metrics,
+            trajectories=trajectories
+        )
 
     @functools.partial(jax.jit, static_argnums=0)
     def _update_step(
         self,
-        carry,
+        carry: tuple[PPORunnerState, PrioritisedTrajectoryBufferState],
         _
-    ):
+    ) -> tuple[tuple[PPORunnerState, PrioritisedTrajectoryBufferState], tuple[Optional[PPOMetrics], Optional[Transition]]]:
         runner_state, buffer_state = carry
         (runner_state, buffer_state), traj_batch = jax.lax.scan(
             self._env_step, (runner_state, buffer_state), None, self.env_steps
@@ -253,7 +302,7 @@ class PPO(Algorithm):
 
         update_state = (train_state, traj_batch, advantages, targets, rng)
         update_state, (
-            loss_info,
+            loss,
             grads,
             minibatches
         ) = jax.lax.scan(self._update_epoch, update_state, None, self.hpo_config["update_epochs"])
@@ -267,22 +316,16 @@ class PPO(Algorithm):
             obs=last_obs,
             global_step=global_step
         )
+        metrics, tracjectories = None, None
+        if self.track_metrics:
+            metrics = PPOMetrics(
+                loss=loss,
+                grads=grads,
+                advantages=advantages
+            )
         if self.track_trajectories:
-            out = (
-                loss_info,
-                grads,
-                traj_batch,
-                (advantages, minibatches)
-            )
-        elif self.track_metrics:
-            out = (
-                loss_info,
-                grads,
-                (advantages)
-            )
-        else:
-            out = None
-        return (runner_state, buffer_state), out
+            tracjectories = traj_batch
+        return (runner_state, buffer_state), (metrics, tracjectories)
 
     @functools.partial(jax.jit, static_argnums=0)
     def _env_step(self, carry, _):

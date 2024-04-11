@@ -15,11 +15,18 @@ from flashbax.buffers.sum_tree import SumTreeState
 from flashbax.buffers.trajectory_buffer import TrajectoryBufferState
 from flashbax.vault import Vault
 from flax.core.frozen_dict import FrozenDict
+from arlbench.core.algorithms import DQN, PPO, SAC
+from arlbench.core.algorithms.dqn import DQNRunnerState, DQNMetrics, DQNTrainingResult
+from arlbench.core.algorithms.ppo import PPORunnerState, PPOMetrics, PPOTrainingResult
+from arlbench.core.algorithms.sac import SACRunnerState, SACMetrics, SACTrainingResult
 
 if TYPE_CHECKING:
     from ConfigSpace import Configuration
 
-    from arlbench.core.algorithms import RunnerState
+    from arlbench.core.algorithms import RunnerState, TrainResult
+
+
+VALID_CHECKPOINTS = ["opt_state", "params", "loss", "buffer"]
 
 
 class Checkpointer:
@@ -42,7 +49,7 @@ class Checkpointer:
     @staticmethod
     def _load_orbax_checkpoint(checkpoint_dir: str, checkpoint_name: str) -> dict[str, Any]:
         checkpointer = ocp.PyTreeCheckpointer()
-        return checkpointer.restore(os.path.join(checkpoint_dir, checkpoint_name))
+        return checkpointer.restore(os.path.join(checkpoint_dir, checkpoint_name))    
 
     @staticmethod
     def save(
@@ -53,7 +60,7 @@ class Checkpointer:
         done: bool,
         c_episode: int,
         c_step: int,
-        metrics: tuple | None,
+        train_result: TrainResult,
         tag: str | None = None
     ) -> str:
         # Checkpoint setup
@@ -76,33 +83,15 @@ class Checkpointer:
         if tag is not None:
             checkpoint_name += f"_{tag}"
 
-
-        # TODO change this for SAC
-        train_state = runner_state.train_state
-
-        if "minibatches" in checkpoint or "trajectories" in checkpoint:
-            if metrics and len(metrics) == 4:
-                (
-                    loss_info,
-                    grad_info,
-                    traj,
-                    additional_info,
-                ) = metrics
-            else:
-                raise ValueError("'trajectories' in checkpoint but 'metrics' does not match.")
-        elif "loss" in checkpoint or "extras" in checkpoint:
-            if metrics and len(metrics) == 3:
-                (
-                    loss_info,
-                    grad_info,
-                    additional_info,
-                ) = metrics
-            else:
-                raise ValueError("'loss' or 'extras' in checkpoint but 'metrics' does not match.")
-
-        network_params = train_state.params
-        opt_info = train_state.opt_state
-
+        if isinstance(runner_state, DQNRunnerState) and isinstance(train_result, DQNTrainingResult): 
+            algorithm_ckpt = DQN.get_checkpoint_factory(runner_state, train_result)
+        elif isinstance(runner_state, PPORunnerState) and isinstance(train_result, PPOTrainingResult): 
+            algorithm_ckpt = PPO.get_checkpoint_factory(runner_state, train_result)
+        elif isinstance(runner_state, SACRunnerState) and isinstance(train_result, SACTrainingResult): 
+            algorithm_ckpt = SAC.get_checkpoint_factory(runner_state, train_result)
+        else:
+            raise ValueError(f"Invalid type of runner state or training result: {type(runner_state)}, {type(train_result)}.")
+        
         ckpt: dict[str, Any] = {
             "config": dict(hp_config),
             "options": options,
@@ -110,91 +99,14 @@ class Checkpointer:
             "c_episode": c_episode
         }
 
-        if "opt_state" in checkpoint or checkpoint == "all":
-            ckpt["optimizer_state"] = opt_info
-
-        if "policy" in checkpoint:
-            ckpt["params"] = network_params
-            if options["algorithm"] == "dqn":
-                ckpt["target"] = train_state.target_params
-            # TODO add SAC
-
-        if "buffer" in checkpoint:
-            ckpt["buffer"] = Checkpointer.save_buffer(buffer_state, checkpoint_dir, checkpoint_name)
+        for key in algorithm_ckpt:
+            if any(attr in key for attr in checkpoint):
+                ckpt[key] = algorithm_ckpt[key]()   # get actual checkpoint
 
         Checkpointer._save_orbax_checkpoint(ckpt, checkpoint_dir, checkpoint_name)
 
-        if "loss" in checkpoint:
-            ckpt = {}
-            if options["algorithm"] == "ppo":
-                ckpt["value_loss"] = jnp.concatenate(loss_info[0], axis=0)
-                ckpt["actor_loss"] = jnp.concatenate(loss_info[1], axis=0)
-            elif options["algorithm"]== "dqn":
-                ckpt["loss"] = loss_info
-            # TODO add SAC
-            Checkpointer._save_orbax_checkpoint(ckpt, checkpoint_dir, checkpoint_name + "_loss")
-
-        if "minibatches" in checkpoint and "trajectory" in checkpoint and options["algorithm"] == "ppo":
-            ckpt = {}
-            ckpt["minibatches"] = {}
-            ckpt["minibatches"]["states"] = jnp.concatenate(
-                additional_info["minibatches"][0].obs, axis=0
-            )
-            ckpt["minibatches"]["value"] = jnp.concatenate(
-                additional_info["minibatches"][0].value, axis=0
-            )
-            ckpt["minibatches"]["action"] = jnp.concatenate(
-                additional_info["minibatches"][0].action, axis=0
-            )
-            ckpt["minibatches"]["reward"] = jnp.concatenate(
-                additional_info["minibatches"][0].reward, axis=0
-            )
-            ckpt["minibatches"]["log_prob"] = jnp.concatenate(
-                additional_info["minibatches"][0].log_prob, axis=0
-            )
-            ckpt["minibatches"]["dones"] = jnp.concatenate(
-                additional_info["minibatches"][0].done, axis=0
-            )
-            ckpt["minibatches"]["advantages"] = jnp.concatenate(
-                additional_info["minibatches"][1], axis=0
-            )
-            ckpt["minibatches"]["targets"] = jnp.concatenate(
-                additional_info["minibatches"][2], axis=0
-            )
-            Checkpointer._save_orbax_checkpoint(ckpt, checkpoint_dir, checkpoint_name + "_minibatches")
-
-        if "extras" in checkpoint:
-            ckpt = {}
-            for k in additional_info:
-                if k == "param_history":
-                    ckpt[k] = additional_info[k]
-                elif k != "minibatches":
-                    ckpt[k] = jnp.concatenate(additional_info[k], axis=0)
-                elif "gradient_history" in checkpoint:
-                    ckpt["gradient_history"] = grad_info["params"]
-            Checkpointer._save_orbax_checkpoint(ckpt, checkpoint_dir, checkpoint_name + "_extras")
-
-        if "trajectories" in checkpoint and options["algorithm"] == "dqn":
-            ckpt = {}
-            ckpt["trajectories"] = {}
-            ckpt["trajectories"]["states"] = jnp.concatenate(traj.obs, axis=0)
-            ckpt["trajectories"]["action"] = jnp.concatenate(traj.action, axis=0)
-            ckpt["trajectories"]["reward"] = jnp.concatenate(traj.reward, axis=0)
-            ckpt["trajectories"]["dones"] = jnp.concatenate(traj.done, axis=0)
-            if options["algorithm"] == "ppo":
-                ckpt["trajectories"]["value"] = jnp.concatenate(
-                    traj.value, axis=0
-                )
-                ckpt["trajectories"]["log_prob"] = jnp.concatenate(
-                    traj.log_prob, axis=0
-                )
-            elif options["algorithm"] == "dqn":
-                ckpt["trajectories"]["q_pred"] = jnp.concatenate(
-                    traj.q_pred, axis=0
-                )
-            # TODO add SAC
-
-            Checkpointer._save_orbax_checkpoint(ckpt, checkpoint_dir, checkpoint_name + "_trajectory")
+        if "buffer" in checkpoint:
+            ckpt["buffer"] = Checkpointer.save_buffer(buffer_state, checkpoint_dir, checkpoint_name)
 
         return os.path.join(checkpoint_dir, checkpoint_name)
 
@@ -217,6 +129,8 @@ class Checkpointer:
                 restored["buffer"]["buffer_dir"],
                 restored["buffer"]["vault_uuid"]
             )
+
+        # TODO rework 
 
         network_params = restored["params"]
         if isinstance(network_params, list):

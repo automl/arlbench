@@ -9,7 +9,7 @@ import jax
 import numpy as np
 
 from arlbench.core.algorithms import (DQN, PPO, SAC, Algorithm, BufferState,
-                                      RunnerState)
+                                      RunnerState, TrainResult)
 from arlbench.core.environments import make_env
 from arlbench.utils import config_space_to_gymnasium_space
 
@@ -47,7 +47,7 @@ class AutoRLEnv(gymnasium.Env):
     _get_obs: Callable[[], np.ndarray]
     _runner_state: RunnerState | None
     _buffer_state: BufferState | None
-    _metrics: tuple | None
+    _train_result: TrainResult | None
     _hpo_config: Configuration
     _total_timesteps: int
 
@@ -93,7 +93,7 @@ class AutoRLEnv(gymnasium.Env):
         )
         self._runner_state = None
         self._buffer_state = None
-        self._metrics = None
+        self._train_result = None
 
         # Checkpointing
         self._checkpoints = []
@@ -201,7 +201,7 @@ class AutoRLEnv(gymnasium.Env):
                 n_eval_steps=n_eval_steps,
                 n_eval_episodes=n_eval_episodes
             )
-        (self._runner_state, self._buffer_state, _, self._metrics) = result
+        (self._runner_state, self._buffer_state, self._train_result) = result
         return objectives, obs
 
     def step(
