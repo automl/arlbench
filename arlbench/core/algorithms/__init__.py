@@ -5,11 +5,12 @@ from flashbax.buffers.prioritised_trajectory_buffer import \
     PrioritisedTrajectoryBufferState
 
 from .algorithm import Algorithm
-from .dqn import DQN, DQNRunnerState, DQNTrainingResult
-from .ppo import PPO, PPORunnerState, PPOTrainingResult
-from .sac import SAC, SACRunnerState, SACTrainingResult
+from .dqn import DQN, DQNRunnerState, DQNTrainingResult, DQNMetrics
+from .ppo import PPO, PPORunnerState, PPOTrainingResult, PPOMetrics
+from .sac import SAC, SACRunnerState, SACTrainingResult, SACMetrics
 
 TrainResult = Union[DQNTrainingResult, PPOTrainingResult, SACTrainingResult]
+TrainMetrics = Union[DQNMetrics, PPOMetrics, SACMetrics]
 RunnerState = Union[DQNRunnerState, PPORunnerState, SACRunnerState]
 BufferState = PrioritisedTrajectoryBufferState
 TrainFunc = Callable[[RunnerState, BufferState, int | None, int | None, int | None], TrainResult]

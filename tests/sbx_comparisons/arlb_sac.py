@@ -28,18 +28,18 @@ def test_sac(dir_name, log, framework, env_name, config, training_kw_args, seed)
 
     start = time.time()
     log.info(f"training started")
-    (runner_state, _, eval_returns, _) = agent.train(runner_state, buffer_state, **training_kw_args)
+    runner_state, buffer_state, result = agent.train(runner_state, buffer_state, **training_kw_args)
     log.info(f"training finished")
     training_time = time.time() - start
 
-    mean_return = eval_returns.mean(axis=1)
-    std_return = eval_returns.std(axis=1)
+    mean_return = result.eval_returns.mean(axis=1)
+    std_return = result.eval_returns.std(axis=1)
     str_results = [f"{mean:.2f}+-{std:.2f}" for mean, std in zip(mean_return, std_return)]
     log.info(f"{training_time}, {str_results}")
 
     train_info_df = pd.DataFrame()
     for i in range(len(mean_return)):
-        train_info_df[f"return_{i}"] = eval_returns[i]
+        train_info_df[f"return_{i}"] = result.eval_returns[i]
 
     os.makedirs(os.path.join("sac_results", f"{framework}_{env_name}", dir_name), exist_ok=True)
     train_info_df.to_csv(os.path.join("sac_results", f"{framework}_{env_name}", dir_name, f"{seed}_results.csv"))

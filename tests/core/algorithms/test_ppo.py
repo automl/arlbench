@@ -21,7 +21,7 @@ def test_default_ppo_discrete():
     runner_state, buffer_state = agent.init(rng)
     
     start = time.time()
-    (runner_state, _, _, _) = agent.train(
+    runner_state, buffer_state, _ = agent.train(
         runner_state,
         buffer_state,
         n_total_timesteps=N_TOTAL_TIMESTEPS,
@@ -45,7 +45,7 @@ def test_default_ppo_continuous():
     runner_state, buffer_state = agent.init(rng)
     
     start = time.time()
-    (runner_state, _, _, _) = agent.train(
+    runner_state, buffer_state, _ = agent.train(
         runner_state,
         buffer_state,
         n_total_timesteps=N_TOTAL_TIMESTEPS,

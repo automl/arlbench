@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 import functools
-from typing import TYPE_CHECKING, Any, NamedTuple
+from typing import TYPE_CHECKING, Any, NamedTuple, Optional, Callable
 
 import flashbax as fbx
 import jax
@@ -53,15 +53,18 @@ class DQNRunnerState(NamedTuple):
 
 
 class DQNTrainingResult(NamedTuple):
-    runner_state: DQNRunnerState
-    buffer_state: PrioritisedTrajectoryBufferState
     eval_rewards: jnp.ndarray
-    metrics: tuple | None
+    trajectories: Transition | None
+    metrics: DQNMetrics | None
+
+class DQNMetrics(NamedTuple):
+    loss: Any
+    grads: Any
+    td_error: Any
 
 class Transition(NamedTuple):
     done: jnp.ndarray
     action: jnp.ndarray
-    q_pred: jnp.ndarray
     reward: jnp.ndarray
     obs: jnp.ndarray
     info: jnp.ndarray
@@ -176,8 +179,42 @@ class DQN(Algorithm):
     @staticmethod
     def get_default_nas_config() -> Configuration:
         return DQN.get_nas_config_space().get_default_configuration()
+    
+    @staticmethod
+    def get_checkpoint_factory(
+        runner_state: DQNRunnerState,
+        train_result: DQNTrainingResult,
+    ) -> dict[str, Callable]:
+        train_state = runner_state.train_state
 
-    def init(self, rng, buffer_state=None, network_params=None, target_params=None, opt_state=None) -> tuple[DQNRunnerState, Any]:
+        def get_trajectories():
+            traj = train_result.trajectories
+            assert traj is not None
+
+            trajectories = {}
+            trajectories["states"] = jnp.concatenate(traj.obs, axis=0)
+            trajectories["action"] = jnp.concatenate(traj.action, axis=0)
+            trajectories["reward"] = jnp.concatenate(traj.reward, axis=0)
+            trajectories["dones"] = jnp.concatenate(traj.done, axis=0)
+
+            return trajectories
+
+        return {
+            "opt_state": lambda _: train_state.opt_state,
+            "params": lambda _: train_state.params,
+            "target_params": lambda _: train_state.target_params,
+            "loss": lambda _: train_result.metrics.loss if train_result.metrics else None,
+            "trajectories": get_trajectories
+        }
+
+    def init(
+            self,
+            rng: chex.PRNGKey,
+            buffer_state: PrioritisedTrajectoryBufferState | None = None,
+            network_params: Any | None = None,
+            target_params: Any | None = None,
+            opt_state: Any = None
+        ) -> tuple[DQNRunnerState, Any]:
         rng, reset_rng = jax.random.split(rng)
 
         env_state, obs = self.env.reset(reset_rng)
@@ -233,29 +270,29 @@ class DQN(Algorithm):
         n_total_timesteps: int = 1000000,
         n_eval_steps: int = 100,
         n_eval_episodes: int = 10,
-    )-> DQNTrainingResult:
+    )-> tuple[DQNRunnerState, PrioritisedTrajectoryBufferState, DQNTrainingResult]:
         def train_eval_step(carry, _):
             runner_state, buffer_state = carry
-            (runner_state, buffer_state), out = jax.lax.scan(
+            (runner_state, buffer_state), (metrics, trajectories) = jax.lax.scan(
                 self._update_step,
                 (runner_state, buffer_state),
                 None,
                 n_total_timesteps//self.hpo_config["train_frequency"]//self.env.n_envs//n_eval_steps
             )
             eval_returns = self.eval(runner_state, n_eval_episodes)
-            return (runner_state, buffer_state), (eval_returns, out)
 
-        (runner_state, buffer_state), (reward, out) = jax.lax.scan(
+            return (runner_state, buffer_state), (metrics, trajectories, eval_returns)
+
+        (runner_state, buffer_state), (metrics, trajectories, eval_returns) = jax.lax.scan(
             train_eval_step,
             (runner_state, buffer_state),
             None,
             10,
         )
-        return DQNTrainingResult(
-            runner_state=runner_state,
-            buffer_state=buffer_state,
-            eval_rewards=reward,
-            metrics=out
+        return runner_state, buffer_state, DQNTrainingResult(
+            eval_rewards=eval_returns,
+            metrics=metrics,
+            trajectories=trajectories
         )
 
     def update(
@@ -296,9 +333,9 @@ class DQN(Algorithm):
 
     def _update_step(
         self,
-        carry,
+        carry: tuple[DQNRunnerState, PrioritisedTrajectoryBufferState],
         _
-    ):
+    ) -> tuple[tuple[DQNRunnerState, PrioritisedTrajectoryBufferState], tuple[Optional[DQNMetrics], Optional[Transition]]]:
         runner_state, buffer_state = carry
         (
             rng,
@@ -353,14 +390,29 @@ class DQN(Algorithm):
                 jnp.abs(td_error) + self.hpo_config["buffer_epsilon"], self.hpo_config["buffer_alpha"]
             )
             buffer_state = self.buffer.set_priorities(buffer_state, batch.indices, new_prios)
+            
+            if not self.track_metrics:
+                loss = None
+                td_error = None
+                grads = None
+            
             return train_state, loss, td_error, grads, opt_state, buffer_state
 
         def dont_update(train_state, buffer_state):
+            if self.track_metrics:
+                loss = ((jnp.array([0]) - jnp.array([0])) ** 2).mean()
+                td_error =  jnp.ones(self.hpo_config["buffer_batch_size"])
+                grads = train_state.params
+            else:
+                loss = None
+                td_error = None
+                grads = None
+        
             return (
                 train_state,
-                ((jnp.array([0]) - jnp.array([0])) ** 2).mean(),
-                jnp.ones(self.hpo_config["buffer_batch_size"]),
-                train_state.params,
+                loss,
+                td_error,
+                grads,
                 train_state.opt_state,
                 buffer_state,
             )
@@ -409,26 +461,19 @@ class DQN(Algorithm):
             obs=last_obs,
             global_step=global_step
         )
+        metrics, tracjectories = None, None
+        if self.track_metrics:
+            metrics = DQNMetrics(
+                loss=loss,
+                grads=grads,
+                td_error=td_error
+            )
         if self.track_trajectories:
-            metric = (
-                loss,
-                grads,
-                Transition(
-                    obs=observations,
-                    action=action,
-                    reward=reward,
-                    done=done,
-                    info=info,
-                    q_pred=[jnp.zeros_like(td_error)]  # todo: why are we logging q_pred here?
-                ),
-                {"td_error": [td_error]},
-            )
-        elif self.track_metrics:
-            metric = (
-                loss,
-                grads,
-                {"q_pred": [jnp.zeros_like(td_error)], "td_error": [td_error]},  # todo: why are we logging q_pred here?
-            )
-        else:
-            metric = None
-        return (runner_state, buffer_state), metric
+            tracjectories = Transition(
+                obs=observations,
+                action=action,
+                reward=reward,
+                done=done,
+                info=info,
+            )            
+        return (runner_state, buffer_state), (metrics, tracjectories)
