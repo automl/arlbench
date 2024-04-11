@@ -71,6 +71,8 @@ class Transition(NamedTuple):
 
 
 class DQN(Algorithm):
+    name = "dqn"
+
     def __init__(
         self,
         hpo_config: Configuration,
@@ -200,10 +202,10 @@ class DQN(Algorithm):
             return trajectories
 
         return {
-            "opt_state": lambda _: train_state.opt_state,
-            "params": lambda _: train_state.params,
-            "target_params": lambda _: train_state.target_params,
-            "loss": lambda _: train_result.metrics.loss if train_result.metrics else None,
+            "opt_state": lambda: train_state.opt_state,
+            "params": lambda: train_state.params,
+            "target_params": lambda: train_state.target_params,
+            "loss": lambda: train_result.metrics.loss if train_result.metrics else None,
             "trajectories": get_trajectories
         }
 
