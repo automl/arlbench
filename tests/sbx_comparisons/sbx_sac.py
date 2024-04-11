@@ -20,6 +20,7 @@ from brax.envs.wrappers.gym import GymWrapper
 class EvalTrainingMetricsCallback(BaseCallback):
     def __init__(
             self,
+            framework,
             eval_env,
             eval_freq,
             n_eval_episodes,
@@ -27,6 +28,7 @@ class EvalTrainingMetricsCallback(BaseCallback):
     ):
         super().__init__(verbose=0)
 
+        self.framework = framework
         self.eval_env = eval_env
         self.eval_freq = eval_freq
         self.n_eval_episodes = n_eval_episodes
@@ -78,7 +80,12 @@ class EvalTrainingMetricsCallback(BaseCallback):
 
     def _on_step(self) -> bool:
         if self.eval_freq > 0 and self.n_calls % self.eval_freq == 0:
-            returns = self.eval(self.n_eval_episodes)
+            if self.framework == "brax":
+                returns = self.eval(self.n_eval_episodes)
+            else:
+                returns = evaluate_policy(
+                    self.model, self.eval_env, n_eval_episodes=self.n_eval_episodes, return_episode_rewards=True
+                )
             self.return_list.append(returns)
             jax.debug.print("{returns}", returns=returns.mean())
         return True
@@ -100,6 +107,10 @@ def test_sac(dir_name, log, framework, env_name, sac_config, seed):
         env = envs.create(env_name, backend="spring", episode_length=1000)
         env = GymWrapper(env)
         eval_env = envs.create(env_name, backend="spring", episode_length=1000)
+    if framework == "envpool":
+        import envpool
+        env = envpool.make(env_name, env_type="gymnasium", num_envs=sac_config["n_envs"], seed=seed)
+        eval_env = envpool.make(env_name, env_type="gymnasium", num_envs=128, seed=seed)
 
     eval_callback = EvalTrainingMetricsCallback(
         eval_env=eval_env, eval_freq=sac_config["eval_freq"], n_eval_episodes=128, seed=seed
