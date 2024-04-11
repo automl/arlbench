@@ -22,7 +22,7 @@ def test_default_dqn():
     runner_state, buffer_state = agent.init(rng)
     
     start = time.time()
-    (runner_state, _, _, _) = agent.train(
+    runner_state, buffer_state, _ = agent.train(
         runner_state,
         buffer_state,
         n_total_timesteps=N_TOTAL_TIMESTEPS,
@@ -47,7 +47,7 @@ def test_uniform_dqn():
     runner_state, buffer_state = agent.init(rng)
     
     start = time.time()
-    (runner_state, _, _, _) = agent.train(
+    runner_state, buffer_state, _ = agent.train(
         runner_state,
         buffer_state,
         n_total_timesteps=N_TOTAL_TIMESTEPS,
@@ -72,7 +72,7 @@ def test_no_target_dqn():
     runner_state, buffer_state = agent.init(rng)
     
     start = time.time()
-    (runner_state, _, _, _) = agent.train(
+    runner_state, buffer_state, _ = agent.train(
         runner_state,
         buffer_state,
         n_total_timesteps=N_TOTAL_TIMESTEPS,
@@ -97,7 +97,7 @@ def test_relu_dqn():
     runner_state, buffer_state = agent.init(rng)
     
     start = time.time()
-    (runner_state, _, _, _) = agent.train(
+    runner_state, buffer_state, _ = agent.train(
         runner_state,
         buffer_state,
         n_total_timesteps=N_TOTAL_TIMESTEPS,

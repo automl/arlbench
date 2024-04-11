@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 import functools
-from typing import TYPE_CHECKING, Any, NamedTuple
+from typing import TYPE_CHECKING, Any, NamedTuple, Optional, Callable
 
 import flashbax as fbx
 import jax
@@ -59,10 +59,17 @@ class SACTrainState(TrainState):
         )
 
 class SACTrainingResult(NamedTuple):
-    runner_state: SACRunnerState
-    buffer_state: PrioritisedTrajectoryBufferState
     eval_rewards: jnp.ndarray
-    metrics: tuple | None
+    trajectories: Transition | None
+    metrics: SACMetrics | None
+
+class SACMetrics(NamedTuple):
+    actor_loss: Any
+    critic_loss: Any
+    alpha_loss: Any
+    td_error: Any
+    actor_grads: Any
+    critic_grads: Any
 
 class Transition(NamedTuple):
     done: jnp.ndarray
@@ -160,6 +167,41 @@ class SAC(Algorithm):
     @staticmethod
     def get_default_nas_config() -> Configuration:
         return SAC.get_nas_config_space().get_default_configuration()
+    
+    @staticmethod
+    def get_checkpoint_factory(
+        runner_state: SACRunnerState,
+        train_result: SACTrainingResult,
+    ) -> dict[str, Callable]:
+        actor_train_state = runner_state.actor_train_state
+        critic_train_state = runner_state.critic_train_state
+        alpha_train_state = runner_state.alpha_train_state
+
+        def get_trajectories():
+            traj = train_result.trajectories
+            assert traj is not None
+
+            trajectories = {}
+            trajectories["states"] = jnp.concatenate(traj.obs, axis=0)
+            trajectories["action"] = jnp.concatenate(traj.action, axis=0)
+            trajectories["reward"] = jnp.concatenate(traj.reward, axis=0)
+            trajectories["dones"] = jnp.concatenate(traj.done, axis=0)
+
+            return trajectories
+
+
+        return {
+            "actor_opt_state": lambda _: actor_train_state.opt_state,
+            "critic_opt_state": lambda _: critic_train_state.opt_state,
+            "alpha_opt_state":lambda _: alpha_train_state.opt_state,
+            "actor_params": lambda _: actor_train_state.params,
+            "critic_params": lambda _: critic_train_state.params,
+            "alpha_params": lambda _: alpha_train_state.params,
+            "actor_loss": lambda _: train_result.metrics.actor_loss if train_result.metrics else None,
+            "critic_loss": lambda _: train_result.metrics.critic_loss if train_result.metrics else None,
+            "alpha_loss": lambda _: train_result.metrics.alpha_loss if train_result.metrics else None,
+            "trajectories": get_trajectories
+        }
 
     def init(
             self, rng, actor_network_params=None, critic_network_params=None, critic_target_params=None
@@ -252,26 +294,30 @@ class SAC(Algorithm):
         n_total_timesteps: int,
         n_eval_steps: int,
         n_eval_episodes: int
-    )-> tuple[tuple[SACRunnerState, PrioritisedTrajectoryBufferState], tuple | None]:
+    )-> tuple[SACRunnerState, PrioritisedTrajectoryBufferState, SACTrainingResult]:
         def train_eval_step(carry, _):
             runner_state, buffer_state = carry
-            (runner_state, buffer_state), out = jax.lax.scan(
+            (runner_state, buffer_state), (metrics, trajectories) = jax.lax.scan(
                 self._update_step,
                 (runner_state, buffer_state),
                 None,
-                ((n_total_timesteps//self.hpo_config["train_frequency"])//self.env.n_envs)//n_eval_steps,
+                n_total_timesteps//self.hpo_config["train_frequency"]//self.env.n_envs//n_eval_steps
             )
             eval_returns = self.eval(runner_state, n_eval_episodes)
 
-            return (runner_state, buffer_state), (eval_returns, out)
+            return (runner_state, buffer_state), (metrics, trajectories, eval_returns)
 
-        (runner_state, buffer_state), (reward, out) = jax.lax.scan(
+        (runner_state, buffer_state), (metrics, trajectories, eval_returns) = jax.lax.scan(
             train_eval_step,
             (runner_state, buffer_state),
             None,
-            n_eval_steps,
+            10,
         )
-        return (runner_state, buffer_state), (reward, out)
+        return runner_state, buffer_state, SACTrainingResult(
+            eval_rewards=eval_returns,
+            metrics=metrics,
+            trajectories=trajectories
+        )
 
     def update_critic(self, actor_train_state, critic_train_state, alpha_train_state, batch, rng):
         rng, action_rng = jax.random.split(rng, 2)
@@ -332,9 +378,9 @@ class SAC(Algorithm):
 
     def _update_step(
             self,
-            carry,
+            carry: tuple[SACRunnerState, PrioritisedTrajectoryBufferState],
             _
-    ):
+    ) -> tuple[tuple[SACRunnerState, PrioritisedTrajectoryBufferState], tuple[Optional[SACMetrics], Optional[Transition]]]:
         def do_update(rng, actor_train_state, critic_train_state, alpha_train_state, buffer_state):
             def gradient_step(carry, _):
                 rng, actor_train_state, critic_train_state, alpha_train_state, buffer_state = carry
@@ -414,13 +460,13 @@ class SAC(Algorithm):
             actor_train_state,
             critic_train_state,
             alpha_train_state,
-            env_state,
-            last_obs,
+            _,
+            _,
             global_step
         ) = runner_state
         rng, _rng = jax.random.split(rng)
 
-        rng, actor_train_state, critic_train_state, alpha_train_state, buffer_state, metrics = jax.lax.cond(
+        rng, actor_train_state, critic_train_state, alpha_train_state, buffer_state, step_metrics = jax.lax.cond(
             (global_step > self.hpo_config["learning_starts"])
             & (global_step % self.hpo_config["train_frequency"] == 0),
             do_update,
@@ -446,29 +492,27 @@ class SAC(Algorithm):
             obs=runner_state.obs,
             global_step=runner_state.global_step
         )
-        actor_loss, critic_loss, alpha_loss, td_error, actor_grads, critic_grads = metrics
+        actor_loss, critic_loss, alpha_loss, td_error, actor_grads, critic_grads = step_metrics        
+        metrics, tracjectories = None, None
+        if self.track_metrics:
+            metrics = SACMetrics(
+                actor_loss=actor_loss,
+                critic_loss=critic_loss,
+                alpha_loss=alpha_loss,
+                actor_grads=actor_grads,
+                critic_grads=critic_grads,
+                td_error=td_error
+            )
         if self.track_trajectories:
-            metric = (
-                (actor_loss, critic_loss, alpha_loss),
-                (actor_grads, critic_grads),
-                Transition(
-                    obs=last_obs,
-                    action=action,
-                    reward=reward,
-                    done=done,
-                    info=info,
-                ),
-                {"td_error": [td_error]},
-            )
-        elif self.track_metrics:
-            metric = (
-                (actor_loss, critic_loss, alpha_loss),
-                (actor_grads, critic_grads),
-                {"td_error": [td_error]},
-            )
-        else:
-            metric = None
-        return (runner_state, buffer_state), metric
+            tracjectories = Transition(
+                obs=last_obs,
+                action=action,
+                reward=reward,
+                done=done,
+                value=value,
+                info=info,
+            ) 
+        return (runner_state, buffer_state), (metrics, tracjectories)
 
     @functools.partial(jax.jit, static_argnums=0)
     def _env_step(self, carry, _):

@@ -75,6 +75,14 @@ class Algorithm(ABC):
     def get_default_nas_config() -> Configuration:
         pass
 
+    @staticmethod
+    @abstractmethod
+    def get_checkpoint_factory(
+        runner_state: Any,
+        train_result: Any,
+    ) -> dict[str, callable]:
+        pass
+
     @abstractmethod
     def init(self, rng) -> tuple[Any, Any]:
         pass
