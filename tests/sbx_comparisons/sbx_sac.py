@@ -131,9 +131,10 @@ class EvalTrainingMetricsCallback(BaseCallback):
             if self.framework == "brax":
                 returns = self.eval(self.n_eval_episodes)
             else:
-                returns = evaluate_policy(
+                returns, lengths = evaluate_policy(
                     self.model, self.eval_env, n_eval_episodes=self.n_eval_episodes, return_episode_rewards=True
                 )
+                returns = np.array(returns)
             self.return_list.append(returns)
             jax.debug.print("{returns}", returns=returns.mean())
         return True
