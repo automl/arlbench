@@ -38,11 +38,15 @@
 - [x] Seeding for reset/step
 - [x] State Features
 - [x] Objectives
-- [ ] Checkpointing -> Add missing parts for SAC and test saving/loading for all 3 agents
+- [x] Checkpointing -> Add missing parts for SAC and test saving/loading for all 3 agents
+
+### Agents general
+
+- [ ] verify parameters n_eval_steps, n_total_timesteps => agent performance varies based on these settings (at least for DQN)
 
 ### DQN
 
-### SAC
+### PPO
 
 ### SAC
 

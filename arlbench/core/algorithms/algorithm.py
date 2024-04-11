@@ -3,7 +3,7 @@ from __future__ import annotations
 import functools
 from abc import ABC, abstractmethod
 from collections.abc import Sequence
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Callable
 
 import gym
 import gymnasium
@@ -22,6 +22,8 @@ if TYPE_CHECKING:
 
 
 class Algorithm(ABC):
+    name: str 
+
     def __init__(
             self,
             hpo_config: Configuration,
@@ -80,7 +82,7 @@ class Algorithm(ABC):
     def get_checkpoint_factory(
         runner_state: Any,
         train_result: Any,
-    ) -> dict[str, callable]:
+    ) -> dict[str, Callable]:
         pass
 
     @abstractmethod
@@ -152,3 +154,7 @@ class Algorithm(ABC):
             self._env_episode, (runner_state.rng, runner_state), None, n_evals
         )
         return jnp.concat(rewards)[:num_eval_episodes]
+    
+    def update_hpo_config(self, hpo_config: Configuration):
+        self.hpo_config = hpo_config
+

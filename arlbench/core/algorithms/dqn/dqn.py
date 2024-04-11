@@ -19,10 +19,9 @@ from arlbench.core.algorithms.common import TimeStep
 
 from .models import CNNQ, MLPQ
 
-if TYPE_CHECKING:
-    import chex
-    from flashbax.buffers.prioritised_trajectory_buffer import \
-        PrioritisedTrajectoryBufferState
+import chex
+from flashbax.buffers.prioritised_trajectory_buffer import PrioritisedTrajectoryBufferState
+
 
 
 class DQNTrainState(TrainState):
@@ -70,7 +69,12 @@ class Transition(NamedTuple):
     info: jnp.ndarray
 
 
+DQNTrainReturnT = tuple[DQNRunnerState, PrioritisedTrajectoryBufferState, DQNTrainingResult]
+
+
 class DQN(Algorithm):
+    name = "dqn"
+
     def __init__(
         self,
         hpo_config: Configuration,
@@ -200,10 +204,10 @@ class DQN(Algorithm):
             return trajectories
 
         return {
-            "opt_state": lambda _: train_state.opt_state,
-            "params": lambda _: train_state.params,
-            "target_params": lambda _: train_state.target_params,
-            "loss": lambda _: train_result.metrics.loss if train_result.metrics else None,
+            "opt_state": lambda: train_state.opt_state,
+            "params": lambda: train_state.params,
+            "target_params": lambda: train_state.target_params,
+            "loss": lambda: train_result.metrics.loss if train_result.metrics else None,
             "trajectories": get_trajectories
         }
 
@@ -270,7 +274,7 @@ class DQN(Algorithm):
         n_total_timesteps: int = 1000000,
         n_eval_steps: int = 100,
         n_eval_episodes: int = 10,
-    )-> tuple[DQNRunnerState, PrioritisedTrajectoryBufferState, DQNTrainingResult]:
+    )-> DQNTrainReturnT:
         def train_eval_step(carry, _):
             runner_state, buffer_state = carry
             (runner_state, buffer_state), (metrics, trajectories) = jax.lax.scan(

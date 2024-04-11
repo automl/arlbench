@@ -19,13 +19,12 @@ from arlbench.utils import flatten_dict
 
 from .models import CNNActorCritic, MLPActorCritic
 
-if TYPE_CHECKING:
-    import chex
-    from flashbax.buffers.prioritised_trajectory_buffer import \
-        PrioritisedTrajectoryBufferState
+import chex
+from flashbax.buffers.prioritised_trajectory_buffer import \
+    PrioritisedTrajectoryBufferState
 
-    from arlbench.core.environments import Environment
-    from arlbench.core.wrappers import AutoRLWrapper
+from arlbench.core.environments import Environment
+from arlbench.core.wrappers import AutoRLWrapper
 
 
 class PPOTrainState(TrainState):
@@ -70,8 +69,11 @@ class Transition(NamedTuple):
     obs: jnp.ndarray
     info: jnp.ndarray
 
+PPOTrainReturnT = tuple[PPORunnerState, PrioritisedTrajectoryBufferState, PPOTrainingResult]
 
 class PPO(Algorithm):
+    name = "ppo"
+
     def __init__(
         self,
         hpo_config: Configuration,
@@ -194,9 +196,9 @@ class PPO(Algorithm):
             return trajectories
 
         return {
-            "opt_state": lambda _: train_state.opt_state,
-            "params": lambda _: train_state.params,
-            "loss": lambda _: train_result.metrics.loss if train_result.metrics else None,
+            "opt_state": lambda : train_state.opt_state,
+            "params": lambda : train_state.params,
+            "loss": lambda : train_result.metrics.loss if train_result.metrics else None,
             "trajectories": get_trajectories
         }
 
@@ -252,7 +254,7 @@ class PPO(Algorithm):
         n_total_timesteps: int = 1000000,
         n_eval_steps:  int= 100,
         n_eval_episodes: int = 10,
-    ) -> tuple[PPORunnerState, PrioritisedTrajectoryBufferState, PPOTrainingResult]:
+    ) -> PPOTrainReturnT:
         def train_eval_step(carry, _):
             runner_state, buffer_state = carry
             (runner_state, buffer_state), (metrics, trajectories) = jax.lax.scan(
