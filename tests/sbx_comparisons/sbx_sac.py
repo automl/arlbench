@@ -13,6 +13,7 @@ from brax.envs.wrappers.gym import GymWrapper
 from sbx import SAC
 from stable_baselines3.common.callbacks import BaseCallback
 from stable_baselines3.common.evaluation import evaluate_policy
+from stable_baselines3.common.vec_env import VecEnvWrapper, VecMonitor
 
 
 class EvalTrainingMetricsCallback(BaseCallback):
@@ -107,11 +108,11 @@ def test_sac(dir_name, log, framework, env_name, sac_config, seed):
         eval_env = envs.create(env_name, backend="spring", episode_length=1000)
     if framework == "envpool":
         import envpool
-        env = envpool.make(env_name, env_type="gymnasium", num_envs=sac_config["n_envs"], seed=seed)
-        eval_env = envpool.make(env_name, env_type="gymnasium", num_envs=128, seed=seed)
+        env = VecMonitor(envpool.make(env_name, env_type="gymnasium", num_envs=sac_config["n_envs"], seed=seed))
+        eval_env = VecMonitor(envpool.make(env_name, env_type="gymnasium", num_envs=128, seed=seed))
 
     eval_callback = EvalTrainingMetricsCallback(
-        eval_env=eval_env, eval_freq=sac_config["eval_freq"], n_eval_episodes=128, seed=seed
+        framework=framework, eval_env=eval_env, eval_freq=sac_config["eval_freq"], n_eval_episodes=128, seed=seed
     )
 
     hpo_config = {}
