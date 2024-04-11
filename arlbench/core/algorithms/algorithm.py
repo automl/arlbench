@@ -154,3 +154,7 @@ class Algorithm(ABC):
             self._env_episode, (runner_state.rng, runner_state), None, n_evals
         )
         return jnp.concat(rewards)[:num_eval_episodes]
+    
+    def update_hpo_config(self, hpo_config: Configuration):
+        self.hpo_config = hpo_config
+

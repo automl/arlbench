@@ -29,10 +29,10 @@ def test_autorl_env_dqn_default_obs():
     assert len(init_obs.keys()) == 0
 
     action = env.config_space.sample_configuration()
-    obs, objectives, done, _, _ = env.step(action)
+    obs, objectives, _, trunc, _ = env.step(action)
     assert len(obs.keys()) == 1
     assert obs["steps"].shape == (2,)
-    assert done is False
+    assert trunc is False
     assert objectives["reward_mean"] > 0
 
 
@@ -58,11 +58,11 @@ def test_autorl_env_dqn_grad_obs():
     assert len(init_obs.keys()) == 0
 
     action = env.config_space.sample_configuration()
-    obs, objectives, done, _, _ = env.step(action)
+    obs, objectives, _, trunc, _ = env.step(action)
     assert len(obs.keys()) == 2
     assert obs["steps"].shape == (2,)
     assert obs["grad_info"].shape == (2,)
-    assert done is False
+    assert trunc is False
     assert objectives["reward_mean"] > 0
 
 def test_autorl_env_dqn_per_switch():
@@ -133,16 +133,16 @@ def test_autorl_env_dqn_dac():
     for _ in range(3):
         _, _ = env.reset()
         steps = 0
-        done = False
-        while not done:
+        trunc = False
+        while not trunc:
             action = env.config_space.sample_configuration()
 
-            obs, objectives, done, _, _ = env.step(action)
+            obs, objectives, _, trunc, _ = env.step(action)
             steps += 1
             assert len(obs.keys()) == 1
             assert obs["steps"].shape == (2,)
             assert objectives["reward_mean"] > 0
-        assert done is True
+        assert trunc is True
         assert steps == 3
 
 
@@ -166,11 +166,11 @@ def test_autorl_env_dqn_hpo():
 
     _, _ = env.reset()
     action = env.config_space.sample_configuration()
-    obs, objectives, done, _, _ = env.step(action)
+    obs, objectives, _, trunc, _ = env.step(action)
     assert len(obs.keys()) == 1
     assert obs["steps"].shape == (2,)
     assert objectives["reward_mean"] > 0
-    assert done is True
+    assert trunc is True
 
 
 def test_autorl_env_step_before_reset():

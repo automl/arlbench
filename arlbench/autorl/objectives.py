@@ -70,7 +70,8 @@ class RewardMean(Objective):
     def __call__(train_func: TrainFunc, objectives: dict) -> TrainFunc:
         def wrapper(*args, **kwargs):
             result = train_func(*args, **kwargs)
-            objectives[RewardMean.KEY] = np.mean(result.eval_rewards[-1])
+            _, _, train_result = result
+            objectives[RewardMean.KEY] = np.mean(train_result.eval_rewards[-1])
 
             return result
         return wrapper

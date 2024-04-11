@@ -20,13 +20,13 @@ from arlbench.core.algorithms.common import TimeStep
 
 from .models import AlphaCoef, SACActor, SACVectorCritic
 
-if TYPE_CHECKING:
-    import chex
-    from flashbax.buffers.prioritised_trajectory_buffer import \
-        PrioritisedTrajectoryBufferState
 
-    from arlbench.core.environments import Environment
-    from arlbench.core.wrappers import AutoRLWrapper
+import chex
+from flashbax.buffers.prioritised_trajectory_buffer import \
+    PrioritisedTrajectoryBufferState
+
+from arlbench.core.environments import Environment
+from arlbench.core.wrappers import AutoRLWrapper
 
 # todo: separate learning rate for critic and actor??
 
@@ -79,6 +79,7 @@ class Transition(NamedTuple):
     obs: jnp.ndarray
     info: jnp.ndarray
 
+SACTrainReturnT = tuple[SACRunnerState, PrioritisedTrajectoryBufferState, SACTrainingResult]
 
 class SAC(Algorithm):
     name = "sac"
@@ -309,7 +310,7 @@ class SAC(Algorithm):
         n_total_timesteps: int,
         n_eval_steps: int,
         n_eval_episodes: int
-    )-> tuple[SACRunnerState, PrioritisedTrajectoryBufferState, SACTrainingResult]:
+    )-> SACTrainReturnT:
         def train_eval_step(carry, _):
             runner_state, buffer_state = carry
             (runner_state, buffer_state), (metrics, trajectories) = jax.lax.scan(
