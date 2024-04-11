@@ -14,13 +14,14 @@ def test_sac(dir_name, log, framework, env_name, sac_config, seed):
     rng = jax.random.PRNGKey(seed)
 
     hpo_config = SAC.get_default_hpo_config()
-    hpo_config["tau"] = 0.005
-    hpo_config["learning_starts"] = 100
+    hpo_config["tau"] = 0.01
+    hpo_config["learning_starts"] = 10000
+    hpo_config["buffer_batch_size"] = 256
     hpo_config["buffer_alpha"] = 0.0
     hpo_config["buffer_beta"] = 0.0
     nas_config = SAC.get_default_nas_config()
     nas_config["activation"] = "relu"
-    nas_config["hidden_size"] = 256
+    nas_config["hidden_size"] = 350
 
     agent = SAC(hpo_config, sac_config, env, nas_config)
     runner_state, buffer_state = agent.init(rng)
