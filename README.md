@@ -27,6 +27,33 @@
 
 # 🦾 Automated Reinforcement Learning Benchmark
 
+## ToDos
+
+### Experimental Pipeline
+
+- [ ] Implement
+
+### AutoRLEnv
+
+- [x] Seeding for reset/step
+- [x] State Features
+- [x] Objectives
+- [ ] Checkpointing -> Add missing parts for SAC and test saving/loading for all 3 agents
+
+### DQN
+
+### SAC
+
+### SAC
+
+- [ ] Support for discrete action spaces
+
+### Environments
+
+- [ ] Brax tests
+- [ ] Envpool tests
+- [ ] Add support for Gymnasium VectorEnv? Only if we really need gymnasium envs
+
 ## Overview
 
 ## Setup

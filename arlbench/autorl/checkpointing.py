@@ -17,8 +17,9 @@ from flashbax.vault import Vault
 from flax.core.frozen_dict import FrozenDict
 
 if TYPE_CHECKING:
-    from arlbench.core.algorithms import (DQNRunnerState, PPORunnerState,
-                                          SACRunnerState)
+    from ConfigSpace import Configuration
+
+    from arlbench.core.algorithms import RunnerState
 
 
 class Checkpointer:
@@ -45,14 +46,15 @@ class Checkpointer:
 
     @staticmethod
     def save(
-        runner_state: PPORunnerState | DQNRunnerState | SACRunnerState,
+        runner_state: RunnerState,
         buffer_state: PrioritisedTrajectoryBufferState,
         options: dict,
-        hp_config: dict,
+        hp_config: Configuration,
         done: bool,
         c_episode: int,
         c_step: int,
-        metrics: tuple | None
+        metrics: tuple | None,
+        tag: str | None = None
     ) -> str:
         # Checkpoint setup
         checkpoint = options["checkpoint"]   # list of strings
@@ -70,6 +72,12 @@ class Checkpointer:
         else:
             checkpoint_name += "_final"
 
+        # append tag for error/sigterm
+        if tag is not None:
+            checkpoint_name += f"_{tag}"
+
+
+        # TODO change this for SAC
         train_state = runner_state.train_state
 
         if "minibatches" in checkpoint or "trajectories" in checkpoint:
@@ -96,7 +104,7 @@ class Checkpointer:
         opt_info = train_state.opt_state
 
         ckpt: dict[str, Any] = {
-            "config": hp_config,
+            "config": dict(hp_config),
             "options": options,
             "c_step": c_step,
             "c_episode": c_episode
@@ -237,7 +245,6 @@ class Checkpointer:
                 "target_params": target_params,
                 "opt_state": opt_state
             }
-        # TODO add SAC
         else:
             raise ValueError(f"Invalid algorithm in checkpoint: {config['algorithm']}")
         return common, algorithm_kw_args

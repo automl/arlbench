@@ -7,19 +7,21 @@ import gymnax
 import jax
 import jax.numpy as jnp
 import numpy as np
+from brax import envs
 
-from .autorl_env import AutoRLEnv
+from .autorl_env import Environment
 
 if TYPE_CHECKING:
     import chex
-    from brax.envs.base import Env
     from brax.envs.base import State as BraxEnvState
     from chex import PRNGKey
 
 
-class BraxEnv(AutoRLEnv):
-    def __init__(self, env: Env, n_envs: int):
-        super().__init__(env, n_envs)
+class BraxEnv(Environment):
+    def __init__(self, env_name: str, n_envs: int):
+        env = envs.get_environment(env_name, backend="spring")
+        env = envs.training.wrap(env)
+        super().__init__(env_name, env, n_envs)
         self.max_steps_in_episode = 1000
 
     @functools.partial(jax.jit, static_argnums=0)

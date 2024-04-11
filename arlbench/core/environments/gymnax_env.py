@@ -3,18 +3,19 @@ from __future__ import annotations
 import functools
 from typing import TYPE_CHECKING, Any
 
+import gymnax
 import jax
 
-from .autorl_env import AutoRLEnv
+from .autorl_env import Environment
 
 if TYPE_CHECKING:
     from chex import PRNGKey
-    from gymnax.environments.environment import Environment
 
 
-class GymnaxEnv(AutoRLEnv):
-    def __init__(self, env: Environment, n_envs: int, env_params: Any):
-        super().__init__(env, n_envs)
+class GymnaxEnv(Environment):
+    def __init__(self, env_name: str, n_envs: int):
+        env, env_params = gymnax.make(env_name)
+        super().__init__(env_name, env, n_envs)
 
         self.env_params = env_params
 
