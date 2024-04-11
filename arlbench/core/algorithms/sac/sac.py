@@ -81,6 +81,8 @@ class Transition(NamedTuple):
 
 
 class SAC(Algorithm):
+    name = "sac"
+
     def __init__(
             self,
             hpo_config: Configuration,
@@ -191,31 +193,42 @@ class SAC(Algorithm):
 
 
         return {
-            "actor_opt_state": lambda _: actor_train_state.opt_state,
-            "critic_opt_state": lambda _: critic_train_state.opt_state,
-            "alpha_opt_state":lambda _: alpha_train_state.opt_state,
-            "actor_params": lambda _: actor_train_state.params,
-            "critic_params": lambda _: critic_train_state.params,
-            "alpha_params": lambda _: alpha_train_state.params,
-            "actor_loss": lambda _: train_result.metrics.actor_loss if train_result.metrics else None,
-            "critic_loss": lambda _: train_result.metrics.critic_loss if train_result.metrics else None,
-            "alpha_loss": lambda _: train_result.metrics.alpha_loss if train_result.metrics else None,
+            "actor_opt_state": lambda : actor_train_state.opt_state,
+            "critic_opt_state": lambda : critic_train_state.opt_state,
+            "alpha_opt_state":lambda : alpha_train_state.opt_state,
+            "actor_network_params": lambda : actor_train_state.params,
+            "critic_network_params": lambda : critic_train_state.params,
+            "critic_target_params": lambda : critic_train_state.target_params,
+            "alpha_network_params": lambda : alpha_train_state.params,
+            "actor_loss": lambda : train_result.metrics.actor_loss if train_result.metrics else None,
+            "critic_loss": lambda : train_result.metrics.critic_loss if train_result.metrics else None,
+            "alpha_loss": lambda : train_result.metrics.alpha_loss if train_result.metrics else None,
             "trajectories": get_trajectories
         }
 
     def init(
-            self, rng, actor_network_params=None, critic_network_params=None, critic_target_params=None
+            self,
+            rng,
+            buffer_state=None,
+            actor_network_params=None,
+            critic_network_params=None,
+            critic_target_params=None,
+            alpha_network_params=None,
+            actor_opt_state=None,
+            critic_opt_state=None,
+            alpha_opt_state=None
     ) -> tuple[SACRunnerState, Any]:
         rng, env_rng = jax.random.split(rng)
         env_state, obs = self.env.reset(env_rng)
 
+        if buffer_state is None or actor_network_params is None or critic_network_params is None:
+            dummy_rng = jax.random.PRNGKey(0)
+            _action = self.env.sample_actions(dummy_rng)
+            _, (_obs, _reward, _done, _) = self.env.step(env_state, _action, dummy_rng)
 
-        dummy_rng = jax.random.PRNGKey(0)
-        _action = self.env.sample_actions(dummy_rng)
-        _, (_obs, _reward, _done, _) = self.env.step(env_state, _action, dummy_rng)
-
-        _timestep = TimeStep(last_obs=_obs[0], obs=_obs[0], action=_action[0], reward=_reward[0], done=_done[0])
-        buffer_state = self.buffer.init(_timestep)
+        if buffer_state is None:
+            _timestep = TimeStep(last_obs=_obs[0], obs=_obs[0], action=_action[0], reward=_reward[0], done=_done[0])
+            buffer_state = self.buffer.init(_timestep)
 
         if actor_network_params is None:
             rng, actor_rng = jax.random.split(rng)
@@ -231,22 +244,24 @@ class SAC(Algorithm):
             params=actor_network_params,
             target_params=None,
             tx=optax.adam(self.hpo_config["lr"], eps=1e-5),  # todo: change to actor specific lr
-            opt_state=None,
+            opt_state=actor_opt_state,
         )
         critic_train_state = SACTrainState.create_with_opt_state(
             apply_fn=self.critic_network.apply,
             params=critic_network_params,
             target_params=critic_target_params,
             tx=optax.adam(self.hpo_config["lr"], eps=1e-5),  # todo: change to critic specific lr
-            opt_state=None,
+            opt_state=critic_opt_state,
         )
-        rng, init_rng = jax.random.split(rng)
+        if alpha_network_params is None:
+            rng, init_rng = jax.random.split(rng)
+            alpha_network_params = self.alpha.init(init_rng)
         alpha_train_state = SACTrainState.create_with_opt_state(
             apply_fn=self.alpha.apply,
-            params=self.alpha.init(init_rng),
+            params=alpha_network_params,
             target_params=None,
             tx=optax.adam(self.hpo_config["lr"], eps=1e-5),  # todo: how to set lr, check with stable-baselines
-            opt_state=None,
+            opt_state=alpha_opt_state,
         )
         # target for automatic entropy tuning
         self.target_entropy = -jnp.prod(jnp.array(self.env.action_space.shape)).astype(jnp.float32)

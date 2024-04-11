@@ -72,6 +72,8 @@ class Transition(NamedTuple):
 
 
 class PPO(Algorithm):
+    name = "ppo"
+
     def __init__(
         self,
         hpo_config: Configuration,
@@ -194,9 +196,9 @@ class PPO(Algorithm):
             return trajectories
 
         return {
-            "opt_state": lambda _: train_state.opt_state,
-            "params": lambda _: train_state.params,
-            "loss": lambda _: train_result.metrics.loss if train_result.metrics else None,
+            "opt_state": lambda : train_state.opt_state,
+            "params": lambda : train_state.params,
+            "loss": lambda : train_result.metrics.loss if train_result.metrics else None,
             "trajectories": get_trajectories
         }
 
