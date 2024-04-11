@@ -5,7 +5,6 @@ import functools
 from typing import TYPE_CHECKING, Any, NamedTuple
 
 import flashbax as fbx
-import flax
 import jax
 import jax.numpy as jnp
 import optax
@@ -13,18 +12,19 @@ from ConfigSpace import (Categorical, Configuration, ConfigurationSpace, Float,
                          Integer)
 from flax.training.train_state import TrainState
 
-from arlbench.core.environments import AutoRLEnv
+from arlbench.core.algorithms.algorithm import Algorithm
+from arlbench.core.algorithms.common import TimeStep
+from arlbench.core.environments import Environment
+from arlbench.utils import flatten_dict
 
-from .algorithm import Algorithm
-from .common import TimeStep
-from .models import ActorCritic
-from ...utils import flatten_dict
-import warnings
+from .models import CNNActorCritic, MLPActorCritic
 
 if TYPE_CHECKING:
     import chex
+    from flashbax.buffers.prioritised_trajectory_buffer import \
+        PrioritisedTrajectoryBufferState
 
-    from arlbench.core.environments import AutoRLEnv
+    from arlbench.core.environments import Environment
     from arlbench.core.wrappers import AutoRLWrapper
 
 
@@ -51,6 +51,11 @@ class PPORunnerState(NamedTuple):
     obs: chex.Array
     global_step: int
 
+class PPOTrainingResult(NamedTuple):
+    runner_state: PPORunnerState
+    buffer_state: PrioritisedTrajectoryBufferState
+    eval_rewards: jnp.ndarray
+    metrics: tuple | None
 
 class Transition(NamedTuple):
     done: jnp.ndarray
@@ -65,10 +70,10 @@ class Transition(NamedTuple):
 class PPO(Algorithm):
     def __init__(
         self,
-        hpo_config: Configuration | dict,
-        env_options: dict,
-        env: AutoRLEnv | AutoRLWrapper,
-        nas_config: Configuration | dict | None = None,
+        hpo_config: Configuration,
+        env: Environment | AutoRLWrapper,
+        cnn_policy: bool = False,
+        nas_config: Configuration | None = None,
         track_trajectories=False,
         track_metrics=False
     ) -> None:
@@ -78,15 +83,14 @@ class PPO(Algorithm):
         super().__init__(
             hpo_config,
             nas_config,
-            env_options,
             env,
             track_metrics=track_metrics,
             track_trajectories=track_trajectories
         )
-        
+
         # compute actual update interval based on n_envs * env_steps
         self.update_interval = int(self.hpo_config["update_interval"])
-                
+
         self.env_steps = int(self.update_interval // self.env.n_envs)
         self.update_interval = self.env_steps * self.env.n_envs
 
@@ -98,17 +102,21 @@ class PPO(Algorithm):
 
         self.n_minibatches = int(self.update_interval // self.minibatch_size)
 
-        self.n_total_updates = int(
-            env_options["n_total_timesteps"] // self.update_interval
-        )
-        
         action_size, discrete = self.action_type
-        self.network = ActorCritic(
-            action_size,
-            discrete=discrete,
-            activation=self.nas_config["activation"],
-            hidden_size=self.nas_config["hidden_size"],
-        )
+        if cnn_policy:
+            self.network = CNNActorCritic(
+                action_size,
+                discrete=discrete,
+                activation=self.nas_config["activation"],
+                hidden_size=self.nas_config["hidden_size"],
+            )
+        else:
+            self.network = MLPActorCritic(
+                action_size,
+                discrete=discrete,
+                activation=self.nas_config["activation"],
+                hidden_size=self.nas_config["hidden_size"],
+            )
 
         self.buffer = fbx.make_flat_buffer(
             max_length=self.hpo_config["buffer_size"],
@@ -162,8 +170,8 @@ class PPO(Algorithm):
         return PPO.get_nas_config_space().get_default_configuration()
 
     def init(self, rng, buffer_state=None, network_params=None, opt_state=None):
-        rng, _rng = jax.random.split(rng)
-        env_state, obs = self.env.reset(_rng)
+        rng, reset_rng = jax.random.split(rng)
+        env_state, obs = self.env.reset(reset_rng)
 
         if buffer_state is None or network_params is None:
             dummy_rng = jax.random.PRNGKey(0)
@@ -174,9 +182,9 @@ class PPO(Algorithm):
             _timestep = TimeStep(last_obs=_obs[0], obs=_obs[0], action=_action[0], reward=_reward[0], done=_done[0])
             buffer_state = self.buffer.init(_timestep)
 
-        _, _rng = jax.random.split(rng)
+        rng, init_rng = jax.random.split(rng)
         if network_params is None:
-            network_params = self.network.init(_rng, _obs)
+            network_params = self.network.init(init_rng, _obs)
 
         tx = optax.chain(
                 optax.clip_by_global_norm(self.hpo_config["max_grad_norm"]),
@@ -190,10 +198,8 @@ class PPO(Algorithm):
             opt_state=opt_state,
         )
 
-        rng, _rng = jax.random.split(rng)
-
         runner_state = PPORunnerState(
-            rng=_rng,
+            rng=rng,
             train_state=train_state,
             env_state=env_state,
             obs=obs,
@@ -207,14 +213,18 @@ class PPO(Algorithm):
         pi, _ = self.network.apply(runner_state.train_state.params, obs)
         return pi.sample(seed=rng)
 
-    @functools.partial(jax.jit, static_argnums=0, donate_argnums=(2,))
+    @functools.partial(jax.jit, static_argnums=(0,3,4,5), donate_argnums=(2,))
     def train(
         self,
         runner_state,
-        buffer_state
-    ) -> tuple[tuple[PPORunnerState, Any], tuple | None]:
+        buffer_state: PrioritisedTrajectoryBufferState,
+        n_total_timesteps: int = 1000000,
+        n_eval_steps:  int= 100,
+        n_eval_episodes: int = 10,
+    ) -> tuple[tuple[PPORunnerState, PrioritisedTrajectoryBufferState], tuple | None]:
+        # TODO @Julian add train_eval step as in DQN and SAC
         (runner_state, buffer_state), out = jax.lax.scan(
-            self._update_step, (runner_state, buffer_state), None, self.n_total_updates
+            self._update_step, (runner_state, buffer_state), None, n_total_timesteps // self.update_interval
         )
         return (runner_state, buffer_state), out
 
@@ -294,7 +304,7 @@ class PPO(Algorithm):
         # STEP ENV
         rng, _rng = jax.random.split(rng)
         env_state, (obsv, reward, done, info) = self.env.step(env_state, action, _rng)
-        global_step += self.env.n_envs
+        global_step += 1
 
         timestep = TimeStep(last_obs=last_obs, obs=obsv, action=action, reward=reward, done=done)
         buffer_state = self.buffer.add(buffer_state, timestep)
@@ -372,7 +382,7 @@ class PPO(Algorithm):
         if trimmed_batch_size < batch_size:
             remaining_batch = jax.tree_util.tree_map(
                 lambda x: x[trimmed_batch_size:], shuffled_batch
-            )    
+            )
             remaining_minibatch = jax.tree_util.tree_map(
                 lambda x: jnp.reshape(
                     x, [1, -1, *list(x.shape[1:])]

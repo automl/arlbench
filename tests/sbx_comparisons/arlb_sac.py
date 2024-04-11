@@ -1,16 +1,17 @@
-import jax
-import time
-import os
-import logging
 import argparse
+import logging
+import os
+import time
+
+import jax
 import pandas as pd
 
 from arlbench.core.algorithms import SAC
 from arlbench.core.environments import make_env
 
 
-def test_sac(dir_name, log, framework, env_name, sac_config, seed):
-    env = make_env(framework, env_name, n_envs=sac_config["n_envs"], seed=seed)
+def test_sac(dir_name, log, framework, env_name, config, training_kw_args, seed):
+    env = make_env(framework, env_name, n_envs=config["n_envs"], seed=seed)
     rng = jax.random.PRNGKey(seed)
 
     hpo_config = SAC.get_default_hpo_config()
@@ -23,12 +24,12 @@ def test_sac(dir_name, log, framework, env_name, sac_config, seed):
     nas_config["activation"] = "relu"
     nas_config["hidden_size"] = 350
 
-    agent = SAC(hpo_config, sac_config, env, nas_config)
+    agent = SAC(hpo_config, env, nas_config=nas_config)
     runner_state, buffer_state = agent.init(rng)
 
     start = time.time()
     log.info(f"training started")
-    (runner_state, _), (eval_returns, _) = agent.train(runner_state, buffer_state)
+    (runner_state, _, eval_returns, _) = agent.train(runner_state, buffer_state, **training_kw_args)
     log.info(f"training finished")
     training_time = time.time() - start
 
@@ -44,7 +45,7 @@ def test_sac(dir_name, log, framework, env_name, sac_config, seed):
     os.makedirs(os.path.join("sac_results", f"{framework}_{env_name}", dir_name), exist_ok=True)
     train_info_df.to_csv(os.path.join("sac_results", f"{framework}_{env_name}", dir_name, f"{seed}_results.csv"))
     with open(os.path.join("sac_results", f"{framework}_{env_name}", dir_name, f"{seed}_info"), "w") as f:
-        f.write(f"sac_config: {sac_config}\n")
+        f.write(f"sac_config: {config}\n")
         f.write(f"hpo_config: {hpo_config}\n")
         f.write(f"nas_config: {nas_config}\n")
         f.write(f"time: {training_time}\n")
@@ -67,12 +68,14 @@ if __name__ == "__main__":
     logger = logging.getLogger(__name__)
     logger.setLevel(logging.INFO)
 
-    sac_config = {
+    training_kw_args = {
         "n_total_timesteps": args.training_steps,
-        "n_envs": args.n_envs,
-        "n_env_steps": args.n_env_steps,
         "n_eval_steps": args.n_eval_steps,
         "n_eval_episodes": args.n_eval_episodes,
+    }
+
+    config = {
+        "n_envs": args.n_envs,
         "track_metrics": False,
         "track_traj": False,
     }
@@ -83,6 +86,7 @@ if __name__ == "__main__":
             log=logger,
             framework=args.env_framework,
             env_name=args.env,
-            sac_config=sac_config,
+            config=config,
+            training_kw_args=training_kw_args,
             seed=args.seed,
         )

@@ -1,8 +1,9 @@
-import numpy as np
-import seaborn as sns
-import matplotlib.pyplot as plt
-import pandas as pd
 import os
+
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+import seaborn as sns
 
 
 def plot_compare_trainings(df_1, df_1_name, df_2, df_2_name, plot_name, save_dir):
@@ -28,6 +29,6 @@ def get_mean_df(path):
 
 
 if __name__ == "__main__":
-    df_1 = get_mean_df(os.path.join("dqn_results", "gymnax_CartPole-v1", "arlb"))
-    df_2 = get_mean_df(os.path.join("dqn_results", "gymnax_CartPole-v1", "sbx"))
+    df_1 = get_mean_df(os.path.join("./dqn_results", "gymnax_CartPole-v1", "arlb"))
+    df_2 = get_mean_df(os.path.join("./dqn_results", "gymnax_CartPole-v1", "sbx"))
     plot_compare_trainings(df_1, "ARLB", df_2, "SBX", "DQN Cartpole default", "dqn_results")

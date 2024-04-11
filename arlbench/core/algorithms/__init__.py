@@ -1,19 +1,23 @@
+from collections.abc import Callable
+from typing import Optional, Union
+
+from flashbax.buffers.prioritised_trajectory_buffer import \
+    PrioritisedTrajectoryBufferState
+
 from .algorithm import Algorithm
-from .common import TimeStep
-from .dqn import DQN, DQNRunnerState
-from .models import ActorCritic, Q
-from .ppo import PPO, PPORunnerState
-from .sac import SAC, SACRunnerState
+from .dqn import DQN, DQNRunnerState, DQNTrainingResult
+from .ppo import PPO, PPORunnerState, PPOTrainingResult
+from .sac import SAC, SACRunnerState, SACTrainingResult
+
+TrainResult = Union[DQNTrainingResult, PPOTrainingResult, SACTrainingResult]
+RunnerState = Union[DQNRunnerState, PPORunnerState, SACRunnerState]
+BufferState = PrioritisedTrajectoryBufferState
+TrainFunc = Callable[[RunnerState, BufferState, int | None, int | None, int | None], TrainResult]
+
 
 __all__ = [
     "Algorithm",
-    "Q",
-    "ActorCritic",
     "PPO",
-    "PPORunnerState",
     "DQN",
-    "DQNRunnerState",
-    "SAC",
-    "SACRunnerState",
-    "TimeStep"
+    "SAC"
 ]

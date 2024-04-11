@@ -13,14 +13,16 @@ from ConfigSpace import (Categorical, Configuration, ConfigurationSpace, Float,
                          Integer)
 from flax.training.train_state import TrainState
 
-from arlbench.core.algorithms.models import Q
+from arlbench.core.algorithms.algorithm import Algorithm
+from arlbench.core.algorithms.buffers import uniform_sample
+from arlbench.core.algorithms.common import TimeStep
 
-from .algorithm import Algorithm
-from .buffers import uniform_sample
-from .common import TimeStep
+from .models import CNNQ, MLPQ
 
 if TYPE_CHECKING:
     import chex
+    from flashbax.buffers.prioritised_trajectory_buffer import \
+        PrioritisedTrajectoryBufferState
 
 
 class DQNTrainState(TrainState):
@@ -49,6 +51,13 @@ class DQNRunnerState(NamedTuple):
     obs: chex.Array
     global_step: int
 
+
+class DQNTrainingResult(NamedTuple):
+    runner_state: DQNRunnerState
+    buffer_state: PrioritisedTrajectoryBufferState
+    eval_rewards: jnp.ndarray
+    metrics: tuple | None
+
 class Transition(NamedTuple):
     done: jnp.ndarray
     action: jnp.ndarray
@@ -61,10 +70,10 @@ class Transition(NamedTuple):
 class DQN(Algorithm):
     def __init__(
         self,
-        hpo_config: Configuration | dict,
-        options: dict,
+        hpo_config: Configuration,
         env: Any,
-        nas_config: Configuration | dict | None = None,
+        cnn_policy: bool = False,
+        nas_config: Configuration | None = None,
         track_trajectories=False,
         track_metrics=False
     ) -> None:
@@ -74,19 +83,26 @@ class DQN(Algorithm):
         super().__init__(
             hpo_config,
             nas_config,
-            options,
             env,
             track_trajectories=track_trajectories,
             track_metrics=track_metrics
         )
 
         action_size, discrete = self.action_type
-        self.network = Q(
-            action_size,
-            discrete=discrete,
-            activation=self.nas_config["activation"],
-            hidden_size=self.nas_config["hidden_size"],
-        )
+        if cnn_policy:
+            self.network = CNNQ(
+                action_size,
+                discrete=discrete,
+                activation=self.nas_config["activation"],
+                hidden_size=self.nas_config["hidden_size"],
+            )
+        else:
+            self.network = MLPQ(
+                action_size,
+                discrete=discrete,
+                activation=self.nas_config["activation"],
+                hidden_size=self.nas_config["hidden_size"],
+            )
 
         priority_exponent = self.hpo_config.get("buffer_beta", 1.0)
         self.buffer = fbx.make_prioritised_flat_buffer(
@@ -162,9 +178,9 @@ class DQN(Algorithm):
         return DQN.get_nas_config_space().get_default_configuration()
 
     def init(self, rng, buffer_state=None, network_params=None, target_params=None, opt_state=None) -> tuple[DQNRunnerState, Any]:
-        rng, _rng = jax.random.split(rng)
+        rng, reset_rng = jax.random.split(rng)
 
-        env_state, obs = self.env.reset(rng)
+        env_state, obs = self.env.reset(reset_rng)
 
         if buffer_state is None or network_params is None or target_params is None:
             dummy_rng = jax.random.PRNGKey(0)
@@ -175,11 +191,13 @@ class DQN(Algorithm):
             _timestep = TimeStep(last_obs=_obs[0], obs=_obs[0], action=_action[0], reward=_reward[0], done=_done[0])
             buffer_state = self.buffer.init(_timestep)
 
-        _, _rng = jax.random.split(rng)
+
         if network_params is None:
-            network_params = self.network.init(_rng, _obs)
+            rng, init_rng = jax.random.split(rng)
+            network_params = self.network.init(init_rng, _obs)
         if target_params is None:
-            target_params = self.network.init(_rng, _obs)
+            rng, target_init_rng = jax.random.split(rng)
+            target_params = self.network.init(target_init_rng, _obs)
 
         train_state_kwargs = {
             "apply_fn": self.network.apply,
@@ -190,7 +208,6 @@ class DQN(Algorithm):
         }
         train_state = DQNTrainState.create_with_opt_state(**train_state_kwargs)
 
-        rng, _rng = jax.random.split(rng)
         global_step = 0
 
         runner_state = DQNRunnerState(
@@ -208,30 +225,38 @@ class DQN(Algorithm):
         q_values = self.network.apply(runner_state.train_state.params, obs)
         return q_values.argmax(axis=-1)
 
-    @functools.partial(jax.jit, static_argnums=0, donate_argnums=(2,))
+    @functools.partial(jax.jit, static_argnums=(0,3,4,5), donate_argnums=(2,))
     def train(
         self,
         runner_state,
-        buffer_state
-    )-> tuple[tuple[DQNRunnerState, Any], tuple | None]:
+        buffer_state: PrioritisedTrajectoryBufferState,
+        n_total_timesteps: int = 1000000,
+        n_eval_steps: int = 100,
+        n_eval_episodes: int = 10,
+    )-> DQNTrainingResult:
         def train_eval_step(carry, _):
             runner_state, buffer_state = carry
             (runner_state, buffer_state), out = jax.lax.scan(
                 self._update_step,
                 (runner_state, buffer_state),
                 None,
-                (self.env_options["n_total_timesteps"]//self.hpo_config["train_frequency"])//self.env.n_envs//self.env_options["n_eval_steps"]
+                n_total_timesteps//self.hpo_config["train_frequency"]//self.env.n_envs//n_eval_steps
             )
-            eval_returns = self.eval(runner_state, self.env_options["n_eval_episodes"])
+            eval_returns = self.eval(runner_state, n_eval_episodes)
             return (runner_state, buffer_state), (eval_returns, out)
 
         (runner_state, buffer_state), (reward, out) = jax.lax.scan(
             train_eval_step,
             (runner_state, buffer_state),
             None,
-            self.env_options["n_eval_steps"],
+            10,
         )
-        return (runner_state, buffer_state), (reward, out)
+        return DQNTrainingResult(
+            runner_state=runner_state,
+            buffer_state=buffer_state,
+            eval_rewards=reward,
+            metrics=out
+        )
 
     def update(
         self,
@@ -304,8 +329,8 @@ class DQN(Algorithm):
             timestep = TimeStep(last_obs=last_obs, obs=obsv, action=action, reward=reward, done=done)
             buffer_state = self.buffer.add(buffer_state, timestep)
 
-            # global_step += 1
-            global_step += self.env.n_envs
+            # global_step += self.env.n_envs
+            global_step += 1
             return (obsv, env_state, global_step, buffer_state), (
                 obsv,
                 action,
@@ -360,7 +385,7 @@ class DQN(Algorithm):
             take_step,
             (last_obs, env_state, global_step, buffer_state),
             None,
-            self.hpo_config["train_frequency"],
+            self.hpo_config["train_frequency"]
         )
 
         train_state, loss, td_error, grads, opt_state, buffer_state = jax.lax.cond(

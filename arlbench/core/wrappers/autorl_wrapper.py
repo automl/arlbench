@@ -3,13 +3,13 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from arlbench.core.environments import AutoRLEnv
+    from arlbench.core.environments import Environment
 
 
 class AutoRLWrapper:
     """Base class for AutoRL wrappers."""
 
-    def __init__(self, env: AutoRLEnv):
+    def __init__(self, env: Environment):
         self._env = env
 
     # provide proxy access to regular attributes of wrapped object

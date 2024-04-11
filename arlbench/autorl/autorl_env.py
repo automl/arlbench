@@ -2,238 +2,352 @@ from __future__ import annotations
 
 import warnings
 from collections.abc import Callable
-from typing import TYPE_CHECKING, Any
+from typing import Any
 
 import gymnasium
 import jax
-import jax.numpy as jnp
 import numpy as np
 
-from arlbench.autorl.checkpointing import Checkpointer
-from arlbench.autorl.objectives import (track_emissions, track_reward,
-                                        track_runtime)
-from arlbench.core.algorithms import (DQN, PPO, SAC, Algorithm, DQNRunnerState,
-                                      PPORunnerState, SACRunnerState)
+from arlbench.core.algorithms import (DQN, PPO, SAC, Algorithm, BufferState,
+                                      RunnerState)
+from arlbench.core.environments import make_env
 from arlbench.utils import config_space_to_gymnasium_space
 
-if TYPE_CHECKING:
-    from ConfigSpace import Configuration
-    from flashbax.buffers.prioritised_trajectory_buffer import \
-        PrioritisedTrajectoryBufferState
+from .checkpointing import Checkpointer
+from .objectives import OBJECTIVES
+from .state_features import STATE_FEATURES
+
+ObservationT = dict[str, np.ndarray]
+ObjectivesT = dict[str, float]
+InfoT = dict[str, Any]
+
+from ConfigSpace import Configuration, ConfigurationSpace
+
+DEFAULT_AUTO_RL_CONFIG = {
+    "seed": 42,
+    "env_framework": "gymnax",
+    "env_name": "CartPole-v1",
+    "n_envs": 10,
+    "algorithm": "dqn",
+    "cnn_policy": False,
+    "n_total_timesteps": 1e6,
+    "n_eval_steps": 100,
+    "n_eval_episodes": 10,
+    "checkpoint": [],
+    "objectives": ["reward_mean"],
+    "state_features": ["grad_info"],
+    "grad_obs": False,
+    "n_steps": 10
+}
 
 
 class AutoRLEnv(gymnasium.Env):
     ALGORITHMS = {"ppo": PPO, "dqn": DQN, "sac": SAC}
-    algorithm: Algorithm | None
-    get_obs: Callable[[], np.ndarray]
-    get_obs_space: Callable[[], gymnasium.spaces.Space]
-    runner_state: PPORunnerState | DQNRunnerState | SACRunnerState | None
-    buffer_state: PrioritisedTrajectoryBufferState | None
-    metrics: tuple | None
+    _algorithm: Algorithm
+    _get_obs: Callable[[], np.ndarray]
+    _runner_state: RunnerState | None
+    _buffer_state: BufferState | None
+    _metrics: tuple | None
+    _hpo_config: Configuration
+    _total_timesteps: int
 
-    def __init__(self, config, envs) -> None:
+    def __init__(
+            self,
+            config: dict | None = None
+        ) -> None:
         super().__init__()
 
-        self.config = config
-        self.seed = int(config["seed"])
+        self._config = DEFAULT_AUTO_RL_CONFIG.copy()
 
-        self.done = True
-        self.c_step = 0     # current step
-        self.c_episode = 0
+        if config:
+            for k, v in config.items():
+                if k in DEFAULT_AUTO_RL_CONFIG:
+                    self._config[k] = v
+                else:
+                    warnings.warn(f"Invalid config key '{k}'. Falling back to default value.")
 
-        # Nested environments
-        self.envs = envs
-        self.c_env_id = 0   # TODO improve
-        self.c_env = self.envs[self.c_env_id]["env"]
-        self.c_env_options = self.envs[self.c_env_id]["env_options"]
+        self._seed = int(self._config["seed"])
 
-        # Init action space
-        self.algorithm_cls = self.ALGORITHMS[config["algorithm"]]
-        self.action_space = config_space_to_gymnasium_space(self.algorithm_cls.get_hpo_config_space())
+        self._done = True
+        self._total_timesteps = 0   # timesteps across calls of step()
+        self._c_step = 0            # current step
+        self._c_episode = 0         # current episode
 
-        # Algorithm state
-        self.algorithm = None
-        self.runner_state = None
-        self.buffer_state = None
-        self.metrics = None
+        # Environment
+        self._env = make_env(
+            self._config["env_framework"],
+            self._config["env_name"],
+            cnn_policy=self._config["cnn_policy"],
+            n_envs=self._config["n_envs"],
+            seed=self._seed
+        )
+
+        # Algorithm
+        self._algorithm_cls = self.ALGORITHMS[self._config["algorithm"]]
+        self._config_space = self._algorithm_cls.get_hpo_config_space()
+
+        # instantiate dummy algorithm
+        self._algorithm = self._algorithm_cls(
+            self._algorithm_cls.get_default_hpo_config(),
+            self._env
+        )
+        self._runner_state = None
+        self._buffer_state = None
+        self._metrics = None
 
         # Checkpointing
-        self.track_metrics = self.config["grad_obs"] or "loss" in config["checkpoint"] or "extras" in config["checkpoint"]
-        self.track_trajectories = "minibatches" in config["checkpoint"] or "trajectories" in config["checkpoint"]
+        self._checkpoints = []
+        # TODO simplify this
+        self._track_metrics = "grad_info" in self._config["state_features"] or "loss" in self._config["checkpoint"] or "extras" in self._config["checkpoint"]
+        self._track_trajectories = "minibatches" in self._config["checkpoint"] or "trajectories" in self._config["checkpoint"]
 
         # Objectives
-        self.objectives = [str(o) for o in config["objectives"]]
-        if len(self.objectives) == 0:
+        if len(self._config["objectives"]) == 0:
             raise ValueError("Please select at least one optimization objective.")
 
-        # Define observation method and init observation space
-        if "obs_method" in config and "obs_space_method" in config:
-            self.get_obs = config["obs_method"]
-            self.get_obs_space = config["obs_space_method"]
-        elif config.get("grad_obs"):
-            self.get_obs = self.get_gradient_obs
-            self.get_obs_space = self.get_gradient_obs_space
-        else:
-            self.get_obs = self.get_default_obs
-            self.get_obs_space = self.get_default_obs_space
-        self.observation_space = self.get_obs_space()
+        self._objectives = []
+        objectives = list(set(self._config["objectives"]))
+        for o in objectives:
+            if o not in OBJECTIVES:
+                raise ValueError(f"Invalid objective: {o}")
+            self._objectives += [OBJECTIVES[o]]
 
-    def get_default_obs(self) -> np.ndarray:
-        return np.array([self.c_step, self.c_step * self.c_env_options["n_total_timesteps"]])
+            # Ensure right order of objectives, e.g. runtime is wrapped first
+            self._objectives = sorted(self._objectives)
 
-    def get_default_obs_space(self) -> gymnasium.spaces.Space:
-        return gymnasium.spaces.Box(
+        # State Features
+        self._state_features = []
+        state_features = list(set(self._config["state_features"]))
+        for f in state_features:
+            if f not in STATE_FEATURES:
+                raise ValueError(f"Invalid state feature: {f}")
+            self._state_features += [STATE_FEATURES[f]]
+
+        self._observation_space = self._get_obs_space()
+
+    def _get_obs_space(self) -> gymnasium.spaces.Dict:
+        obs_space = {
+            f.KEY: f.get_state_space() for f in self._state_features
+        }
+
+        obs_space["steps"] = gymnasium.spaces.Box(
             low=np.array([0, 0]),
-            high=np.array([np.inf, np.inf]),
-            seed=self.seed
+            high=np.array([np.inf, np.inf])
         )
 
-    def get_gradient_obs(self) -> np.ndarray:
-        if self.c_step == 0:
-            grad_norm = 0
-            grad_var = 0
-        else:
-            if self.metrics and len(self.metrics) >= 3:
-                grad_info = self.metrics[1]
-            else:
-                raise ValueError("Tying to extract grad_info but 'self.metrics' does not match.")
-
-            grad_info = grad_info["params"]
-            grad_info = {
-                k: v
-                for (k, v) in grad_info.items()
-                if isinstance(v, dict)
-            }
-
-            grad_info = [
-                grad_info[g][k] for g in grad_info for k in grad_info[g]
-            ]
-
-            grad_norm = np.mean([jnp.linalg.norm(g) for g in grad_info])
-            grad_var = np.mean([jnp.var(g) for g in grad_info])
-        return np.array(
-            [
-                self.c_step,
-                self.c_step * self.c_env_options["n_total_timesteps"],
-                grad_norm,
-                grad_var,
-            ]
-        )
-
-    def get_gradient_obs_space(self) -> gymnasium.spaces.Space:
-        return gymnasium.spaces.Box(
-            low=np.array([0, 0, -np.inf, -np.inf]),
-            high=np.array([np.inf, np.inf, np.inf, np.inf]),
-            seed=self.seed
-        )
+        return gymnasium.spaces.Dict(obs_space)
 
     def step_(self):
-        self.c_step += 1
-        if self.c_step >= self.config["n_steps"]:
+        self._c_step += 1
+        if self._c_step >= self._config["n_steps"]:
             return True
         return False
 
-    def instantiate_algorithm_(self):
-        self.algorithm = self.algorithm_cls(
-            self.c_hp_config,
-            self.c_env_options,
-            self.c_env,
-            track_trajectories=self.track_trajectories,
-            track_metrics=self.track_metrics
+    def _instantiate_algorithm(self):
+        self._algorithm = self._algorithm_cls(
+            self._hpo_config,
+            self._env,
+            track_trajectories=self._track_trajectories,
+            track_metrics=self._track_metrics
         )
 
-    def initialize_algorithm_(self, **init_kw_args):
-        # Instantiate algorithm
-        self.instantiate_algorithm_()
+    def _init_algorithm_state(self, rng, **init_kw_args):
+        if self._runner_state is None and self._buffer_state is None:  # equal to c_step == 0
+            self._runner_state, self._buffer_state = self._algorithm.init(rng, **init_kw_args)
+        elif self._runner_state is not None:
+            self._runner_state = self._runner_state._replace(rng=rng)
 
-        # Initialize algorithm (runner state and buffer) if static HPO or first step in DAC
-        if self.runner_state is None and self.buffer_state is None:  # equal to c_step == 0
-            rng = jax.random.PRNGKey(self.seed)
-            rng, init_rng = jax.random.split(rng)
-            self.runner_state, self.buffer_state = self.algorithm.init(init_rng, **init_kw_args)
+    def _train(self, n_total_timesteps: int, n_eval_steps: int, n_eval_episodes: int) -> tuple[dict, dict]:
+        assert self._runner_state is not None
+        assert self._buffer_state is not None
 
-    def train_(self):
-        if self.algorithm is None:
+        if self._algorithm is None:
             raise ValueError("You have to instantiate self.algorithm first.")
 
-        objectives = {}
-        train_func = self.algorithm.train
+        objectives = {}     # result are stored here
+        obs = {}            # state features are stored here
+        train_func = self._algorithm.train
 
-        if "runtime" in self.objectives:
-            train_func = track_runtime(train_func, objectives)
-        if "emissions" in self.objectives:
-            train_func = track_emissions(train_func, objectives)
-        if "reward" in self.objectives:
-            train_func = track_reward(train_func, objectives, self.algorithm, self.config["n_eval_episodes"])
+        for o in self._objectives:
+            train_func = o(train_func, objectives)
 
-        (self.runner_state, self.buffer_state), self.metrics = train_func(self.runner_state, self.buffer_state)
+        obs["steps"] = np.array([self._c_step, self._total_timesteps])
+        for f in self._state_features:
+            train_func = f(train_func, obs)
 
-        return objectives
+        # Track configuration + budgets using deepcave (https://github.com/automl/DeepCAVE)
+        # TODO test
+        if self._config.get("deep_cave"):
+            from deepcave import Objective, Recorder
+
+            dc_objectives = [Objective(**o.get_spec()) for o in self._objectives]
+
+            with Recorder(self._config_space, objectives=dc_objectives) as r:
+                r.start(self._hpo_config, self._config["n_total_timesteps"])
+                result = train_func(
+                    self._runner_state,
+                    self._buffer_state,
+                    n_total_timesteps=n_total_timesteps,
+                    n_eval_steps=n_eval_steps,
+                    n_eval_episodes=n_eval_episodes
+                )
+
+                r.end(costs=[objectives[o.name] for o in self._objectives])
+        else:
+            result = train_func(
+                self._runner_state,
+                self._buffer_state,
+                n_total_timesteps=n_total_timesteps,
+                n_eval_steps=n_eval_steps,
+                n_eval_episodes=n_eval_episodes
+            )
+        (self._runner_state, self._buffer_state, _, self._metrics) = result
+        return objectives, obs
 
     def step(
         self,
-        action: Configuration | dict
-    ) -> tuple[np.ndarray, dict[str, float], bool, bool, dict[str, Any]]:
+        action: Configuration | dict,
+        n_total_timesteps: int | None = None,
+        n_eval_steps: int | None = None,
+        n_eval_episodes: int | None = None,
+        seed: int | None = None
+    ) -> tuple[ObservationT, ObjectivesT, bool, bool, InfoT]:
         if len(action.keys()) == 0:     # no action provided
             warnings.warn("No agent configuration provided. Falling back to default configuration.")
 
-        if self.done or self.algorithm is None:
+        if self._done or self._algorithm is None:
             raise ValueError("Called step() before reset().")
 
+        # Reinitialize environment if seed has changed
+        if seed is not None:
+            self._env = make_env(
+                self._config["env_framework"],
+                self._config["env_name"],
+                cnn_policy=self._config["use_cnn_policy"],
+                n_envs=self._config["n_envs"],
+                seed=seed
+            )
+        else:
+            seed = self._seed
+
         # Set done if max. number of steps in DAC is reached or classic (one-step) HPO is performed
-        self.done = self.step_()
+        self._done = self.step_()
         info = {}
 
         # Apply changes to current hyperparameter configuration
-        self.c_hp_config.update(action)
+        if isinstance(action, dict):
+            action = Configuration(self.config_space, action)
+        self._hpo_config = action
 
         # Instantiate algorithm and apply current hyperparameter configuration
-        self.initialize_algorithm_()
+        self._instantiate_algorithm()
+        rng = jax.random.key(seed)
+        rng, init_rng = jax.random.split(rng)
+        self._init_algorithm_state(init_rng)
+
+        # Training kwargs
+        n_total_timesteps = n_total_timesteps if n_total_timesteps else self._config["n_total_timesteps"]
+        n_eval_steps = n_eval_steps if n_eval_steps else self._config["n_eval_steps"]
+        n_eval_episodes = n_eval_episodes if n_eval_episodes else self._config["n_eval_episodes"]
 
         # Perform one iteration of training
-        objectives = self.train_()
+        objectives, obs = self._train(
+            n_total_timesteps=n_total_timesteps,
+            n_eval_steps=n_eval_steps,
+            n_eval_episodes=n_eval_episodes
+        )
+
+        self._total_timesteps += n_total_timesteps
 
         # Checkpointing
-        if len(self.config["checkpoint"]) > 0:
-            assert self.runner_state is not None
-            assert self.buffer_state is not None
+        if len(self._config["checkpoint"]) > 0:
+            assert self._runner_state is not None
+            assert self._buffer_state is not None
 
-            info["checkpoint"] = Checkpointer.save(
-                self.runner_state,
-                self.buffer_state,
-                self.config,
-                self.c_hp_config,
-                self.done,
-                self.c_episode,
-                self.c_step,
-                self.metrics
-            )
+            checkpoint = self.save()
+            self._checkpoints += [checkpoint]
+            info["checkpoint"] = checkpoint
 
-        return self.get_obs(), objectives, self.done, False, info
+        return obs, objectives, self._done, False, info
 
     def reset(
         self,
         seed: int | None = None,
         checkpoint_path: str | None = None,
-    ) -> tuple[np.ndarray, dict[str, Any]]:  # type: ignore
-        self.done = False
-        self.c_step = 0
-        self.c_episode += 1
-        self.runner_state = None
-        self.buffer_state = None
+    ) -> tuple[ObservationT, InfoT]:  # type: ignore
+        self._done = False
+        self._c_step = 0
+        self._c_episode += 1
+        self._runner_state = None
+        self._buffer_state = None
 
         # Use default hyperparameter configuration
-        self.c_hp_config = dict(self.algorithm_cls.get_default_hpo_config())
-        self.instantiate_algorithm_()
+        self._hpo_config = self._algorithm_cls.get_default_hpo_config()
+        self._instantiate_algorithm()
 
         if checkpoint_path:
-            _, dummy_buffer_state = self.algorithm.init(jax.random.PRNGKey(42))
-            (
-                self.c_hp_config,
-                self.c_step,
-                self.c_episode,
-            ), algorithm_kw_args = Checkpointer.load(checkpoint_path, self.config["algorithm"], dummy_buffer_state)
+            self.load(checkpoint_path)
 
-            self.initialize_algorithm_(**algorithm_kw_args)
+        return {}, {}
 
-        return self.get_obs(), {}
+    def save(self, tag: str | None = None) -> str:
+        if self._runner_state is None or self._buffer_state is None:
+            raise ValueError("Agent not initialized. Not able to save agent state.")
+
+        return Checkpointer.save(
+            self._runner_state,
+            self._buffer_state,
+            self._config,
+            self._hpo_config,
+            self._done,
+            self._c_episode,
+            self._c_step,
+            self._metrics,
+            tag=tag
+        )
+
+    def load(self, checkpoint_path: str) -> None:
+        _, dummy_buffer_state = self._algorithm.init(jax.random.PRNGKey(42))
+        (
+            hpo_config,
+            self._c_step,
+            self._c_episode,
+        ), algorithm_kw_args = Checkpointer.load(checkpoint_path, self._config["algorithm"], dummy_buffer_state)
+        self._hpo_config = Configuration(self._config_space, hpo_config)
+
+        self._init_algorithm_state(**algorithm_kw_args)
+
+    @property
+    def action_space(self) -> gymnasium.spaces.Space:
+        return config_space_to_gymnasium_space(self._config_space)
+
+    @property
+    def config_space(self) -> ConfigurationSpace:
+        return self._config_space
+
+    @property
+    def observation_space(self) -> gymnasium.spaces.Space:
+        return self._observation_space
+
+    @property
+    def hpo_config(self) -> Configuration:
+        return self._hpo_config
+
+    @property
+    def checkpoints(self) -> list[str]:
+        return list(self._checkpoints)
+
+    @property
+    def objectives(self) -> list[str]:
+        return [o.__name__ for o in self._objectives]
+
+    @property
+    def config(self) -> dict:
+        return self._config.copy()
+
+    @property
+    def algorithm(self) -> Algorithm:
+        return self._algorithm
+
+    def eval(self, num_eval_episodes) -> np.ndarray:
+        return np.array(self._algorithm.eval(self._runner_state, num_eval_episodes))

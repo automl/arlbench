@@ -1,22 +1,20 @@
-import os
-import logging
-import time
 import argparse
 import functools
+import logging
+import os
+import time
 
+import gymnax
+import jax
+import jax.numpy as jnp
 import numpy as np
 import pandas as pd
-
+from brax import envs as brax_envs
+from brax.envs.wrappers.gym import GymWrapper
+from gymnax.wrappers.gym import GymnaxToGymWrapper
 from sbx import DQN
 from stable_baselines3.common.callbacks import BaseCallback
 from stable_baselines3.common.evaluation import evaluate_policy
-
-import jax
-import jax.numpy as jnp
-from brax import envs as brax_envs
-import gymnax
-from gymnax.wrappers.gym import GymnaxToGymWrapper
-from brax.envs.wrappers.gym import GymWrapper
 
 
 class EvalTrainingMetricsCallback(BaseCallback):
