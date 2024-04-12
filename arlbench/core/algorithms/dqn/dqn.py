@@ -150,6 +150,7 @@ class DQN(Algorithm):
                 "epsilon": Float("epsilon", (0., 1.), default=0.1),
                 "use_target_network": Categorical("use_target_network", [True, False], default=True),
                 "train_frequency": Integer("train_frequency", (1, int(1e5)), default=4),
+                "gradient steps": Integer("gradient_steps", (1, int(1e5)), default=1),
                 "learning_starts": Integer("learning_starts", (1024, int(1e5)), default=10000),
                 "target_network_update_freq": Integer("target_network_update_freq", (1, int(1e5)), default=100)
             },
@@ -380,46 +381,58 @@ class DQN(Algorithm):
                 info,
             )
 
-        def do_update(train_state, buffer_state):
-            batch = self.buffer.sample(buffer_state, rng)
-            train_state, loss, td_error, grads, opt_state = self.update(
-                train_state,
-                batch.experience.first.last_obs,
-                batch.experience.first.action,
-                batch.experience.first.obs,
-                batch.experience.first.reward,
-                batch.experience.first.done,
-            )
-            new_prios = jnp.power(
-                jnp.abs(td_error) + self.hpo_config["buffer_epsilon"], self.hpo_config["buffer_alpha"]
-            )
-            buffer_state = self.buffer.set_priorities(buffer_state, batch.indices, new_prios)
-            
-            if not self.track_metrics:
-                loss = None
-                td_error = None
-                grads = None
-            
-            return train_state, loss, td_error, grads, opt_state, buffer_state
+        def do_update(rng, train_state, buffer_state):
+            def gradient_step(carry, _):
+                rng, train_state, buffer_state = carry
+                rng, batch_sample_rng = jax.random.split(rng)
+                batch = self.buffer.sample(buffer_state, rng)
+                train_state, loss, td_error, grads, opt_state = self.update(
+                    train_state,
+                    batch.experience.first.last_obs,
+                    batch.experience.first.action,
+                    batch.experience.first.obs,
+                    batch.experience.first.reward,
+                    batch.experience.first.done,
+                )
+                new_prios = jnp.power(
+                    jnp.abs(td_error) + self.hpo_config["buffer_epsilon"], self.hpo_config["buffer_alpha"]
+                )
+                buffer_state = self.buffer.set_priorities(buffer_state, batch.indices, new_prios)
 
-        def dont_update(train_state, buffer_state):
+                if not self.track_metrics:
+                    loss = None
+                    td_error = None
+                    grads = None
+
+                return (
+                    rng, train_state, buffer_state,
+                ), (
+                    loss, td_error, grads, train_state.opt_state,
+                )
+            carry, metrics = jax.lax.scan(
+                gradient_step,
+                (rng, train_state, buffer_state),
+                None,
+                self.hpo_config["gradient_steps"],
+            )
+            rng, train_state, buffer_state = carry
+            return rng, train_state, buffer_state, metrics
+
+        def dont_update(rng, train_state, buffer_state):
             if self.track_metrics:
-                loss = ((jnp.array([0]) - jnp.array([0])) ** 2).mean()
-                td_error =  jnp.ones(self.hpo_config["buffer_batch_size"])
-                grads = train_state.params
+                loss = jnp.array([((jnp.array([0]) - jnp.array([0])) ** 2).mean()] * self.hpo_config["gradient_steps"])
+                td_error = jnp.array(
+                    [[[1] * self.hpo_config["buffer_batch_size"]] * self.hpo_config["gradient_steps"]]
+                ).mean(axis=0)
+                grads = jax.tree_map(lambda x: jnp.stack([x] * self.hpo_config["gradient_steps"]), train_state.params)
+                opt_state = jax.tree_map(lambda x: jnp.stack([x] * self.hpo_config["gradient_steps"]), train_state.opt_state)
             else:
                 loss = None
                 td_error = None
                 grads = None
-        
-            return (
-                train_state,
-                loss,
-                td_error,
-                grads,
-                train_state.opt_state,
-                buffer_state,
-            )
+                opt_state = jax.tree_map(lambda x: jnp.stack([x] * self.hpo_config["gradient_steps"]), train_state.opt_state)
+
+            return rng, train_state, buffer_state, (loss, td_error, grads, opt_state)
 
         def target_update():
             return train_state.replace(
@@ -444,11 +457,12 @@ class DQN(Algorithm):
             self.hpo_config["train_frequency"]
         )
 
-        train_state, loss, td_error, grads, opt_state, buffer_state = jax.lax.cond(
+        rng, train_state, buffer_state, (loss, td_error, grads, opt_state) = jax.lax.cond(
             (global_step > self.hpo_config["learning_starts"])
             & (global_step % self.hpo_config["train_frequency"] == 0),
             do_update,
             dont_update,
+            rng,
             train_state,
             buffer_state,
         )
