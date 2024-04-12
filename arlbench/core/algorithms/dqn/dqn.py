@@ -291,7 +291,7 @@ class DQN(Algorithm):
             train_eval_step,
             (runner_state, buffer_state),
             None,
-            10,
+            n_eval_steps,
         )
         return runner_state, buffer_state, DQNTrainingResult(
             eval_rewards=eval_returns,
