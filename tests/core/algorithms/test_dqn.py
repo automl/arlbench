@@ -33,13 +33,38 @@ def test_default_dqn():
     rewards = agent.eval(runner_state, EVAL_EPISODES)
     reward = np.mean(rewards)
     
-    print(reward, training_time, runner_state.global_step)
     assert reward > 400
+    print(reward, training_time, runner_state.global_step)
+
+
+def test_gradient_steps_dqn():
+    env = make_env("gymnax", "CartPole-v1", seed=42, n_envs=N_ENVS)
+    rng = jax.random.PRNGKey(42)
+
+    config = DQN.get_default_hpo_config()
+    config["gradient_steps"] = 4
+    agent = DQN(config, env)
+    runner_state, buffer_state = agent.init(rng)
+
+    start = time.time()
+    runner_state, buffer_state, _ = agent.train(
+        runner_state,
+        buffer_state,
+        n_total_timesteps=N_TOTAL_TIMESTEPS,
+        n_eval_steps=EVAL_STEPS,
+        n_eval_episodes=EVAL_EPISODES
+    )
+    training_time = time.time() - start
+    rewards = agent.eval(runner_state, EVAL_EPISODES)
+    reward = np.mean(rewards)
+
+    assert reward > 400
+    print(reward, training_time, runner_state.global_step)
 
 # uniform experience replay
 def test_uniform_dqn():
     env = make_env("gymnax", "CartPole-v1", seed=42)
-    rng = jax.random.PRNGKey(43)  # todo: fix this seed
+    rng = jax.random.PRNGKey(42)
 
     config = DQN.get_default_hpo_config()
     config["buffer_prio_sampling"] = False
@@ -64,7 +89,7 @@ def test_uniform_dqn():
 # no target network
 def test_no_target_dqn():
     env = make_env("gymnax", "CartPole-v1", seed=42)
-    rng = jax.random.PRNGKey(43)  # todo: fix this seed
+    rng = jax.random.PRNGKey(42)
 
     config = DQN.get_default_hpo_config()
     config["use_target_network"] = False
@@ -89,7 +114,7 @@ def test_no_target_dqn():
 # ReLU activation
 def test_relu_dqn():
     env = make_env("gymnax", "CartPole-v1", seed=42)
-    rng = jax.random.PRNGKey(43)  # todo: fix this seed
+    rng = jax.random.PRNGKey(42)
 
     config = DQN.get_default_hpo_config()
     config["activation"] = "relu"
