@@ -111,16 +111,15 @@ class DQN(Algorithm):
                 hidden_size=self.nas_config["hidden_size"],
             )
 
-        priority_exponent = self.hpo_config.get("buffer_beta", 1.0)
         self.buffer = fbx.make_prioritised_flat_buffer(
             max_length=self.hpo_config["buffer_size"],
             min_length=self.hpo_config["buffer_batch_size"],
             sample_batch_size=self.hpo_config["buffer_batch_size"],
             add_sequences=False,
             add_batch_size=self.env.n_envs,
-            priority_exponent=priority_exponent
+            priority_exponent=self.hpo_config["buffer_beta"]
         )
-        if self.hpo_config["buffer_prio_sampling"] is True:  # todo: shouldn't this be the other way around?
+        if self.hpo_config["buffer_prio_sampling"] is False:
             sample_fn = functools.partial(
                 uniform_sample,
                 batch_size=self.hpo_config["buffer_batch_size"],
