@@ -176,9 +176,13 @@ def test_sac(dir_name, log, framework, env_name, sac_config, seed):
         verbose=4,
         seed=seed,
         learning_starts=1024,
-        target_update_interval=1000,
+        target_update_interval=250,
         exploration_final_eps=0.1,
-        exploration_initial_eps=0.1
+        exploration_initial_eps=0.1,
+        gradient_steps=-1,
+        buffer_size=50000,
+        learning_rate=0.00063,
+        batch_size=128,
     )
 
     start = time.time()
