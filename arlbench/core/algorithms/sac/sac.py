@@ -140,7 +140,7 @@ class SAC(Algorithm):
                 "buffer_epsilon": Float("buffer_epsilon", (0., 1e-3), default=1e-5),
                 "lr": Float("lr", (1e-5, 0.1), default=3e-4),
                 "gradient steps": Integer("gradient steps", (1, int(1e5)), default=1),
-                "policy_delay": Integer("policy_delay", (1, int(1e5)), default=1),
+                "policy_delay": Integer("policy_delay", (1, int(1e5)), default=1), # todo: need to implement
                 "gamma": Float("gamma", (0., 1.), default=0.99),
                 "tau": Float("tau", (0., 1.), default=0.005),
                 "use_target_network": Categorical("use_target_network", [True, False], default=True),
