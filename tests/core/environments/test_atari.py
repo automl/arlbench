@@ -14,17 +14,18 @@ def test_atari_ppo():
         "n_env_steps": 200,
         "n_eval_episodes": 10,
         "track_metrics": True,
-        "track_traj": True,
+        "track_traj": False,
     }
         
-    env = make_env("gymnasium", "ALE/Adventure-v5", cnn_policy=True, n_envs=10, seed=42)
+    env = make_env("envpool", "Adventure-v5", cnn_policy=True, n_envs=10, seed=42)
     rng = jax.random.PRNGKey(43)  # todo: fix this seed
     config = PPO.get_default_hpo_config()
-    agent = PPO(config, options, env, cnn_policy=True, track_metrics=options["track_metrics"], track_trajectories=options["track_traj"])
+    config["buffer_size"] = 512
+    agent = PPO(config, env, cnn_policy=True, track_metrics=options["track_metrics"], track_trajectories=options["track_traj"])
     runner_state, buffer_state = agent.init(rng)
     
     start = time.time()
-    (runner_state, _), _ = agent.train(runner_state, buffer_state)
+    (runner_state, _, ) = agent.train(runner_state, buffer_state)
     training_time = time.time() - start
     rewards = agent.eval(runner_state, options["n_eval_episodes"])
     reward = np.mean(rewards)
@@ -59,4 +60,4 @@ def test_atari_dqn():
 
 if __name__ == "__main__":
     test_atari_ppo()
-    test_atari_dqn()
+    #test_atari_dqn()
