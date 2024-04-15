@@ -17,7 +17,7 @@ if TYPE_CHECKING:
 
 class GymnasiumEnv(Environment):
     def __init__(self, env_name: str, seed: int):
-        env = gymnasium.make(env_name, seed=seed)
+        env = gymnasium.make(env_name)# , seed=seed)
         super().__init__(env_name, env, 1, seed)
 
         self._reset_result = jnp.array(self._env.observation_space.sample())
