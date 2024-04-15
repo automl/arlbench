@@ -127,7 +127,7 @@ class EvalTrainingMetricsCallback(BaseCallback):
         return jnp.concat(returns)[:num_eval_episodes]
 
     def _on_step(self) -> bool:
-        if self.eval_freq > 0 and self.n_calls % self.eval_freq == 0:
+        if self.eval_freq > 0 and self.num_timesteps % self.eval_freq == 0:
             if self.framework == "brax":
                 returns = self.eval(self.n_eval_episodes)
             else:
