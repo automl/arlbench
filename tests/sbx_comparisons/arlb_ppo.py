@@ -15,12 +15,12 @@ def ppo_runner(dir_name, log, framework, env_name, config, training_kw_args, see
     rng = jax.random.PRNGKey(seed)
 
     hpo_config = PPO.get_default_hpo_config()
-    hpo_config["buffer_batch_size"] = 32
+    hpo_config["update_interval"] = 320
     hpo_config["minibatch_size"] = 256
     hpo_config["lr"] = 1e-3
     hpo_config["update_epochs"] = 20
     hpo_config["gamma"] = 0.98
-    hpo_config["gae_lambda"] = 0.98
+    hpo_config["gae_lambda"] = 0.95
     hpo_config["ent_coef"] = 0.0
 
     nas_config = PPO.get_default_nas_config()
