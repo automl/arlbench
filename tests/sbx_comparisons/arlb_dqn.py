@@ -17,7 +17,7 @@ def test_dqn(dir_name, log, framework, env_name, config, training_kw_args, seed)
     hpo_config = DQN.get_default_hpo_config()
     hpo_config["learning_starts"] = 1024
     hpo_config["tau"] = 1.0
-    hpo_config["lr"] = 0.00063
+    hpo_config["lr"] = 1e-4
     hpo_config["buffer_batch_size"] = 128
     hpo_config["buffer_alpha"] = 0.0
     hpo_config["buffer_beta"] = 0.0

@@ -181,11 +181,12 @@ def ppo_runner(dir_name, log, framework, env_name, ppo_config, seed):
         policy_kwargs=nas_config, 
         verbose=4, 
         seed=seed,
-        batch_size=256,
-        n_steps=32,
+        batch_size=64,
+        n_steps=1024,
         gamma=0.98,
-        learning_rate=1e-3,
-        n_epochs=20,
+        learning_rate=3e-4,
+        n_epochs=4,
+        ent_coef=0.01,
     )
 
     start = time.time()

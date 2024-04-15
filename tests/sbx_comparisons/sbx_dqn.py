@@ -181,7 +181,7 @@ def test_sac(dir_name, log, framework, env_name, sac_config, seed):
         exploration_initial_eps=0.1,
         gradient_steps=-1,
         buffer_size=50000,
-        learning_rate=0.00063,
+        learning_rate=1e-4,
         batch_size=128,
     )
 

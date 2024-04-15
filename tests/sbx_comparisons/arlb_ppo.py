@@ -15,13 +15,13 @@ def ppo_runner(dir_name, log, framework, env_name, config, training_kw_args, see
     rng = jax.random.PRNGKey(seed)
 
     hpo_config = PPO.get_default_hpo_config()
-    hpo_config["update_interval"] = 256
-    hpo_config["minibatch_size"] = 256
-    hpo_config["lr"] = 1e-3
-    hpo_config["update_epochs"] = 20
-    hpo_config["gamma"] = 0.98
-    hpo_config["gae_lambda"] = 0.95
-    hpo_config["ent_coef"] = 0.0
+    hpo_config["update_interval"] = 16384
+    hpo_config["minibatch_size"] = 64
+    hpo_config["lr"] = 3e-4
+    hpo_config["update_epochs"] = 4
+    hpo_config["gamma"] = 0.999
+    hpo_config["gae_lambda"] = 0.98
+    hpo_config["ent_coef"] = 0.01
     hpo_config["max_grad_norm"] = 0.5
 
     nas_config = PPO.get_default_nas_config()
@@ -84,7 +84,7 @@ if __name__ == "__main__":
         "track_traj": False,
     }
 
-    with jax.disable_jit(disable=False):
+    with jax.disable_jit(disable=True):
         ppo_runner(
             dir_name=args.dir_name,
             log=logger,
