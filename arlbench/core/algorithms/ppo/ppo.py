@@ -349,7 +349,7 @@ class PPO(Algorithm):
         # STEP ENV
         rng, _rng = jax.random.split(rng)
         env_state, (obsv, reward, done, info) = self.env.step(env_state, action, _rng)
-        global_step += 1
+        global_step += self.env.n_envs
 
         timestep = TimeStep(last_obs=last_obs, obs=obsv, action=action, reward=reward, done=done)
         buffer_state = self.buffer.add(buffer_state, timestep)
@@ -478,7 +478,8 @@ class PPO(Algorithm):
         value_losses = jnp.square(value - targets)
         value_losses_clipped = jnp.square(value_pred_clipped - targets)
         value_loss = (
-            0.5 * jnp.maximum(value_losses, value_losses_clipped).mean()
+            #0.5 * jnp.maximum(value_losses, value_losses_clipped).mean()
+            0.5 * value_losses.mean()
         )
 
         # CALCULATE ACTOR LOSS
