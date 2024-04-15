@@ -59,10 +59,10 @@ def ppo_runner(dir_name, log, framework, env_name, config, training_kw_args, see
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--dir-name", type=str, default="test")
-    parser.add_argument("--training-steps", type=int, default=1000000)
+    parser.add_argument("--training-steps", type=int, default=100000)
     parser.add_argument("--n-eval-steps", type=int, default=100)
     parser.add_argument("--n-eval-episodes", type=int, default=10)
-    parser.add_argument("--n-envs", type=int, default=16)
+    parser.add_argument("--n-envs", type=int, default=8)
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--env-framework", type=str, default="gymnax")
     parser.add_argument("--env", type=str, default="CartPole-v1")

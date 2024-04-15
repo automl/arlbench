@@ -29,6 +29,6 @@ def get_mean_df(path):
 
 
 if __name__ == "__main__":
-    df_1 = get_mean_df(os.path.join("./dqn_results", "envpool_LunarLander-v2", "arlb"))
-    df_2 = get_mean_df(os.path.join("./dqn_results", "envpool_LunarLander-v2", "sbx"))
-    plot_compare_trainings(df_1, "ARLB", df_2, "SBX", "DQN LunarLander default", "dqn_results")
+    df_1 = get_mean_df(os.path.join("./ppo_results", "envpool_CartPole-v1", "arlb"))
+    df_2 = get_mean_df(os.path.join("./ppo_results", "envpool_CartPole-v1", "sbx"))
+    plot_compare_trainings(df_1, "ARLB", df_2, "SBX", "PPO CartPole tuned", "ppo_results")
