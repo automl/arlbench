@@ -22,6 +22,7 @@ def ppo_runner(dir_name, log, framework, env_name, config, training_kw_args, see
     hpo_config["gamma"] = 0.98
     hpo_config["gae_lambda"] = 0.95
     hpo_config["ent_coef"] = 0.0
+    hpo_config["max_grad_norm"] = 0.5
 
     nas_config = PPO.get_default_nas_config()
     nas_config["activation"] = "relu"
