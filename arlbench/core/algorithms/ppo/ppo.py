@@ -102,6 +102,7 @@ class PPO(Algorithm):
 
         # ensure that at least one minibatch is available after each rollout
         if self.hpo_config["minibatch_size"] > self.update_interval:
+            # todo: add a warning here
             self.minibatch_size = self.update_interval
         else:
             self.minibatch_size = int(self.hpo_config["minibatch_size"])
