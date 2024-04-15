@@ -15,7 +15,7 @@ def ppo_runner(dir_name, log, framework, env_name, config, training_kw_args, see
     rng = jax.random.PRNGKey(seed)
 
     hpo_config = PPO.get_default_hpo_config()
-    hpo_config["buffer_batch_size"] = 32
+    hpo_config["update_interval"] = 320
     hpo_config["minibatch_size"] = 256
     hpo_config["lr"] = 1e-3
     hpo_config["update_epochs"] = 20
@@ -58,10 +58,10 @@ def ppo_runner(dir_name, log, framework, env_name, config, training_kw_args, see
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--dir-name", type=str, default="test")
-    parser.add_argument("--training-steps", type=int, default=1000000)
+    parser.add_argument("--training-steps", type=int, default=100000)
     parser.add_argument("--n-eval-steps", type=int, default=100)
     parser.add_argument("--n-eval-episodes", type=int, default=10)
-    parser.add_argument("--n-envs", type=int, default=16)
+    parser.add_argument("--n-envs", type=int, default=8)
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--env-framework", type=str, default="gymnax")
     parser.add_argument("--env", type=str, default="CartPole-v1")
