@@ -43,12 +43,12 @@ def test_gymnasium_ppo():
         "track_traj": True,
     }
         
-    env = make_env("gymnasium", "Pendulum-v1", seed=42)
+    env = make_env("gymnasium", "CartPole-v1", seed=42)
     rng = jax.random.PRNGKey(43)  # todo: fix this seed
 
     config = PPO.get_default_hpo_config()
     config["minibatch_size"] = 64
-    agent = PPO(config, options, env, track_metrics=options["track_metrics"], track_trajectories=options["track_traj"])
+    agent = PPO(config, env, track_metrics=options["track_metrics"], track_trajectories=options["track_traj"])
     runner_state, buffer_state = agent.init(rng)
     
     start = time.time()
