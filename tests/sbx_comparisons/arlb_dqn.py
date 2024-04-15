@@ -22,11 +22,12 @@ def test_dqn(dir_name, log, framework, env_name, config, training_kw_args, seed)
     hpo_config["buffer_alpha"] = 0.0
     hpo_config["buffer_beta"] = 0.0
     hpo_config["buffer_size"] = 50000
-    hpo_config["train_frequency"] = 1
+    hpo_config["train_frequency"] = 4
+    hpo_config["gradient_steps"] = 4
     hpo_config["target_network_update_freq"] = 250
     nas_config = DQN.get_default_nas_config()
     nas_config["activation"] = "relu"
-    nas_config["hidden_size"] = 256
+    nas_config["hidden_size"] = 350
 
     agent = DQN(hpo_config, env, nas_config=nas_config)
     runner_state, buffer_state = agent.init(rng)

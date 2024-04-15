@@ -168,7 +168,7 @@ def test_sac(dir_name, log, framework, env_name, sac_config, seed):
     )
 
     hpo_config = {}
-    nas_config = dict(net_arch=[256, 256])
+    nas_config = dict(net_arch=[350, 350])
     model = DQN(
         "MlpPolicy",
         env,

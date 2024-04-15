@@ -160,6 +160,14 @@ def ppo_runner(dir_name, log, framework, env_name, ppo_config, seed):
         import envpool
         env = VecMonitor(VecAdapter(envpool.make(env_name, env_type="gymnasium", num_envs=ppo_config["n_envs"], seed=seed)))
         eval_env = VecMonitor(VecAdapter(envpool.make(env_name, env_type="gymnasium", num_envs=128, seed=seed)))
+    if framework == "gymnax":
+        import gymnax
+        from gymnax.wrappers.gym import GymnaxToGymWrapper
+        env, env_params = gymnax.make(env_name)
+        env = GymnaxToGymWrapper(env)
+        eval_env, eval_env_params = gymnax.make(env_name)
+        eval_env = GymnaxToGymWrapper(eval_env)
+
 
     eval_callback = EvalTrainingMetricsCallback(
         framework=framework, eval_env=eval_env, eval_freq=ppo_config["eval_freq"], n_eval_episodes=128, seed=seed
@@ -167,7 +175,18 @@ def ppo_runner(dir_name, log, framework, env_name, ppo_config, seed):
 
     hpo_config = {}
     nas_config = dict(net_arch=[256, 256])
-    model = PPO("MlpPolicy", env, policy_kwargs=nas_config, verbose=4, seed=seed)
+    model = PPO(
+        "MlpPolicy", 
+        env, 
+        policy_kwargs=nas_config, 
+        verbose=4, 
+        seed=seed,
+        batch_size=256,
+        n_steps=32,
+        gamma=0.98,
+        learning_rate=1e-3,
+        n_epochs=20,
+    )
 
     start = time.time()
     model.learn(total_timesteps=int(ppo_config["n_total_timesteps"]), callback=eval_callback)
