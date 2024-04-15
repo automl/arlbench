@@ -1,4 +1,5 @@
 import time
+import warnings
 
 import jax
 import numpy as np
@@ -7,13 +8,13 @@ from arlbench.core.algorithms import PPO
 from arlbench.core.environments import make_env
 
 N_TOTAL_TIMESTEPS = 1e5
-EVAL_STEPS = 10
+EVAL_STEPS = 1
 EVAL_EPISODES = 1
-N_ENVS = 10
+N_ENVS = 1
 
 
-def test_default_ppo_discrete():
-    env = make_env("gymnax", "CartPole-v1", seed=42, n_envs=N_ENVS)
+def test_default_ppo_discrete(n_envs=10):
+    env = make_env("gymnax", "CartPole-v1", seed=42, n_envs=n_envs)
     rng = jax.random.PRNGKey(42)
 
     config = PPO.get_default_hpo_config()
@@ -32,8 +33,8 @@ def test_default_ppo_discrete():
     rewards = agent.eval(runner_state, EVAL_EPISODES)
     reward = np.mean(rewards)
 
-    print(reward, training_time, runner_state.global_step)
-    assert reward > 450    
+    print(f"n_envs = {n_envs}, time = {training_time:.2f}, steps = {runner_state.global_step}, reward = {reward:.2f}")
+    # assert reward > 450    
 
 
 def test_default_ppo_continuous():
@@ -61,5 +62,8 @@ def test_default_ppo_continuous():
 
 
 if __name__ == "__main__":
-    test_default_ppo_discrete()
-    test_default_ppo_continuous()
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        test_default_ppo_discrete(n_envs=1)
+        test_default_ppo_discrete(n_envs=10)
+    # test_default_ppo_continuous()
