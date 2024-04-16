@@ -5,10 +5,10 @@ from typing import TYPE_CHECKING
 
 import gymnasium
 import jax.numpy as jnp
+import jaxlib
 import jaxlib.xla_client
 import jaxlib.xla_extension
 import numpy as np
-import jaxlib
 
 if TYPE_CHECKING:
     from arlbench.core.algorithms import TrainFunc
@@ -50,10 +50,10 @@ class GradInfo(StateFeature):
             if isinstance(grad_info, jaxlib.xla_extension.ArrayImpl):
                 # SAC
                 grad_info = list(np.array(grad_info).flatten())
-            elif isinstance(grad_info, tuple):  
+            elif isinstance(grad_info, tuple):
                 # PPO
-                grad_info = [v for v in grad_info]
-            else:   
+                grad_info = list(grad_info)
+            else:
                 # DQN
                 grad_info = grad_info["params"]
                 grad_info = {

@@ -2,8 +2,8 @@ from __future__ import annotations
 
 import functools
 from abc import ABC, abstractmethod
-from collections.abc import Sequence
-from typing import TYPE_CHECKING, Any, Callable
+from collections.abc import Callable, Sequence
+from typing import TYPE_CHECKING, Any
 
 import gym
 import gymnasium
@@ -14,15 +14,13 @@ import numpy as np
 
 if TYPE_CHECKING:
     from ConfigSpace import Configuration, ConfigurationSpace
-    from flashbax.buffers.prioritised_trajectory_buffer import \
-        PrioritisedTrajectoryBufferState
 
     from arlbench.core.environments import Environment
     from arlbench.core.wrappers import AutoRLWrapper
 
 
 class Algorithm(ABC):
-    name: str 
+    name: str
 
     def __init__(
             self,
@@ -153,7 +151,7 @@ class Algorithm(ABC):
             self._env_episode, (runner_state.rng, runner_state), None, n_evals
         )
         return jnp.concat(rewards)[:num_eval_episodes]
-    
+
     def update_hpo_config(self, hpo_config: Configuration):
         self.hpo_config = hpo_config
 

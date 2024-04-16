@@ -2,7 +2,8 @@
 from __future__ import annotations
 
 import functools
-from typing import TYPE_CHECKING, Any, NamedTuple, Optional, Callable
+from collections.abc import Callable
+from typing import TYPE_CHECKING, Any, NamedTuple
 
 import flashbax as fbx
 import jax
@@ -20,13 +21,13 @@ from arlbench.core.algorithms.common import TimeStep
 
 from .models import AlphaCoef, SACActor, SACVectorCritic
 
+if TYPE_CHECKING:
+    import chex
+    from flashbax.buffers.prioritised_trajectory_buffer import \
+        PrioritisedTrajectoryBufferState
 
-import chex
-from flashbax.buffers.prioritised_trajectory_buffer import \
-    PrioritisedTrajectoryBufferState
-
-from arlbench.core.environments import Environment
-from arlbench.core.wrappers import AutoRLWrapper
+    from arlbench.core.environments import Environment
+    from arlbench.core.wrappers import AutoRLWrapper
 
 # todo: separate learning rate for critic and actor??
 
@@ -174,7 +175,7 @@ class SAC(Algorithm):
     @staticmethod
     def get_default_nas_config() -> Configuration:
         return SAC.get_nas_config_space().get_default_configuration()
-    
+
     @staticmethod
     def get_checkpoint_factory(
         runner_state: SACRunnerState,
@@ -406,7 +407,7 @@ class SAC(Algorithm):
             self,
             carry: tuple[SACRunnerState, PrioritisedTrajectoryBufferState],
             _
-    ) -> tuple[tuple[SACRunnerState, PrioritisedTrajectoryBufferState], tuple[Optional[SACMetrics], Optional[Transition]]]:
+    ) -> tuple[tuple[SACRunnerState, PrioritisedTrajectoryBufferState], tuple[SACMetrics | None, Transition | None]]:
         def do_update(rng, actor_train_state, critic_train_state, alpha_train_state, buffer_state):
             def gradient_step(carry, _):
                 rng, actor_train_state, critic_train_state, alpha_train_state, buffer_state = carry
@@ -518,7 +519,7 @@ class SAC(Algorithm):
             obs=runner_state.obs,
             global_step=runner_state.global_step
         )
-        actor_loss, critic_loss, alpha_loss, td_error, actor_grads, critic_grads = step_metrics        
+        actor_loss, critic_loss, alpha_loss, td_error, actor_grads, critic_grads = step_metrics
         metrics, tracjectories = None, None
         if self.track_metrics:
             metrics = SACMetrics(
@@ -537,7 +538,7 @@ class SAC(Algorithm):
                 done=done,
                 value=value,
                 info=info,
-            ) 
+            )
         return (runner_state, buffer_state), (metrics, tracjectories)
 
     @functools.partial(jax.jit, static_argnums=0)

@@ -41,7 +41,7 @@ def gymnasium_space_to_gymnax_space(space: gym_spaces.Space) -> gymnax_spaces.Sp
     """Convert Gym space to equivalent Gymnax space."""
     if isinstance(space, gym_spaces.Discrete):
         return gymnax_spaces.Discrete(int(space.n))
-    elif isinstance(space, gym_spaces.Box):
+    if isinstance(space, gym_spaces.Box):
         low = (
             float(space.low)
             if (np.isscalar(space.low) or space.low.size == 1)
@@ -53,14 +53,16 @@ def gymnasium_space_to_gymnax_space(space: gym_spaces.Space) -> gymnax_spaces.Sp
             else np.array(space.high)
         )
         return gymnax_spaces.Box(low, high, space.shape, space.dtype)
-    elif isinstance(space, gym_spaces.Dict):
-        return gymnax_spaces.Dict({k: gymnax_space_to_gym_space(v) for k, v in space.spaces})
-    elif isinstance(space, gym_spaces.Tuple):
+    if isinstance(space, gym_spaces.Dict):
+        return gymnax_spaces.Dict({
+            k: gymnasium_space_to_gymnax_space(v) for k, v in space.spaces
+        })
+    if isinstance(space, gym_spaces.Tuple):
         return gymnax_spaces.Tuple(space.spaces)
-    else:
-        raise NotImplementedError(
-            f"Conversion of {space.__class__.__name__} not supported"
-        )
+
+    raise NotImplementedError(
+        f"Conversion of {space.__class__.__name__} not supported"
+    )
 
 def flatten_dict(d):
     """Flatten a nested dictionary into a tuple containing all items."""

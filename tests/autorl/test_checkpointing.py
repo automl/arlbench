@@ -1,12 +1,10 @@
 import jax
 import numpy as np
-from arlbench.autorl import AutoRLEnv
 
+from arlbench.autorl import AutoRLEnv
 from arlbench.autorl.checkpointing import Checkpointer
 from arlbench.core.algorithms import DQN
 from arlbench.core.environments import make_env
-
-
 
 
 def test_read_write_buffer():

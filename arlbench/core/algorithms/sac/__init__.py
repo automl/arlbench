@@ -1,4 +1,5 @@
-from .sac import SAC, SACRunnerState, SACTrainingResult, SACMetrics, SACTrainReturnT, SACState
+from .sac import (SAC, SACMetrics, SACRunnerState, SACState, SACTrainingResult,
+                  SACTrainReturnT)
 
 __all__ = [
     "SAC",

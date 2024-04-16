@@ -163,7 +163,7 @@ class CNNActorCritic(nn.Module):
         actor_mean = self.actor_dense(actor_mean)
         actor_mean = self.activation_func(actor_mean)
         actor_mean = self.actor_out(actor_mean)
-     
+
         if self.discrete:
             pi = distrax.Categorical(logits=actor_mean)
         else:
@@ -176,7 +176,7 @@ class CNNActorCritic(nn.Module):
         critic = self.critic_conv3(critic)
         critic = self.activation_func(critic)
         critic = critic.reshape((critic.shape[0], -1))  # flatten
-        critic = self.critic_dense(critic)  
+        critic = self.critic_dense(critic)
         critic = self.activation_func(critic)
         critic = self.critic_out(critic)
 

@@ -5,6 +5,7 @@ import os
 import time
 from typing import Optional
 
+import envpool
 import gymnax
 import jax
 import jax.numpy as jnp
@@ -12,17 +13,14 @@ import numpy as np
 import pandas as pd
 from brax import envs as brax_envs
 from brax.envs.wrappers.gym import GymWrapper
+from envpool.python.protocol import EnvPool
 from gymnax.wrappers.gym import GymnaxToGymWrapper
 from sbx import DQN
 from stable_baselines3.common.callbacks import BaseCallback
 from stable_baselines3.common.evaluation import evaluate_policy
 from stable_baselines3.common.vec_env import VecEnvWrapper, VecMonitor
-from stable_baselines3.common.vec_env.base_vec_env import (
-    VecEnvObs,
-    VecEnvStepReturn,
-)
-import envpool
-from envpool.python.protocol import EnvPool
+from stable_baselines3.common.vec_env.base_vec_env import (VecEnvObs,
+                                                           VecEnvStepReturn)
 
 
 class VecAdapter(VecEnvWrapper):
