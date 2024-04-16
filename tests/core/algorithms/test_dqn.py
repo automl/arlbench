@@ -8,7 +8,7 @@ from arlbench.core.environments import make_env
 
 N_UPDATES = 1e6
 EVAL_STEPS = 10
-EVAL_EPISODES = 5
+EVAL_EPISODES = 10
 N_ENVS = 10
 
 
