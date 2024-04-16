@@ -6,6 +6,7 @@ from flax.linen.initializers import constant, orthogonal
 
 
 class CNNQ(nn.Module):
+    """A CNN-based Q-Network for DQN."""
     action_dim: int
     activation: str = "tanh"
     hidden_size: int = 64
@@ -56,6 +57,7 @@ class CNNQ(nn.Module):
         q = self.activation_func(q)
         q = self.conv3(q)
         q = self.activation_func(q)
+        q = q.reshape((q.shape[0], -1))  # flatten
         q = self.dense(q)
         q = self.activation_func(q)
         return self.out_layer(q)
