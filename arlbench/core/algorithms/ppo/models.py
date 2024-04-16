@@ -7,6 +7,7 @@ from flax.linen.initializers import constant, orthogonal
 
 
 class MLPActorCritic(nn.Module):
+    """A MLP-based Actor-Critic network for PPO."""
     action_dim: int
     activation: str = "tanh"
     hidden_size: int = 64
@@ -73,7 +74,7 @@ class MLPActorCritic(nn.Module):
 
 
 class CNNActorCritic(nn.Module):
-    """Based on NatureCNN https://github.com/DLR-RM/stable-baselines3/blob/master/stable_baselines3/common/torch_layers.py#L48."""
+    """A CNN-based Actor-Critic network for PPO. Based on NatureCNN https://github.com/DLR-RM/stable-baselines3/blob/master/stable_baselines3/common/torch_layers.py#L48."""
     action_dim: int
     activation: str = "tanh"
     hidden_size: int = 64
@@ -87,21 +88,21 @@ class CNNActorCritic(nn.Module):
         else:
             raise ValueError(f"Invalid activation function: {self.activation}")
 
-        self.actor_conv1 = nn.Conv(
+        self.actor_conv0 = nn.Conv(
             features=32,
             kernel_size=(8, 8),
             strides=(4, 4),
             kernel_init=orthogonal(jnp.sqrt(2)),
             bias_init=constant(0.0),
         )
-        self.actor_conv2 = nn.Conv(
+        self.actor_conv1 = nn.Conv(
             features=64,
             kernel_size=(4, 4),
             strides=(2, 2),
             kernel_init=orthogonal(jnp.sqrt(2)),
             bias_init=constant(0.0),
         )
-        self.actor_conv3 = nn.Conv(
+        self.actor_conv2 = nn.Conv(
             features=64,
             kernel_size=(3, 3),
             strides=(1, 1),
@@ -120,21 +121,21 @@ class CNNActorCritic(nn.Module):
             "log_std", nn.initializers.zeros, (self.action_dim,)
         )
 
-        self.critic_conv1 = nn.Conv(
+        self.critic_conv0 = nn.Conv(
             features=32,
             kernel_size=(8, 8),
             strides=(4, 4),
             kernel_init=orthogonal(jnp.sqrt(2)),
             bias_init=constant(0.0),
         )
-        self.critic_conv2 = nn.Conv(
+        self.critic_conv1 = nn.Conv(
             features=64,
             kernel_size=(4, 4),
             strides=(2, 2),
             kernel_init=orthogonal(jnp.sqrt(2)),
             bias_init=constant(0.0),
         )
-        self.critic_conv3 = nn.Conv(
+        self.critic_conv2 = nn.Conv(
             features=64,
             kernel_size=(3, 3),
             strides=(1, 1),
@@ -151,11 +152,11 @@ class CNNActorCritic(nn.Module):
         )
 
     def __call__(self, x):
-        actor_mean = self.actor_conv1(x)
+        actor_mean = self.actor_conv0(x)
+        actor_mean = self.activation_func(actor_mean)
+        actor_mean = self.actor_conv1(actor_mean)
         actor_mean = self.activation_func(actor_mean)
         actor_mean = self.actor_conv2(actor_mean)
-        actor_mean = self.activation_func(actor_mean)
-        actor_mean = self.actor_conv3(actor_mean)
         actor_mean = self.activation_func(actor_mean)
         actor_mean = actor_mean.reshape((actor_mean.shape[0], -1))  # flatten
         actor_mean = self.actor_dense(actor_mean)
@@ -167,11 +168,11 @@ class CNNActorCritic(nn.Module):
         else:
             pi = distrax.MultivariateNormalDiag(actor_mean, jnp.exp(self.actor_logtstd))
 
-        critic = self.critic_conv1(x)
+        critic = self.critic_conv0(x)
+        critic = self.activation_func(critic)
+        critic = self.critic_conv1(critic)
         critic = self.activation_func(critic)
         critic = self.critic_conv2(critic)
-        critic = self.activation_func(critic)
-        critic = self.critic_conv3(critic)
         critic = self.activation_func(critic)
         critic = critic.reshape((critic.shape[0], -1))  # flatten
         critic = self.critic_dense(critic)

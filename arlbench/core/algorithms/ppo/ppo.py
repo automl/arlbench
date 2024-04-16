@@ -122,32 +122,25 @@ class PPO(Algorithm):
         )
 
         # Update interval = rollout size
-        self.update_interval = int(self.hpo_config["n_steps"] * self.env.n_envs)
+        self.rollout_size = int(self.hpo_config["n_steps"] * self.env.n_envs)
 
         # Ensure that at least one minibatch is available after each rollout
-        if self.hpo_config["minibatch_size"] > self.update_interval:
-            warnings.warn(f"minibatch_size > update_interval. Setting minibatch size to update_interval = {self.update_interval}.")
-            self.minibatch_size = self.update_interval
+        if self.hpo_config["minibatch_size"] > self.rollout_size:
+            warnings.warn(f"minibatch_size > update_interval. Setting minibatch size to rollout_size = {self.rollout_size}.")
+            self.minibatch_size = self.rollout_size
         else:
             self.minibatch_size = int(self.hpo_config["minibatch_size"])
 
-        self.n_minibatches = int(self.update_interval // self.minibatch_size)
+        self.n_minibatches = int(self.rollout_size // self.minibatch_size)
 
         action_size, discrete = self.action_type
-        if cnn_policy:
-            self.network = CNNActorCritic(
-                action_size,
-                discrete=discrete,
-                activation=self.nas_config["activation"],
-                hidden_size=self.nas_config["hidden_size"],
-            )
-        else:
-            self.network = MLPActorCritic(
-                action_size,
-                discrete=discrete,
-                activation=self.nas_config["activation"],
-                hidden_size=self.nas_config["hidden_size"],
-            )
+        network_cls = CNNActorCritic if cnn_policy else MLPActorCritic
+        self.network = network_cls(
+            action_size,
+            discrete=discrete,
+            activation=self.nas_config["activation"],
+            hidden_size=self.nas_config["hidden_size"],
+        )
 
     @staticmethod
     def get_hpo_config_space(seed: int | None = None) -> ConfigurationSpace:
@@ -271,7 +264,13 @@ class PPO(Algorithm):
         return PPOState(runner_state=runner_state, buffer_state=None)
 
     @functools.partial(jax.jit, static_argnums=0)
-    def predict(self, runner_state: PPORunnerState, obs: jnp.ndarray, rng: chex.PRNGKey) -> jnp.ndarray:
+    def predict(
+            self,
+            runner_state: PPORunnerState,
+            obs: jnp.ndarray,
+            rng: chex.PRNGKey,
+            deterministic: bool = True
+        ) -> jnp.ndarray:
         """Predict an action(s) based on the current observation(s).
 
         Args:
@@ -283,7 +282,17 @@ class PPO(Algorithm):
             jnp.ndarray: Action(s)
         """
         pi, _ = self.network.apply(runner_state.train_state.params, obs)
-        return pi.sample(seed=rng)
+        def deterministic_action():
+            return pi.mode()
+
+        def sampled_action():
+            return pi.sample(seed=rng)
+
+        return jax.lax.cond(
+            deterministic,
+            deterministic_action,
+            sampled_action,
+        )
 
     @functools.partial(jax.jit, static_argnums=(0,3,4,5))
     def train(
@@ -298,8 +307,8 @@ class PPO(Algorithm):
 
         Args:
             runner_state (PPORunnerState): PPO runner state.
-            _ (_type_): Unused parameter (buffer_state in other algorithms).
-            n_total_timesteps (int, optional): Total number of training timesteps. Environment steps = n_total_timesteps * n_envs. Defaults to 1000000.
+            _ (None): Unused parameter (buffer_state in other algorithms).
+            n_total_timesteps (int, optional): Total number of training timesteps. Update steps = n_total_timesteps // n_envs. Defaults to 1000000.
             n_eval_steps (int, optional): Number of evaluation steps during training. Defaults to 100.
             n_eval_episodes (int, optional): Number of evaluation episodes per evaluation during training. Defaults to 10.
 
@@ -320,7 +329,7 @@ class PPO(Algorithm):
                 self._update_step,
                 _runner_state,
                 None,
-                n_total_timesteps // self.update_interval // n_eval_steps
+                n_total_timesteps // self.env.n_envs // self.hpo_config["n_steps"] // n_eval_steps
             )
             eval_returns = self.eval(_runner_state, n_eval_episodes)
 
@@ -422,7 +431,7 @@ class PPO(Algorithm):
         # Perform env step
         rng, _rng = jax.random.split(rng)
         env_state, (obsv, reward, done, info) = self.env.step(env_state, action, _rng)
-        global_step += self.env.n_envs
+        global_step += 1
 
         transition = Transition(
             done, action, value, reward, log_prob, last_obs, info
@@ -501,7 +510,7 @@ class PPO(Algorithm):
         train_state, traj_batch, advantages, targets, rng = update_state
         rng, _rng = jax.random.split(rng)
 
-        batch_size = self.update_interval
+        batch_size = self.rollout_size
         trimmed_batch_size = self.n_minibatches * self.minibatch_size
 
         permutation = jax.random.permutation(_rng, batch_size)

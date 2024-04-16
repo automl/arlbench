@@ -164,13 +164,20 @@ class Algorithm(ABC):
 
     @abstractmethod
     @functools.partial(jax.jit, static_argnums=0)
-    def predict(self, runner_state: Any, obs: jnp.ndarray, rng: chex.PRNGKey | None = None) -> Any:
+    def predict(
+        self,
+        runner_state: Any,
+        obs: jnp.ndarray,
+        rng: chex.PRNGKey | None = None,
+        deterministic: bool = True
+    ) -> jnp.ndarray:
         """Predict an action(s) based on the current observation(s).
 
         Args:
             runner_state (Any): Algorithm runner state.
             obs (jnp.ndarray): Observation(s).
             rng (chex.PRNGKey | None, optional): Random generator key. Defaults to None.
+            deterministic (bool): Determine action deterministically. Defaults to True.
 
         Returns:
             Any: Action(s).
@@ -225,7 +232,7 @@ class Algorithm(ABC):
 
             # Select action
             rng, action_rng = jax.random.split(rng)
-            action = self.predict(runner_state, obs, action_rng)
+            action = self.predict(runner_state, obs, action_rng, deterministic=True)
 
             # Step
             rng, step_rng = jax.random.split(rng)
