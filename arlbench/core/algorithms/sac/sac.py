@@ -19,7 +19,7 @@ from gymnax.environments import spaces
 from arlbench.core.algorithms.algorithm import Algorithm
 from arlbench.core.algorithms.common import TimeStep
 
-from .models import AlphaCoef, SACActor, SACVectorCritic
+from .models import AlphaCoef, SACMLPActor, SACCNNActor, SACMLPCritic, SACCNNCritic, SACVectorCritic
 
 if TYPE_CHECKING:
     import chex
@@ -28,6 +28,7 @@ if TYPE_CHECKING:
 
     from arlbench.core.environments import Environment
     from arlbench.core.wrappers import AutoRLWrapper
+    from flax.core.frozen_dict import FrozenDict
 
 # todo: separate learning rate for critic and actor??
 
@@ -93,9 +94,10 @@ class SAC(Algorithm):
             self,
             hpo_config: Configuration,
             env: Environment | AutoRLWrapper,
+            cnn_policy: bool = False,
             nas_config: Configuration | None = None,
-            track_metrics=False,
-            track_trajectories=False,
+            track_metrics: bool = False,
+            track_trajectories: bool = False,
     ) -> None:
         if nas_config is None:
             nas_config = SAC.get_default_nas_config()
@@ -108,13 +110,18 @@ class SAC(Algorithm):
         )
 
         action_size, discrete = self.action_type
-        self.actor_network = SACActor(
+        if discrete:
+            raise ValueError("SAC does not support discrete action spaces.")
+
+        actor_cls = SACCNNActor if cnn_policy else SACMLPActor
+        self.actor_network = actor_cls(
             action_size,
             activation=nas_config["activation"],
             hidden_size=nas_config["hidden_size"],
         )
         self.critic_network = SACVectorCritic(
-            action_size,
+            critic=SACCNNCritic if cnn_policy else SACMLPCritic,
+            action_dim=action_size,
             activation=nas_config["activation"],
             hidden_size=nas_config["hidden_size"],
             n_critics=2,
@@ -197,7 +204,6 @@ class SAC(Algorithm):
 
             return trajectories
 
-
         return {
             "actor_opt_state": lambda : actor_train_state.opt_state,
             "critic_opt_state": lambda : critic_train_state.opt_state,
@@ -214,15 +220,15 @@ class SAC(Algorithm):
 
     def init(
             self,
-            rng,
+            rng: chex.PRNGKey,
             buffer_state: PrioritisedTrajectoryBufferState | None = None,
-            actor_network_params=None,
-            critic_network_params=None,
-            critic_target_params=None,
-            alpha_network_params=None,
-            actor_opt_state=None,
-            critic_opt_state=None,
-            alpha_opt_state=None
+            actor_network_params: FrozenDict | dict | None = None,
+            critic_network_params: FrozenDict | dict | None = None,
+            critic_target_params: FrozenDict | dict | None = None,
+            alpha_network_params: FrozenDict | dict | None = None,
+            actor_opt_state: optax.OptState | None = None,
+            critic_opt_state: optax.OptState | None = None,
+            alpha_opt_state: optax.OptState | None = None
     ) -> SACState:
         rng, env_rng = jax.random.split(rng)
         env_state, obs = self.env.reset(env_rng)
@@ -284,54 +290,69 @@ class SAC(Algorithm):
             global_step=global_step
         )
 
+        assert buffer_state is not None
+
         return SACState(
             runner_state=runner_state,
             buffer_state=buffer_state
         )
 
-
     @functools.partial(jax.jit, static_argnums=0)
-    def predict(self, runner_state, obs, rng) -> int:
+    def predict(
+        self,
+        runner_state: SACRunnerState,
+        obs: jnp.ndarray,
+        rng: chex.PRNGKey,
+        deterministic: bool = True
+    ) -> int:
         pi = self.actor_network.apply(runner_state.actor_train_state.params, obs)
+        
+        def deterministic_action():
+            return pi.mode()
 
-        action = pi.mode()
+        def sampled_action():
+            return pi.sample(seed=rng)
 
-        # @Julian TODO pls add discrete action spaces
-        if isinstance(self.env.action_space, spaces.Discrete):
-            raise ValueError("Discrete action spaces are not (yet) supported :-)")
-        else:
-            # todo: we need to check that the action spaces are finite
-            low, high = self.env.action_space.low, self.env.action_space.high
-            # check if low or high are none, nan or inf and set to 1
-            if low is None or np.isnan(low).any() or np.isinf(low).any():
-                low = -jnp.ones_like(action)
-            if high is None or np.isnan(high).any() or np.isinf(high).any():
-                high = jnp.ones_like(action)
-            return low + (action + 1.0) * 0.5 * (high - low)
+        action = jax.lax.cond(
+            deterministic,
+            deterministic_action,
+            sampled_action,
+        )
 
+        # todo: we need to check that the action spaces are finite
+        low, high = self.env.action_space.low, self.env.action_space.high
+        # check if low or high are none, nan or inf and set to 1
+        if low is None or np.isnan(low).any() or np.isinf(low).any():
+            low = -jnp.ones_like(action)
+        if high is None or np.isnan(high).any() or np.isinf(high).any():
+            high = jnp.ones_like(action)
+        return low + (action + 1.0) * 0.5 * (high - low)
 
     @functools.partial(jax.jit, static_argnums=(0,3,4,5), donate_argnums=(2,))
     def train(
         self,
-        runner_state,
+        runner_state: SACRunnerState,
         buffer_state: PrioritisedTrajectoryBufferState,
         n_total_timesteps: int,
         n_eval_steps: int,
         n_eval_episodes: int
     )-> SACTrainReturnT:
-        def train_eval_step(carry, _):
+        def train_eval_step(
+                carry: tuple[SACRunnerState, PrioritisedTrajectoryBufferState],
+                _: None
+            ) -> tuple[tuple[SACRunnerState, PrioritisedTrajectoryBufferState], SACTrainingResult]:
             runner_state, buffer_state = carry
             (runner_state, buffer_state), (metrics, trajectories) = jax.lax.scan(
                 self._update_step,
                 (runner_state, buffer_state),
                 None,
-                n_total_timesteps//self.hpo_config["train_frequency"]//self.env.n_envs//n_eval_steps
+                n_total_timesteps//self.env.n_envs//self.hpo_config["train_frequency"]//n_eval_steps
             )
             eval_returns = self.eval(runner_state, n_eval_episodes)
 
-            return (runner_state, buffer_state), (metrics, trajectories, eval_returns)
+            return (runner_state, buffer_state), SACTrainingResult(metrics=metrics, trajectories=trajectories, eval_rewards=eval_returns)
 
-        (runner_state, buffer_state), (metrics, trajectories, eval_returns) = jax.lax.scan(
+        (runner_state, buffer_state), result = jax.lax.scan(
             train_eval_step,
             (runner_state, buffer_state),
             None,
@@ -340,11 +361,7 @@ class SAC(Algorithm):
         return SACState(
             runner_state=runner_state,
             buffer_state=buffer_state
-        ), SACTrainingResult(
-            eval_rewards=eval_returns,
-            metrics=metrics,
-            trajectories=trajectories
-        )
+        ), result
 
     def update_critic(self, actor_train_state, critic_train_state, alpha_train_state, batch, rng):
         rng, action_rng = jax.random.split(rng, 2)
@@ -408,8 +425,17 @@ class SAC(Algorithm):
             carry: tuple[SACRunnerState, PrioritisedTrajectoryBufferState],
             _
     ) -> tuple[tuple[SACRunnerState, PrioritisedTrajectoryBufferState], tuple[SACMetrics | None, Transition | None]]:
-        def do_update(rng, actor_train_state, critic_train_state, alpha_train_state, buffer_state):
-            def gradient_step(carry, _):
+        def do_update(
+                rng: chex.PRNGKey,
+                actor_train_state: SACTrainState, 
+                critic_train_state: SACTrainState, 
+                alpha_train_state: SACTrainState, 
+                buffer_state: PrioritisedTrajectoryBufferState
+            ) -> tuple[chex.PRNGKey, SACTrainState, SACTrainState, SACTrainState, PrioritisedTrajectoryBufferState, SACMetrics]:
+            def gradient_step(
+                    carry: tuple[chex.PRNGKey, SACTrainState, SACTrainState, SACTrainState, PrioritisedTrajectoryBufferState], 
+                    _: None
+                ) -> tuple[tuple[chex.PRNGKey, SACTrainState, SACTrainState, SACTrainState, PrioritisedTrajectoryBufferState], SACMetrics]:
                 rng, actor_train_state, critic_train_state, alpha_train_state, buffer_state = carry
                 rng, batch_sample_rng = jax.random.split(rng)
                 batch = self.buffer.sample(buffer_state, batch_sample_rng)
@@ -420,7 +446,7 @@ class SAC(Algorithm):
                     batch.experience.first,
                     rng,
                 )
-                # todo: consider policy_delay here!?
+                # TODO: consider policy_delay here!?
                 actor_train_state, actor_loss, entropy, actor_grads, rng = self.update_actor(
                     actor_train_state,
                     critic_train_state,
@@ -433,11 +459,17 @@ class SAC(Algorithm):
                     td_error.mean(axis=0) + self.hpo_config["buffer_epsilon"], self.hpo_config["buffer_alpha"]
                 )
                 buffer_state = self.buffer.set_priorities(buffer_state, batch.indices, new_prios)
+                metrics = SACMetrics(
+                    actor_loss=actor_loss,
+                    critic_loss=critic_loss,
+                    alpha_loss=alpha_loss,
+                    td_error=td_error.mean(axis=0),
+                    actor_grads=actor_grads,
+                    critic_grads=critic_grads
+                )
                 return (
                     rng, actor_train_state, critic_train_state, alpha_train_state, buffer_state
-                ), (
-                    critic_loss, actor_loss, alpha_loss, td_error.mean(axis=0), actor_grads, critic_grads,
-                )
+                ), metrics
 
             carry, metrics = jax.lax.scan(
                 gradient_step,
@@ -448,24 +480,37 @@ class SAC(Algorithm):
             rng, actor_train_state, critic_train_state, alpha_train_state, buffer_state = carry
             return rng, actor_train_state, critic_train_state, alpha_train_state, buffer_state, metrics
 
-        def dont_update(rng, actor_train_state, critic_train_state, alpha_train_state, buffer_state):
+        def dont_update(
+            rng: chex.PRNGKey,
+            actor_train_state: SACTrainState, 
+            critic_train_state: SACTrainState, 
+            alpha_train_state: SACTrainState, 
+            buffer_state: PrioritisedTrajectoryBufferState
+        ) -> tuple[chex.PRNGKey, SACTrainState, SACTrainState, SACTrainState, PrioritisedTrajectoryBufferState, SACMetrics]:
             single_loss = jnp.array([((jnp.array([0]) - jnp.array([0])) ** 2).mean()] * self.hpo_config["gradient steps"])
             td_error = jnp.array(
                 [[[0] * self.hpo_config["buffer_batch_size"]] * self.hpo_config["gradient steps"]]
             ).mean(axis=0)
             actor_grads = jax.tree_map(lambda x: jnp.stack([x] * self.hpo_config["gradient steps"]), actor_train_state.params)
             critic_grads = jax.tree_map(lambda x: jnp.stack([x] * self.hpo_config["gradient steps"]), critic_train_state.params)
-            metrics = (single_loss, single_loss, single_loss, td_error, actor_grads, critic_grads)
+            metrics = SACMetrics(
+                actor_loss=single_loss,
+                critic_loss=single_loss,
+                alpha_loss=single_loss,
+                td_error=td_error,
+                actor_grads=actor_grads,
+                critic_grads=critic_grads
+            )
             return rng, actor_train_state, critic_train_state, alpha_train_state, buffer_state, metrics
 
-        # soft update
-        def target_update():
+        # Soft update
+        def target_update() -> SACTrainState:
             return critic_train_state.replace(
                 target_params=optax.incremental_update(
                     critic_train_state.params, critic_train_state.target_params, self.hpo_config["tau"]
                 )
             )
-        def dont_target_update():
+        def dont_target_update() -> SACTrainState:
             return critic_train_state
 
         runner_state, buffer_state = carry
@@ -542,7 +587,11 @@ class SAC(Algorithm):
         return (runner_state, buffer_state), (metrics, tracjectories)
 
     @functools.partial(jax.jit, static_argnums=0)
-    def _env_step(self, carry, _):
+    def _env_step(
+        self, 
+        carry: tuple[SACRunnerState, PrioritisedTrajectoryBufferState], 
+        _: None
+    ) -> tuple[tuple[SACRunnerState, PrioritisedTrajectoryBufferState], Transition]:
         runner_state, buffer_state = carry
         (
             rng,
@@ -554,23 +603,19 @@ class SAC(Algorithm):
             global_step
         ) = runner_state
 
-        # SELECT ACTION
+        # Select action(s)
         rng, _rng = jax.random.split(rng)
         pi = self.actor_network.apply(actor_train_state.params, last_obs)
 
-        # @Julian TODO pls add discrete action spaces
-        if isinstance(self.env.action_space, spaces.Discrete):
-            raise ValueError("Discrete action spaces are not (yet) supported :-)")
-        else:
-            buffer_action = pi.sample(seed=_rng)
-            low, high = self.env.action_space.low, self.env.action_space.high
-            if low is None or np.isnan(low).any() or np.isinf(low).any():
-                low = -jnp.ones_like(buffer_action)
-            if high is None or np.isnan(high).any() or np.isinf(high).any():
-                high = jnp.ones_like(buffer_action)
-            action = low + (buffer_action + 1.0) * 0.5 * (high - low)
+        buffer_action = pi.sample(seed=_rng)
+        low, high = self.env.action_space.low, self.env.action_space.high
+        if low is None or np.isnan(low).any() or np.isinf(low).any():
+            low = -jnp.ones_like(buffer_action)
+        if high is None or np.isnan(high).any() or np.isinf(high).any():
+            high = jnp.ones_like(buffer_action)
+        action = low + (buffer_action + 1.0) * 0.5 * (high - low)
 
-        # STEP ENV
+        # Perform environment step
         rng, _rng = jax.random.split(rng)
         env_state, (obsv, reward, done, info) = self.env.step(env_state, action, _rng)
 
@@ -588,6 +633,6 @@ class SAC(Algorithm):
             env_state=env_state,
             obs=obsv,
             rng=rng,
-            global_step=global_step + self.env.n_envs
+            global_step=global_step + 1
         )
         return (runner_state, buffer_state), transition
