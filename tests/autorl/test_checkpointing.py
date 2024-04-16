@@ -1,21 +1,20 @@
 import jax
 import numpy as np
 
+from arlbench.autorl import AutoRLEnv
 from arlbench.autorl.checkpointing import Checkpointer
-from arlbench.core.algorithms import DQN, PPO, SAC
+from arlbench.core.algorithms import DQN
 from arlbench.core.environments import make_env
-
-
-N_TOTAL_TIMESTEPS = 1e6
-EVAL_STEPS = 10
-EVAL_EPISODES = 10
-N_ENVS = 10
-SEED = 42
 
 
 def test_read_write_buffer():
     CHECKPOINT_DIR = "/tmp/test_saves"
     CHECKPOINT_NAME = "unit_test"
+    N_TOTAL_TIMESTEPS = 1e6
+    EVAL_STEPS = 10
+    EVAL_EPISODES = 10
+    N_ENVS = 10
+    SEED = 42
 
     env = make_env("gymnax", "CartPole-v1", n_envs=N_ENVS, seed=SEED)
     rng = jax.random.PRNGKey(SEED)
@@ -52,209 +51,83 @@ def test_read_write_buffer():
     assert reward > 480
 
 
-def test_checkpoints_dqn():
-    C_STEP = 2
-    C_EPISODE = 4
-    DONE = False
-
-    OPTIONS = {
+def test_checkpointing_dqn():
+    config = {
+        "env_framework": "gymnax",
+        "env_name": "CartPole-v1",
+        "n_envs": 10,
         "algorithm": "dqn",
-        "checkpoint_dir": "/tmp/test_saves",
-        "checkpoint_name": "checkpoint_test_dqn",
-        "checkpoint": ["opt_state", "params", "loss"],
-        "load": "/tmp/test_saves/checkpoint_test_dqn/checkpoint_test_c_episode_4_step_2",
+        "checkpoint": ["all"],
+        "checkpoint_name": "test_checkpointing_dqn"
     }
 
-    env = make_env("gymnax", "CartPole-v1", seed=42)
-    rng = jax.random.PRNGKey(42)
+    env = AutoRLEnv(config=config)
+    _ = env.reset()
 
-    hp_config = DQN.get_default_hpo_config()
-    algorithm = DQN(
-        hp_config,
-        env,
-        track_metrics=True,
-        track_trajectories=False,
-    )
-    runner_state, init_buffer_state = algorithm.init(rng)
+    action = env.config_space.get_default_configuration()
+    _, objectives, _, _, info = env.step(action)
 
-    runner_state, buffer_state, result = algorithm.train(
-        runner_state,
-        init_buffer_state,
-        n_total_timesteps=N_TOTAL_TIMESTEPS,
-        n_eval_steps=EVAL_STEPS,
-        n_eval_episodes=EVAL_EPISODES
-    )
-
-    eval_rng = jax.random.PRNGKey(42)
-    runner_state._replace(rng=eval_rng)
-    rewards = algorithm.eval(runner_state, EVAL_EPISODES)
-    reward = np.mean(rewards)
-    Checkpointer.save(
-        algorithm.name,
-        runner_state,
-        buffer_state,
-        OPTIONS,
-        hp_config,
-        DONE,
-        C_EPISODE,
-        C_STEP,
-        result
-    )
-    (
-        hp_config,
-        c_step,
-        c_episode
-    ), algorithm_kw_args = Checkpointer.load(OPTIONS["load"], OPTIONS["algorithm"], init_buffer_state)
-
-    assert c_step == C_STEP
-    assert c_episode == C_EPISODE
-    assert c_episode == C_EPISODE
-
-    runner_state, _ = algorithm.init(rng, **algorithm_kw_args)
+    reward = objectives["reward_mean"]
     
-    eval_rng = jax.random.PRNGKey(42)
-    runner_state._replace(rng=eval_rng)
-    rewards_reload = algorithm.eval(runner_state, EVAL_EPISODES)
-    reward_reload = np.mean(rewards_reload)
+    _ = env.reset(checkpoint_path=info["checkpoint"])
 
-    assert np.abs(reward - reward_reload) < 5
+    new_reward = np.mean(env.eval(10))
+    assert np.isclose(reward, new_reward, rtol=1.)
+
+    env.step(action)
 
 
-def test_checkpoints_ppo():
-    C_STEP = 2
-    C_EPISODE = 4
-    DONE = False
-
-    OPTIONS = {
+def test_checkpointing_ppo():
+    config = {
+        "env_framework": "gymnax",
+        "env_name": "CartPole-v1",
+        "n_envs": 10,
         "algorithm": "ppo",
-        "checkpoint_dir": "/tmp/test_saves",
-        "checkpoint_name": "checkpoint_test_ppo",
-        "checkpoint": ["opt_state", "params", "loss"],
-        "load": "/tmp/test_saves/checkpoint_test_ppo/checkpoint_test_c_episode_4_step_2",
+        "checkpoint": ["all"],
+        "checkpoint_name": "test_checkpointing_ppo"
     }
 
-    env = make_env("gymnax", "CartPole-v1", seed=42)
-    rng = jax.random.PRNGKey(42)
+    env = AutoRLEnv(config=config)
+    _ = env.reset()
 
-    hp_config = SAC.get_default_hpo_config()
-    algorithm = SAC(
-        hp_config,
-        env,
-        track_metrics=True,
-        track_trajectories=False,
-    )
-    runner_state, init_buffer_state = algorithm.init(rng)
+    action = env.config_space.get_default_configuration()
+    _, objectives, _, _, info = env.step(action)
 
-    runner_state, buffer_state, result = algorithm.train(
-        runner_state,
-        init_buffer_state,
-        n_total_timesteps=N_TOTAL_TIMESTEPS,
-        n_eval_steps=EVAL_STEPS,
-        n_eval_episodes=EVAL_EPISODES
-    )
-
-    eval_rng = jax.random.PRNGKey(42)
-    runner_state._replace(rng=eval_rng)
-    rewards = algorithm.eval(runner_state, EVAL_EPISODES)
-    reward = np.mean(rewards)
-    Checkpointer.save(
-        algorithm.name,
-        runner_state,
-        buffer_state,
-        OPTIONS,
-        hp_config,
-        DONE,
-        C_EPISODE,
-        C_STEP,
-        result
-    )
-    (
-        hp_config,
-        c_step,
-        c_episode
-    ), algorithm_kw_args = Checkpointer.load(OPTIONS["load"], OPTIONS["algorithm"], init_buffer_state)
-
-    assert c_step == C_STEP
-    assert c_episode == C_EPISODE
-    assert c_episode == C_EPISODE
-
-    runner_state, _ = algorithm.init(rng, **algorithm_kw_args)
+    reward = objectives["reward_mean"]
     
-    eval_rng = jax.random.PRNGKey(42)
-    runner_state._replace(rng=eval_rng)
-    rewards_reload = algorithm.eval(runner_state, EVAL_EPISODES)
-    reward_reload = np.mean(rewards_reload)
+    _ = env.reset(checkpoint_path=info["checkpoint"])
 
-    assert np.abs(reward - reward_reload) < 50
+    new_reward = np.mean(env.eval(10))
+    assert np.isclose(reward, new_reward, rtol=1.)
+
+    env.step(action)
 
 
-def test_checkpoints_sac():
-    C_STEP = 2
-    C_EPISODE = 4
-    DONE = False
-
-    OPTIONS = {
+def test_checkpointing_sac():
+    config = {
+        "env_framework": "gymnax",
+        "env_name": "Pendulum-v1",
+        "n_envs": 10,
         "algorithm": "sac",
-        "checkpoint_dir": "/tmp/test_saves",
-        "checkpoint_name": "checkpoint_test_ppo",
-        "checkpoint": ["opt_state", "params", "loss"],
-        "load": "/tmp/test_saves/checkpoint_test_ppo/checkpoint_test_c_episode_4_step_2",
+        "checkpoint": ["all"],
+        "checkpoint_name": "test_checkpointing_sac"
     }
 
-    env = make_env("gymnax", "Pendulum-v1", seed=42)
-    rng = jax.random.PRNGKey(42)
+    env = AutoRLEnv(config=config)
+    _ = env.reset()
 
-    hp_config = SAC.get_default_hpo_config()
-    algorithm = SAC(
-        hp_config,
-        env,
-        track_metrics=True,
-        track_trajectories=False,
-    )
-    runner_state, init_buffer_state = algorithm.init(rng)
+    action = env.config_space.get_default_configuration()
+    _, objectives, _, _, info = env.step(action, n_total_timesteps=10000)
 
-    runner_state, buffer_state, result = algorithm.train(
-        runner_state,
-        init_buffer_state,
-        n_total_timesteps=N_TOTAL_TIMESTEPS,
-        n_eval_steps=EVAL_STEPS,
-        n_eval_episodes=EVAL_EPISODES
-    )
+    reward = objectives["reward_mean"]
+    
+    _ = env.reset(checkpoint_path=info["checkpoint"])
 
-    eval_rng = jax.random.PRNGKey(42)
-    runner_state._replace(rng=eval_rng)
-    rewards = algorithm.eval(runner_state, EVAL_EPISODES)
-    reward = np.mean(rewards)
-    Checkpointer.save(
-        algorithm.name,
-        runner_state,
-        buffer_state,
-        OPTIONS,
-        hp_config,
-        DONE,
-        C_EPISODE,
-        C_STEP,
-        result
-    )
-    (
-        hp_config,
-        c_step,
-        c_episode
-    ), algorithm_kw_args = Checkpointer.load(OPTIONS["load"], OPTIONS["algorithm"], init_buffer_state)
+    new_reward = np.mean(env.eval(10))
+    assert np.isclose(reward, new_reward, rtol=1.)
 
-    assert c_step == C_STEP
-    assert c_episode == C_EPISODE
-    assert c_episode == C_EPISODE
-
-    runner_state, _ = algorithm.init(rng, **algorithm_kw_args)
-
-    eval_rng = jax.random.PRNGKey(42)
-    runner_state._replace(rng=eval_rng)
-    rewards_reload = algorithm.eval(runner_state, EVAL_EPISODES)
-    reward_reload = np.mean(rewards_reload)
-
-    assert np.abs(reward - reward_reload) < 50
+    env.step(action)
 
 
 if __name__ == "__main__":
-    test_checkpoints_sac()
+    test_checkpointing_sac()

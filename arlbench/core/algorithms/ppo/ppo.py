@@ -2,9 +2,9 @@
 from __future__ import annotations
 
 import functools
-from typing import TYPE_CHECKING, Any, NamedTuple, Optional, Callable
+from collections.abc import Callable
+from typing import TYPE_CHECKING, Any, NamedTuple
 
-import flashbax as fbx
 import jax
 import jax.numpy as jnp
 import optax
@@ -13,18 +13,15 @@ from ConfigSpace import (Categorical, Configuration, ConfigurationSpace, Float,
 from flax.training.train_state import TrainState
 
 from arlbench.core.algorithms.algorithm import Algorithm
-from arlbench.core.algorithms.common import TimeStep
-from arlbench.core.environments import Environment
 from arlbench.utils import flatten_dict
 
 from .models import CNNActorCritic, MLPActorCritic
 
-import chex
-from flashbax.buffers.prioritised_trajectory_buffer import \
-    PrioritisedTrajectoryBufferState
+if TYPE_CHECKING:
+    import chex
 
-from arlbench.core.environments import Environment
-from arlbench.core.wrappers import AutoRLWrapper
+    from arlbench.core.environments import Environment
+    from arlbench.core.wrappers import AutoRLWrapper
 
 
 class PPOTrainState(TrainState):
@@ -50,6 +47,10 @@ class PPORunnerState(NamedTuple):
     obs: chex.Array
     global_step: int
 
+class PPOState(NamedTuple):
+    runner_state: PPORunnerState
+    buffer_state: None = None
+
 class PPOTrainingResult(NamedTuple):
     eval_rewards: jnp.ndarray
     trajectories: Transition | None
@@ -69,7 +70,7 @@ class Transition(NamedTuple):
     obs: jnp.ndarray
     info: jnp.ndarray
 
-PPOTrainReturnT = tuple[PPORunnerState, PrioritisedTrajectoryBufferState, PPOTrainingResult]
+PPOTrainReturnT = tuple[PPOState, PPOTrainingResult]
 
 class PPO(Algorithm):
     name = "ppo"
@@ -95,10 +96,7 @@ class PPO(Algorithm):
         )
 
         # compute actual update interval based on n_envs * env_steps
-        self.update_interval = int(self.hpo_config["update_interval"])
-
-        self.env_steps = int(self.update_interval // self.env.n_envs)
-        self.update_interval = self.env_steps * self.env.n_envs
+        self.update_interval = int(self.hpo_config["n_steps"] * self.env.n_envs)
 
         # ensure that at least one minibatch is available after each rollout
         if self.hpo_config["minibatch_size"] > self.update_interval:
@@ -125,25 +123,15 @@ class PPO(Algorithm):
                 hidden_size=self.nas_config["hidden_size"],
             )
 
-        self.buffer = fbx.make_flat_buffer(
-            max_length=self.hpo_config["buffer_size"],
-            min_length=self.hpo_config["buffer_batch_size"],
-            sample_batch_size=self.hpo_config["buffer_batch_size"],
-            add_sequences=False,
-            add_batch_size=self.env.n_envs
-        )
-
     @staticmethod
     def get_hpo_config_space(seed=None) -> ConfigurationSpace:
         return ConfigurationSpace(
             name="PPOConfigSpace",
             seed=seed,
             space={
-                "buffer_size": Integer("buffer_size", (1, int(1e7)), default=int(1e6)),
-                "buffer_batch_size": Integer("buffer_batch_size", (1, 1024), default=64),
                 "minibatch_size": Integer("minibatch_size", (4, 1024), default=256),
                 "lr": Float("lr", (1e-5, 0.1), default=2.5e-4),
-                "update_interval": Integer("update_interval", (1, int(1e5)), default=1024),  # todo: why do we need update interval and batch_size (i.e. number of steps between updates)
+                "n_steps": Integer("n_steps", (1, 1000), default=100),
                 "update_epochs": Integer("update_epochs", (1, int(1e5)), default=10),
                 "activation": Categorical("activation", ["tanh", "relu"], default="tanh"),
                 "gamma": Float("gamma", (0., 1.), default=0.99),
@@ -173,7 +161,7 @@ class PPO(Algorithm):
     @staticmethod
     def get_default_nas_config() -> Configuration:
         return PPO.get_nas_config_space().get_default_configuration()
-    
+
     @staticmethod
     def get_checkpoint_factory(
         runner_state: PPORunnerState,
@@ -202,22 +190,13 @@ class PPO(Algorithm):
             "trajectories": get_trajectories
         }
 
-    def init(self, rng, buffer_state=None, network_params=None, opt_state=None):
+    def init(self, rng, network_params=None, opt_state=None) -> PPOState:
         rng, reset_rng = jax.random.split(rng)
         env_state, obs = self.env.reset(reset_rng)
 
-        if buffer_state is None or network_params is None:
-            dummy_rng = jax.random.PRNGKey(0)
-            _action = self.env.sample_actions(dummy_rng)
-            _, (_obs, _reward, _done, _) = self.env.step(env_state, _action, dummy_rng)
-
-        if buffer_state is None:
-            _timestep = TimeStep(last_obs=_obs[0], obs=_obs[0], action=_action[0], reward=_reward[0], done=_done[0])
-            buffer_state = self.buffer.init(_timestep)
-
-        rng, init_rng = jax.random.split(rng)
         if network_params is None:
-            network_params = self.network.init(init_rng, _obs)
+            rng, init_rng = jax.random.split(rng)
+            network_params = self.network.init(init_rng, obs)
 
         tx = optax.chain(
                 optax.clip_by_global_norm(self.hpo_config["max_grad_norm"]),
@@ -239,41 +218,42 @@ class PPO(Algorithm):
             global_step=0
         )
 
-        return runner_state, buffer_state
+        return PPOState(runner_state=runner_state, buffer_state=None)
 
     @functools.partial(jax.jit, static_argnums=0)
     def predict(self, runner_state, obs, rng) -> int:
         pi, _ = self.network.apply(runner_state.train_state.params, obs)
         return pi.mode()
 
-    @functools.partial(jax.jit, static_argnums=(0,3,4,5), donate_argnums=(2,))
+    @functools.partial(jax.jit, static_argnums=(0,3,4,5))
     def train(
         self,
-        runner_state,
-        buffer_state: PrioritisedTrajectoryBufferState,
+        runner_state: PPORunnerState,
+        _,  # dummy for bufer state
         n_total_timesteps: int = 1000000,
         n_eval_steps:  int= 100,
         n_eval_episodes: int = 10,
     ) -> PPOTrainReturnT:
-        def train_eval_step(carry, _):
-            runner_state, buffer_state = carry
-            (runner_state, buffer_state), (metrics, trajectories) = jax.lax.scan(
+        def train_eval_step(_runner_state, _):
+            _runner_state, (metrics, trajectories) = jax.lax.scan(
                 self._update_step,
-                (runner_state, buffer_state),
+                _runner_state,
                 None,
                 n_total_timesteps // self.update_interval // n_eval_steps
             )
-            eval_returns = self.eval(runner_state, n_eval_episodes)
+            eval_returns = self.eval(_runner_state, n_eval_episodes)
 
-            return (runner_state, buffer_state), (metrics, trajectories, eval_returns)
+            return _runner_state, (metrics, trajectories, eval_returns)
 
-        (runner_state, buffer_state), (metrics, trajectories, eval_returns) = jax.lax.scan(
+        runner_state, (metrics, trajectories, eval_returns) = jax.lax.scan(
             train_eval_step,
-            (runner_state, buffer_state),
+            runner_state,
             None,
             n_eval_steps,
         )
-        return runner_state, buffer_state, PPOTrainingResult(
+        return PPOState(
+            runner_state=runner_state
+        ), PPOTrainingResult(
             eval_rewards=eval_returns,
             metrics=metrics,
             trajectories=trajectories
@@ -282,12 +262,11 @@ class PPO(Algorithm):
     @functools.partial(jax.jit, static_argnums=0)
     def _update_step(
         self,
-        carry: tuple[PPORunnerState, PrioritisedTrajectoryBufferState],
+        runner_state: PPORunnerState,
         _
-    ) -> tuple[tuple[PPORunnerState, PrioritisedTrajectoryBufferState], tuple[Optional[PPOMetrics], Optional[Transition]]]:
-        runner_state, buffer_state = carry
-        (runner_state, buffer_state), traj_batch = jax.lax.scan(
-            self._env_step, (runner_state, buffer_state), None, self.env_steps
+    ) -> tuple[PPORunnerState, tuple[PPOMetrics | None, Transition | None]]:
+        runner_state, traj_batch = jax.lax.scan(
+            self._env_step, runner_state, None, self.hpo_config["n_steps"]
         )
 
         # CALCULATE ADVANTAGE
@@ -327,11 +306,10 @@ class PPO(Algorithm):
             )
         if self.track_trajectories:
             tracjectories = traj_batch
-        return (runner_state, buffer_state), (metrics, tracjectories)
+        return runner_state, (metrics, tracjectories)
 
     @functools.partial(jax.jit, static_argnums=0)
-    def _env_step(self, carry, _):
-        runner_state, buffer_state = carry
+    def _env_step(self, runner_state, _):
         (
             rng,
             train_state,
@@ -350,9 +328,6 @@ class PPO(Algorithm):
         env_state, (obsv, reward, done, info) = self.env.step(env_state, action, _rng)
         global_step += self.env.n_envs
 
-        timestep = TimeStep(last_obs=last_obs, obs=obsv, action=action, reward=reward, done=done)
-        buffer_state = self.buffer.add(buffer_state, timestep)
-
         transition = Transition(
             done, action, value, reward, log_prob, last_obs, info
         )
@@ -363,7 +338,7 @@ class PPO(Algorithm):
             rng=rng,
             global_step=global_step
         )
-        return (runner_state, buffer_state), transition
+        return runner_state, transition
 
     @functools.partial(jax.jit, static_argnums=0)
     def _calculate_gae(self, traj_batch, last_val):

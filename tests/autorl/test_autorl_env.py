@@ -1,10 +1,7 @@
-import gymnax
-import numpy as np
 import pytest
 
 from arlbench import AutoRLEnv
 from arlbench.core.algorithms import DQN
-from arlbench.core.environments import make_env
 
 
 def test_autorl_env_dqn_default_obs():
