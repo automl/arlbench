@@ -533,7 +533,7 @@ class PPO(Algorithm):
         )
 
         train_state, (total_loss, grads) = jax.lax.scan(
-            self._update_minbatch, train_state, minibatches
+            self._update_minibatch, train_state, minibatches
         )
 
         if trimmed_batch_size < batch_size:
@@ -560,7 +560,7 @@ class PPO(Algorithm):
         )
 
     @functools.partial(jax.jit, static_argnums=0)
-    def _update_minbatch(
+    def _update_minibatch(
         self,
         train_state: PPOTrainState,
         batch_info: tuple[jnp.ndarray, jnp.ndarray, jnp.ndarray]
