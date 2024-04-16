@@ -425,8 +425,7 @@ class PPO(Algorithm):
         # Select action(s)
         rng, _rng = jax.random.split(rng)
         pi, value = self.network.apply(train_state.params, last_obs)
-        action = pi.sample(seed=_rng)
-        log_prob = pi.log_prob(action)
+        action, log_prob = pi.sample_and_log_prob(seed=_rng)
 
         # Perform env step
         rng, _rng = jax.random.split(rng)
