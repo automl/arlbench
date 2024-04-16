@@ -1,19 +1,19 @@
 import time
 
 import jax
-import numpy as np
+import warnings
 
 from arlbench.core.algorithms import SAC
 from arlbench.core.environments import make_env
 
-N_TOTAL_TIMESTEPS = 1e5
+N_UPDATES = 1e4
 EVAL_STEPS = 10
 EVAL_EPISODES = 1
 N_ENVS = 10
 
 
-def test_default_sac_continuous():
-    env = make_env("gymnax", "Pendulum-v1", seed=42, n_envs=N_ENVS)
+def test_default_sac_continuous(n_envs=N_ENVS):
+    env = make_env("gymnax", "Pendulum-v1", seed=42, n_envs=n_envs)
     rng = jax.random.PRNGKey(42)
 
     config = SAC.get_default_hpo_config()
@@ -23,16 +23,19 @@ def test_default_sac_continuous():
     start = time.time()
     algorithm_state, results = agent.train(
         *algorithm_state,
-        n_total_timesteps=N_TOTAL_TIMESTEPS,
+        n_total_timesteps=N_UPDATES * n_envs,
         n_eval_steps=EVAL_STEPS,
         n_eval_episodes=EVAL_EPISODES
     )
     training_time = time.time() - start
-    reward = results.eval_rewards.mean(axis=1)
+    reward = results.eval_rewards[-1].mean()
 
-    print(reward, training_time, algorithm_state.runner_state.global_step)
+    print(f"n_envs = {n_envs}, time = {training_time:.2f}, env_steps = {n_envs * algorithm_state.runner_state.global_step}, updates = {algorithm_state.runner_state.global_step}, reward = {reward:.2f}")
     assert reward > -1200    
 
 
 if __name__ == "__main__":
-    test_default_sac_continuous()
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        test_default_sac_continuous(n_envs=1)
+        test_default_sac_continuous(n_envs=10)

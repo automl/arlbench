@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import functools
+import warnings
 from collections.abc import Callable
 from typing import TYPE_CHECKING, Any, NamedTuple
 
@@ -19,12 +20,19 @@ from .models import CNNActorCritic, MLPActorCritic
 
 if TYPE_CHECKING:
     import chex
+    from flax.core.frozen_dict import FrozenDict
 
     from arlbench.core.environments import Environment
     from arlbench.core.wrappers import AutoRLWrapper
 
 
 class PPOTrainState(TrainState):
+    """PPO training state.
+
+    Contains:
+    - opt_state,
+    - params
+    """
     opt_state = None
 
     @classmethod
@@ -41,6 +49,7 @@ class PPOTrainState(TrainState):
         )
 
 class PPORunnerState(NamedTuple):
+    """PPO runner state. Consists of (rng, train_state, env_state, obs, global_step)."""
     rng: chex.PRNGKey
     train_state: PPOTrainState
     env_state: Any
@@ -48,20 +57,27 @@ class PPORunnerState(NamedTuple):
     global_step: int
 
 class PPOState(NamedTuple):
+    """PPO algorithm state. Consists of (runner_state, buffer_state).
+
+    Note: As PPO does not use a buffer buffer_state is always None and only kept for consistency across algorithms.
+    """
     runner_state: PPORunnerState
     buffer_state: None = None
 
 class PPOTrainingResult(NamedTuple):
+    """PPO training result. Consists of (eval_rewards, trajectories, metrics)."""
     eval_rewards: jnp.ndarray
     trajectories: Transition | None
     metrics: PPOMetrics | None
 
 class PPOMetrics(NamedTuple):
+    """PPO metrics returned by train function. Consists of (loss, grads, advantages)."""
     loss: Any
     grads: Any
     advantages: Any
 
 class Transition(NamedTuple):
+    """PPO Transition. Consists of (done, action, value, reward, log_prob, obs, info)."""
     done: jnp.ndarray
     action: jnp.ndarray
     value: jnp.ndarray
@@ -73,6 +89,7 @@ class Transition(NamedTuple):
 PPOTrainReturnT = tuple[PPOState, PPOTrainingResult]
 
 class PPO(Algorithm):
+    """JAX-based implementation of Proximal Policy Optimization (PPO)."""
     name = "ppo"
 
     def __init__(
@@ -81,9 +98,18 @@ class PPO(Algorithm):
         env: Environment | AutoRLWrapper,
         cnn_policy: bool = False,
         nas_config: Configuration | None = None,
-        track_trajectories=False,
-        track_metrics=False
+        track_trajectories: bool = False,
+        track_metrics: bool = False
     ) -> None:
+        """Creates a PPO algorithm instance.
+
+        Args:
+            hpo_config (Configuration): Hyperparameter configuration of the algorithm which can be optimized using hyperparameter optimization (HPO).
+            nas_config (Configuration): Neural architecture of the algorithm components which can be optimized using neural architecture search (NAS).
+            env (Environment | AutoRLWrapper): Target environment which the agent is trained on.
+            track_metrics (bool, optional): Track metrics such as loss and gradients during training. Defaults to False.
+            track_trajectories (bool, optional): Track trajectories during training. Defaults to False.
+        """
         if nas_config is None:
             nas_config = PPO.get_default_nas_config()
 
@@ -95,36 +121,29 @@ class PPO(Algorithm):
             track_trajectories=track_trajectories
         )
 
-        # compute actual update interval based on n_envs * env_steps
-        self.update_interval = int(self.hpo_config["n_steps"] * self.env.n_envs)
+        # Update interval = rollout size
+        self.rollout_size = int(self.hpo_config["n_steps"] * self.env.n_envs)
 
-        # ensure that at least one minibatch is available after each rollout
-        if self.hpo_config["minibatch_size"] > self.update_interval:
-            # todo: add a warning here
-            self.minibatch_size = self.update_interval
+        # Ensure that at least one minibatch is available after each rollout
+        if self.hpo_config["minibatch_size"] > self.rollout_size:
+            warnings.warn(f"minibatch_size > update_interval. Setting minibatch size to rollout_size = {self.rollout_size}.")
+            self.minibatch_size = self.rollout_size
         else:
             self.minibatch_size = int(self.hpo_config["minibatch_size"])
 
-        self.n_minibatches = int(self.update_interval // self.minibatch_size)
+        self.n_minibatches = int(self.rollout_size // self.minibatch_size)
 
         action_size, discrete = self.action_type
-        if cnn_policy:
-            self.network = CNNActorCritic(
-                action_size,
-                discrete=discrete,
-                activation=self.nas_config["activation"],
-                hidden_size=self.nas_config["hidden_size"],
-            )
-        else:
-            self.network = MLPActorCritic(
-                action_size,
-                discrete=discrete,
-                activation=self.nas_config["activation"],
-                hidden_size=self.nas_config["hidden_size"],
-            )
+        network_cls = CNNActorCritic if cnn_policy else MLPActorCritic
+        self.network = network_cls(
+            action_size,
+            discrete=discrete,
+            activation=self.nas_config["activation"],
+            hidden_size=self.nas_config["hidden_size"],
+        )
 
     @staticmethod
-    def get_hpo_config_space(seed=None) -> ConfigurationSpace:
+    def get_hpo_config_space(seed: int | None = None) -> ConfigurationSpace:
         return ConfigurationSpace(
             name="PPOConfigSpace",
             seed=seed,
@@ -148,7 +167,7 @@ class PPO(Algorithm):
         return PPO.get_hpo_config_space().get_default_configuration()
 
     @staticmethod
-    def get_nas_config_space(seed=None) -> ConfigurationSpace:
+    def get_nas_config_space(seed: int | None = None) -> ConfigurationSpace:
         return ConfigurationSpace(
             name="PPONASConfigSpace",
             seed=seed,
@@ -167,6 +186,15 @@ class PPO(Algorithm):
         runner_state: PPORunnerState,
         train_result: PPOTrainingResult,
     ) -> dict[str, Callable]:
+        """Creates a factory dictionary of all posssible checkpointing options of the Algorithm.
+
+        Args:
+            runner_state (PPORunnerState): Algorithm runner state.
+            train_result (PPOTrainingResult): Training result.
+
+        Returns:
+            dict[str, Callable]: Dictionary of factory functions.
+        """
         train_state = runner_state.train_state
 
         def get_trajectories():
@@ -190,7 +218,22 @@ class PPO(Algorithm):
             "trajectories": get_trajectories
         }
 
-    def init(self, rng, network_params=None, opt_state=None) -> PPOState:
+    def init(
+            self,
+            rng: chex.PRNGKey,
+            network_params: FrozenDict | dict | None = None,
+            opt_state: optax.OptState | None = None
+        ) -> PPOState:
+        """Initializes PPO state.
+
+        Args:
+            rng (chex.PRNGKey): Random generator key.
+            network_params (FrozenDict | dict | None, optional): Network parameters. Defaults to None.
+            opt_state (optax.OptState | None, optional): Optimizer state. Defaults to None.
+
+        Returns:
+            PPOState: PPO state.
+        """
         rng, reset_rng = jax.random.split(rng)
         env_state, obs = self.env.reset(reset_rng)
 
@@ -199,9 +242,9 @@ class PPO(Algorithm):
             network_params = self.network.init(init_rng, obs)
 
         tx = optax.chain(
-                optax.clip_by_global_norm(self.hpo_config["max_grad_norm"]),
-                optax.adam(self.hpo_config["lr"], eps=1e-5),
-            )
+            optax.clip_by_global_norm(self.hpo_config["max_grad_norm"]),
+            optax.adam(self.hpo_config["lr"], eps=1e-5),
+        )
 
         train_state = PPOTrainState.create_with_opt_state(
             apply_fn=self.network.apply,
@@ -221,31 +264,78 @@ class PPO(Algorithm):
         return PPOState(runner_state=runner_state, buffer_state=None)
 
     @functools.partial(jax.jit, static_argnums=0)
-    def predict(self, runner_state, obs, rng) -> int:
+    def predict(
+            self,
+            runner_state: PPORunnerState,
+            obs: jnp.ndarray,
+            rng: chex.PRNGKey,
+            deterministic: bool = True
+        ) -> jnp.ndarray:
+        """Predict an action(s) based on the current observation(s).
+
+        Args:
+            runner_state (PPORunnerState): PPO runner state.
+            obs (jnp.ndarray): Observation.
+            rng (chex.PRNGKey): Random generator key. Defaults to None.
+
+        Returns:
+            jnp.ndarray: Action(s)
+        """
         pi, _ = self.network.apply(runner_state.train_state.params, obs)
-        return pi.mode()
+        def deterministic_action():
+            return pi.mode()
+
+        def sampled_action():
+            return pi.sample(seed=rng)
+
+        return jax.lax.cond(
+            deterministic,
+            deterministic_action,
+            sampled_action,
+        )
 
     @functools.partial(jax.jit, static_argnums=(0,3,4,5))
     def train(
         self,
         runner_state: PPORunnerState,
-        _,  # dummy for bufer state
+        _,  # dummy for buffer state
         n_total_timesteps: int = 1000000,
         n_eval_steps:  int= 100,
         n_eval_episodes: int = 10,
     ) -> PPOTrainReturnT:
-        def train_eval_step(_runner_state, _):
+        """Performs one iteration of training.
+
+        Args:
+            runner_state (PPORunnerState): PPO runner state.
+            _ (None): Unused parameter (buffer_state in other algorithms).
+            n_total_timesteps (int, optional): Total number of training timesteps. Update steps = n_total_timesteps // n_envs. Defaults to 1000000.
+            n_eval_steps (int, optional): Number of evaluation steps during training. Defaults to 100.
+            n_eval_episodes (int, optional): Number of evaluation episodes per evaluation during training. Defaults to 10.
+
+        Returns:
+            PPOTrainReturnT: Tuple of PPO algorithm state and training result.
+        """
+        def train_eval_step(_runner_state: PPORunnerState, _: None) -> tuple[PPORunnerState, PPOTrainingResult]:
+            """Performs one iteration of training and evaluation.
+
+            Args:
+                _runner_state (PPORunnerState): PPO runner state.
+                _ (None): Unused parameter (required for jax.lax.scan).
+
+            Returns:
+                tuple[PPORunnerState, PPOTrainingResult]: Tuple of PPO runner state and training result.
+            """
             _runner_state, (metrics, trajectories) = jax.lax.scan(
                 self._update_step,
                 _runner_state,
                 None,
-                n_total_timesteps // self.update_interval // n_eval_steps
+                n_total_timesteps // self.env.n_envs // self.hpo_config["n_steps"] // n_eval_steps
             )
             eval_returns = self.eval(_runner_state, n_eval_episodes)
 
-            return _runner_state, (metrics, trajectories, eval_returns)
+            return _runner_state, PPOTrainingResult(eval_rewards=eval_returns, trajectories=trajectories, metrics=metrics)
 
-        runner_state, (metrics, trajectories, eval_returns) = jax.lax.scan(
+        runner_state, train_result = jax.lax.scan(
             train_eval_step,
             runner_state,
             None,
@@ -253,23 +343,28 @@ class PPO(Algorithm):
         )
         return PPOState(
             runner_state=runner_state
-        ), PPOTrainingResult(
-            eval_rewards=eval_returns,
-            metrics=metrics,
-            trajectories=trajectories
-        )
+        ), train_result
 
     @functools.partial(jax.jit, static_argnums=0)
     def _update_step(
         self,
         runner_state: PPORunnerState,
-        _
+        _: None
     ) -> tuple[PPORunnerState, tuple[PPOMetrics | None, Transition | None]]:
+        """Performs one PPO step of rollout and update.
+
+        Args:
+            runner_state (PPORunnerState): PPO runner state.
+            _ (None): Unused parameter (required for jax.lax.scan).
+
+        Returns:
+            tuple[PPORunnerState, tuple[PPOMetrics | None, Transition | None]]: Tuple of PPO runner state and tuple of metrics and trajectories (if tracked).
+        """
         runner_state, traj_batch = jax.lax.scan(
             self._env_step, runner_state, None, self.hpo_config["n_steps"]
         )
 
-        # CALCULATE ADVANTAGE
+        # Calculate advantage
         (
             rng,
             train_state,
@@ -281,11 +376,11 @@ class PPO(Algorithm):
 
         advantages, targets = self._calculate_gae(traj_batch, last_val)
 
+        # Update network parameters
         update_state = (train_state, traj_batch, advantages, targets, rng)
         update_state, (
             loss,
-            grads,
-            minibatches
+            grads
         ) = jax.lax.scan(self._update_epoch, update_state, None, self.hpo_config["update_epochs"])
         train_state = update_state[0]
         rng = update_state[-1]
@@ -309,7 +404,16 @@ class PPO(Algorithm):
         return runner_state, (metrics, tracjectories)
 
     @functools.partial(jax.jit, static_argnums=0)
-    def _env_step(self, runner_state, _):
+    def _env_step(self, runner_state: PPORunnerState, _: None) -> tuple[PPORunnerState, Transition]:
+        """Perform one environment step (n_envs step in case of parallel environments).
+
+        Args:
+            runner_state (PPORunnerState): PPO runner state.
+            _ (None): Unused parameter (required for jax.lax.scan).
+
+        Returns:
+            tuple[PPORunnerState, Transition]: Tuple of PPO runner state and batch of transitions.
+        """
         (
             rng,
             train_state,
@@ -318,15 +422,15 @@ class PPO(Algorithm):
             global_step
         ) = runner_state
 
-        # SELECT ACTION
+        # Select action(s)
         rng, _rng = jax.random.split(rng)
         pi, value = self.network.apply(train_state.params, last_obs)
         action, log_prob = pi.sample_and_log_prob(seed=_rng)
 
-        # STEP ENV
+        # Perform env step
         rng, _rng = jax.random.split(rng)
         env_state, (obsv, reward, done, info) = self.env.step(env_state, action, _rng)
-        global_step += self.env.n_envs
+        global_step += 1
 
         transition = Transition(
             done, action, value, reward, log_prob, last_obs, info
@@ -341,23 +445,45 @@ class PPO(Algorithm):
         return runner_state, transition
 
     @functools.partial(jax.jit, static_argnums=0)
-    def _calculate_gae(self, traj_batch, last_val):
+    def _calculate_gae(self, transition_batch: Transition, value: jnp.ndarray) -> tuple[jnp.ndarray, jnp.ndarray]:
+        """Generalized advantage estimation.
+
+        Args:
+            transition_batch (Transition): Batch of transitions (rollout).
+            value (jnp.ndarray): Previous value estimation for each transition.
+
+        Returns:
+            tuple[jnp.ndarray, jnp.ndarray]: (advantages, targets). Tuple of advantage and estimated return for each transition of the batch.
+        """
         _, advantages = jax.lax.scan(
             self._get_advantages,
-            (jnp.zeros_like(last_val), last_val),
-            traj_batch,
+            (jnp.zeros_like(value), value),
+            transition_batch,
             reverse=True,
             unroll=16,
         )
-        return advantages, advantages + traj_batch.value
+        return advantages, advantages + transition_batch.value
 
     @functools.partial(jax.jit, static_argnums=0)
-    def _get_advantages(self, gae_and_next_value, transition):
+    def _get_advantages(
+        self,
+        gae_and_next_value: tuple[jnp.ndarray, jnp.ndarray],
+        transitions: Transition
+    ) -> tuple[tuple[jnp.ndarray, jnp.ndarray], jnp.ndarray]:
+        """Calculate advantages for a transition batch compatible with jax.lax.scan.
+
+        Args:
+            gae_and_next_value (tuple[jnp.ndarray, jnp.ndarray]): Current loop state including gae and value estimation.
+            transitions (Transition): Transition batch.
+
+        Returns:
+            tuple[tuple[jnp.ndarray, jnp.ndarray], jnp.ndarray]: ((gae, value), gae). Tuple of loop variable (gae, value) and advantages estimation.
+        """
         gae, next_value = gae_and_next_value
         done, value, reward = (
-            transition.done,
-            transition.value,
-            transition.reward,
+            transitions.done,
+            transitions.value,
+            transitions.reward,
         )
         delta = reward + self.hpo_config["gamma"] * next_value * (1 - done) - value
         gae = (
@@ -367,11 +493,23 @@ class PPO(Algorithm):
         return (gae, value), gae
 
     @functools.partial(jax.jit, static_argnums=0)
-    def _update_epoch(self, update_state, _):
+    def _update_epoch(
+        self,
+        update_state: tuple[PPOTrainState, Transition, jnp.ndarray, jnp.ndarray, chex.PRNGKey], _: None
+    ) -> tuple[tuple[PPOTrainState, Transition, jnp.ndarray, jnp.ndarray, chex.PRNGKey], tuple[tuple | None, tuple | None]]:
+        """One epoch of network updates using minibatches of the current transition batch.
+
+        Args:
+            update_state (tuple[PPOTrainState, Transition, jnp.ndarray, jnp.ndarray, chex.PRNGKey]): (train_state, transition_batch, advantages, targets, rng) Current update state.
+            _ (None): Unused parameter (required for jax.lax.scan).
+
+        Returns:
+            tuple[tuple[PPOTrainState, Transition, jnp.ndarray, jnp.ndarray, chex.PRNGKey], tuple[tuple | None, tuple | None]]: Tuple of (train_state, transition_batch, advantages, targets, rng) and (loss, grads) if tracked.
+        """
         train_state, traj_batch, advantages, targets, rng = update_state
         rng, _rng = jax.random.split(rng)
 
-        batch_size = self.update_interval
+        batch_size = self.rollout_size
         trimmed_batch_size = self.n_minibatches * self.minibatch_size
 
         permutation = jax.random.permutation(_rng, batch_size)
@@ -418,12 +556,24 @@ class PPO(Algorithm):
         update_state = (train_state, traj_batch, advantages, targets, rng)
         return update_state, (
             total_loss,
-            grads,
-            minibatches
+            grads
         )
 
     @functools.partial(jax.jit, static_argnums=0)
-    def _update_minbatch(self, train_state, batch_info):
+    def _update_minbatch(
+        self,
+        train_state: PPOTrainState,
+        batch_info: tuple[jnp.ndarray, jnp.ndarray, jnp.ndarray]
+    ) -> tuple[PPOTrainState, tuple[tuple | None, tuple | None]]:
+        """Update network parameters using one minibatch.
+
+        Args:
+            train_state (PPOTrainState): PPO training state.
+            batch_info (tuple[jnp.ndarray, jnp.ndarray, jnp.ndarray]): Minibatch of transitions, advantages and targets.
+
+        Returns:
+            tuple[PPOTrainState, tuple[tuple | None, tuple | None]]: Tuple of PPO train state and (loss, grads) if tracked.
+        """
         traj_batch, advantages, targets = batch_info
 
         grad_fn = jax.value_and_grad(self._loss_fn, has_aux=True)
@@ -440,12 +590,29 @@ class PPO(Algorithm):
         return train_state, out
 
     @functools.partial(jax.jit, static_argnums=0)
-    def _loss_fn(self, params, traj_batch, gae, targets):
-         # RERUN NETWORK
+    def _loss_fn(
+        self,
+        params: FrozenDict | dict,
+        traj_batch: Transition,
+        gae: jnp.ndarray,
+        targets: jnp.ndarray
+    ) -> tuple[jnp.ndarray, tuple[jnp.ndarray, jnp.ndarray, jnp.ndarray]]:
+        """Calculate loss given the current batch of transitions.
+
+        Args:
+            params (FrozenDict | dict): Network parameters.
+            traj_batch (Transition): Batch of transitions
+            gae (jnp.ndarray): Advantages.
+            targets (jnp.ndarray): Targets.
+
+        Returns:
+            tuple[jnp.ndarray, tuple[jnp.ndarray, jnp.ndarray, jnp.ndarray]]: Tuple of (total_loss, (value_loss, actor_loss, entropy)).
+        """
+        # Rerun network
         pi, value = self.network.apply(params, traj_batch.obs)
         log_prob = pi.log_prob(traj_batch.action)
 
-        # CALCULATE VALUE LOSS
+        # Calculate value loss
         value_pred_clipped = traj_batch.value + (
             value - traj_batch.value
         ).clip(-self.hpo_config["clip_eps"], self.hpo_config["clip_eps"])
@@ -455,7 +622,7 @@ class PPO(Algorithm):
             0.5 * jnp.maximum(value_losses, value_losses_clipped).mean()
         )
 
-        # CALCULATE ACTOR LOSS
+        # Calculate actor loss
         ratio = jnp.exp(log_prob - traj_batch.log_prob)
         gae = (gae - gae.mean()) / (gae.std() + 1e-8)
         loss_actor1 = ratio * gae
