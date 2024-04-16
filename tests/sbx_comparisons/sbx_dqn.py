@@ -168,7 +168,8 @@ def test_sac(dir_name, log, framework, env_name, sac_config, seed):
     )
 
     hpo_config = {}
-    nas_config = dict(net_arch=[350, 350])
+    from jax import nn
+    nas_config = dict(net_arch=[350, 350], activation_fn=nn.relu)
     model = DQN(
         "MlpPolicy",
         env,
