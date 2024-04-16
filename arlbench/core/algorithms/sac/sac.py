@@ -2,7 +2,8 @@
 from __future__ import annotations
 
 import functools
-from typing import TYPE_CHECKING, Any, NamedTuple, Optional, Callable
+from collections.abc import Callable
+from typing import TYPE_CHECKING, Any, NamedTuple
 
 import flashbax as fbx
 import jax
@@ -20,13 +21,13 @@ from arlbench.core.algorithms.common import TimeStep
 
 from .models import AlphaCoef, SACActor, SACVectorCritic
 
+if TYPE_CHECKING:
+    import chex
+    from flashbax.buffers.prioritised_trajectory_buffer import \
+        PrioritisedTrajectoryBufferState
 
-import chex
-from flashbax.buffers.prioritised_trajectory_buffer import \
-    PrioritisedTrajectoryBufferState
-
-from arlbench.core.environments import Environment
-from arlbench.core.wrappers import AutoRLWrapper
+    from arlbench.core.environments import Environment
+    from arlbench.core.wrappers import AutoRLWrapper
 
 # todo: separate learning rate for critic and actor??
 
@@ -58,6 +59,10 @@ class SACTrainState(TrainState):
             **kwargs,
         )
 
+class SACState(NamedTuple):
+    runner_state: SACRunnerState
+    buffer_state: PrioritisedTrajectoryBufferState
+
 class SACTrainingResult(NamedTuple):
     eval_rewards: jnp.ndarray
     trajectories: Transition | None
@@ -79,7 +84,7 @@ class Transition(NamedTuple):
     obs: jnp.ndarray
     info: jnp.ndarray
 
-SACTrainReturnT = tuple[SACRunnerState, PrioritisedTrajectoryBufferState, SACTrainingResult]
+SACTrainReturnT = tuple[SACState, SACTrainingResult]
 
 class SAC(Algorithm):
     name = "sac"
@@ -170,7 +175,7 @@ class SAC(Algorithm):
     @staticmethod
     def get_default_nas_config() -> Configuration:
         return SAC.get_nas_config_space().get_default_configuration()
-    
+
     @staticmethod
     def get_checkpoint_factory(
         runner_state: SACRunnerState,
@@ -210,7 +215,7 @@ class SAC(Algorithm):
     def init(
             self,
             rng,
-            buffer_state=None,
+            buffer_state: PrioritisedTrajectoryBufferState | None = None,
             actor_network_params=None,
             critic_network_params=None,
             critic_target_params=None,
@@ -218,7 +223,7 @@ class SAC(Algorithm):
             actor_opt_state=None,
             critic_opt_state=None,
             alpha_opt_state=None
-    ) -> tuple[SACRunnerState, Any]:
+    ) -> SACState:
         rng, env_rng = jax.random.split(rng)
         env_state, obs = self.env.reset(env_rng)
 
@@ -279,7 +284,10 @@ class SAC(Algorithm):
             global_step=global_step
         )
 
-        return runner_state, buffer_state
+        return SACState(
+            runner_state=runner_state,
+            buffer_state=buffer_state
+        )
 
 
     @functools.partial(jax.jit, static_argnums=0)
@@ -329,7 +337,10 @@ class SAC(Algorithm):
             None,
             10,
         )
-        return runner_state, buffer_state, SACTrainingResult(
+        return SACState(
+            runner_state=runner_state,
+            buffer_state=buffer_state
+        ), SACTrainingResult(
             eval_rewards=eval_returns,
             metrics=metrics,
             trajectories=trajectories
@@ -396,7 +407,7 @@ class SAC(Algorithm):
             self,
             carry: tuple[SACRunnerState, PrioritisedTrajectoryBufferState],
             _
-    ) -> tuple[tuple[SACRunnerState, PrioritisedTrajectoryBufferState], tuple[Optional[SACMetrics], Optional[Transition]]]:
+    ) -> tuple[tuple[SACRunnerState, PrioritisedTrajectoryBufferState], tuple[SACMetrics | None, Transition | None]]:
         def do_update(rng, actor_train_state, critic_train_state, alpha_train_state, buffer_state):
             def gradient_step(carry, _):
                 rng, actor_train_state, critic_train_state, alpha_train_state, buffer_state = carry
@@ -508,7 +519,7 @@ class SAC(Algorithm):
             obs=runner_state.obs,
             global_step=runner_state.global_step
         )
-        actor_loss, critic_loss, alpha_loss, td_error, actor_grads, critic_grads = step_metrics        
+        actor_loss, critic_loss, alpha_loss, td_error, actor_grads, critic_grads = step_metrics
         metrics, tracjectories = None, None
         if self.track_metrics:
             metrics = SACMetrics(
@@ -527,7 +538,7 @@ class SAC(Algorithm):
                 done=done,
                 value=value,
                 info=info,
-            ) 
+            )
         return (runner_state, buffer_state), (metrics, tracjectories)
 
     @functools.partial(jax.jit, static_argnums=0)
