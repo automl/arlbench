@@ -244,7 +244,7 @@ class PPO(Algorithm):
     @functools.partial(jax.jit, static_argnums=0)
     def predict(self, runner_state, obs, rng) -> int:
         pi, _ = self.network.apply(runner_state.train_state.params, obs)
-        return pi.sample(seed=rng)
+        return pi.mode()
 
     @functools.partial(jax.jit, static_argnums=(0,3,4,5), donate_argnums=(2,))
     def train(
@@ -343,8 +343,7 @@ class PPO(Algorithm):
         # SELECT ACTION
         rng, _rng = jax.random.split(rng)
         pi, value = self.network.apply(train_state.params, last_obs)
-        action = pi.sample(seed=_rng)
-        log_prob = pi.log_prob(action)
+        action, log_prob = pi.sample_and_log_prob(seed=_rng)
 
         # STEP ENV
         rng, _rng = jax.random.split(rng)
