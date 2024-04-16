@@ -1,14 +1,13 @@
 from __future__ import annotations
 
-from collections.abc import Sequence
-
 import flax.linen as nn
 import jax.numpy as jnp
 from flax.linen.initializers import constant, orthogonal
 
 
 class CNNQ(nn.Module):
-    action_dim: Sequence[int]
+    """A CNN-based Q-Network for DQN."""
+    action_dim: int
     activation: str = "tanh"
     hidden_size: int = 64
     discrete: bool = True
@@ -58,13 +57,14 @@ class CNNQ(nn.Module):
         q = self.activation_func(q)
         q = self.conv3(q)
         q = self.activation_func(q)
+        q = q.reshape((q.shape[0], -1))  # flatten
         q = self.dense(q)
         q = self.activation_func(q)
         return self.out_layer(q)
 
 
 class MLPQ(nn.Module):
-    action_dim: Sequence[int]
+    action_dim: int
     activation: str = "tanh"
     hidden_size: int = 64
     discrete: bool = True
