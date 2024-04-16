@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from collections.abc import Sequence
-
 import distrax
 import flax.linen as nn
 import jax.numpy as jnp
@@ -27,7 +25,7 @@ class AlphaCoef(nn.Module):
 
 
 class SACActor(nn.Module):
-    action_dim: Sequence[int]
+    action_dim: int
     activation: int
     hidden_size: int = 64
     log_std_min: float = -20
@@ -72,7 +70,7 @@ class SACActor(nn.Module):
 
 
 class SACCritic(nn.Module):
-    action_dim: Sequence[int]
+    action_dim: int
     activation: int
     hidden_size: int = 64
 
@@ -116,7 +114,7 @@ class SACCritic(nn.Module):
 
 
 class SACVectorCritic(nn.Module):
-    action_dim: Sequence[int]
+    action_dim: int
     activation: int
     hidden_size: int = 64
     n_critics: int = 2
