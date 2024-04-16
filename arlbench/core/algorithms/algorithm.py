@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import functools
 from abc import ABC, abstractmethod
-from collections.abc import Callable, Sequence
+from collections.abc import Callable
 from typing import TYPE_CHECKING, Any
 
 import gym
@@ -13,6 +13,7 @@ import jax.numpy as jnp
 import numpy as np
 
 if TYPE_CHECKING:
+    import chex
     from ConfigSpace import Configuration, ConfigurationSpace
 
     from arlbench.core.environments import Environment
@@ -20,6 +21,7 @@ if TYPE_CHECKING:
 
 
 class Algorithm(ABC):
+    """Abstract base class for a reinforcement learning algorithm. Contains basic functionality that is shared among different algorithm implementations."""
     name: str
 
     def __init__(
@@ -27,9 +29,18 @@ class Algorithm(ABC):
             hpo_config: Configuration,
             nas_config: Configuration,
             env: Environment | AutoRLWrapper,
-            track_metrics=False,
-            track_trajectories=False
+            track_metrics: bool = False,
+            track_trajectories: bool = False
         ) -> None:
+        """Algorithm super-class constructor, is only called by sub-classes.
+
+        Args:
+            hpo_config (Configuration): Hyperparameter configuration of the algorithm which can be optimized using hyperparameter optimization (HPO).
+            nas_config (Configuration): Neural architecture of the algorithm components which can be optimized using neural architecture search (NAS).
+            env (Environment | AutoRLWrapper): Target environment which the agent is trained on.
+            track_metrics (bool, optional): Track metrics such as loss and gradients during training. Defaults to False.
+            track_trajectories (bool, optional): Track trajectories during training. Defaults to False.
+        """
         super().__init__()
 
         self.hpo_config = hpo_config
@@ -39,7 +50,12 @@ class Algorithm(ABC):
         self.track_trajectories = track_trajectories
 
     @property
-    def action_type(self) -> tuple[Sequence[int], bool]:
+    def action_type(self) -> tuple[int, bool]:
+        """The size and type of actions of the algorithm/environment.
+
+        Returns:
+            tuple[int, bool]: Tuple of (action_size, discrete). action_size is the number of possible actions and discrete defines whether the action space is discrete or not.
+        """
         action_space = self.env.action_space
 
         if isinstance(action_space, gym.spaces.Discrete | gymnasium.spaces.Discrete | gymnax.environments.spaces.Discrete):
@@ -57,23 +73,45 @@ class Algorithm(ABC):
 
     @staticmethod
     @abstractmethod
-    def get_hpo_config_space(seed=None) -> ConfigurationSpace:
-        pass
+    def get_hpo_config_space(seed: int | None = None) -> ConfigurationSpace:
+        """Returns the hyperparameter configuration space of the algorithm.
+
+        Args:
+            seed (int | None, optional): Random generator seed that is used to sample configurations. Defaults to None.
+
+        Returns:
+            ConfigurationSpace: Hyperparameter configuration space of the algorithm.
+        """
 
     @staticmethod
     @abstractmethod
     def get_default_hpo_config() -> Configuration:
-        pass
+        """Returns the default hyperparameter configuration of the agent.
+
+        Returns:
+            Configuration: Default hyperparameter configuration.
+        """
 
     @staticmethod
     @abstractmethod
-    def get_nas_config_space(seed=None) -> ConfigurationSpace:
-        pass
+    def get_nas_config_space(seed: int | None = None) -> ConfigurationSpace:
+        """Returns the neural architecture configuration space of the algorithm.
+
+        Args:
+            seed (int | None, optional): Random generator seed that is used to sample configurations. Defaults to None.
+
+        Returns:
+            ConfigurationSpace: Neural architecture configuration space of the algorithm.
+        """
 
     @staticmethod
     @abstractmethod
     def get_default_nas_config() -> Configuration:
-        pass
+        """Returns the default neural architecture configuration of the agent.
+
+        Returns:
+            Configuration: Default neural architecture configuration.
+        """
 
     @staticmethod
     @abstractmethod
@@ -81,29 +119,81 @@ class Algorithm(ABC):
         runner_state: Any,
         train_result: Any,
     ) -> dict[str, Callable]:
-        pass
+        """Creates a factory dictionary of all posssible checkpointing options of the Algorithm.
+
+        Args:
+            runner_state (Any): Algorithm runner state.
+            train_result (Any): Training result.
+
+        Returns:
+            dict[str, Callable]: Dictionary of factory functions.
+        """
 
     @abstractmethod
-    def init(self, rng) -> Any:
-        pass
+    def init(self, rng: chex.PRNGKey) -> Any:
+        """Initializes the algorithm state.
+
+        Args:
+            rng (chex.PRNGKey): Random generator key.
+
+        Returns:
+            Any: Algorithm state.
+        """
 
     @abstractmethod
     def train(
         self,
         runner_state: Any,
+        buffer_state: Any,
         n_total_timesteps: int = 1000000,
         n_eval_steps:  int= 100,
         n_eval_episodes: int = 10,
-    ) -> Any:
-        pass
+    ) -> tuple[Any, Any]:
+        """Performs one iteration of training.
+
+        Args:
+            runner_state (Any): Algorithm runner state.
+            buffer_state (Any): Algorithm buffer state.
+            n_total_timesteps (int, optional): Total number of training timesteps. Environment steps = n_total_timesteps * n_envs. Defaults to 1000000.
+            n_eval_steps (int, optional): Number of evaluation steps during training. Defaults to 100.
+            n_eval_episodes (int, optional): Number of evaluation episodes per evaluation during training. Defaults to 10.
+
+        Returns:
+            tuple[Any, Any]: (algorithm_state, training_result).
+        """
 
     @abstractmethod
     @functools.partial(jax.jit, static_argnums=0)
-    def predict(self, runner_state, obsv, rng = None) -> Any:
-        pass
+    def predict(
+        self,
+        runner_state: Any,
+        obs: jnp.ndarray,
+        rng: chex.PRNGKey | None = None,
+        deterministic: bool = True
+    ) -> jnp.ndarray:
+        """Predict an action(s) based on the current observation(s).
+
+        Args:
+            runner_state (Any): Algorithm runner state.
+            obs (jnp.ndarray): Observation(s).
+            rng (chex.PRNGKey | None, optional): Random generator key. Defaults to None.
+            deterministic (bool): Determine action deterministically. Defaults to True.
+
+        Returns:
+            Any: Action(s).
+        """
 
     @functools.partial(jax.jit, static_argnums=0)
-    def _env_episode(self, state, _):
+    def _env_episode(self, state: tuple[chex.PRNGKey, Any], _: None) -> tuple[tuple[chex.PRNGKey, Any], jnp.ndarray]:
+        """Evaluate one episode of evaluation in parallel on n_envs.
+
+        Args:
+            state (tuple[chex.PRNGKey, Any]): (rng, runner_state). Current state of the evaluation.
+            _ (None): Unused parameter (required for jax.lax.scan).
+
+        Returns:
+            tuple[tuple[chex.PRNGKey, Any], jnp.ndarray]: ((rng, runner_state), reward). Current state of the evaluation and cumulative rewards.
+        """
         rng, runner_state = state
         rng, reset_rng = jax.random.split(rng)
 
@@ -117,24 +207,39 @@ class Algorithm(ABC):
             runner_state
         )
 
-        def cond_fn(state):
+        def cond_fn(state: tuple) -> jnp.bool:
+            """Condition function for JAX while loop. Returns true if all parallel environments are done.
+
+            Args:
+                state (tuple): Current loop state.
+
+            Returns:
+                jnp.bool: True if all environments are done.
+            """
             _, _, _, done, _, _ = state
             return jnp.logical_not(jnp.all(done))
 
-        def body_fn(state):
+        def body_fn(state: tuple) -> tuple:
+            """Body function for JAX while loop. Performs one parallel step in all environments.
+
+            Args:
+                state (tuple): Current loop state.
+
+            Returns:
+                tuple: Updated loop state.
+            """
             env_state, obs, reward, done, rng, runner_state = state
 
-            # SELECT ACTION
+            # Select action
             rng, action_rng = jax.random.split(rng)
-            action = self.predict(runner_state, obs, action_rng)
+            action = self.predict(runner_state, obs, action_rng, deterministic=True)
 
-            # STEP ENV
+            # Step
             rng, step_rng = jax.random.split(rng)
             env_state, (obs, reward_, done_, _) = self.env.step(env_state, action, step_rng)
 
             # Count rewards only for envs that are not already done
             reward += reward_ * ~done
-
             done = jnp.logical_or(done, done_)
 
             return env_state, obs, reward, done, rng, runner_state
@@ -144,14 +249,29 @@ class Algorithm(ABC):
 
         return (rng, runner_state), reward
 
-    def eval(self, runner_state, num_eval_episodes) -> jnp.ndarray:
+    def eval(self, runner_state: Any, num_eval_episodes: int) -> jnp.ndarray:
+        """Evaluate the algorithm.
+
+        Args:
+            runner_state (Any): Algorithm runner state.
+            num_eval_episodes (int): Number of evaluation episodes.
+
+        Returns:
+            jnp.ndarray: Cumulative reward per evaluation episodes. Shape: (n_eval_episodes,).
+        """
         # Number of parallel evaluations, each with n_envs environments
         n_evals = int(np.ceil(num_eval_episodes / self.env.n_envs))
+
         _, rewards = jax.lax.scan(
             self._env_episode, (runner_state.rng, runner_state), None, n_evals
         )
         return jnp.concat(rewards)[:num_eval_episodes]
 
     def update_hpo_config(self, hpo_config: Configuration):
+        """Update the hyperparameter configuration of the algorithm.
+
+        Args:
+            hpo_config (Configuration): Hyperparameter configuration.
+        """
         self.hpo_config = hpo_config
 
