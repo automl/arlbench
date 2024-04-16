@@ -613,15 +613,7 @@ class PPO(Algorithm):
         log_prob = pi.log_prob(traj_batch.action)
 
         # Calculate value loss
-        value_pred_clipped = traj_batch.value + (
-            value - traj_batch.value
-        ).clip(-self.hpo_config["clip_eps"], self.hpo_config["clip_eps"])
-        value_losses = jnp.square(value - targets)
-        value_losses_clipped = jnp.square(value_pred_clipped - targets)
-        value_loss = (
-            0.5 * jnp.maximum(value_losses, value_losses_clipped).mean()
-            #0.5 * value_losses.mean()
-        )
+        value_losses = jnp.square(value - targets).mean()
 
         # Calculate actor loss
         ratio = jnp.exp(log_prob - traj_batch.log_prob)
