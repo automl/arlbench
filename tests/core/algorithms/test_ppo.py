@@ -29,7 +29,7 @@ def test_default_ppo_discrete(n_envs=10):
         n_eval_episodes=EVAL_EPISODES
     )
     training_time = time.time() - start
-    reward = results.eval_rewards.mean(axis=1)
+    reward = results.eval_rewards[-1].mean()
 
     print(f"n_envs = {n_envs}, time = {training_time:.2f}, steps = {algorithm_state.runner_state.global_step}, reward = {reward:.2f}")
     # assert reward > 450    
@@ -52,7 +52,7 @@ def test_default_ppo_continuous():
         n_eval_episodes=EVAL_EPISODES
     )
     training_time = time.time() - start
-    reward = results.eval_rewards.mean(axis=1)
+    reward = results.eval_rewards[-1].mean()
 
     print(reward, training_time, runner_state.global_step)
     assert reward > -1200    

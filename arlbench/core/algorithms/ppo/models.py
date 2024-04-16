@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from collections.abc import Sequence
-
 import distrax
 import flax.linen as nn
 import jax.numpy as jnp
@@ -9,7 +7,7 @@ from flax.linen.initializers import constant, orthogonal
 
 
 class MLPActorCritic(nn.Module):
-    action_dim: Sequence[int]
+    action_dim: int
     activation: str = "tanh"
     hidden_size: int = 64
     discrete: bool = True
@@ -76,7 +74,7 @@ class MLPActorCritic(nn.Module):
 
 class CNNActorCritic(nn.Module):
     """Based on NatureCNN https://github.com/DLR-RM/stable-baselines3/blob/master/stable_baselines3/common/torch_layers.py#L48."""
-    action_dim: Sequence[int]
+    action_dim: int
     activation: str = "tanh"
     hidden_size: int = 64
     discrete: bool = True

@@ -1,14 +1,12 @@
 from __future__ import annotations
 
-from collections.abc import Sequence
-
 import flax.linen as nn
 import jax.numpy as jnp
 from flax.linen.initializers import constant, orthogonal
 
 
 class CNNQ(nn.Module):
-    action_dim: Sequence[int]
+    action_dim: int
     activation: str = "tanh"
     hidden_size: int = 64
     discrete: bool = True
@@ -64,7 +62,7 @@ class CNNQ(nn.Module):
 
 
 class MLPQ(nn.Module):
-    action_dim: Sequence[int]
+    action_dim: int
     activation: str = "tanh"
     hidden_size: int = 64
     discrete: bool = True
