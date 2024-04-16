@@ -1,58 +1,47 @@
 import time
 
 import jax
-import jax.numpy as jnp
 import numpy as np
 
-from arlbench.core.algorithms import DQN, PPO, SAC
+from arlbench.core.algorithms import DQN, PPO
 from arlbench.core.environments import make_env
 
 
 def test_atari_ppo():
-    options = {
+    training_kw_args = {
         "n_total_timesteps": 1e5,
-        "n_env_steps": 200,
-        "n_eval_episodes": 10,
-        "track_metrics": True,
-        "track_traj": False,
     }
         
     env = make_env("envpool", "Adventure-v5", cnn_policy=True, n_envs=10, seed=42)
     rng = jax.random.PRNGKey(43)  # todo: fix this seed
     config = PPO.get_default_hpo_config()
     config["buffer_size"] = 512
-    agent = PPO(config, env, cnn_policy=True, track_metrics=options["track_metrics"], track_trajectories=options["track_traj"])
-    runner_state, buffer_state = agent.init(rng)
+    algorithm = PPO(config, env, cnn_policy=True)
+    algorithm_state = algorithm.init(rng)
     
     start = time.time()
-    (runner_state, _, ) = agent.train(runner_state, buffer_state)
+    algorithm_state, result = algorithm.train(*algorithm_state, **training_kw_args)
     training_time = time.time() - start
-    rewards = agent.eval(runner_state, options["n_eval_episodes"])
-    reward = np.mean(rewards)
+    reward = np.mean(result.eval_rewards[-1])
     
     #assert reward > -500
     print(reward, training_time)
 
 def test_atari_dqn():
-    options = {
+    training_kw_args = {
         "n_total_timesteps": 1e5,
-        "n_env_steps": 200,
-        "n_eval_episodes": 10,
-        "track_metrics": True,
-        "track_traj": True,
     }
         
-    env = make_env("gymnasium", "ALE/Adventure-v5", cnn_policy=True, n_envs=10, seed=42)
+    env = make_env("envpool", "Adventure-v5", cnn_policy=True, n_envs=10, seed=42)
     rng = jax.random.PRNGKey(43)  # todo: fix this seed
     config = DQN.get_default_hpo_config()
-    agent = DQN(config, options, env, cnn_policy=True, track_metrics=options["track_metrics"], track_trajectories=options["track_traj"])
-    runner_state, buffer_state = agent.init(rng)
+    algorithm = DQN(config, env, cnn_policy=True)
+    algorithm_state = algorithm.init(rng)
     
     start = time.time()
-    (runner_state, _), _ = agent.train(runner_state, buffer_state)
+    algorithm_state, result = algorithm.train(*algorithm_state, **training_kw_args)
     training_time = time.time() - start
-    rewards = agent.eval(runner_state, options["n_eval_episodes"])
-    reward = np.mean(rewards)
+    reward = np.mean(result.eval_rewards[-1])
     
     #assert reward > -500
     print(reward, training_time)

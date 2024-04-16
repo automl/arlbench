@@ -1,9 +1,10 @@
-from .dqn import DQN, DQNRunnerState, DQNTrainingResult, DQNMetrics, DQNTrainReturnT
+from .dqn import DQN, DQNRunnerState, DQNTrainingResult, DQNMetrics, DQNTrainReturnT, DQNState
 
 __all__ = [
     "DQN",
     "DQNRunnerState",
     "DQNTrainingResult",
     "DQNMetrics",
-    "DQNTrainReturnT"
+    "DQNTrainReturnT",
+    "DQNState"
 ]

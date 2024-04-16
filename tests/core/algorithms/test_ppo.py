@@ -19,21 +19,19 @@ def test_default_ppo_discrete(n_envs=10):
 
     config = PPO.get_default_hpo_config()
     agent = PPO(config, env)
-    runner_state, buffer_state = agent.init(rng)
+    algorithm_state = agent.init(rng)
     
     start = time.time()
-    runner_state, buffer_state, _ = agent.train(
-        runner_state,
-        buffer_state,
+    algorithm_state, results = agent.train(
+        *algorithm_state,
         n_total_timesteps=N_TOTAL_TIMESTEPS,
         n_eval_steps=EVAL_STEPS,
         n_eval_episodes=EVAL_EPISODES
     )
     training_time = time.time() - start
-    rewards = agent.eval(runner_state, EVAL_EPISODES)
-    reward = np.mean(rewards)
+    reward = results.eval_rewards.mean(axis=1)
 
-    print(f"n_envs = {n_envs}, time = {training_time:.2f}, steps = {runner_state.global_step}, reward = {reward:.2f}")
+    print(f"n_envs = {n_envs}, time = {training_time:.2f}, steps = {algorithm_state.runner_state.global_step}, reward = {reward:.2f}")
     # assert reward > 450    
 
 
@@ -46,7 +44,7 @@ def test_default_ppo_continuous():
     runner_state, buffer_state = agent.init(rng)
     
     start = time.time()
-    runner_state, buffer_state, _ = agent.train(
+    runner_state, buffer_state, results = agent.train(
         runner_state,
         buffer_state,
         n_total_timesteps=N_TOTAL_TIMESTEPS,
@@ -54,8 +52,7 @@ def test_default_ppo_continuous():
         n_eval_episodes=EVAL_EPISODES
     )
     training_time = time.time() - start
-    rewards = agent.eval(runner_state, EVAL_EPISODES)
-    reward = np.mean(rewards)
+    reward = results.eval_rewards.mean(axis=1)
 
     print(reward, training_time, runner_state.global_step)
     assert reward > -1200    
