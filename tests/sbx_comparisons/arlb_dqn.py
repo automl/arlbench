@@ -30,11 +30,11 @@ def test_dqn(dir_name, log, framework, env_name, config, training_kw_args, seed)
     nas_config["hidden_size"] = 350
 
     agent = DQN(hpo_config, env, nas_config=nas_config)
-    runner_state, buffer_state = agent.init(rng)
+    algorithm_state = agent.init(rng)
 
     start = time.time()
     log.info(f"training started")
-    (runner_state, buffer_state, results) = agent.train(runner_state, buffer_state, **training_kw_args)
+    (algorithm_state, results) = agent.train(*algorithm_state, **training_kw_args)
     log.info(f"training finished")
     training_time = time.time() - start
 

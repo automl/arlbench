@@ -5,7 +5,10 @@ from typing import TYPE_CHECKING
 
 import gymnasium
 import jax.numpy as jnp
+import jaxlib.xla_client
+import jaxlib.xla_extension
 import numpy as np
+import jaxlib
 
 if TYPE_CHECKING:
     from arlbench.core.algorithms import TrainFunc
@@ -37,21 +40,31 @@ class GradInfo(StateFeature):
         def wrapper(*args, **kwargs):
             result = train_func(*args, **kwargs)
 
-            if result.metrics and len(result.metrics) >= 3:
-                grad_info = result.metrics[1]
+            _, train_result = result
+
+            if train_result.metrics and len(train_result.metrics) >= 3:
+                grad_info = train_result.metrics[1]
             else:
                 raise ValueError("Tying to extract grad_info but 'self.metrics' does not match.")
 
-            grad_info = grad_info["params"]
-            grad_info = {
-                k: v
-                for (k, v) in grad_info.items()
-                if isinstance(v, dict)
-            }
+            if isinstance(grad_info, jaxlib.xla_extension.ArrayImpl):
+                # SAC
+                grad_info = list(np.array(grad_info).flatten())
+            elif isinstance(grad_info, tuple):  
+                # PPO
+                grad_info = [v for v in grad_info]
+            else:   
+                # DQN
+                grad_info = grad_info["params"]
+                grad_info = {
+                    k: v
+                    for (k, v) in grad_info.items()
+                    if isinstance(v, dict)
+                }
 
-            grad_info = [
-                grad_info[g][k] for g in grad_info for k in grad_info[g]
-            ]
+                grad_info = [
+                    grad_info[g][k] for g in grad_info for k in grad_info[g]
+                ]
 
             grad_norm = np.mean([jnp.linalg.norm(g) for g in grad_info])
             grad_var = np.mean([jnp.var(g) for g in grad_info])

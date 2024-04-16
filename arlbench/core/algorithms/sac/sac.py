@@ -58,6 +58,10 @@ class SACTrainState(TrainState):
             **kwargs,
         )
 
+class SACState(NamedTuple):
+    runner_state: SACRunnerState
+    buffer_state: PrioritisedTrajectoryBufferState
+
 class SACTrainingResult(NamedTuple):
     eval_rewards: jnp.ndarray
     trajectories: Transition | None
@@ -79,7 +83,7 @@ class Transition(NamedTuple):
     obs: jnp.ndarray
     info: jnp.ndarray
 
-SACTrainReturnT = tuple[SACRunnerState, PrioritisedTrajectoryBufferState, SACTrainingResult]
+SACTrainReturnT = tuple[SACState, SACTrainingResult]
 
 class SAC(Algorithm):
     name = "sac"
@@ -210,7 +214,7 @@ class SAC(Algorithm):
     def init(
             self,
             rng,
-            buffer_state=None,
+            buffer_state: PrioritisedTrajectoryBufferState | None = None,
             actor_network_params=None,
             critic_network_params=None,
             critic_target_params=None,
@@ -218,7 +222,7 @@ class SAC(Algorithm):
             actor_opt_state=None,
             critic_opt_state=None,
             alpha_opt_state=None
-    ) -> tuple[SACRunnerState, Any]:
+    ) -> SACState:
         rng, env_rng = jax.random.split(rng)
         env_state, obs = self.env.reset(env_rng)
 
@@ -279,7 +283,10 @@ class SAC(Algorithm):
             global_step=global_step
         )
 
-        return runner_state, buffer_state
+        return SACState(
+            runner_state=runner_state,
+            buffer_state=buffer_state
+        )
 
 
     @functools.partial(jax.jit, static_argnums=0)
@@ -329,7 +336,10 @@ class SAC(Algorithm):
             None,
             10,
         )
-        return runner_state, buffer_state, SACTrainingResult(
+        return SACState(
+            runner_state=runner_state,
+            buffer_state=buffer_state
+        ), SACTrainingResult(
             eval_rewards=eval_returns,
             metrics=metrics,
             trajectories=trajectories
