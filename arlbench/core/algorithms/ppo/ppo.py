@@ -395,7 +395,7 @@ class PPO(Algorithm):
         )
 
         train_state, (total_loss, grads) = jax.lax.scan(
-            self._update_minbatch, train_state, minibatches
+            self._update_minibatch, train_state, minibatches
         )
 
         if trimmed_batch_size < batch_size:
@@ -423,7 +423,7 @@ class PPO(Algorithm):
         )
 
     @functools.partial(jax.jit, static_argnums=0)
-    def _update_minbatch(self, train_state, batch_info):
+    def _update_minibatch(self, train_state, batch_info):
         traj_batch, advantages, targets = batch_info
 
         grad_fn = jax.value_and_grad(self._loss_fn, has_aux=True)
