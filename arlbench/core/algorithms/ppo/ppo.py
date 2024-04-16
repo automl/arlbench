@@ -150,7 +150,7 @@ class PPO(Algorithm):
             space={
                 "minibatch_size": Integer("minibatch_size", (4, 1024), default=256),
                 "lr": Float("lr", (1e-5, 0.1), default=2.5e-4),
-                "n_steps": Integer("n_steps", (1, 1000), default=100),
+                "n_steps": Integer("n_steps", (1, 10000), default=100),
                 "update_epochs": Integer("update_epochs", (1, int(1e5)), default=10),
                 "activation": Categorical("activation", ["tanh", "relu"], default="tanh"),
                 "gamma": Float("gamma", (0., 1.), default=0.99),
@@ -533,7 +533,7 @@ class PPO(Algorithm):
         )
 
         train_state, (total_loss, grads) = jax.lax.scan(
-            self._update_minbatch, train_state, minibatches
+            self._update_minibatch, train_state, minibatches
         )
 
         if trimmed_batch_size < batch_size:
@@ -560,7 +560,7 @@ class PPO(Algorithm):
         )
 
     @functools.partial(jax.jit, static_argnums=0)
-    def _update_minbatch(
+    def _update_minibatch(
         self,
         train_state: PPOTrainState,
         batch_info: tuple[jnp.ndarray, jnp.ndarray, jnp.ndarray]
@@ -613,14 +613,7 @@ class PPO(Algorithm):
         log_prob = pi.log_prob(traj_batch.action)
 
         # Calculate value loss
-        value_pred_clipped = traj_batch.value + (
-            value - traj_batch.value
-        ).clip(-self.hpo_config["clip_eps"], self.hpo_config["clip_eps"])
-        value_losses = jnp.square(value - targets)
-        value_losses_clipped = jnp.square(value_pred_clipped - targets)
-        value_loss = (
-            0.5 * jnp.maximum(value_losses, value_losses_clipped).mean()
-        )
+        value_losses = jnp.square(value - targets).mean()
 
         # Calculate actor loss
         ratio = jnp.exp(log_prob - traj_batch.log_prob)
