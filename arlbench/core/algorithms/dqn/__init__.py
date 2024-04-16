@@ -1,4 +1,5 @@
-from .dqn import DQN, DQNRunnerState, DQNTrainingResult, DQNMetrics, DQNTrainReturnT, DQNState
+from .dqn import (DQN, DQNMetrics, DQNRunnerState, DQNState, DQNTrainingResult,
+                  DQNTrainReturnT)
 
 __all__ = [
     "DQN",

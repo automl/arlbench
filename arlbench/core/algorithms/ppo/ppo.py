@@ -2,9 +2,9 @@
 from __future__ import annotations
 
 import functools
-from typing import TYPE_CHECKING, Any, NamedTuple, Optional, Callable
+from collections.abc import Callable
+from typing import TYPE_CHECKING, Any, NamedTuple
 
-import flashbax as fbx
 import jax
 import jax.numpy as jnp
 import optax
@@ -13,16 +13,15 @@ from ConfigSpace import (Categorical, Configuration, ConfigurationSpace, Float,
 from flax.training.train_state import TrainState
 
 from arlbench.core.algorithms.algorithm import Algorithm
-from arlbench.core.algorithms.common import TimeStep
-from arlbench.core.environments import Environment
 from arlbench.utils import flatten_dict
 
 from .models import CNNActorCritic, MLPActorCritic
 
-import chex
+if TYPE_CHECKING:
+    import chex
 
-from arlbench.core.environments import Environment
-from arlbench.core.wrappers import AutoRLWrapper
+    from arlbench.core.environments import Environment
+    from arlbench.core.wrappers import AutoRLWrapper
 
 
 class PPOTrainState(TrainState):
@@ -132,7 +131,7 @@ class PPO(Algorithm):
             space={
                 "minibatch_size": Integer("minibatch_size", (4, 1024), default=256),
                 "lr": Float("lr", (1e-5, 0.1), default=2.5e-4),
-                "n_steps": Integer("n_steps", (1, int(1000)), default=100),
+                "n_steps": Integer("n_steps", (1, 1000), default=100),
                 "update_epochs": Integer("update_epochs", (1, int(1e5)), default=10),
                 "activation": Categorical("activation", ["tanh", "relu"], default="tanh"),
                 "gamma": Float("gamma", (0., 1.), default=0.99),
@@ -162,7 +161,7 @@ class PPO(Algorithm):
     @staticmethod
     def get_default_nas_config() -> Configuration:
         return PPO.get_nas_config_space().get_default_configuration()
-    
+
     @staticmethod
     def get_checkpoint_factory(
         runner_state: PPORunnerState,
@@ -265,7 +264,7 @@ class PPO(Algorithm):
         self,
         runner_state: PPORunnerState,
         _
-    ) -> tuple[PPORunnerState, tuple[Optional[PPOMetrics], Optional[Transition]]]:
+    ) -> tuple[PPORunnerState, tuple[PPOMetrics | None, Transition | None]]:
         runner_state, traj_batch = jax.lax.scan(
             self._env_step, runner_state, None, self.hpo_config["n_steps"]
         )

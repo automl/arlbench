@@ -2,7 +2,8 @@
 from __future__ import annotations
 
 import functools
-from typing import TYPE_CHECKING, Any, NamedTuple, Optional, Callable
+from collections.abc import Callable
+from typing import TYPE_CHECKING, Any, NamedTuple
 
 import flashbax as fbx
 import jax
@@ -19,9 +20,10 @@ from arlbench.core.algorithms.common import TimeStep
 
 from .models import CNNQ, MLPQ
 
-import chex
-from flashbax.buffers.prioritised_trajectory_buffer import PrioritisedTrajectoryBufferState
-
+if TYPE_CHECKING:
+    import chex
+    from flashbax.buffers.prioritised_trajectory_buffer import \
+        PrioritisedTrajectoryBufferState
 
 
 class DQNTrainState(TrainState):
@@ -179,7 +181,7 @@ class DQN(Algorithm):
     @staticmethod
     def get_default_nas_config() -> Configuration:
         return DQN.get_nas_config_space().get_default_configuration()
-    
+
     @staticmethod
     def get_checkpoint_factory(
         runner_state: DQNRunnerState,
@@ -341,7 +343,7 @@ class DQN(Algorithm):
         self,
         carry: tuple[DQNRunnerState, PrioritisedTrajectoryBufferState],
         _
-    ) -> tuple[tuple[DQNRunnerState, PrioritisedTrajectoryBufferState], tuple[Optional[DQNMetrics], Optional[Transition]]]:
+    ) -> tuple[tuple[DQNRunnerState, PrioritisedTrajectoryBufferState], tuple[DQNMetrics | None, Transition | None]]:
         runner_state, buffer_state = carry
         (
             rng,
@@ -494,5 +496,5 @@ class DQN(Algorithm):
                 reward=reward,
                 done=done,
                 info=info,
-            )            
+            )
         return (runner_state, buffer_state), (metrics, tracjectories)

@@ -8,7 +8,8 @@ import gymnasium
 import jax
 import numpy as np
 
-from arlbench.core.algorithms import (DQN, PPO, SAC, Algorithm, AlgorithmState, TrainResult, TrainReturnT)
+from arlbench.core.algorithms import (DQN, PPO, SAC, Algorithm, AlgorithmState,
+                                      TrainResult, TrainReturnT)
 from arlbench.core.environments import make_env
 from arlbench.utils import config_space_to_gymnasium_space
 
@@ -49,7 +50,7 @@ class AutoRLEnv(gymnasium.Env):
     _train_result: TrainResult | None
     _hpo_config: Configuration
     _total_timesteps: int
-    
+
     def __init__(
             self,
             config: dict | None = None
@@ -192,7 +193,7 @@ class AutoRLEnv(gymnasium.Env):
 
         if self._done or self._algorithm is None:
             raise ValueError("Called step() before reset().")
-        
+
         # Set done if max. number of steps in DAC is reached or classic (one-step) HPO is performed
         self._done = self.step_()
         info = {}
@@ -201,7 +202,7 @@ class AutoRLEnv(gymnasium.Env):
         if isinstance(action, dict):
             action = Configuration(self.config_space, action)
         self._hpo_config = action
-        
+
         if seed and self._algorithm_state:
             runner_state = self._algorithm_state._replace(rng=jax.random.key(seed))
             self._algorithm_state = self._algorithm_state._replace(runner_state=runner_state)
@@ -269,7 +270,7 @@ class AutoRLEnv(gymnasium.Env):
     def _save(self, tag: str | None = None) -> str:
         if self._algorithm_state is None:
             raise ValueError("Agent not initialized. Not able to save agent state.")
-        
+
         if self._train_result is None:
             raise ValueError("No training performed, so there is nothing to save. Please run step() first.")
 
