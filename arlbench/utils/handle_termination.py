@@ -2,10 +2,9 @@
 from __future__ import annotations
 
 import logging
-import os
 import signal
 import sys
-from pathlib import Path
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -16,11 +15,9 @@ class HandleTermination:
     even if there's an error in the code.
     """
 
-    def __init__(self, directory):
+    def __init__(self, env: Any):
         """Initialize the context manager with logdir."""
-        # self.model = model
-        # self.optimizer = optimizer
-        self.directory = Path(directory)
+        self.env = env
 
     def __enter__(self):
         self.old_sigterm_handler = signal.signal(signal.SIGTERM, self.handle_sigterm)
@@ -33,6 +30,9 @@ class HandleTermination:
         signal.signal(signal.SIGTERM, self.old_sigterm_handler)
         if exc_type is not None:
             logger.info("Oh no, there was an exception!")
+            path = self.env.save(tag="exc")
+            logger.info(f"Saving checkpoint to {path}")
+
             # torch.save({
             #    'model_state_dict': self.model.state_dict(),
             #    'optimizer_state_dict': self.optimizer.state_dict(),
@@ -41,19 +41,11 @@ class HandleTermination:
         # Everything ran perfectly, so save the final model and optimizer states
         if exc_type is None:
             logger.info("All clear!")
-            # torch.save({
-            #    'model_state_dict': self.model.state_dict(),
-            #    'optimizer_state_dict': self.optimizer.state_dict(),
-            # }, self.directory / f'checkpoint_final.pth')
 
         return False
 
     def handle_sigterm(self, signum, frame): # noqa: ARG002
         """Save the model and optimizer states before exiting."""
-        logger.info(f"Saving checkpoint to {self.directory}/checkpoint_sigterm.pth")
-        # torch.save({
-
-        #     'model_state_dict': self.model.state_dict(),
-        #     'optimizer_state_dict': self.optimizer.state_dict(),
-        # }, self.directory / f'checkpoint_sigterm.pth')
+        path = self.env.save(tag="sigterm")
+        logger.info(f"Saving checkpoint to {path}")
         sys.exit(0)
