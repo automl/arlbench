@@ -1,4 +1,7 @@
+from __future__ import annotations
+
 import chex
+
 
 @chex.dataclass(frozen=True)
 class TimeStep:

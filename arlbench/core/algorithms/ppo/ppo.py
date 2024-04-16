@@ -1,18 +1,27 @@
 # The PPO Code is heavily based on PureJax: https://github.com/luchris429/purejaxrl
+from __future__ import annotations
+
+import functools
+from collections.abc import Callable
+from typing import TYPE_CHECKING, Any, NamedTuple
+
 import jax
 import jax.numpy as jnp
 import optax
-from typing import NamedTuple, Union, Any, Dict, Optional
-import chex
-from .common import TimeStep
+from ConfigSpace import (Categorical, Configuration, ConfigurationSpace, Float,
+                         Integer)
 from flax.training.train_state import TrainState
-import flashbax as fbx
-import flax
-import functools
-from .algorithm import Algorithm
-from .models import ActorCritic
-from ConfigSpace import Configuration, ConfigurationSpace, Float, Integer, Categorical
-from arlbench.environments import Environment
+
+from arlbench.core.algorithms.algorithm import Algorithm
+from arlbench.utils import flatten_dict
+
+from .models import CNNActorCritic, MLPActorCritic
+
+if TYPE_CHECKING:
+    import chex
+
+    from arlbench.core.environments import Environment
+    from arlbench.core.wrappers import AutoRLWrapper
 
 
 class PPOTrainState(TrainState):
@@ -22,7 +31,7 @@ class PPOTrainState(TrainState):
     def create_with_opt_state(cls, *, apply_fn, params, tx, opt_state, **kwargs):
         if opt_state is None:
             opt_state = tx.init(params)
-        obj = cls(
+        return cls(
             step=0,
             apply_fn=apply_fn,
             params=params,
@@ -30,14 +39,27 @@ class PPOTrainState(TrainState):
             opt_state=opt_state,
             **kwargs,
         )
-        return obj
 
 class PPORunnerState(NamedTuple):
     rng: chex.PRNGKey
     train_state: PPOTrainState
     env_state: Any
     obs: chex.Array
+    global_step: int
 
+class PPOState(NamedTuple):
+    runner_state: PPORunnerState
+    buffer_state: None = None
+
+class PPOTrainingResult(NamedTuple):
+    eval_rewards: jnp.ndarray
+    trajectories: Transition | None
+    metrics: PPOMetrics | None
+
+class PPOMetrics(NamedTuple):
+    loss: Any
+    grads: Any
+    advantages: Any
 
 class Transition(NamedTuple):
     done: jnp.ndarray
@@ -48,14 +70,17 @@ class Transition(NamedTuple):
     obs: jnp.ndarray
     info: jnp.ndarray
 
+PPOTrainReturnT = tuple[PPOState, PPOTrainingResult]
 
 class PPO(Algorithm):
+    name = "ppo"
+
     def __init__(
         self,
-        hpo_config: Union[Configuration, Dict],
-        env_options: Dict,
-        env: Environment,
-        nas_config: Optional[Union[Configuration, Dict]] = None, 
+        hpo_config: Configuration,
+        env: Environment | AutoRLWrapper,
+        cnn_policy: bool = False,
+        nas_config: Configuration | None = None,
         track_trajectories=False,
         track_metrics=False
     ) -> None:
@@ -65,39 +90,37 @@ class PPO(Algorithm):
         super().__init__(
             hpo_config,
             nas_config,
-            env_options,
             env,
             track_metrics=track_metrics,
             track_trajectories=track_trajectories
         )
-        self.n_minibatches = env_options["n_envs"] * env_options["n_env_steps"] // self.hpo_config["minibatch_size"]
+
+        # compute actual update interval based on n_envs * env_steps
+        self.update_interval = int(self.hpo_config["n_steps"] * self.env.n_envs)
+
+        # ensure that at least one minibatch is available after each rollout
+        if self.hpo_config["minibatch_size"] > self.update_interval:
+            # todo: add a warning here
+            self.minibatch_size = self.update_interval
+        else:
+            self.minibatch_size = int(self.hpo_config["minibatch_size"])
+
+        self.n_minibatches = int(self.update_interval // self.minibatch_size)
 
         action_size, discrete = self.action_type
-        self.network = ActorCritic(
-            action_size,
-            discrete=discrete,
-            activation=self.nas_config["activation"],
-            hidden_size=self.nas_config["hidden_size"],
-        )
-
-        self.buffer = fbx.make_flat_buffer(
-            max_length=self.hpo_config["buffer_size"],
-            min_length=self.hpo_config["buffer_batch_size"],
-            sample_batch_size=self.hpo_config["buffer_batch_size"],
-            add_sequences=False,
-            add_batch_size=env_options["n_envs"]  
-        )
-
-        self.n_total_updates = (
-            env_options["n_total_timesteps"]
-            // env_options["n_env_steps"]
-            // env_options["n_envs"]
-        )
-        update_interval = jnp.ceil(self.n_total_updates / env_options["n_env_steps"])
-        if update_interval < 1:
-            update_interval = 1
-            print(
-                "WARNING: The number of iterations selected in combination with your timestep, n_envs and n_env_steps settings results in 0 steps per iteration. Rounded up to 1, this means more total steps will be executed."
+        if cnn_policy:
+            self.network = CNNActorCritic(
+                action_size,
+                discrete=discrete,
+                activation=self.nas_config["activation"],
+                hidden_size=self.nas_config["hidden_size"],
+            )
+        else:
+            self.network = MLPActorCritic(
+                action_size,
+                discrete=discrete,
+                activation=self.nas_config["activation"],
+                hidden_size=self.nas_config["hidden_size"],
             )
 
     @staticmethod
@@ -106,13 +129,11 @@ class PPO(Algorithm):
             name="PPOConfigSpace",
             seed=seed,
             space={
-                "buffer_size": Integer("buffer_size", (1, int(1e7)), default=int(1e6)),
-                "buffer_batch_size": Integer("buffer_batch_size", (1, 1024), default=64),
                 "minibatch_size": Integer("minibatch_size", (4, 1024), default=256),
                 "lr": Float("lr", (1e-5, 0.1), default=2.5e-4),
+                "n_steps": Integer("n_steps", (1, 1000), default=100),
                 "update_epochs": Integer("update_epochs", (1, int(1e5)), default=10),
-                "activation": Categorical("activation", ["tanh", "relu"], default="tanh"),    
-                "hidden_size": Integer("hidden_size", (1, 1024), default=64),
+                "activation": Categorical("activation", ["tanh", "relu"], default="tanh"),
                 "gamma": Float("gamma", (0., 1.), default=0.99),
                 "gae_lambda": Float("gae_lambda", (0., 1.), default=0.95),
                 "clip_eps": Float("clip_eps", (0., 1.), default=0.2),
@@ -121,14 +142,14 @@ class PPO(Algorithm):
                 "max_grad_norm": Float("max_grad_norm", (0., 10.), default=5)
             },
         )
-    
+
     @staticmethod
     def get_default_hpo_config() -> Configuration:
         return PPO.get_hpo_config_space().get_default_configuration()
-    
+
     @staticmethod
     def get_nas_config_space(seed=None) -> ConfigurationSpace:
-        cs = ConfigurationSpace(
+        return ConfigurationSpace(
             name="PPONASConfigSpace",
             seed=seed,
             space={
@@ -137,39 +158,51 @@ class PPO(Algorithm):
             },
         )
 
-        return cs
-    
     @staticmethod
     def get_default_nas_config() -> Configuration:
         return PPO.get_nas_config_space().get_default_configuration()
 
-    def init(self, rng, buffer_state=None, network_params=None, opt_state=None):
-        rng, _rng = jax.random.split(rng)
-        env_state, obs = self.env.reset(_rng)
+    @staticmethod
+    def get_checkpoint_factory(
+        runner_state: PPORunnerState,
+        train_result: PPOTrainingResult,
+    ) -> dict[str, Callable]:
+        train_state = runner_state.train_state
 
-        if buffer_state is None or network_params is None:
-            dummy_rng = jax.random.PRNGKey(0) 
-            _action = jnp.array(
-                [
-                    self.env.sample_action(dummy_rng)
-                    for _ in range(self.env_options["n_envs"])
-                ]
-            )
-            _, (_obs, _reward, _done, _) = self.env.step(env_state, _action, dummy_rng)
-        
-        if buffer_state is None:
-            _timestep = TimeStep(last_obs=_obs[0], obs=_obs[0], action=_action[0], reward=_reward[0], done=_done[0])
-            buffer_state = self.buffer.init(_timestep)
+        def get_trajectories():
+            traj = train_result.trajectories
+            assert traj is not None
 
-        _, _rng = jax.random.split(rng)
+            trajectories = {}
+            trajectories["states"] = jnp.concatenate(traj.obs, axis=0)
+            trajectories["action"] = jnp.concatenate(traj.action, axis=0)
+            trajectories["reward"] = jnp.concatenate(traj.reward, axis=0)
+            trajectories["dones"] = jnp.concatenate(traj.done, axis=0)
+            trajectories["value"] = jnp.concatenate(traj.value, axis=0)
+            trajectories["log_prob"] = jnp.concatenate(traj.log_prob, axis=0)
+
+            return trajectories
+
+        return {
+            "opt_state": lambda : train_state.opt_state,
+            "params": lambda : train_state.params,
+            "loss": lambda : train_result.metrics.loss if train_result.metrics else None,
+            "trajectories": get_trajectories
+        }
+
+    def init(self, rng, network_params=None, opt_state=None) -> PPOState:
+        rng, reset_rng = jax.random.split(rng)
+        env_state, obs = self.env.reset(reset_rng)
+
         if network_params is None:
-            network_params = self.network.init(_rng, _obs)
+            rng, init_rng = jax.random.split(rng)
+            network_params = self.network.init(init_rng, obs)
 
         tx = optax.chain(
                 optax.clip_by_global_norm(self.hpo_config["max_grad_norm"]),
                 optax.adam(self.hpo_config["lr"], eps=1e-5),
             )
-        
+
         train_state = PPOTrainState.create_with_opt_state(
             apply_fn=self.network.apply,
             params=network_params,
@@ -177,42 +210,63 @@ class PPO(Algorithm):
             opt_state=opt_state,
         )
 
-        rng, _rng = jax.random.split(rng)
-
         runner_state = PPORunnerState(
-            rng=_rng,
+            rng=rng,
             train_state=train_state,
             env_state=env_state,
             obs=obs,
+            global_step=0
         )
 
-        return runner_state, buffer_state
+        return PPOState(runner_state=runner_state, buffer_state=None)
 
     @functools.partial(jax.jit, static_argnums=0)
     def predict(self, runner_state, obs, rng) -> int:
         pi, _ = self.network.apply(runner_state.train_state.params, obs)
         return pi.sample(seed=rng)
 
-    @functools.partial(jax.jit, static_argnums=0, donate_argnums=(2,))
+    @functools.partial(jax.jit, static_argnums=(0,3,4,5))
     def train(
         self,
-        runner_state,
-        buffer_state
-    ) -> tuple[tuple[PPORunnerState, Any], Optional[tuple]]:
-        (runner_state, buffer_state), out = jax.lax.scan(
-            self._update_step, (runner_state, buffer_state), None, self.n_total_updates
+        runner_state: PPORunnerState,
+        _,  # dummy for bufer state
+        n_total_timesteps: int = 1000000,
+        n_eval_steps:  int= 100,
+        n_eval_episodes: int = 10,
+    ) -> PPOTrainReturnT:
+        def train_eval_step(_runner_state, _):
+            _runner_state, (metrics, trajectories) = jax.lax.scan(
+                self._update_step,
+                _runner_state,
+                None,
+                n_total_timesteps // self.update_interval // n_eval_steps
+            )
+            eval_returns = self.eval(_runner_state, n_eval_episodes)
+
+            return _runner_state, (metrics, trajectories, eval_returns)
+
+        runner_state, (metrics, trajectories, eval_returns) = jax.lax.scan(
+            train_eval_step,
+            runner_state,
+            None,
+            n_eval_steps,
         )
-        return (runner_state, buffer_state), out
-    
+        return PPOState(
+            runner_state=runner_state
+        ), PPOTrainingResult(
+            eval_rewards=eval_returns,
+            metrics=metrics,
+            trajectories=trajectories
+        )
+
     @functools.partial(jax.jit, static_argnums=0)
     def _update_step(
         self,
-        carry,
+        runner_state: PPORunnerState,
         _
-    ):
-        runner_state, buffer_state = carry
-        (runner_state, buffer_state), traj_batch = jax.lax.scan(
-            self._env_step, (runner_state, buffer_state), None, self.env_options["n_env_steps"]
+    ) -> tuple[PPORunnerState, tuple[PPOMetrics | None, Transition | None]]:
+        runner_state, traj_batch = jax.lax.scan(
+            self._env_step, runner_state, None, self.hpo_config["n_steps"]
         )
 
         # CALCULATE ADVANTAGE
@@ -220,18 +274,18 @@ class PPO(Algorithm):
             rng,
             train_state,
             env_state,
-            last_obs
+            last_obs,
+            global_step
         ) = runner_state
         _, last_val = self.network.apply(train_state.params, last_obs)
 
         advantages, targets = self._calculate_gae(traj_batch, last_val)
-    
+
         update_state = (train_state, traj_batch, advantages, targets, rng)
         update_state, (
-            loss_info,
+            loss,
             grads,
-            minibatches,
-            param_hist,
+            minibatches
         ) = jax.lax.scan(self._update_epoch, update_state, None, self.hpo_config["update_epochs"])
         train_state = update_state[0]
         rng = update_state[-1]
@@ -240,37 +294,28 @@ class PPO(Algorithm):
             rng=rng,
             train_state=train_state,
             env_state=env_state,
-            obs=last_obs
+            obs=last_obs,
+            global_step=global_step
         )
+        metrics, tracjectories = None, None
+        if self.track_metrics:
+            metrics = PPOMetrics(
+                loss=loss,
+                grads=grads,
+                advantages=advantages
+            )
         if self.track_trajectories:
-            out = (
-                loss_info,
-                grads,
-                traj_batch,
-                {
-                    "advantages": advantages,
-                    "param_history": param_hist["params"],
-                    "minibatches": minibatches,
-                },
-            )
-        elif self.track_metrics:
-            out = (
-                loss_info,
-                grads,
-                {"advantages": advantages, "param_history": param_hist["params"]},
-            )
-        else:
-            out = None
-        return (runner_state, buffer_state), out
-    
+            tracjectories = traj_batch
+        return runner_state, (metrics, tracjectories)
+
     @functools.partial(jax.jit, static_argnums=0)
-    def _env_step(self, carry, _):
-        runner_state, buffer_state = carry
+    def _env_step(self, runner_state, _):
         (
             rng,
             train_state,
             env_state,
-            last_obs
+            last_obs,
+            global_step
         ) = runner_state
 
         # SELECT ACTION
@@ -282,9 +327,7 @@ class PPO(Algorithm):
         # STEP ENV
         rng, _rng = jax.random.split(rng)
         env_state, (obsv, reward, done, info) = self.env.step(env_state, action, _rng)
-
-        timestep = TimeStep(last_obs=last_obs, obs=obsv, action=action, reward=reward, done=done)
-        buffer_state = self.buffer.add(buffer_state, timestep)
+        global_step += self.env.n_envs
 
         transition = Transition(
             done, action, value, reward, log_prob, last_obs, info
@@ -293,10 +336,11 @@ class PPO(Algorithm):
             train_state=train_state,
             env_state=env_state,
             obs=obsv,
-            rng=rng
+            rng=rng,
+            global_step=global_step
         )
-        return (runner_state, buffer_state), transition
-    
+        return runner_state, transition
+
     @functools.partial(jax.jit, static_argnums=0)
     def _calculate_gae(self, traj_batch, last_val):
         _, advantages = jax.lax.scan(
@@ -328,8 +372,8 @@ class PPO(Algorithm):
         train_state, traj_batch, advantages, targets, rng = update_state
         rng, _rng = jax.random.split(rng)
 
-        trimmed_batch_size = int(self.n_minibatches * self.hpo_config["minibatch_size"])
-        batch_size = self.env_options["n_env_steps"] * self.env_options["n_envs"]
+        batch_size = self.update_interval
+        trimmed_batch_size = self.n_minibatches * self.minibatch_size
 
         permutation = jax.random.permutation(_rng, batch_size)
         batch = (traj_batch, advantages, targets)
@@ -346,7 +390,7 @@ class PPO(Algorithm):
 
         minibatches = jax.tree_util.tree_map(
             lambda x: jnp.reshape(
-                x, [self.n_minibatches, -1] + list(x.shape[1:])
+                x, [self.n_minibatches, -1, *list(x.shape[1:])]
             ),
             trimmed_batch,
         )
@@ -354,12 +398,29 @@ class PPO(Algorithm):
         train_state, (total_loss, grads) = jax.lax.scan(
             self._update_minbatch, train_state, minibatches
         )
+
+        if trimmed_batch_size < batch_size:
+            remaining_batch = jax.tree_util.tree_map(
+                lambda x: x[trimmed_batch_size:], shuffled_batch
+            )
+            remaining_minibatch = jax.tree_util.tree_map(
+                lambda x: jnp.reshape(
+                    x, [1, -1, *list(x.shape[1:])]
+                ),
+                remaining_batch,
+            )
+            train_state, (remaining_total_loss, remaining_grads) = jax.lax.scan(
+                self._update_minbatch, train_state, remaining_minibatch
+            )
+            if self.track_metrics:
+                total_loss = (*total_loss, *remaining_total_loss)
+                grads = (*grads, *remaining_grads)
+
         update_state = (train_state, traj_batch, advantages, targets, rng)
         return update_state, (
             total_loss,
             grads,
-            minibatches,
-            train_state.params.unfreeze().copy() if isinstance(train_state.params, flax.core.FrozenDict) else train_state.params.copy(),
+            minibatches
         )
 
     @functools.partial(jax.jit, static_argnums=0)
@@ -370,11 +431,13 @@ class PPO(Algorithm):
         total_loss, grads = grad_fn(
             train_state.params, traj_batch, advantages, targets
         )
+
         train_state = train_state.apply_gradients(grads=grads)
-        if self.track_metrics:
-            out = (total_loss, grads)
-        else:
-            out = (None, None)
+
+        # TODO find a better way of doing this
+        grads = flatten_dict(grads)
+
+        out = (total_loss, grads) if self.track_metrics else (None, None)
         return train_state, out
 
     @functools.partial(jax.jit, static_argnums=0)

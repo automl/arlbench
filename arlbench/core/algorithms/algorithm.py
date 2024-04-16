@@ -1,25 +1,32 @@
-from abc import ABC, abstractmethod
-from typing import Tuple, Optional, Any, Sequence, Union, Dict
+from __future__ import annotations
+
 import functools
-import jax
+from abc import ABC, abstractmethod
+from collections.abc import Callable, Sequence
+from typing import TYPE_CHECKING, Any
+
+import gym
+import gymnasium
 import gymnax
+import jax
 import jax.numpy as jnp
 import numpy as np
-from ConfigSpace import Configuration, ConfigurationSpace
-from flashbax.buffers.prioritised_trajectory_buffer import PrioritisedTrajectoryBufferState
-import gymnasium
-import gym
-import numpy as np
-from arlbench.environments import Environment
+
+if TYPE_CHECKING:
+    from ConfigSpace import Configuration, ConfigurationSpace
+
+    from arlbench.core.environments import Environment
+    from arlbench.core.wrappers import AutoRLWrapper
 
 
 class Algorithm(ABC):
+    name: str
+
     def __init__(
             self,
-            hpo_config: Union[Configuration, Dict], 
-            nas_config: Union[Configuration, Dict], 
-            env_options: Dict, 
-            env: Environment,
+            hpo_config: Configuration,
+            nas_config: Configuration,
+            env: Environment | AutoRLWrapper,
             track_metrics=False,
             track_trajectories=False
         ) -> None:
@@ -27,31 +34,18 @@ class Algorithm(ABC):
 
         self.hpo_config = hpo_config
         self.nas_config = nas_config
-        self.env_options = env_options
         self.env = env
         self.track_metrics = track_metrics
         self.track_trajectories = track_trajectories
 
     @property
-    def action_type(self) -> Tuple[Sequence[int], bool]:
+    def action_type(self) -> tuple[Sequence[int], bool]:
         action_space = self.env.action_space
 
-        if isinstance(
-            action_space, gymnax.environments.spaces.Discrete
-        ) or isinstance(
-            action_space, gym.spaces.Discrete
-        ) or isinstance(
-            action_space, gymnasium.spaces.Discrete
-        ):
+        if isinstance(action_space, gym.spaces.Discrete | gymnasium.spaces.Discrete | gymnax.environments.spaces.Discrete):
             action_size = action_space.n
             discrete = True
-        elif isinstance(
-            action_space, gymnax.environments.spaces.Box
-        ) or isinstance(
-            action_space, gym.spaces.Box
-        ) or isinstance(
-            action_space, gymnasium.spaces.Box
-        ):
+        elif isinstance(action_space, gym.spaces.Box | gymnasium.spaces.Box | gymnax.environments.spaces.Box):
             action_size = action_space.shape[0]
             discrete = False
         else:
@@ -60,7 +54,7 @@ class Algorithm(ABC):
             )
 
         return action_size, discrete
-    
+
     @staticmethod
     @abstractmethod
     def get_hpo_config_space(seed=None) -> ConfigurationSpace:
@@ -80,32 +74,46 @@ class Algorithm(ABC):
     @abstractmethod
     def get_default_nas_config() -> Configuration:
         pass
-    
+
+    @staticmethod
     @abstractmethod
-    def init(self, rng) -> tuple[Any, Any]:
+    def get_checkpoint_factory(
+        runner_state: Any,
+        train_result: Any,
+    ) -> dict[str, Callable]:
         pass
 
     @abstractmethod
-    def train(self, runner_state: Any, buffer_state: Any) -> Tuple[tuple[Any, PrioritisedTrajectoryBufferState], Optional[Tuple]]:
+    def init(self, rng) -> Any:
         pass
 
-    @abstractmethod 
+    @abstractmethod
+    def train(
+        self,
+        runner_state: Any,
+        n_total_timesteps: int = 1000000,
+        n_eval_steps:  int= 100,
+        n_eval_episodes: int = 10,
+    ) -> Any:
+        pass
+
+    @abstractmethod
     @functools.partial(jax.jit, static_argnums=0)
     def predict(self, runner_state, obsv, rng = None) -> Any:
         pass
 
     @functools.partial(jax.jit, static_argnums=0)
-    def _env_episode(self, runner_state, _):
-        rng, _rng = jax.random.split(runner_state.rng)
-        _rng, reset_rng = jax.random.split(_rng)
+    def _env_episode(self, state, _):
+        rng, runner_state = state
+        rng, reset_rng = jax.random.split(rng)
 
-        env_state, obs = self.env.reset(reset_rng) 
+        env_state, obs = self.env.reset(reset_rng)
         initial_state = (
             env_state,
             obs,
-            jnp.full((self.env.n_envs,), 0.), 
+            jnp.full((self.env.n_envs,), 0.),
             jnp.full((self.env.n_envs,), False),
-            _rng,
+            rng,
             runner_state
         )
 
@@ -126,22 +134,24 @@ class Algorithm(ABC):
 
             # Count rewards only for envs that are not already done
             reward += reward_ * ~done
-            
+
             done = jnp.logical_or(done, done_)
 
             return env_state, obs, reward, done, rng, runner_state
 
         final_state = jax.lax.while_loop(cond_fn, body_fn, initial_state)
-        _, _, reward, _, _, _ = final_state
+        _, _, reward, _, rng, _ = final_state
 
-        return runner_state, reward  
+        return (rng, runner_state), reward
 
-    def eval(self, runner_state, num_eval_episodes):
+    def eval(self, runner_state, num_eval_episodes) -> jnp.ndarray:
         # Number of parallel evaluations, each with n_envs environments
         n_evals = int(np.ceil(num_eval_episodes / self.env.n_envs))
         _, rewards = jax.lax.scan(
-            self._env_episode, runner_state, None, n_evals
+            self._env_episode, (runner_state.rng, runner_state), None, n_evals
         )
         return jnp.concat(rewards)[:num_eval_episodes]
 
-    
+    def update_hpo_config(self, hpo_config: Configuration):
+        self.hpo_config = hpo_config
+
