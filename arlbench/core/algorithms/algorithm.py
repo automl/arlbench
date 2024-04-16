@@ -86,14 +86,13 @@ class Algorithm(ABC):
         pass
 
     @abstractmethod
-    def init(self, rng) -> tuple[Any, Any]:
+    def init(self, rng) -> Any:
         pass
 
     @abstractmethod
     def train(
         self,
         runner_state: Any,
-        buffer_state: PrioritisedTrajectoryBufferState,
         n_total_timesteps: int = 1000000,
         n_eval_steps:  int= 100,
         n_eval_episodes: int = 10,
