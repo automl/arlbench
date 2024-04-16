@@ -375,7 +375,6 @@ class DQN(Algorithm):
             buffer_state = self.buffer.add(buffer_state, timestep)
 
             global_step += 1
-            # global_step += self.env.n_envs
             return (obsv, env_state, global_step, buffer_state), (
                 obsv,
                 action,
