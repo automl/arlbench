@@ -2,19 +2,19 @@ ppo_config: {'n_envs': 8, 'track_metrics': False, 'track_traj': False}
 hpo_config: Configuration(values={
   'activation': 'tanh',
   'clip_eps': 0.2,
-  'ent_coef': 0.0,
-  'gae_lambda': 0.8,
-  'gamma': 0.98,
-  'lr': 0.001,
+  'ent_coef': 0.01,
+  'gae_lambda': 0.95,
+  'gamma': 0.99,
+  'lr': 0.0003,
   'max_grad_norm': 0.5,
-  'minibatch_size': 256,
-  'n_steps': 32,
-  'update_epochs': 20,
+  'minibatch_size': 64,
+  'n_steps': 1024,
+  'update_epochs': 10,
   'vf_coef': 1.0,
 })
 nas_config: Configuration(values={
   'activation': 'tanh',
   'hidden_size': 256,
 })
-time: 29.553656578063965
-returns: ['112.75+-67.42', '196.02+-61.74', '142.17+-81.27', '237.76+-129.71', '339.45+-103.20', '207.44+-89.85', '368.67+-67.94', '337.01+-98.31', '337.01+-98.31', '337.01+-98.31']
+time: 30.42936897277832
+returns: ['211.72+-151.44', '201.05+-156.14', '252.85+-146.37', '271.86+-144.81', '229.62+-144.59', '240.57+-158.07', '342.38+-109.46', '333.76+-100.67', '322.51+-106.48', '322.51+-106.48']

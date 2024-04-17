@@ -613,7 +613,7 @@ class PPO(Algorithm):
         log_prob = pi.log_prob(traj_batch.action)
 
         # Calculate value loss
-        value_losses = jnp.square(value - targets).mean()
+        value_loss = jnp.square(value - targets).mean()
 
         # Calculate actor loss
         ratio = jnp.exp(log_prob - traj_batch.log_prob)
