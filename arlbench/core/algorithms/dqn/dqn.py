@@ -145,9 +145,7 @@ class DQN(Algorithm):
                 "buffer_beta": Float("buffer_beta", (0., 1.), default=0.9),
                 "buffer_epsilon": Float("buffer_epsilon", (0., 1e-3), default=1e-5),
                 "lr": Float("lr", (1e-5, 0.1), default=2.5e-4),
-                "update_epochs": Integer("update_epochs", (1, int(1e5)), default=10),
                 "activation": Categorical("activation", ["tanh", "relu"], default="tanh"),
-                "hidden_size": Integer("hidden_size", (1, 1024), default=64),
                 "gamma": Float("gamma", (0., 1.), default=0.99),
                 "tau": Float("tau", (0., 1.), default=1.0),
                 "epsilon": Float("epsilon", (0., 1.), default=0.1),
@@ -352,33 +350,36 @@ class DQN(Algorithm):
             last_obs,
             global_step
         ) = runner_state
-        rng, _rng = jax.random.split(rng)
 
-        def random_action() -> jnp.ndarray:
+        def random_action(rng) -> jnp.ndarray:
             return self.env.sample_actions(rng)
 
-        def greedy_action() -> jnp.ndarray:
+        def greedy_action(_) -> jnp.ndarray:
             q_values = self.network.apply(train_state.params, last_obs)
             return q_values.argmax(axis=-1)
 
         def take_step(
-                carry: tuple[jnp.ndarray, Any, int, PrioritisedTrajectoryBufferState],
+                carry: tuple[jnp.ndarray, jnp.ndarray, Any, int, PrioritisedTrajectoryBufferState],
                 _: None
-            ) -> tuple[tuple[jnp.ndarray, Any, int, PrioritisedTrajectoryBufferState], tuple[jnp.ndarray, jnp.ndarray, jnp.ndarray, jnp.ndarray, dict]]:
-            obsv, env_state, global_step, buffer_state = carry
+            ) -> tuple[tuple[jnp.ndarray, jnp.ndarray, Any, int, PrioritisedTrajectoryBufferState], tuple[jnp.ndarray, jnp.ndarray, jnp.ndarray, jnp.ndarray, dict]]:
+
+            rng, last_obs, env_state, global_step, buffer_state = carry
+            rng, sample_rng, action_rng = jax.random.split(rng, 3)
             action = jax.lax.cond(
-                jax.random.uniform(rng) < self.hpo_config["epsilon"],
+                jax.random.uniform(sample_rng) < self.hpo_config["epsilon"],
                 random_action,
                 greedy_action,
+                action_rng,
             )
 
-            env_state, (obsv, reward, done, info) = self.env.step(env_state, action, _rng)
+            rng, step_rng = jax.random.split(rng)
+            env_state, (obsv, reward, done, info) = self.env.step(env_state, action, step_rng)
 
             timestep = TimeStep(last_obs=last_obs, obs=obsv, action=action, reward=reward, done=done)
             buffer_state = self.buffer.add(buffer_state, timestep)
 
             global_step += 1
-            return (obsv, env_state, global_step, buffer_state), (
+            return (rng, obsv, env_state, global_step, buffer_state), (
                 obsv,
                 action,
                 reward,
@@ -455,7 +456,7 @@ class DQN(Algorithm):
         def dont_target_update() -> DQNTrainState:
             return train_state
 
-        (last_obs, env_state, global_step, buffer_state), (
+        (rng, last_obs, env_state, global_step, buffer_state), (
             observations,
             action,
             reward,
@@ -463,7 +464,7 @@ class DQN(Algorithm):
             info,
         ) = jax.lax.scan(
             take_step,
-            (last_obs, env_state, global_step, buffer_state),
+            (rng, last_obs, env_state, global_step, buffer_state),
             None,
             self.hpo_config["train_frequency"]
         )
@@ -477,7 +478,7 @@ class DQN(Algorithm):
             train_state,
             buffer_state,
         )
-        train_state = jax.lax.cond(
+        train_state = jax.lax.cond(  # todo: move this into the env_step loop?!
             (global_step > self.hpo_config["learning_starts"])
             & (global_step % self.hpo_config["target_network_update_freq"] == 0),
             target_update,
