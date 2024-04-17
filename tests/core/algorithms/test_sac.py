@@ -7,17 +7,18 @@ from arlbench.core.algorithms import SAC
 from arlbench.core.environments import make_env
 
 N_UPDATES = 1e4
-EVAL_STEPS = 10
-EVAL_EPISODES = 1
+EVAL_STEPS = 100
+EVAL_EPISODES = 128
 N_ENVS = 10
 
 
 def test_default_sac_continuous(n_envs=N_ENVS):
     env = make_env("gymnax", "Pendulum-v1", seed=42, n_envs=n_envs)
+    eval_env = make_env("gymnax", "Pendulum-v1", seed=42, n_envs=EVAL_EPISODES)
     rng = jax.random.PRNGKey(42)
 
     config = SAC.get_default_hpo_config()
-    agent = SAC(config, env)
+    agent = SAC(config, env, eval_env=eval_env)
     algorithm_state = agent.init(rng)
     
     start = time.time()
