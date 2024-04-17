@@ -3,6 +3,7 @@ from __future__ import annotations
 import distrax
 import flax.linen as nn
 import jax.numpy as jnp
+from jax.nn.initializers import orthogonal, constant
 from typing import Type
 
 
@@ -45,19 +46,19 @@ class SACMLPActor(nn.Module):
 
         self.dense0 = nn.Dense(
             self.hidden_size,
-            #kernel_init=orthogonal(jnp.sqrt(2)),
-            #bias_init=constant(0.0),
+            kernel_init=orthogonal(jnp.sqrt(2)),
+            bias_init=constant(0.0),
         )
         self.dense1 = nn.Dense(
             self.hidden_size,
-            #kernel_init=orthogonal(jnp.sqrt(2)),
-            #bias_init=constant(0.0),
+            kernel_init=orthogonal(jnp.sqrt(2)),
+            bias_init=constant(0.0),
         )
         self.mean_out_layer = nn.Dense(
-            self.action_dim, #kernel_init=orthogonal(0.01), bias_init=constant(0.0)
+            self.action_dim, kernel_init=orthogonal(0.01), bias_init=constant(0.0)
         )
         self.log_std_out_layer = nn.Dense(
-            self.action_dim, #kernel_init=orthogonal(0.01), bias_init=constant(0.0)
+            self.action_dim, kernel_init=orthogonal(0.01), bias_init=constant(0.0)
         )
 
 
@@ -93,33 +94,33 @@ class SACCNNActor(nn.Module):
             features=32,
             kernel_size=(8, 8),
             strides=(4, 4),
-            # kernel_init=orthogonal(jnp.sqrt(2)),
-            # bias_init=constant(0.0),
+            kernel_init=orthogonal(jnp.sqrt(2)),
+            bias_init=constant(0.0),
         )
         self.conv1 = nn.Conv(
             features=64,
             kernel_size=(4, 4),
             strides=(2, 2),
-            # kernel_init=orthogonal(jnp.sqrt(2)),
-            # bias_init=constant(0.0),
+            kernel_init=orthogonal(jnp.sqrt(2)),
+            bias_init=constant(0.0),
         )
         self.conv2 = nn.Conv(
             features=64,
             kernel_size=(3, 3),
             strides=(1, 1),
-            # kernel_init=orthogonal(jnp.sqrt(2)),
-            # bias_init=constant(0.0),
+            kernel_init=orthogonal(jnp.sqrt(2)),
+            bias_init=constant(0.0),
         )
         self.dense = nn.Dense(
             features=self.hidden_size,
-            # kernel_init=orthogonal(jnp.sqrt(2)),
-            # bias_init=constant(0.0),
+            kernel_init=orthogonal(jnp.sqrt(2)),
+            bias_init=constant(0.0),
         )
         self.mean_out_layer = nn.Dense(
-            self.action_dim, #kernel_init=orthogonal(0.01), bias_init=constant(0.0)
+            self.action_dim, kernel_init=orthogonal(0.01), bias_init=constant(0.0)
         )
         self.log_std_out_layer = nn.Dense(
-            self.action_dim, #kernel_init=orthogonal(0.01), bias_init=constant(0.0)
+            self.action_dim, kernel_init=orthogonal(0.01), bias_init=constant(0.0)
         )
 
 
@@ -153,20 +154,20 @@ class SACMLPCritic(nn.Module):
 
         self.critic0 = nn.Dense(
             self.hidden_size,
-            #kernel_init=orthogonal(jnp.sqrt(2)),
-            #bias_init=constant(0.0),
+            kernel_init=orthogonal(jnp.sqrt(2)),
+            bias_init=constant(0.0),
         )
         self.critic1 = nn.Dense(
             self.hidden_size,
-            #kernel_init=orthogonal(jnp.sqrt(2)),
-            #bias_init=constant(0.0),
+            kernel_init=orthogonal(jnp.sqrt(2)),
+            bias_init=constant(0.0),
         )
         self.critic_out = nn.Dense(
-            1, #kernel_init=orthogonal(1.0), bias_init=constant(0.0)
+            1, kernel_init=orthogonal(1.0), bias_init=constant(0.0)
         )
 
     def __call__(self, x, action):
-        #x = x.reshape((x.shape[0], -1))
+        x = x.reshape((x.shape[0], -1))
         x = jnp.concatenate([x, action], -1)
         critic = self.critic0(x)
         critic = self.activation_func(critic)
@@ -194,34 +195,33 @@ class SACCNNCritic(nn.Module):
             features=32,
             kernel_size=(8, 8),
             strides=(4, 4),
-            # kernel_init=orthogonal(jnp.sqrt(2)),
-            # bias_init=constant(0.0),
+            kernel_init=orthogonal(jnp.sqrt(2)),
+            bias_init=constant(0.0),
         )
         self.conv1 = nn.Conv(
             features=64,
             kernel_size=(4, 4),
             strides=(2, 2),
-            # kernel_init=orthogonal(jnp.sqrt(2)),
-            # bias_init=constant(0.0),
+            kernel_init=orthogonal(jnp.sqrt(2)),
+            bias_init=constant(0.0),
         )
         self.conv2 = nn.Conv(
             features=64,
             kernel_size=(3, 3),
             strides=(1, 1),
-            # kernel_init=orthogonal(jnp.sqrt(2)),
-            # bias_init=constant(0.0),
+            kernel_init=orthogonal(jnp.sqrt(2)),
+            bias_init=constant(0.0),
         )
         self.dense = nn.Dense(
             features=self.hidden_size,
-            # kernel_init=orthogonal(jnp.sqrt(2)),
-            # bias_init=constant(0.0),
+            kernel_init=orthogonal(jnp.sqrt(2)),
+            bias_init=constant(0.0),
         )
         self.out = nn.Dense(
-            1, # kernel_init=orthogonal(1.0), bias_init=constant(0.0)
+            1, kernel_init=orthogonal(1.0), bias_init=constant(0.0)
         )
 
     def __call__(self, x, action):
-        #x = x.reshape((x.shape[0], -1))
         x = jnp.concatenate([x, action], -1)
         critic = self.conv0(x)
         critic = self.activation_func(critic)
