@@ -24,8 +24,9 @@ def test_atari_ppo():
     training_time = time.time() - start
     reward = np.mean(result.eval_rewards[-1])
     
-    #assert reward > -500
+    #  assert reward > -500
     print(reward, training_time)
+
 
 def test_atari_dqn():
     training_kw_args = {
