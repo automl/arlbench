@@ -88,6 +88,7 @@ class DQN(Algorithm):
         self,
         hpo_config: Configuration,
         env: Environment | AutoRLWrapper,
+        eval_env: Environment | AutoRLWrapper | None = None,
         cnn_policy: bool = False,
         nas_config: Configuration | None = None,
         track_trajectories: bool = False,
@@ -100,6 +101,7 @@ class DQN(Algorithm):
             hpo_config,
             nas_config,
             env,
+            eval_env=eval_env,
             track_trajectories=track_trajectories,
             track_metrics=track_metrics
         )
@@ -286,6 +288,7 @@ class DQN(Algorithm):
                 n_total_timesteps//self.env.n_envs//self.hpo_config["train_frequency"]//n_eval_steps
             )
             eval_returns = self.eval(runner_state, n_eval_episodes)
+            jax.debug.print("{eval_returns}", eval_returns=eval_returns)
 
             return (runner_state, buffer_state), DQNTrainingResult(eval_rewards=eval_returns, trajectories=trajectories, metrics=metrics)
 
@@ -466,8 +469,8 @@ class DQN(Algorithm):
         )
 
         rng, train_state, buffer_state, metrics = jax.lax.cond(
-            (global_step > self.hpo_config["learning_starts"])
-            & (global_step % self.hpo_config["train_frequency"] == 0),
+            (global_step > self.hpo_config["learning_starts"]),
+            #& (global_step % self.hpo_config["train_frequency"] == 0),  # todo: is this needed?
             do_update,
             dont_update,
             rng,
