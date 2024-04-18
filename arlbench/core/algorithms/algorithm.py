@@ -29,6 +29,7 @@ class Algorithm(ABC):
             hpo_config: Configuration,
             nas_config: Configuration,
             env: Environment | AutoRLWrapper,
+            eval_env: Environment | AutoRLWrapper = None,
             track_metrics: bool = False,
             track_trajectories: bool = False
         ) -> None:
@@ -46,6 +47,7 @@ class Algorithm(ABC):
         self.hpo_config = hpo_config
         self.nas_config = nas_config
         self.env = env
+        self.eval_env = env if eval_env is None else eval_env
         self.track_metrics = track_metrics
         self.track_trajectories = track_trajectories
 
@@ -197,12 +199,12 @@ class Algorithm(ABC):
         rng, runner_state = state
         rng, reset_rng = jax.random.split(rng)
 
-        env_state, obs = self.env.reset(reset_rng)
+        env_state, obs = self.eval_env.reset(reset_rng)
         initial_state = (
             env_state,
             obs,
-            jnp.full((self.env.n_envs,), 0.),
-            jnp.full((self.env.n_envs,), False),
+            jnp.full((self.eval_env.n_envs,), 0.),
+            jnp.full((self.eval_env.n_envs,), False),
             rng,
             runner_state
         )
@@ -236,7 +238,7 @@ class Algorithm(ABC):
 
             # Step
             rng, step_rng = jax.random.split(rng)
-            env_state, (obs, reward_, done_, _) = self.env.step(env_state, action, step_rng)
+            env_state, (obs, reward_, done_, _) = self.eval_env.step(env_state, action, step_rng)
 
             # Count rewards only for envs that are not already done
             reward += reward_ * ~done
@@ -260,7 +262,7 @@ class Algorithm(ABC):
             jnp.ndarray: Cumulative reward per evaluation episodes. Shape: (n_eval_episodes,).
         """
         # Number of parallel evaluations, each with n_envs environments
-        n_evals = int(np.ceil(num_eval_episodes / self.env.n_envs))
+        n_evals = int(np.ceil(num_eval_episodes / self.eval_env.n_envs))
 
         _, rewards = jax.lax.scan(
             self._env_episode, (runner_state.rng, runner_state), None, n_evals

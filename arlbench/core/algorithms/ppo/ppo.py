@@ -96,6 +96,7 @@ class PPO(Algorithm):
         self,
         hpo_config: Configuration,
         env: Environment | AutoRLWrapper,
+        eval_env: Environment | AutoRLWrapper | None = None,
         cnn_policy: bool = False,
         nas_config: Configuration | None = None,
         track_trajectories: bool = False,
@@ -117,6 +118,7 @@ class PPO(Algorithm):
             hpo_config,
             nas_config,
             env,
+            eval_env=eval_env,
             track_metrics=track_metrics,
             track_trajectories=track_trajectories
         )
@@ -148,9 +150,9 @@ class PPO(Algorithm):
             name="PPOConfigSpace",
             seed=seed,
             space={
-                "minibatch_size": Integer("minibatch_size", (4, 1024), default=256),
+                "minibatch_size": Integer("minibatch_size", (4, 1024), default=64),
                 "lr": Float("lr", (1e-5, 0.1), default=2.5e-4),
-                "n_steps": Integer("n_steps", (1, 10000), default=100),
+                "n_steps": Integer("n_steps", (1, 10000), default=1024),
                 "update_epochs": Integer("update_epochs", (1, int(1e5)), default=10),
                 "activation": Categorical("activation", ["tanh", "relu"], default="tanh"),
                 "gamma": Float("gamma", (0., 1.), default=0.99),
@@ -158,7 +160,7 @@ class PPO(Algorithm):
                 "clip_eps": Float("clip_eps", (0., 1.), default=0.2),
                 "ent_coef": Float("ent_coef", (0., 1.), default=0.01),
                 "vf_coef": Float("vf_coef", (0., 1.), default=0.5),
-                "max_grad_norm": Float("max_grad_norm", (0., 10.), default=5)
+                "max_grad_norm": Float("max_grad_norm", (0., 10.), default=0.5)
             },
         )
 
@@ -288,11 +290,14 @@ class PPO(Algorithm):
         def sampled_action():
             return pi.sample(seed=rng)
 
-        return jax.lax.cond(
+        action = jax.lax.cond(
             deterministic,
             deterministic_action,
             sampled_action,
         )
+
+        #return jnp.clip(action, self.env.action_space.low, self.env.action_space.high)
+        return action
 
     @functools.partial(jax.jit, static_argnums=(0,3,4,5))
     def train(
@@ -427,9 +432,13 @@ class PPO(Algorithm):
         pi, value = self.network.apply(train_state.params, last_obs)
         action, log_prob = pi.sample_and_log_prob(seed=_rng)
 
+        clipped_action = action
+        if not self.action_type[1]:  # continuous action space
+            clipped_action = jnp.clip(action, self.env.action_space.low, self.env.action_space.high)
+
         # Perform env step
         rng, _rng = jax.random.split(rng)
-        env_state, (obsv, reward, done, info) = self.env.step(env_state, action, _rng)
+        env_state, (obsv, reward, done, info) = self.env.step(env_state, clipped_action, _rng)
         global_step += 1
 
         transition = Transition(
@@ -547,7 +556,7 @@ class PPO(Algorithm):
                 remaining_batch,
             )
             train_state, (remaining_total_loss, remaining_grads) = jax.lax.scan(
-                self._update_minbatch, train_state, remaining_minibatch
+                self._update_minibatch, train_state, remaining_minibatch
             )
             if self.track_metrics:
                 total_loss = (*total_loss, *remaining_total_loss)
