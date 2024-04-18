@@ -9,6 +9,7 @@ import flashbax as fbx
 import jax
 import jax.lax
 import jax.numpy as jnp
+import numpy as np
 import optax
 from ConfigSpace import (Categorical, Configuration, ConfigurationSpace, Float,
                          Integer)
@@ -369,19 +370,18 @@ class DQN(Algorithm):
             global_step
         ) = runner_state
 
-        def random_action(rng: chex.PRNGKey, _) -> jnp.ndarray:
-            return self.env.sample_actions(rng)
-
-        def greedy_action(_: chex.PRNGKey, obs: jnp.ndarray) -> jnp.ndarray:
-            q_values = self.network.apply(train_state.params, obs)
-            return q_values.argmax(axis=-1)
-
         def take_step(
                 carry: tuple[jnp.ndarray, jnp.ndarray, Any, int, PrioritisedTrajectoryBufferState],
                 _: None
             ) -> tuple[tuple[jnp.ndarray, jnp.ndarray, Any, int, PrioritisedTrajectoryBufferState], tuple[jnp.ndarray, jnp.ndarray, jnp.ndarray, jnp.ndarray, dict]]:
 
-            rng, last_obs, env_state, global_step, buffer_state = carry
+            rng, train_state, last_obs, env_state, global_step, buffer_state = carry
+
+            def random_action(rng: chex.PRNGKey, _) -> jnp.ndarray:
+                return self.env.sample_actions(rng)
+            def greedy_action(_: chex.PRNGKey, obs: jnp.ndarray) -> jnp.ndarray:
+                q_values = self.network.apply(train_state.params, obs)
+                return q_values.argmax(axis=-1)
             rng, sample_rng, action_rng = jax.random.split(rng, 3)
             action = jax.lax.cond(
                 jax.random.uniform(sample_rng) < self.hpo_config["epsilon"],
@@ -398,7 +398,23 @@ class DQN(Algorithm):
             buffer_state = self.buffer.add(buffer_state, timestep)
 
             global_step += 1
-            return (rng, obsv, env_state, global_step, buffer_state), (
+
+            def target_update(train_state) -> DQNTrainState:
+                return train_state.replace(
+                    target_params=optax.incremental_update(
+                        train_state.params, train_state.target_params, self.hpo_config["tau"]
+                    )
+                )
+            def dont_target_update(train_state) -> DQNTrainState:
+                return train_state
+            train_state = jax.lax.cond(  # todo: move this into the env_step loop?!
+                (global_step > self.hpo_config["learning_starts"] // self.env.n_envs)
+                & (global_step % np.max([self.hpo_config["target_network_update_freq"] // self.env.n_envs, 1]) == 0),
+                target_update,
+                dont_target_update,
+                train_state,
+                )
+            return (rng, train_state, obsv, env_state, global_step, buffer_state), (
                 obsv,
                 action,
                 reward,
@@ -439,13 +455,12 @@ class DQN(Algorithm):
                 return (
                     rng, train_state, buffer_state,
                 ), DQNMetrics(loss=loss, td_error=td_error, grads=grads)
-            carry, metrics = jax.lax.scan(
+            (rng, train_state, buffer_state), metrics = jax.lax.scan(
                 gradient_step,
                 (rng, train_state, buffer_state),
                 None,
                 self.hpo_config["gradient_steps"],
             )
-            rng, train_state, buffer_state = carry
             return rng, train_state, buffer_state, metrics
 
         def dont_update(
@@ -465,17 +480,8 @@ class DQN(Algorithm):
                 grads = None
             return rng, train_state, buffer_state, DQNMetrics(loss=loss, td_error=td_error, grads=grads)
 
-        def target_update(train_state) -> DQNTrainState:
-            return train_state.replace(
-                target_params=optax.incremental_update(
-                    train_state.params, train_state.target_params, self.hpo_config["tau"]
-                )
-            )
 
-        def dont_target_update(train_state) -> DQNTrainState:
-            return train_state
-
-        (rng, last_obs, env_state, global_step, buffer_state), (
+        (rng, train_state, last_obs, env_state, global_step, buffer_state), (
             observations,
             action,
             reward,
@@ -483,26 +489,18 @@ class DQN(Algorithm):
             info,
         ) = jax.lax.scan(
             take_step,
-            (rng, last_obs, env_state, global_step, buffer_state),
+            (rng, train_state, last_obs, env_state, global_step, buffer_state),
             None,
             self.hpo_config["train_frequency"]
         )
 
         rng, train_state, buffer_state, metrics = jax.lax.cond(
-            (global_step > self.hpo_config["learning_starts"]),
-            #& (global_step % self.hpo_config["train_frequency"] == 0),  # todo: is this needed?
+            global_step > self.hpo_config["learning_starts"] // self.env.n_envs,
             do_update,
             dont_update,
             rng,
             train_state,
             buffer_state,
-        )
-        train_state = jax.lax.cond(  # todo: move this into the env_step loop?!
-            (global_step > self.hpo_config["learning_starts"])
-            & (global_step % self.hpo_config["target_network_update_freq"] == 0),
-            target_update,
-            dont_target_update,
-            train_state,
         )
         runner_state = DQNRunnerState(
             rng=rng,
