@@ -172,7 +172,7 @@ class DQN(Algorithm):
                 "train_frequency": Integer("train_frequency", (1, int(1e5)), default=4),
                 "gradient steps": Integer("gradient_steps", (1, int(1e5)), default=1),
                 "learning_starts": Integer("learning_starts", (10, int(1e5)), default=1000),
-                "target_network_update_freq": Integer("target_network_update_freq", (1, int(1e5)), default=10)
+                "target_network_update_freq": Integer("target_network_update_freq", (1, int(1e5)), default=10),
             },
         )
 
@@ -180,6 +180,7 @@ class DQN(Algorithm):
     @staticmethod
     def get_default_hpo_config() -> Configuration:
         return DQN.get_hpo_config_space().get_default_configuration()
+
 
     @staticmethod
     def get_nas_config_space(seed=None) -> ConfigurationSpace:
@@ -246,18 +247,17 @@ class DQN(Algorithm):
             buffer_state = self.buffer.init(_timestep)
 
 
+        rng, init_rng = jax.random.split(rng)
         if network_params is None:
-            rng, init_rng = jax.random.split(rng)
             network_params = self.network.init(init_rng, _obs)
         if target_params is None:
-            rng, target_init_rng = jax.random.split(rng)
-            target_params = self.network.init(target_init_rng, _obs)
+            target_params = self.network.init(init_rng, _obs)
 
         train_state_kwargs = {
             "apply_fn": self.network.apply,
             "params": network_params,
             "target_params": target_params,
-            "tx": optax.adam(self.hpo_config["lr"], eps=1e-5),
+            "tx": optax.adam(self.hpo_config["lr"]),
             "opt_state": opt_state,
         }
         train_state = DQNTrainState.create_with_opt_state(**train_state_kwargs)
@@ -348,7 +348,9 @@ class DQN(Algorithm):
                 jnp.arange(q_pred.shape[0]), actions.squeeze().astype(int)
             ]  # (batch_size,)
             td_error = q_pred - next_q_value
-            return (td_error ** 2).mean(), td_error
+            loss = optax.l2_loss(q_pred, next_q_value).mean()
+            #return (td_error ** 2).mean(), td_error
+            return loss.mean(), td_error
 
         (loss_value, td_error), grads = jax.value_and_grad(mse_loss, has_aux=True)(
             train_state.params
