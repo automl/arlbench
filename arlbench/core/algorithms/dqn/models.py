@@ -64,6 +64,7 @@ class CNNQ(nn.Module):
 
 
 class MLPQ(nn.Module):
+    """A MLP-based Q-Network for DQN."""
     action_dim: int
     activation: str = "tanh"
     hidden_size: int = 64

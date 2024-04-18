@@ -18,16 +18,17 @@ from flax.training.train_state import TrainState
 from arlbench.core.algorithms.algorithm import Algorithm
 from arlbench.core.algorithms.common import TimeStep
 
-from .models import AlphaCoef, SACMLPActor, SACCNNActor, SACMLPCritic, SACCNNCritic, SACVectorCritic
+from .models import (AlphaCoef, SACCNNActor, SACCNNCritic, SACMLPActor,
+                     SACMLPCritic, SACVectorCritic)
 
 if TYPE_CHECKING:
     import chex
     from flashbax.buffers.prioritised_trajectory_buffer import \
         PrioritisedTrajectoryBufferState
+    from flax.core.frozen_dict import FrozenDict
 
     from arlbench.core.environments import Environment
     from arlbench.core.wrappers import AutoRLWrapper
-    from flax.core.frozen_dict import FrozenDict
 
 # todo: separate learning rate for critic and actor??
 
@@ -69,10 +70,10 @@ class SACTrainingResult(NamedTuple):
     metrics: SACMetrics | None
 
 class SACMetrics(NamedTuple):
-    actor_loss: Any
-    critic_loss: Any
-    alpha_loss: Any
-    td_error: Any
+    actor_loss: jnp.ndarray
+    critic_loss: jnp.ndarray
+    alpha_loss: jnp.ndarray
+    td_error: jnp.ndarray
     actor_grads: Any
     critic_grads: Any
 
@@ -87,7 +88,7 @@ class Transition(NamedTuple):
 SACTrainReturnT = tuple[SACState, SACTrainingResult]
 
 class SAC(Algorithm):
-    name = "sac"
+    name: str = "sac"
 
     def __init__(
             self,
@@ -141,7 +142,7 @@ class SAC(Algorithm):
         )
 
     @staticmethod
-    def get_hpo_config_space(seed=None) -> ConfigurationSpace:
+    def get_hpo_config_space(seed: int | None =None) -> ConfigurationSpace:
         return ConfigurationSpace(
             name="SACConfigSpace",
             seed=seed,
@@ -169,7 +170,7 @@ class SAC(Algorithm):
         return SAC.get_hpo_config_space().get_default_configuration()
 
     @staticmethod
-    def get_nas_config_space(seed=None) -> ConfigurationSpace:
+    def get_nas_config_space(seed: int | None = None) -> ConfigurationSpace:
         return ConfigurationSpace(
             name="SACNASConfigSpace",
             seed=seed,
@@ -304,9 +305,9 @@ class SAC(Algorithm):
         obs: jnp.ndarray,
         rng: chex.PRNGKey,
         deterministic: bool = True
-    ) -> int:
+    ) -> jnp.ndarray:
         pi = self.actor_network.apply(runner_state.actor_train_state.params, obs)
-        
+
         def deterministic_action():
             return pi.mode()
 
@@ -363,7 +364,14 @@ class SAC(Algorithm):
             buffer_state=buffer_state
         ), result
 
-    def update_critic(self, actor_train_state, critic_train_state, alpha_train_state, batch, rng):
+    def update_critic(
+            self,
+            actor_train_state: SACTrainState,
+            critic_train_state: SACTrainState,
+            alpha_train_state: SACTrainState,
+            batch: Transition,
+            rng: chex.PRNGKey
+        ) -> tuple[SACTrainState, jnp.ndarray, jnp.ndarra, FrozenDict, chex.PRNGKey]:
         rng, action_rng = jax.random.split(rng, 2)
         pi = self.actor_network.apply(actor_train_state.params, batch.obs)
         next_state_actions, next_log_prob = pi.sample_and_log_prob(seed=action_rng)
@@ -387,12 +395,23 @@ class SAC(Algorithm):
             critic_train_state.params
         )
         critic_train_state = critic_train_state.apply_gradients(grads=grads)
-        return critic_train_state, loss_value, td_error, grads, rng,
+        return critic_train_state, loss_value, td_error, grads, rng
 
-    def update_actor(self, actor_train_state, critic_train_state, alpha_train_state, batch, rng):
+    def update_actor(
+            self,
+            actor_train_state: SACTrainState,
+            critic_train_state: SACTrainState,
+            alpha_train_state: SACTrainState,
+            batch: Transition,
+            rng: chex.PRNGKey
+        ) -> tuple[SACTrainState, jnp.ndarray, jnp.ndarray, FrozenDict, chex.PRNGKey]:
         rng, action_rng = jax.random.split(rng, 2)
 
-        def actor_loss(actor_params, critic_params, alpha_params):
+        def actor_loss(
+                actor_params: FrozenDict,
+                critic_params: FrozenDict,
+                alpha_params: FrozenDict
+            ) -> tuple[jnp.ndarray, jnp.ndarray]:
             pi = self.actor_network.apply(actor_params, batch.last_obs)
             actor_actions, log_prob = pi.sample_and_log_prob(seed=action_rng)
 
@@ -410,12 +429,16 @@ class SAC(Algorithm):
 
         return actor_train_state, loss_value, entropy, grads, rng
 
-    def update_alpha(self, alpha_train_state, entropy):
-        def alpha_loss(params):
+    def update_alpha(
+            self,
+            alpha_train_state: SACTrainState,
+            entropy: jnp.ndarray
+        ) -> tuple[SACTrainState, jnp.ndarray]:
+        def get_alpha_loss(params: FrozenDict) -> jnp.ndarray:
             alpha_value = self.alpha.apply(params)
             return alpha_value * (entropy - self.target_entropy).mean()  # type: ignore[union-attr]
 
-        alpha_loss, grads = jax.value_and_grad(alpha_loss)(alpha_train_state.params)
+        alpha_loss, grads = jax.value_and_grad(get_alpha_loss)(alpha_train_state.params)
         alpha_train_state = alpha_train_state.apply_gradients(grads=grads)
 
         return alpha_train_state, alpha_loss
@@ -423,17 +446,17 @@ class SAC(Algorithm):
     def _update_step(
             self,
             carry: tuple[SACRunnerState, PrioritisedTrajectoryBufferState],
-            _
+            _: None
     ) -> tuple[tuple[SACRunnerState, PrioritisedTrajectoryBufferState], tuple[SACMetrics | None, Transition | None]]:
         def do_update(
                 rng: chex.PRNGKey,
-                actor_train_state: SACTrainState, 
-                critic_train_state: SACTrainState, 
-                alpha_train_state: SACTrainState, 
+                actor_train_state: SACTrainState,
+                critic_train_state: SACTrainState,
+                alpha_train_state: SACTrainState,
                 buffer_state: PrioritisedTrajectoryBufferState
             ) -> tuple[chex.PRNGKey, SACTrainState, SACTrainState, SACTrainState, PrioritisedTrajectoryBufferState, SACMetrics]:
             def gradient_step(
-                    carry: tuple[chex.PRNGKey, SACTrainState, SACTrainState, SACTrainState, PrioritisedTrajectoryBufferState], 
+                    carry: tuple[chex.PRNGKey, SACTrainState, SACTrainState, SACTrainState, PrioritisedTrajectoryBufferState],
                     _: None
                 ) -> tuple[tuple[chex.PRNGKey, SACTrainState, SACTrainState, SACTrainState, PrioritisedTrajectoryBufferState], SACMetrics]:
                 rng, actor_train_state, critic_train_state, alpha_train_state, buffer_state = carry
@@ -481,9 +504,9 @@ class SAC(Algorithm):
 
         def dont_update(
             rng: chex.PRNGKey,
-            actor_train_state: SACTrainState, 
-            critic_train_state: SACTrainState, 
-            alpha_train_state: SACTrainState, 
+            actor_train_state: SACTrainState,
+            critic_train_state: SACTrainState,
+            alpha_train_state: SACTrainState,
             buffer_state: PrioritisedTrajectoryBufferState
         ) -> tuple[chex.PRNGKey, SACTrainState, SACTrainState, SACTrainState, PrioritisedTrajectoryBufferState, SACMetrics]:
             single_loss = jnp.array([((jnp.array([0]) - jnp.array([0])) ** 2).mean()] * self.hpo_config["gradient steps"])
@@ -587,8 +610,8 @@ class SAC(Algorithm):
 
     @functools.partial(jax.jit, static_argnums=0)
     def _env_step(
-        self, 
-        carry: tuple[SACRunnerState, PrioritisedTrajectoryBufferState], 
+        self,
+        carry: tuple[SACRunnerState, PrioritisedTrajectoryBufferState],
         _: None
     ) -> tuple[tuple[SACRunnerState, PrioritisedTrajectoryBufferState], Transition]:
         runner_state, buffer_state = carry

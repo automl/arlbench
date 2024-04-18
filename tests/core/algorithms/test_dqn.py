@@ -1,7 +1,7 @@
 import time
+import warnings
 
 import jax
-import warnings
 
 from arlbench.core.algorithms import DQN
 from arlbench.core.environments import make_env

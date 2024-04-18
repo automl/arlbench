@@ -27,12 +27,7 @@ if TYPE_CHECKING:
 
 
 class PPOTrainState(TrainState):
-    """PPO training state.
-
-    Contains:
-    - opt_state,
-    - params
-    """
+    """PPO training state."""
     opt_state = None
 
     @classmethod
@@ -72,9 +67,9 @@ class PPOTrainingResult(NamedTuple):
 
 class PPOMetrics(NamedTuple):
     """PPO metrics returned by train function. Consists of (loss, grads, advantages)."""
-    loss: Any
-    grads: Any
-    advantages: Any
+    loss: jnp.ndarray
+    grads: jnp.ndarray | dict
+    advantages: jnp.ndarray
 
 class Transition(NamedTuple):
     """PPO Transition. Consists of (done, action, value, reward, log_prob, obs, info)."""
@@ -84,13 +79,15 @@ class Transition(NamedTuple):
     reward: jnp.ndarray
     log_prob: jnp.ndarray
     obs: jnp.ndarray
-    info: jnp.ndarray
+    info: dict
+
 
 PPOTrainReturnT = tuple[PPOState, PPOTrainingResult]
 
+
 class PPO(Algorithm):
     """JAX-based implementation of Proximal Policy Optimization (PPO)."""
-    name = "ppo"
+    name: str = "ppo"
 
     def __init__(
         self,
@@ -106,10 +103,12 @@ class PPO(Algorithm):
 
         Args:
             hpo_config (Configuration): Hyperparameter configuration of the algorithm which can be optimized using hyperparameter optimization (HPO).
-            nas_config (Configuration): Neural architecture of the algorithm components which can be optimized using neural architecture search (NAS).
             env (Environment | AutoRLWrapper): Target environment which the agent is trained on.
-            track_metrics (bool, optional): Track metrics such as loss and gradients during training. Defaults to False.
+            eval_env (Environment | AutoRLWrapper | None, optional): Evaluation environment which the agent is evaluated on. Defaults to None. In this case, the training environment is used.
+            cnn_policy (bool, optional): If true, a CNN-based policy network is used. If false, a MLP-based policy network is used. Defaults to False.
+            nas_config (Configuration | None, optional): Neural architecture of the algorithm components. Defaults to None. In that case, default NAS config is used.
             track_trajectories (bool, optional): Track trajectories during training. Defaults to False.
+            track_metrics (bool, optional): Track metrics such as loss and gradients during training. Defaults to False.
         """
         if nas_config is None:
             nas_config = PPO.get_default_nas_config()
@@ -284,20 +283,19 @@ class PPO(Algorithm):
             jnp.ndarray: Action(s)
         """
         pi, _ = self.network.apply(runner_state.train_state.params, obs)
-        def deterministic_action():
+        def deterministic_action() -> jnp.ndarray:
             return pi.mode()
 
-        def sampled_action():
+        def sampled_action() -> jnp.ndarray:
             return pi.sample(seed=rng)
 
-        action = jax.lax.cond(
+        return jax.lax.cond(
             deterministic,
             deterministic_action,
             sampled_action,
         )
 
         #return jnp.clip(action, self.env.action_space.low, self.env.action_space.high)
-        return action
 
     @functools.partial(jax.jit, static_argnums=(0,3,4,5))
     def train(
