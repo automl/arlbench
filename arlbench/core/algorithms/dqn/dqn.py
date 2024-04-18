@@ -30,6 +30,7 @@ if TYPE_CHECKING:
     from arlbench.core.wrappers import AutoRLWrapper
 
 
+
 class DQNTrainState(TrainState):
     target_params: None | chex.Array | dict | FrozenDict = None
     opt_state: optax.OptState
@@ -145,7 +146,6 @@ class DQN(Algorithm):
                 "buffer_beta": Float("buffer_beta", (0., 1.), default=0.9),
                 "buffer_epsilon": Float("buffer_epsilon", (0., 1e-3), default=1e-5),
                 "lr": Float("lr", (1e-5, 0.1), default=2.5e-4),
-                "activation": Categorical("activation", ["tanh", "relu"], default="tanh"),
                 "gamma": Float("gamma", (0., 1.), default=0.99),
                 "tau": Float("tau", (0., 1.), default=1.0),
                 "epsilon": Float("epsilon", (0., 1.), default=0.1),
@@ -351,11 +351,11 @@ class DQN(Algorithm):
             global_step
         ) = runner_state
 
-        def random_action(rng) -> jnp.ndarray:
+        def random_action(rng, _) -> jnp.ndarray:
             return self.env.sample_actions(rng)
 
-        def greedy_action(_) -> jnp.ndarray:
-            q_values = self.network.apply(train_state.params, last_obs)
+        def greedy_action(_, obs) -> jnp.ndarray:
+            q_values = self.network.apply(train_state.params, obs)
             return q_values.argmax(axis=-1)
 
         def take_step(
@@ -370,6 +370,7 @@ class DQN(Algorithm):
                 random_action,
                 greedy_action,
                 action_rng,
+                last_obs
             )
 
             rng, step_rng = jax.random.split(rng)
