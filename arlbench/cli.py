@@ -22,7 +22,7 @@ def main(cfg):
         with open("./done.txt", "w+") as f:
             f.write("yes")
         return objectives
-    
+
 
 if __name__ == "__main__":
     sys.exit(main())  # pragma: no cover
