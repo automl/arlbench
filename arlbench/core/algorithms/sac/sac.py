@@ -14,7 +14,6 @@ import optax
 from ConfigSpace import (Categorical, Configuration, ConfigurationSpace, Float,
                          Integer)
 from flax.training.train_state import TrainState
-from gymnax.environments import spaces
 
 from arlbench.core.algorithms.algorithm import Algorithm
 from arlbench.core.algorithms.common import TimeStep
@@ -94,6 +93,7 @@ class SAC(Algorithm):
             self,
             hpo_config: Configuration,
             env: Environment | AutoRLWrapper,
+            eval_env: Environment | AutoRLWrapper | None = None,
             cnn_policy: bool = False,
             nas_config: Configuration | None = None,
             track_metrics: bool = False,
@@ -105,6 +105,7 @@ class SAC(Algorithm):
             hpo_config,
             nas_config,
             env,
+            eval_env,
             track_trajectories=track_trajectories,
             track_metrics=track_metrics
         )
@@ -152,7 +153,6 @@ class SAC(Algorithm):
                 "buffer_epsilon": Float("buffer_epsilon", (0., 1e-3), default=1e-5),
                 "lr": Float("lr", (1e-5, 0.1), default=3e-4),
                 "gradient steps": Integer("gradient steps", (1, int(1e5)), default=1),
-                "policy_delay": Integer("policy_delay", (1, int(1e5)), default=1), # todo: need to implement
                 "gamma": Float("gamma", (0., 1.), default=0.99),
                 "tau": Float("tau", (0., 1.), default=0.005),
                 "use_target_network": Categorical("use_target_network", [True, False], default=True),
@@ -356,7 +356,7 @@ class SAC(Algorithm):
             train_eval_step,
             (runner_state, buffer_state),
             None,
-            10,
+            n_eval_steps,
         )
         return SACState(
             runner_state=runner_state,
@@ -446,7 +446,6 @@ class SAC(Algorithm):
                     batch.experience.first,
                     rng,
                 )
-                # TODO: consider policy_delay here!?
                 actor_train_state, actor_loss, entropy, actor_grads, rng = self.update_actor(
                     actor_train_state,
                     critic_train_state,
