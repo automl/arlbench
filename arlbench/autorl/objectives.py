@@ -26,7 +26,8 @@ class Objective(ABC):
     @abstractmethod
     def __call__(
         train_func: TrainFunc,
-        objectives: dict
+        objectives: dict,
+        optimize_objectives: str
     ) -> TrainFunc:
         raise NotImplementedError
 
@@ -44,11 +45,16 @@ class Runtime(Objective):
     RANK = 0
 
     @staticmethod
-    def __call__(train_func: TrainFunc, objectives: dict) -> TrainFunc:
+    def __call__(train_func: TrainFunc, objectives: dict, optimize_objectives: str) -> TrainFunc:
         def wrapper(*args, **kwargs):
             start_time = time.time()
             result = train_func(*args, **kwargs)
-            objectives["runtime"] = time.time() - start_time
+            runtime = time.time() - start_time
+            
+            if optimize_objectives != Runtime.get_spec()["optimize"]:
+                runtime *= -1
+
+            objectives["runtime"] = runtime
             return result
         return wrapper
 
@@ -67,11 +73,15 @@ class RewardMean(Objective):
     RANK = 2
 
     @staticmethod
-    def __call__(train_func: TrainFunc, objectives: dict) -> TrainFunc:
+    def __call__(train_func: TrainFunc, objectives: dict, optimize_objectives: str) -> TrainFunc:
         def wrapper(*args, **kwargs):
             result = train_func(*args, **kwargs)
             _, train_result = result
-            objectives[RewardMean.KEY] = np.mean(train_result.eval_rewards[-1])
+            reward_mean = np.mean(train_result.eval_rewards[-1])
+
+            if optimize_objectives != RewardMean.get_spec()["optimize"]:
+                reward_mean *= -1
+            objectives[RewardMean.KEY] = reward_mean
 
             return result
         return wrapper
@@ -91,11 +101,15 @@ class RewardStd(Objective):
     RANK = 2
 
     @staticmethod
-    def __call__(train_func: TrainFunc, objectives: dict) -> TrainFunc:
+    def __call__(train_func: TrainFunc, objectives: dict, optimize_objectives: str) -> TrainFunc:
         def wrapper(*args, **kwargs):
             result = train_func(*args, **kwargs)
             _, train_result = result
-            objectives[RewardMean.KEY] = np.mean(train_result.eval_rewards[-1])
+            reward_std = np.mean(train_result.eval_rewards[-1])
+
+            if optimize_objectives != RewardStd.get_spec()["optimize"]:
+                reward_std *= -1
+            objectives[RewardStd.KEY] = reward_std
 
             return result
         return wrapper
@@ -105,8 +119,8 @@ class RewardStd(Objective):
         return {
             "name": RewardStd.KEY,
             "upper": None,
-            "lower": None,
-            "optimize": "upper"
+            "lower": 0,
+            "optimize": "lower"
         }
 
 
@@ -115,7 +129,7 @@ class Emissions(Objective):
     RANK = 1
 
     @staticmethod
-    def __call__(train_func: TrainFunc, objectives: dict) -> TrainFunc:
+    def __call__(train_func: TrainFunc, objectives: dict, optimize_objectives: str) -> TrainFunc:
         def wrapper(*args, **kwargs):
             from codecarbon import EmissionsTracker
             tracker = EmissionsTracker(
@@ -124,10 +138,16 @@ class Emissions(Objective):
                 logging_logger=None
             )
             tracker.start()
+            emissions = tracker.stop()
+            
+            if optimize_objectives != Emissions.get_spec()["optimize"]:
+                emissions *= -1
+            objectives[Emissions.KEY] = emissions
+
             try:
                 result = train_func(*args, **kwargs)
             finally:
-                objectives["emissions"] = tracker.stop()
+                objectives["emissions"] = emissions
             return result
         return wrapper
 
@@ -142,5 +162,5 @@ class Emissions(Objective):
 
 
 OBJECTIVES = {
-    o.KEY: o for o in [Runtime, RewardMean, RewardStd, Emissions]
+    o.KEY: (o, o.RANK) for o in [Runtime, RewardMean, RewardStd, Emissions]
 }
