@@ -373,7 +373,7 @@ class DQN(Algorithm):
             return self.env.sample_actions(rng)
 
         def greedy_action(_: chex.PRNGKey, obs: jnp.ndarray) -> jnp.ndarray:
-            q_values = self.network.apply(train_state.params, last_obs)
+            q_values = self.network.apply(train_state.params, obs)
             return q_values.argmax(axis=-1)
 
         def take_step(
