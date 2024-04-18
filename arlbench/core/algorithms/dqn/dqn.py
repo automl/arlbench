@@ -31,6 +31,7 @@ if TYPE_CHECKING:
 
 
 class DQNTrainState(TrainState):
+    """DQN training state."""
     target_params: None | chex.Array | dict | FrozenDict = None
     opt_state: optax.OptState
 
@@ -49,6 +50,7 @@ class DQNTrainState(TrainState):
         )
 
 class DQNRunnerState(NamedTuple):
+    """DQN runner state. Consists of (rng, train_state, env_state, obs, global_step)."""
     rng: chex.PRNGKey
     train_state: DQNTrainState
     env_state: Any
@@ -56,21 +58,25 @@ class DQNRunnerState(NamedTuple):
     global_step: int
 
 class DQNState(NamedTuple):
+    """DQN algorithm state. Consists of (runner_state, buffer_state)."""
     runner_state: DQNRunnerState
     buffer_state: PrioritisedTrajectoryBufferState
 
 
 class DQNTrainingResult(NamedTuple):
+    """DQN training result. Consists of (eval_rewards, trajectories, metrics)."""
     eval_rewards: jnp.ndarray
     trajectories: Transition | None
     metrics: DQNMetrics | None
 
 class DQNMetrics(NamedTuple):
-    loss: Any
-    grads: Any
-    td_error: Any
+    """DQN metrics returned by train function. Consists of (loss, grads, advantages)."""
+    loss: jnp.ndarray
+    grads: jnp.ndarray | tuple
+    td_error: jnp.ndarray
 
 class Transition(NamedTuple):
+    """DQN Transition. Consists of (done, action, reward, obs, info)."""
     done: jnp.ndarray
     action: jnp.ndarray
     reward: jnp.ndarray
@@ -82,7 +88,8 @@ DQNTrainReturnT = tuple[DQNState, DQNTrainingResult]
 
 
 class DQN(Algorithm):
-    name = "dqn"
+    """JAX-based implementation of Deep Q-Network (DQN)."""
+    name: str = "dqn"
 
     def __init__(
         self,
@@ -94,6 +101,17 @@ class DQN(Algorithm):
         track_trajectories: bool = False,
         track_metrics: bool = False
     ) -> None:
+        """Creates a DQN algorithm instance.
+
+        Args:
+            hpo_config (Configuration): Hyperparameter configuration of the algorithm which can be optimized using hyperparameter optimization (HPO).
+            env (Environment | AutoRLWrapper): eural architecture of the algorithm components which can be optimized using neural architecture search (NAS).
+            eval_env (Environment | AutoRLWrapper | None, optional): _description_. Defaults to None.
+            cnn_policy (bool, optional): _description_. Defaults to False.
+            nas_config (Configuration | None, optional): _description_. Defaults to None.
+            track_trajectories (bool, optional): _description_. Defaults to False.
+            track_metrics (bool, optional): _description_. Defaults to False.
+        """
         if nas_config is None:
             nas_config = DQN.get_default_nas_config()
 
@@ -321,7 +339,7 @@ class DQN(Algorithm):
         q_next_target = jnp.max(q_next_target, axis=-1)  # (batch_size,)
         next_q_value = rewards + (1 - dones) * self.hpo_config["gamma"] * q_next_target
 
-        def mse_loss(params):
+        def mse_loss(params: FrozenDict | dict) -> tuple[jnp.ndarray, jnp.ndarray]:
             q_pred = self.network.apply(
                 params, observations
             )  # (batch_size, num_actions)
@@ -351,10 +369,10 @@ class DQN(Algorithm):
             global_step
         ) = runner_state
 
-        def random_action(rng) -> jnp.ndarray:
+        def random_action(rng: chex.PRNGKey) -> jnp.ndarray:
             return self.env.sample_actions(rng)
 
-        def greedy_action(_) -> jnp.ndarray:
+        def greedy_action(_: chex.PRNGKey) -> jnp.ndarray:
             q_values = self.network.apply(train_state.params, last_obs)
             return q_values.argmax(axis=-1)
 
@@ -388,12 +406,12 @@ class DQN(Algorithm):
             )
 
         def do_update(
-                rng: chex.PRNGKey, 
+                rng: chex.PRNGKey,
                 train_state: DQNTrainState,
                 buffer_state: PrioritisedTrajectoryBufferState
             ) -> tuple[chex.PRNGKey, DQNTrainState, PrioritisedTrajectoryBufferState, DQNMetrics]:
             def gradient_step(
-                carry: tuple[chex.PRNGKey, DQNTrainState, PrioritisedTrajectoryBufferState], 
+                carry: tuple[chex.PRNGKey, DQNTrainState, PrioritisedTrajectoryBufferState],
                 _: None
             ) -> tuple[tuple[chex.PRNGKey, DQNTrainState, PrioritisedTrajectoryBufferState], DQNMetrics]:
                 rng, train_state, buffer_state = carry
@@ -430,7 +448,7 @@ class DQN(Algorithm):
             return rng, train_state, buffer_state, metrics
 
         def dont_update(
-                rng: chex.PRNGKey, 
+                rng: chex.PRNGKey,
                 train_state: DQNTrainState,
                 buffer_state: PrioritisedTrajectoryBufferState
             ) -> tuple[chex.PRNGKey, DQNTrainState, PrioritisedTrajectoryBufferState, DQNMetrics]:

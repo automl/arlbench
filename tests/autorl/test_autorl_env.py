@@ -17,7 +17,6 @@ def test_autorl_env_dqn_default_obs():
         "checkpoint": [],
         "objectives": ["reward_mean"],
         "state_features": [],
-        "grad_obs": False,
         "n_steps": 10
     }
 
@@ -46,7 +45,6 @@ def test_autorl_env_dqn_grad_obs():
         "checkpoint": [],
         "objectives": ["reward_mean"],
         "state_features": ["grad_info"],
-        "grad_obs": False,
         "n_steps": 10
     }
 
@@ -75,7 +73,6 @@ def test_autorl_env_dqn_per_switch():
         "checkpoint": [],
         "objectives": ["reward_mean"],
         "state_features": [],
-        "grad_obs": False,
         "n_steps": 10
     }
         
