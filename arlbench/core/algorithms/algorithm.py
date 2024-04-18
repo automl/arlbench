@@ -210,13 +210,13 @@ class Algorithm(ABC):
         )
 
         def cond_fn(state: tuple) -> jnp.bool:
-            """Condition function for JAX while loop. Returns true if all parallel environments are done.
+            """Condition function for JAX while loop. Returns true if not all parallel environments are done.
 
             Args:
                 state (tuple): Current loop state.
 
             Returns:
-                jnp.bool: True if all environments are done.
+                jnp.bool: True if not all environments are done.
             """
             _, _, _, done, _, _ = state
             return jnp.logical_not(jnp.all(done))
