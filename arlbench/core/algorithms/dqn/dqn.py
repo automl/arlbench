@@ -465,14 +465,14 @@ class DQN(Algorithm):
                 grads = None
             return rng, train_state, buffer_state, DQNMetrics(loss=loss, td_error=td_error, grads=grads)
 
-        def target_update() -> DQNTrainState:
+        def target_update(train_state) -> DQNTrainState:
             return train_state.replace(
                 target_params=optax.incremental_update(
                     train_state.params, train_state.target_params, self.hpo_config["tau"]
                 )
             )
 
-        def dont_target_update() -> DQNTrainState:
+        def dont_target_update(train_state) -> DQNTrainState:
             return train_state
 
         (rng, last_obs, env_state, global_step, buffer_state), (
@@ -502,6 +502,7 @@ class DQN(Algorithm):
             & (global_step % self.hpo_config["target_network_update_freq"] == 0),
             target_update,
             dont_target_update,
+            train_state,
         )
         runner_state = DQNRunnerState(
             rng=rng,
