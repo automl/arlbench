@@ -14,10 +14,10 @@ def run_arlbench(cfg: dict):
         cfg["load_checkpoint"] if "load_checkpoint" in cfg and cfg["load_checkpoint"] != "" else None
 
         _ = env.reset()
-        obs, reward, term, trunc, done, info = env.step(cfg.hp_config)
+        obs, reward, term, trunc, info = env.step(cfg.hp_config)
 
         if len(reward) == 1:
-            return reward[reward.keys([0])]
+            return reward[list(reward.keys())[0]]
         else:
             return tuple(reward.values())
 

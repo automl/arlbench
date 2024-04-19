@@ -16,7 +16,7 @@ dependencies = [
   "hydra-submitit-launcher",
   "hydra_colorlog",
   "mypy",
-  "tox==3.14.0",
+  #"tox==3.14.0",
   "twine",
   "bump-my-version",
   

@@ -1,23 +1,17 @@
 defaults:
   - cluster/local
-  - seach_space: dqn
-  - override hydra/sweeper: HyperRS
 
 hydra:
-  sweeper:
-    budget: 256
-    search_space: ${search_space}
   run:
-    dir: results/dqn_${autorl_config.env_name}/${autorl_config.seed}
+    dir: results/dqn_${autorl.env_name}/${autorl.seed}
   sweep:
-    dir: results/dqn_${autorl_config.env_name}/${autorl_config.seed}
+    dir: results/dqn_${autorl.env_name}/${autorl.seed}
   job:
     chdir: true
 
 load_checkpoint: ""
-smac_seed: 0
 
-autorl_config:
+autorl:
   seed: 42
   env_framework: "gymnax"
   env_name: "CartPole-v1"

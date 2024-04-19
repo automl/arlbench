@@ -14,14 +14,13 @@ from arlbench.arlbench import run_arlbench
 @track_emissions(offline=True, country_iso_code="DEU")
 def main(cfg):
     """Console script for arlbench."""
-    with memray.Tracker("memray.bin"):
-        objectives = run_arlbench(cfg)
-        with open("./performance.csv", "w+") as f:
-            f.write(str(objectives))
-            f.write("1,0.1,0.2,0.3,0.4\n")
-        with open("./done.txt", "w+") as f:
-            f.write("yes")
-        return objectives
+    objectives = run_arlbench(cfg)
+    with open("./performance.csv", "w+") as f:
+        f.write(str(objectives))
+        f.write("1,0.1,0.2,0.3,0.4\n")
+    with open("./done.txt", "w+") as f:
+        f.write("yes")
+    return objectives
 
 
 if __name__ == "__main__":
