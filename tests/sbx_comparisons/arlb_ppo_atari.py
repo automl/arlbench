@@ -12,24 +12,39 @@ from arlbench.core.environments import make_env
 
 def ppo_runner(dir_name, log, framework, env_name, config, training_kw_args, seed, cnn_policy):
     env = make_env(framework, env_name, n_envs=config["n_envs"], seed=seed)
-    eval_env = make_env(framework, env_name, n_envs=training_kw_args["n_eval_episodes"], seed=seed)
     rng = jax.random.PRNGKey(seed)
 
+    # OrderedDict([('batch_size', 256),
+    #          ('clip_range', 'lin_0.1'),
+    #          ('ent_coef', 0.01),
+    #          ('frame_stack', 4),
+    #          ('n_timesteps', 10000000.0),
+
+    #    "minibatch_size": Integer("minibatch_size", (4, 1024), default=64),
+    #     "lr": Float("lr", (1e-5, 0.1), default=2.5e-4),
+    #     "n_steps": Integer("n_steps", (1, 10000), default=1024),
+    #     "update_epochs": Integer("update_epochs", (1, int(1e5)), default=10),
+    #     "activation": Categorical("activation", ["tanh", "relu"], default="tanh"),
+    #     "gamma": Float("gamma", (0., 1.), default=0.99),
+    #     "gae_lambda": Float("gae_lambda", (0., 1.), default=0.95),
+    #     "clip_eps": Float("clip_eps", (0., 1.), default=0.2),
+    #     "ent_coef": Float("ent_coef", (0., 1.), default=0.01),
+    #     "vf_coef": Float("vf_coef", (0., 1.), default=0.5),
+    #     "max_grad_norm": Float("max_grad_norm", (0., 10.), default=0.5)
+
     hpo_config = PPO.get_default_hpo_config()
-    hpo_config["update_interval"] = 256
     hpo_config["minibatch_size"] = 256
-    hpo_config["lr"] = 1e-3
-    hpo_config["update_epochs"] = 20
-    hpo_config["gamma"] = 0.98
+    hpo_config["update_epochs"] = 4
+    hpo_config["gamma"] = 0.99
     hpo_config["gae_lambda"] = 0.95
-    hpo_config["ent_coef"] = 0.0
+    hpo_config["ent_coef"] = 0.01
     hpo_config["max_grad_norm"] = 0.5
 
     nas_config = PPO.get_default_nas_config()
-    nas_config["activation"] = "tanh"
+    nas_config["activation"] = "relu"
     nas_config["hidden_size"] = 256
 
-    agent = PPO(hpo_config, env, eval_env=eval_env, nas_config=nas_config, cnn_policy=cnn_policy)
+    agent = PPO(hpo_config, env, nas_config=nas_config, cnn_policy=cnn_policy)
     algorithm_state = agent.init(rng)
 
     start = time.time()

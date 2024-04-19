@@ -106,7 +106,7 @@ class SAC(Algorithm):
             hpo_config,
             nas_config,
             env,
-            eval_env,
+            eval_env=eval_env,
             track_trajectories=track_trajectories,
             track_metrics=track_metrics
         )
