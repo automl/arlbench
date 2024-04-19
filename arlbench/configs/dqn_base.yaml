@@ -1,0 +1,47 @@
+defaults:
+  - cluster/local
+
+hydra:
+  run:
+    dir: results/dqn_${autorl_config.env_name}/${autorl_config.seed}
+  sweep:
+    dir: results/dqn_${autorl_config.env_name}/${autorl_config.seed}
+  job:
+    chdir: true
+
+load_checkpoint: ""
+
+autorl_config:
+  seed: 42
+  env_framework: "gymnax"
+  env_name: "CartPole-v1"
+  n_envs: 10
+  algorithm: "dqn"
+  cnn_policy: False
+  checkpoint: []
+  checkpoint_name: "default_checkpoint"
+  checkpoint_dir: "/tmp"
+  objectives: ["reward_mean"]
+  optimize_objectives: "upper"
+  state_features: ["grad_info"]
+  n_steps: 10
+  n_total_timesteps: 1e5
+  n_eval_steps: 100
+  n_eval_episodes: 10
+
+hp_config:
+  lr: 0.01
+  buffer_size: 1000000
+  buffer_batch_size: 64
+  buffer_prio_sampling: False
+  buffer_alpha: 0.9
+  buffer_beta: 0.9
+  buffer_epsilon: 0.00001
+  gamma: 0.99
+  epsilon: 0.1
+  tau: 0.1
+  use_target_network: True
+  train_frequency: 4
+  gradient_steps: 1
+  target_network_update_freq: 10
+  learning_starts: 1000
