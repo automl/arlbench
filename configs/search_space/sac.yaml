@@ -1,9 +1,10 @@
+
 hyperparameters:
   hp_config.lr:
     type: uniform_float
     upper: 0.1
     lower: 0.00001
-    default: 0.00025
+    default: 0.0003
   hp_config.buffer_size:
     type: uniform_int
     upper: 10000000
@@ -13,11 +14,7 @@ hyperparameters:
     type: uniform_int
     upper: 1024
     lower: 1
-    default: 64
-  hp_config.buffer_prio_sampling:
-    type: categorical
-    choices: [True, False]
-    default: False
+    default: 256
   hp_config.buffer_alpha:
     type: uniform_float
     upper: 1.0
@@ -38,16 +35,6 @@ hyperparameters:
     upper: 1.0
     lower: 0.0
     default: 0.99
-  hp_config.epsilon:
-    type: uniform_float
-    upper: 1.0
-    lower: 0.0
-    default: 0.1
-  hp_config.tau:
-    type: uniform_float
-    upper: 1.0
-    lower: 0.0
-    default: 0.1
   hp_config.use_target_network:
     type: categorical
     choices: [True, False]
@@ -56,7 +43,7 @@ hyperparameters:
     type: uniform_int
     upper: 100000
     lower: 1
-    default: 4
+    default: 1
   hp_config.gradient_steps:
     type: uniform_int
     upper: 100000
@@ -66,4 +53,23 @@ hyperparameters:
     type: uniform_int
     upper: 100000
     lower: 1
-    default: 10
+    default: 1
+  hp_config.learning_starts:
+    type: uniform_int
+    upper: 100000
+    lower: 10
+    default: 100
+  hp_config.tau:
+    type: uniform_float
+    upper: 1.0
+    lower: 0.0
+    default: 0.005
+  hp_config.alpha_auto:
+    type: categorical
+    choices: [True, False]
+    default: True
+  hp_config.alpha:
+    type: uniform_float
+    upper: 1.0
+    lower: 0.0
+    default: 1.0
