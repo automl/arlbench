@@ -25,9 +25,9 @@ hydra:
           deterministic: false
           n_workers: 1
   run:
-    dir: results/dqn_${autorl.env_name}/${autorl.seed}
+    dir: results/smac/dqn_${autorl.env_name}/${autorl.seed}
   sweep:
-    dir: results/dqn_${autorl.env_name}/${autorl.seed}
+    dir: results/smac/dqn_${autorl.env_name}/${autorl.seed}
   job:
     chdir: true
 
