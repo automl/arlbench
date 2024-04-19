@@ -1,40 +1,23 @@
 defaults:
   - cluster/local
-  - seach_space: dqn
-  - override hydra/sweeper: HyperSMAC
+  - search_space: dqn
+  - override hydra/sweeper: HyperRS
 
 hydra:
   sweeper:
-    budget: 10_000_000
-    budget_variable: autorl_config.n_total_timesteps
+    n_trials: 256
     search_space: ${search_space}
-    sweeper_kwargs:
-      optimizer_kwargs:
-        smac_facade: 
-          _target_: smac.facade.multi_fidelity_facade.MultiFidelityFacade
-          _partial_: true
-        intensifier: 
-          _target_: smac.facade.multi_fidelity_facade.MultiFidelityFacade.get_intensifier
-          _partial_: true
-          eta: 3
-        scenario:
-          n_trials: 45
-          seed: ${smac_seed}
-          min_budget: 5
-          max_budget: 50
-          deterministic: false
-          n_workers: 1
   run:
-    dir: results/dqn_${autorl_config.env_name}/${autorl_config.seed}
+    dir: results/dqn_${autorl.env_name}/${autorl.seed}
   sweep:
-    dir: results/dqn_${autorl_config.env_name}/${autorl_config.seed}
+    dir: results/dqn_${autorl.env_name}/${autorl.seed}
   job:
     chdir: true
 
 load_checkpoint: ""
 smac_seed: 0
 
-autorl_config:
+autorl:
   seed: 42
   env_framework: "gymnax"
   env_name: "CartPole-v1"

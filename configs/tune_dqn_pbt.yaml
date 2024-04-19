@@ -1,17 +1,32 @@
 defaults:
   - cluster/local
+  - search_space: dqn
+  - override hydra/sweeper: HyperPBT
 
 hydra:
+  sweeper:
+    budget: 800_000
+    budget_variable: autorl.n_total_timesteps
+    loading_variable: load_checkpoint
+    saving_variable: autorl.checkpoint_name
+    search_space: ${search_space}
+    sweeper_kwargs:
+      optimizer_kwargs:
+        population_size: 8
+        config_interval: 1e4
+      checkpoint_tf: true
+      load_tf: true
   run:
-    dir: results/dqn_${autorl_config.env_name}/${autorl_config.seed}
+    dir: results/dqn_${autorl.env_name}/${autorl.seed}
   sweep:
-    dir: results/dqn_${autorl_config.env_name}/${autorl_config.seed}
+    dir: results/dqn_${autorl.env_name}/${autorl.seed}
   job:
     chdir: true
 
 load_checkpoint: ""
+smac_seed: 0
 
-autorl_config:
+autorl:
   seed: 42
   env_framework: "gymnax"
   env_name: "CartPole-v1"
