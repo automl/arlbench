@@ -134,6 +134,8 @@ class EnvpoolEnv(Environment):
     def step(self, env_state: Any, action: Any, _):
         handle1, (obs, reward, term, trunc, info) = self._xla_step(env_state, action)
         done = jnp.logical_or(term, trunc)
+        reset_ids = jnp.where(done)
+        obs, _ = self._env.reset(reset_ids)
         return handle1, (obs, reward, done, info)
 
     @property
