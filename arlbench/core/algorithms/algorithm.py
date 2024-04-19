@@ -29,7 +29,7 @@ class Algorithm(ABC):
             hpo_config: Configuration,
             nas_config: Configuration,
             env: Environment | AutoRLWrapper,
-            eval_env: Environment | AutoRLWrapper = None,
+            eval_env: Environment | AutoRLWrapper | None = None,
             track_metrics: bool = False,
             track_trajectories: bool = False
         ) -> None:
@@ -38,7 +38,7 @@ class Algorithm(ABC):
         Args:
             hpo_config (Configuration): Hyperparameter configuration of the algorithm which can be optimized using hyperparameter optimization (HPO).
             nas_config (Configuration): Neural architecture of the algorithm components which can be optimized using neural architecture search (NAS).
-            env (Environment | AutoRLWrapper): Target environment which the agent is trained on.
+            env (Environment | AutoRLWrapper, optional): Target environment which the agent is trained on.
             track_metrics (bool, optional): Track metrics such as loss and gradients during training. Defaults to False.
             track_trajectories (bool, optional): Track trajectories during training. Defaults to False.
         """
