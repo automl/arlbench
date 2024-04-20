@@ -123,32 +123,31 @@ class EnvpoolEnv(Environment):
 
         env = envpool.make(env_name, env_type="gymnasium", num_envs=n_envs, seed=seed)
         super().__init__(env_name, env, n_envs, seed)
-        import ipdb
-        ipdb.set_trace()
         self._handle0, _, _, self._xla_step = self._env.xla()
 
     @functools.partial(jax.jit, static_argnums=0)
     def reset(self, _):
-        import ipdb
-        ipdb.set_trace()
         obs, _ = self._env.reset()
         return self._handle0, obs
 
     @functools.partial(jax.jit, static_argnums=0)
     def step(self, env_state: Any, action: Any, _):
-        import ipdb
-        ipdb.set_trace()
         handle1, (obs, reward, term, trunc, info) = self._xla_step(env_state, action)
         done = jnp.logical_or(term, trunc)
 
         # auto reset for environments that are done
         def _reset(handle, obs, done, info):
             # todo: update info correctly
-            reset_positions = jnp.nonzero(done)[0]
-            output_indices = jnp.ones(done.size, dtype=jnp.int32) * reset_positions[0]
-            reset_idx = output_indices.at[:reset_positions.shape[0]].set(reset_positions)
+            env_ids = jnp.arange(done.size)
+            default_id = jnp.ones(done.size, dtype=jnp.int32) * jnp.argmax(done)
+            reset_idx = jnp.where(done, env_ids, default_id)
             handle, (new_obs, reward, term, trunc, info) = self._xla_step(handle, action, reset_idx)
-            obs = obs.at[done].set(new_obs)
+            def update_index(i, obs):
+                obs = jax.lax.cond(
+                    done[i], lambda obs: obs.at[i].set(new_obs[i]), lambda obs: obs, obs
+                )
+                return obs
+            obs = jax.lax.fori_loop(0, done.size, update_index, obs)
             return handle, obs, info
         def _noop(handle, obs, _, info):
             return handle, obs, info
