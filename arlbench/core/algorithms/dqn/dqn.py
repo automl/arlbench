@@ -56,7 +56,7 @@ class DQNRunnerState(NamedTuple):
     rng: chex.PRNGKey
     train_state: DQNTrainState
     env_state: Any
-    obs: chex.Array
+    obs: jnp.ndarray
     global_step: int
 
 class DQNState(NamedTuple):
@@ -373,9 +373,9 @@ class DQN(Algorithm):
         ) = runner_state
 
         def take_step(
-                carry: tuple[jnp.ndarray, jnp.ndarray, Any, int, PrioritisedTrajectoryBufferState],
+                carry: tuple[chex.PRNGKey, DQNTrainState, jnp.ndarray, Any, int, PrioritisedTrajectoryBufferState],
                 _: None
-            ) -> tuple[tuple[jnp.ndarray, jnp.ndarray, Any, int, PrioritisedTrajectoryBufferState], tuple[jnp.ndarray, jnp.ndarray, jnp.ndarray, jnp.ndarray, dict]]:
+            ) -> tuple[tuple[chex.PRNGKey, DQNTrainState, jnp.ndarray, Any, int, PrioritisedTrajectoryBufferState], tuple[jnp.ndarray, jnp.ndarray, jnp.ndarray, jnp.ndarray, dict]]:
 
             rng, train_state, last_obs, env_state, global_step, buffer_state = carry
 
@@ -480,6 +480,7 @@ class DQN(Algorithm):
                 loss = None
                 td_error = None
                 grads = None
+
             return rng, train_state, buffer_state, DQNMetrics(loss=loss, td_error=td_error, grads=grads)
 
 

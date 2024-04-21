@@ -144,6 +144,14 @@ class AutoRLEnv(gymnasium.Env):
         if self._c_step >= self._config["n_steps"]:
             return True
         return False
+    
+    def _make_algorithm(self):
+        return self._algorithm_cls(
+            self._hpo_config,
+            self._env,
+            track_trajectories=self._track_trajectories,
+            track_metrics=self._track_metrics
+        )
 
     def _train(
             self,
@@ -195,30 +203,26 @@ class AutoRLEnv(gymnasium.Env):
         if len(action.keys()) == 0:     # no action provided
             warnings.warn("No agent configuration provided. Falling back to default configuration.")
 
-        if self._done or self._algorithm is None:
+        if self._done or self._algorithm is None or self._algorithm_state is None:
             raise ValueError("Called step() before reset().")
 
         # Set done if max. number of steps in DAC is reached or classic (one-step) HPO is performed
         self._done = self.step_()
         info = {}
 
-        # Apply changes to current hyperparameter configuration
+        # Apply changes to current hyperparameter configuration and reinstantiate algorithm
         if isinstance(action, dict):
             action = Configuration(self.config_space, action)
         self._hpo_config = action
 
-        if seed and self._algorithm_state:
+        # Update hyperparameter configuration
+        self._algorithm = self._make_algorithm()
+
+
+        if seed:
+            print(self._algorithm_state)
             runner_state = self._algorithm_state._replace(rng=jax.random.key(seed))
             self._algorithm_state = self._algorithm_state._replace(runner_state=runner_state)
-
-        seed = seed if seed else self._seed
-
-        # Update hyperparameter configuration
-        self._algorithm.update_hpo_config(self._hpo_config)
-
-        if self._algorithm_state:
-            init_rng = jax.random.key(seed)
-            self._algorithm_state = self._algorithm.init(init_rng)
 
         # Training kwargs
         train_kw_args = {
@@ -256,12 +260,7 @@ class AutoRLEnv(gymnasium.Env):
 
         # Use default hyperparameter configuration
         self._hpo_config = self._algorithm_cls.get_default_hpo_config()
-        self._algorithm = self._algorithm_cls(
-            self._hpo_config,
-            self._env,
-            track_trajectories=self._track_trajectories,
-            track_metrics=self._track_metrics
-        )
+        self._algorithm = self._make_algorithm()
 
         if checkpoint_path:
             self._load(checkpoint_path, seed)
@@ -273,10 +272,12 @@ class AutoRLEnv(gymnasium.Env):
 
     def _save(self, tag: str | None = None) -> str:
         if self._algorithm_state is None:
-            raise ValueError("Agent not initialized. Not able to save agent state.")
+            warnings.warn("Agent not initialized. Not able to save agent state.")
+            return ""
 
         if self._train_result is None:
-            raise ValueError("No training performed, so there is nothing to save. Please run step() first.")
+            warnings.warn("No training performed, so there is nothing to save. Please run step() first.")
+            return ""
 
         return Checkpointer.save(
             self._algorithm.name,
