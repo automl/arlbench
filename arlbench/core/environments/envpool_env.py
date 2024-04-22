@@ -114,8 +114,9 @@ ATARI_ENVS = [
     "WizardOfWor-v5",
     "WordZapper-v5",
     "YarsRevenge-v5",
-    "Zaxxon-v5"
+    "Zaxxon-v5",
 ]
+
 
 class EnvpoolEnv(Environment):
     def __init__(self, env_name: str, n_envs: int, seed: int):
@@ -141,22 +142,24 @@ class EnvpoolEnv(Environment):
             env_ids = jnp.arange(done.size)
             default_id = jnp.ones(done.size, dtype=jnp.int32) * jnp.argmax(done)
             reset_idx = jnp.where(done, env_ids, default_id)
-            handle, (new_obs, reward, term, trunc, info) = self._xla_step(handle, action, reset_idx)
+            handle, (new_obs, reward, term, trunc, info) = self._xla_step(
+                handle, action, reset_idx
+            )
+
             def update_index(i, obs):
-                obs = jax.lax.cond(
+                return jax.lax.cond(
                     done[i], lambda obs: obs.at[i].set(new_obs[i]), lambda obs: obs, obs
                 )
-                return obs
+
             obs = jax.lax.fori_loop(0, done.size, update_index, obs)
             return handle, obs, info
+
         def _noop(handle, obs, _, info):
             return handle, obs, info
+
         requires_reset = jnp.any(done)
         handle1, obs, info = jax.lax.cond(
-            requires_reset,
-            _reset,
-            _noop,
-            handle1, obs, done, info
+            requires_reset, _reset, _noop, handle1, obs, done, info
         )
         return handle1, (obs, reward, done, info)
 
@@ -167,4 +170,3 @@ class EnvpoolEnv(Environment):
     @property
     def observation_space(self):
         return gymnasium_space_to_gymnax_space(self._env.observation_space)
-
