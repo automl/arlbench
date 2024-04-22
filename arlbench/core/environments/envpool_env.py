@@ -5,6 +5,7 @@ from typing import Any
 
 import jax
 import jax.numpy as jnp
+import numpy as np
 
 from arlbench.utils import gymnasium_space_to_gymnax_space
 
@@ -134,8 +135,28 @@ class EnvpoolEnv(Environment):
     def step(self, env_state: Any, action: Any, _):
         handle1, (obs, reward, term, trunc, info) = self._xla_step(env_state, action)
         done = jnp.logical_or(term, trunc)
-        reset_ids = jnp.where(done)
-        obs, _ = self._env.reset(reset_ids)
+
+        def reset(obs):
+            def reset_idx(i, obs):
+                new_obs, _ = self._env.reset(env_id=np.array([i]))
+                obs = obs.at[i].set(new_obs[0])
+                return obs
+
+            for i in range(self._n_envs):
+                jax.lax.cond(
+                    done[i],
+                    lambda obs: reset_idx(i, obs),
+                    lambda obs: obs,
+                    obs,
+                )
+
+        obs = jax.lax.cond(
+            jnp.any(done),
+            reset,
+            lambda obs: obs,
+            obs
+        )
+
         return handle1, (obs, reward, done, info)
 
     @property
