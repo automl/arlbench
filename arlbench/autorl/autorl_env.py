@@ -34,8 +34,12 @@ DEFAULT_AUTO_RL_CONFIG = {
     "checkpoint_name": "default_checkpoint",
     "checkpoint_dir": "/tmp",
     "objectives": ["reward_mean"],
+    "optimize_objectives": "upper",
     "state_features": ["grad_info"],
-    "n_steps": 10
+    "n_steps": 10,
+    "n_total_timesteps": 1e5,
+    "n_eval_steps": 100,
+    "n_eval_episodes": 10,
 }
 
 
@@ -107,8 +111,11 @@ class AutoRLEnv(gymnasium.Env):
                 raise ValueError(f"Invalid objective: {o}")
             self._objectives += [OBJECTIVES[o]]
 
-            # Ensure right order of objectives, e.g. runtime is wrapped first
-            self._objectives = sorted(self._objectives)
+        # Ensure right order of objectives, e.g. runtime is wrapped first
+        self._objectives = sorted(self._objectives, key=lambda o: o[1])
+
+        # Extract online objective classes
+        self._objectives = [o[0] for o in self._objectives]
 
         # State Features
         self._state_features = []
@@ -149,7 +156,7 @@ class AutoRLEnv(gymnasium.Env):
         train_func = self._algorithm.train
 
         for o in self._objectives:
-            train_func = o(train_func, objectives)
+            train_func = o(train_func, objectives, self._config["optimize_objectives"])
 
         obs["steps"] = np.array([self._c_step, self._total_training_steps])
         for f in self._state_features:

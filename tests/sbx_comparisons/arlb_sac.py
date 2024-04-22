@@ -10,7 +10,7 @@ from arlbench.core.algorithms import SAC
 from arlbench.core.environments import make_env
 
 
-def test_sac(dir_name, log, framework, env_name, config, training_kw_args, seed):
+def test_sac(dir_name, log, framework, env_name, config, training_kw_args, seed, cnn_policy):
     env = make_env(framework, env_name, n_envs=config["n_envs"], seed=seed)
     rng = jax.random.PRNGKey(seed)
 
@@ -24,7 +24,7 @@ def test_sac(dir_name, log, framework, env_name, config, training_kw_args, seed)
     nas_config["activation"] = "relu"
     nas_config["hidden_size"] = 350
 
-    agent = SAC(hpo_config, env, nas_config=nas_config)
+    agent = SAC(hpo_config, env, nas_config=nas_config, cnn_policy=cnn_policy)
     algorithm_state = agent.init(rng)
 
     start = time.time()
@@ -63,6 +63,7 @@ if __name__ == "__main__":
     parser.add_argument("--env-framework", type=str)
     parser.add_argument("--env", type=str)
     parser.add_argument("--n-env-steps", type=int)
+    parser.add_argument("--cnn-policy", type=bool, default=False)
     args = parser.parse_args()
 
     logger = logging.getLogger(__name__)
@@ -89,4 +90,5 @@ if __name__ == "__main__":
             config=config,
             training_kw_args=training_kw_args,
             seed=args.seed,
+            cnn_policy=args.cnn_policy
         )
