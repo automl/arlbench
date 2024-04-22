@@ -1,8 +1,9 @@
+from __future__ import annotations
+
 import time
 import warnings
 
 import jax
-
 from arlbench.core.algorithms import SAC
 from arlbench.core.environments import make_env
 
@@ -20,19 +21,21 @@ def test_default_sac_continuous(n_envs=N_ENVS):
     config = SAC.get_default_hpo_config()
     agent = SAC(config, env, eval_env=eval_env)
     algorithm_state = agent.init(rng)
-    
+
     start = time.time()
     algorithm_state, results = agent.train(
         *algorithm_state,
         n_total_timesteps=TRAINING_STEPS,
         n_eval_steps=EVAL_STEPS,
-        n_eval_episodes=EVAL_EPISODES
+        n_eval_episodes=EVAL_EPISODES,
     )
     training_time = time.time() - start
     reward = results.eval_rewards[-1].mean()
 
-    print(f"n_envs = {n_envs}, time = {training_time:.2f}, env_steps = {n_envs * algorithm_state.runner_state.global_step}, updates = {algorithm_state.runner_state.global_step}, reward = {reward:.2f}")
-    assert reward > -1200    
+    print(
+        f"n_envs = {n_envs}, time = {training_time:.2f}, env_steps = {n_envs * algorithm_state.runner_state.global_step}, updates = {algorithm_state.runner_state.global_step}, reward = {reward:.2f}"
+    )
+    assert reward > -1200
 
 
 if __name__ == "__main__":

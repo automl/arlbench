@@ -11,13 +11,16 @@ def run_arlbench(cfg: dict):
     with HandleTermination(env):
         print(f"Your current config is: {cfg}")
 
-        checkpoint_path = cfg["load_checkpoint"] if "load_checkpoint" in cfg and cfg["load_checkpoint"] != "" else None
+        checkpoint_path = (
+            cfg["load_checkpoint"]
+            if "load_checkpoint" in cfg and cfg["load_checkpoint"] != ""
+            else None
+        )
 
         _ = env.reset(checkpoint_path=checkpoint_path)
         obs, reward, term, trunc, info = env.step(cfg.hp_config)
 
         if len(reward) == 1:
-            return reward[list(reward.keys())[0]]
+            return reward[next(iter(reward.keys()))]
         else:
             return tuple(reward.values())
-

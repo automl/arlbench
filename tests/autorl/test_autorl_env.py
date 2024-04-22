@@ -1,5 +1,6 @@
-import pytest
+from __future__ import annotations
 
+import pytest
 from arlbench import AutoRLEnv
 from arlbench.core.algorithms import DQN
 
@@ -17,7 +18,7 @@ def test_autorl_env_dqn_default_obs():
         "checkpoint": [],
         "objectives": ["reward_mean"],
         "state_features": [],
-        "n_steps": 10
+        "n_steps": 10,
     }
 
     env = AutoRLEnv(config=config)
@@ -45,7 +46,7 @@ def test_autorl_env_dqn_grad_obs():
         "checkpoint": [],
         "objectives": ["reward_mean"],
         "state_features": ["grad_info"],
-        "n_steps": 10
+        "n_steps": 10,
     }
 
     env = AutoRLEnv(config=config)
@@ -60,6 +61,7 @@ def test_autorl_env_dqn_grad_obs():
     assert trunc is False
     assert objectives["reward_mean"] > 0
 
+
 def test_autorl_env_dqn_per_switch():
     config = {
         "seed": 42,
@@ -73,9 +75,9 @@ def test_autorl_env_dqn_per_switch():
         "checkpoint": [],
         "objectives": ["reward_mean"],
         "state_features": [],
-        "n_steps": 10
+        "n_steps": 10,
     }
-        
+
     env = AutoRLEnv(config)
     _, _ = env.reset()
     action = env.config_space.get_default_configuration()
@@ -119,7 +121,7 @@ def test_autorl_env_dqn_dac():
         "checkpoint": [],
         "objectives": ["reward_mean"],
         "state_features": [],
-        "n_steps": 3
+        "n_steps": 3,
     }
 
     env = AutoRLEnv(config)
@@ -153,7 +155,7 @@ def test_autorl_env_dqn_hpo():
         "checkpoint": [],
         "objectives": ["reward_mean"],
         "state_features": [],
-        "n_steps": 1    # Classic (static) HPO
+        "n_steps": 1,  # Classic (static) HPO
     }
 
     env = AutoRLEnv(config)
@@ -180,15 +182,15 @@ def test_autorl_env_step_before_reset():
         "checkpoint": [],
         "objectives": ["reward_mean"],
         "state_features": [],
-        "n_steps": 1,   # Classic HPO
+        "n_steps": 1,  # Classic HPO
     }
 
     env = AutoRLEnv(config)
-    
+
     with pytest.raises(ValueError) as excinfo:
         action = dict(DQN.get_hpo_config_space().sample_configuration())
         env.step(action)
-    
+
     assert "Called step() before reset()" in str(excinfo.value)
 
 
@@ -205,17 +207,17 @@ def test_autorl_env_forbidden_step():
         "checkpoint": [],
         "objectives": ["reward_mean"],
         "state_features": [],
-        "n_steps": 1,   # Classic HPO
+        "n_steps": 1,  # Classic HPO
     }
 
     env = AutoRLEnv(config)
     env.reset()
     action = env.config_space.sample_configuration()
     env.step(action)
-    
+
     with pytest.raises(ValueError) as excinfo:
         env.step(action)
-    
+
     assert "Called step() before reset()" in str(excinfo.value)
 
 

@@ -1,9 +1,9 @@
+from __future__ import annotations
+
 import gymnasium
 import numpy as np
+from arlbench.utils import config_space_to_gymnasium_space
 from ConfigSpace import Categorical, ConfigurationSpace, Float, Integer
-
-from arlbench.utils import (config_space_to_gymnasium_space,
-                            gym_space_to_gymnax_space)
 
 
 def test_config_space_to_gymnasium_space():
@@ -12,8 +12,8 @@ def test_config_space_to_gymnasium_space():
         seed=42,
         space={
             "intHP": Integer("intHP", (1, 10), default=5),
-            "floatHP": Float("floatHP", (0., 1.), default=0.5),
-            "catHP": Categorical("catHP", ["a", "b", "c"], default="a")
+            "floatHP": Float("floatHP", (0.0, 1.0), default=0.5),
+            "catHP": Categorical("catHP", ["a", "b", "c"], default="a"),
         },
     )
 
