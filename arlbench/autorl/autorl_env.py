@@ -50,7 +50,7 @@ class AutoRLEnv(gymnasium.Env):
     _algorithm_state: AlgorithmState | None
     _train_result: TrainResult | None
     _hpo_config: Configuration
-    _total_timesteps: int
+    _total_training_steps: int
 
     def __init__(
             self,
@@ -70,7 +70,7 @@ class AutoRLEnv(gymnasium.Env):
         self._seed = int(self._config["seed"])
 
         self._done = True
-        self._total_timesteps = 0   # timesteps across calls of step()
+        self._total_training_steps = 0   # timesteps across calls of step()
         self._c_step = 0            # current step
         self._c_episode = 0         # current episode
 
@@ -158,7 +158,7 @@ class AutoRLEnv(gymnasium.Env):
         for o in self._objectives:
             train_func = o(train_func, objectives, self._config["optimize_objectives"])
 
-        obs["steps"] = np.array([self._c_step, self._total_timesteps])
+        obs["steps"] = np.array([self._c_step, self._total_training_steps])
         for f in self._state_features:
             train_func = f(train_func, obs)
 
@@ -187,7 +187,7 @@ class AutoRLEnv(gymnasium.Env):
     def step(
         self,
         action: Configuration | dict,
-        n_total_timesteps: int | None = None,
+        n_training_steps: int | None = None,
         n_eval_steps: int | None = None,
         n_eval_episodes: int | None = None,
         seed: int | None = None
@@ -222,7 +222,7 @@ class AutoRLEnv(gymnasium.Env):
 
         # Training kwargs
         train_kw_args = {
-            "n_total_timesteps": n_total_timesteps if n_total_timesteps else self._config["n_total_timesteps"],
+            "n_training_steps": n_training_steps if n_training_steps else self._config["n_training_steps"],
             "n_eval_steps": n_eval_steps if n_eval_steps else self._config["n_eval_steps"],
             "n_eval_episodes": n_eval_episodes if n_eval_episodes else self._config["n_eval_episodes"]
         }
@@ -231,7 +231,7 @@ class AutoRLEnv(gymnasium.Env):
         result, objectives, obs = self._train(**train_kw_args)
         self._algorithm_state, self._train_result = result
 
-        self._total_timesteps += train_kw_args["n_total_timesteps"]
+        self._total_training_steps += train_kw_args["n_training_steps"]
 
         # Checkpointing
         if len(self._config["checkpoint"]) > 0:
