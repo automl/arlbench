@@ -3,8 +3,7 @@ from __future__ import annotations
 import distrax
 import flax.linen as nn
 import jax.numpy as jnp
-from jax.nn.initializers import orthogonal, constant
-from typing import Type
+from jax.nn.initializers import constant, orthogonal
 
 
 class TanhTransformedDistribution(distrax.Transformed):  # type: ignore[name-defined]
@@ -72,7 +71,7 @@ class SACMLPActor(nn.Module):
         actor_logstd = jnp.clip(actor_logstd, self.log_std_min, self.log_std_max)
 
         return TanhTransformedDistribution(distrax.MultivariateNormalDiag(actor_mean, jnp.exp(actor_logstd)))
-    
+
 
 class SACCNNActor(nn.Module):
     """A CNN-based actor network for SAC. Based on NatureCNN https://github.com/DLR-RM/stable-baselines3/blob/master/stable_baselines3/common/torch_layers.py#L48."""
@@ -176,7 +175,7 @@ class SACMLPCritic(nn.Module):
         critic = self.critic_out(critic)
 
         return jnp.squeeze(critic, axis=-1)
-    
+
 class SACCNNCritic(nn.Module):
     """A CNN-based critic network for SAC. Based on NatureCNN https://github.com/DLR-RM/stable-baselines3/blob/master/stable_baselines3/common/torch_layers.py#L48."""
     action_dim: int
@@ -190,7 +189,7 @@ class SACCNNCritic(nn.Module):
             self.activation_func = nn.relu
         else:
             raise ValueError(f"Invalid activation function: {self.activation}")
-        
+
         self.conv0 = nn.Conv(
             features=32,
             kernel_size=(8, 8),
@@ -238,7 +237,7 @@ class SACCNNCritic(nn.Module):
 
 
 class SACVectorCritic(nn.Module):
-    critic: Type[SACMLPCritic] | Type[SACCNNCritic]
+    critic: type[SACMLPCritic] | type[SACCNNCritic]
     action_dim: int
     activation: int
     hidden_size: int = 64

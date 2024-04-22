@@ -134,6 +134,30 @@ class EnvpoolEnv(Environment):
     def step(self, env_state: Any, action: Any, _):
         handle1, (obs, reward, term, trunc, info) = self._xla_step(env_state, action)
         done = jnp.logical_or(term, trunc)
+
+        # auto reset for environments that are done
+        def _reset(handle, obs, done, info):
+            # todo: update info correctly
+            env_ids = jnp.arange(done.size)
+            default_id = jnp.ones(done.size, dtype=jnp.int32) * jnp.argmax(done)
+            reset_idx = jnp.where(done, env_ids, default_id)
+            handle, (new_obs, reward, term, trunc, info) = self._xla_step(handle, action, reset_idx)
+            def update_index(i, obs):
+                obs = jax.lax.cond(
+                    done[i], lambda obs: obs.at[i].set(new_obs[i]), lambda obs: obs, obs
+                )
+                return obs
+            obs = jax.lax.fori_loop(0, done.size, update_index, obs)
+            return handle, obs, info
+        def _noop(handle, obs, _, info):
+            return handle, obs, info
+        requires_reset = jnp.any(done)
+        handle1, obs, info = jax.lax.cond(
+            requires_reset,
+            _reset,
+            _noop,
+            handle1, obs, done, info
+        )
         return handle1, (obs, reward, done, info)
 
     @property

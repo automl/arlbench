@@ -67,9 +67,9 @@ class PPOTrainingResult(NamedTuple):
 
 class PPOMetrics(NamedTuple):
     """PPO metrics returned by train function. Consists of (loss, grads, advantages)."""
-    loss: jnp.ndarray | tuple
-    grads: jnp.ndarray | tuple
-    advantages: jnp.ndarray | tuple
+    loss: jnp.ndarray
+    grads: jnp.ndarray | dict
+    advantages: jnp.ndarray
 
 class Transition(NamedTuple):
     """PPO Transition. Consists of (done, action, value, reward, log_prob, obs, info)."""
@@ -79,13 +79,15 @@ class Transition(NamedTuple):
     reward: jnp.ndarray
     log_prob: jnp.ndarray
     obs: jnp.ndarray
-    info: jnp.ndarray
+    info: dict
+
 
 PPOTrainReturnT = tuple[PPOState, PPOTrainingResult]
 
+
 class PPO(Algorithm):
     """JAX-based implementation of Proximal Policy Optimization (PPO)."""
-    name = "ppo"
+    name: str = "ppo"
 
     def __init__(
         self,
@@ -282,20 +284,19 @@ class PPO(Algorithm):
             jnp.ndarray: Action(s).
         """
         pi, _ = self.network.apply(runner_state.train_state.params, obs)
-        def deterministic_action():
+        def deterministic_action() -> jnp.ndarray:
             return pi.mode()
 
-        def sampled_action():
+        def sampled_action() -> jnp.ndarray:
             return pi.sample(seed=rng)
 
-        action = jax.lax.cond(
+        return jax.lax.cond(
             deterministic,
             deterministic_action,
             sampled_action,
         )
 
         #return jnp.clip(action, self.env.action_space.low, self.env.action_space.high)
-        return action
 
     @functools.partial(jax.jit, static_argnums=(0,3,4,5))
     def train(

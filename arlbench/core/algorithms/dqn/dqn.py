@@ -9,6 +9,7 @@ import flashbax as fbx
 import jax
 import jax.lax
 import jax.numpy as jnp
+import numpy as np
 import optax
 from ConfigSpace import (Categorical, Configuration, ConfigurationSpace, Float,
                          Integer)
@@ -28,6 +29,7 @@ if TYPE_CHECKING:
 
     from arlbench.core.environments import Environment
     from arlbench.core.wrappers import AutoRLWrapper
+
 
 
 class DQNTrainState(TrainState):
@@ -71,9 +73,9 @@ class DQNTrainingResult(NamedTuple):
 
 class DQNMetrics(NamedTuple):
     """DQN metrics returned by train function. Consists of (loss, grads, td_error)."""
-    loss: jnp.ndarray | tuple
+    loss: jnp.ndarray
     grads: jnp.ndarray | tuple
-    td_error: jnp.ndarray | tuple
+    td_error: jnp.ndarray
 
 class Transition(NamedTuple):
     """DQN Transition. Consists of (done, action, reward, obs, info)."""
@@ -89,7 +91,7 @@ DQNTrainReturnT = tuple[DQNState, DQNTrainingResult]
 
 class DQN(Algorithm):
     """JAX-based implementation of Deep Q-Network (DQN)."""
-    name = "dqn"
+    name: str = "dqn"
 
     def __init__(
         self,
@@ -163,7 +165,6 @@ class DQN(Algorithm):
                 "buffer_beta": Float("buffer_beta", (0., 1.), default=0.9),
                 "buffer_epsilon": Float("buffer_epsilon", (0., 1e-3), default=1e-5),
                 "lr": Float("lr", (1e-5, 0.1), default=2.5e-4),
-                "activation": Categorical("activation", ["tanh", "relu"], default="tanh"),
                 "gamma": Float("gamma", (0., 1.), default=0.99),
                 "tau": Float("tau", (0., 1.), default=1.0),
                 "epsilon": Float("epsilon", (0., 1.), default=0.1),
@@ -171,7 +172,7 @@ class DQN(Algorithm):
                 "train_frequency": Integer("train_frequency", (1, int(1e5)), default=4),
                 "gradient steps": Integer("gradient_steps", (1, int(1e5)), default=1),
                 "learning_starts": Integer("learning_starts", (10, int(1e5)), default=1000),
-                "target_network_update_freq": Integer("target_network_update_freq", (1, int(1e5)), default=10)
+                "target_network_update_freq": Integer("target_network_update_freq", (1, int(1e5)), default=10),
             },
         )
 
@@ -179,6 +180,7 @@ class DQN(Algorithm):
     @staticmethod
     def get_default_hpo_config() -> Configuration:
         return DQN.get_hpo_config_space().get_default_configuration()
+
 
     @staticmethod
     def get_nas_config_space(seed=None) -> ConfigurationSpace:
@@ -266,18 +268,17 @@ class DQN(Algorithm):
             buffer_state = self.buffer.init(_timestep)
 
 
+        rng, init_rng = jax.random.split(rng)
         if network_params is None:
-            rng, init_rng = jax.random.split(rng)
             network_params = self.network.init(init_rng, _obs)
         if target_params is None:
-            rng, target_init_rng = jax.random.split(rng)
-            target_params = self.network.init(target_init_rng, _obs)
+            target_params = self.network.init(init_rng, _obs)
 
         train_state_kwargs = {
             "apply_fn": self.network.apply,
             "params": network_params,
             "target_params": target_params,
-            "tx": optax.adam(self.hpo_config["lr"], eps=1e-5),
+            "tx": optax.adam(self.hpo_config["lr"]),
             "opt_state": opt_state,
         }
         train_state = DQNTrainState.create_with_opt_state(**train_state_kwargs)
@@ -383,7 +384,7 @@ class DQN(Algorithm):
         q_next_target = jnp.max(q_next_target, axis=-1)  # (batch_size,)
         next_q_value = rewards + (1 - dones) * self.hpo_config["gamma"] * q_next_target
 
-        def mse_loss(params):
+        def mse_loss(params: FrozenDict | dict) -> tuple[jnp.ndarray, jnp.ndarray]:
             q_pred = self.network.apply(
                 params, observations
             )  # (batch_size, num_actions)
@@ -391,7 +392,9 @@ class DQN(Algorithm):
                 jnp.arange(q_pred.shape[0]), actions.squeeze().astype(int)
             ]  # (batch_size,)
             td_error = q_pred - next_q_value
-            return (td_error ** 2).mean(), td_error
+            loss = optax.l2_loss(q_pred, next_q_value).mean()
+            #return (td_error ** 2).mean(), td_error
+            return loss.mean(), td_error
 
         (loss_value, td_error), grads = jax.value_and_grad(mse_loss, has_aux=True)(
             train_state.params
@@ -413,25 +416,25 @@ class DQN(Algorithm):
             global_step
         ) = runner_state
 
-        def random_action(rng) -> jnp.ndarray:
-            return self.env.sample_actions(rng)
-
-        def greedy_action(_) -> jnp.ndarray:
-            q_values = self.network.apply(train_state.params, last_obs)
-            return q_values.argmax(axis=-1)
-
         def take_step(
                 carry: tuple[jnp.ndarray, jnp.ndarray, Any, int, PrioritisedTrajectoryBufferState],
                 _: None
             ) -> tuple[tuple[jnp.ndarray, jnp.ndarray, Any, int, PrioritisedTrajectoryBufferState], tuple[jnp.ndarray, jnp.ndarray, jnp.ndarray, jnp.ndarray, dict]]:
 
-            rng, last_obs, env_state, global_step, buffer_state = carry
+            rng, train_state, last_obs, env_state, global_step, buffer_state = carry
+
+            def random_action(rng: chex.PRNGKey, _) -> jnp.ndarray:
+                return self.env.sample_actions(rng)
+            def greedy_action(_: chex.PRNGKey, obs: jnp.ndarray) -> jnp.ndarray:
+                q_values = self.network.apply(train_state.params, obs)
+                return q_values.argmax(axis=-1)
             rng, sample_rng, action_rng = jax.random.split(rng, 3)
             action = jax.lax.cond(
                 jax.random.uniform(sample_rng) < self.hpo_config["epsilon"],
                 random_action,
                 greedy_action,
                 action_rng,
+                last_obs
             )
 
             rng, step_rng = jax.random.split(rng)
@@ -441,7 +444,23 @@ class DQN(Algorithm):
             buffer_state = self.buffer.add(buffer_state, timestep)
 
             global_step += 1
-            return (rng, obsv, env_state, global_step, buffer_state), (
+
+            def target_update(train_state) -> DQNTrainState:
+                return train_state.replace(
+                    target_params=optax.incremental_update(
+                        train_state.params, train_state.target_params, self.hpo_config["tau"]
+                    )
+                )
+            def dont_target_update(train_state) -> DQNTrainState:
+                return train_state
+            train_state = jax.lax.cond(  # todo: move this into the env_step loop?!
+                (global_step > self.hpo_config["learning_starts"] // self.env.n_envs)
+                & (global_step % np.max([self.hpo_config["target_network_update_freq"] // self.env.n_envs, 1]) == 0),
+                target_update,
+                dont_target_update,
+                train_state,
+                )
+            return (rng, train_state, obsv, env_state, global_step, buffer_state), (
                 obsv,
                 action,
                 reward,
@@ -450,12 +469,12 @@ class DQN(Algorithm):
             )
 
         def do_update(
-                rng: chex.PRNGKey, 
+                rng: chex.PRNGKey,
                 train_state: DQNTrainState,
                 buffer_state: PrioritisedTrajectoryBufferState
             ) -> tuple[chex.PRNGKey, DQNTrainState, PrioritisedTrajectoryBufferState, DQNMetrics]:
             def gradient_step(
-                carry: tuple[chex.PRNGKey, DQNTrainState, PrioritisedTrajectoryBufferState], 
+                carry: tuple[chex.PRNGKey, DQNTrainState, PrioritisedTrajectoryBufferState],
                 _: None
             ) -> tuple[tuple[chex.PRNGKey, DQNTrainState, PrioritisedTrajectoryBufferState], DQNMetrics]:
                 rng, train_state, buffer_state = carry
@@ -482,17 +501,16 @@ class DQN(Algorithm):
                 return (
                     rng, train_state, buffer_state,
                 ), DQNMetrics(loss=loss, td_error=td_error, grads=grads)
-            carry, metrics = jax.lax.scan(
+            (rng, train_state, buffer_state), metrics = jax.lax.scan(
                 gradient_step,
                 (rng, train_state, buffer_state),
                 None,
                 self.hpo_config["gradient_steps"],
             )
-            rng, train_state, buffer_state = carry
             return rng, train_state, buffer_state, metrics
 
         def dont_update(
-                rng: chex.PRNGKey, 
+                rng: chex.PRNGKey,
                 train_state: DQNTrainState,
                 buffer_state: PrioritisedTrajectoryBufferState
             ) -> tuple[chex.PRNGKey, DQNTrainState, PrioritisedTrajectoryBufferState, DQNMetrics]:
@@ -508,17 +526,8 @@ class DQN(Algorithm):
                 grads = None
             return rng, train_state, buffer_state, DQNMetrics(loss=loss, td_error=td_error, grads=grads)
 
-        def target_update() -> DQNTrainState:
-            return train_state.replace(
-                target_params=optax.incremental_update(
-                    train_state.params, train_state.target_params, self.hpo_config["tau"]
-                )
-            )
 
-        def dont_target_update() -> DQNTrainState:
-            return train_state
-
-        (rng, last_obs, env_state, global_step, buffer_state), (
+        (rng, train_state, last_obs, env_state, global_step, buffer_state), (
             observations,
             action,
             reward,
@@ -526,25 +535,18 @@ class DQN(Algorithm):
             info,
         ) = jax.lax.scan(
             take_step,
-            (rng, last_obs, env_state, global_step, buffer_state),
+            (rng, train_state, last_obs, env_state, global_step, buffer_state),
             None,
             self.hpo_config["train_frequency"]
         )
 
         rng, train_state, buffer_state, metrics = jax.lax.cond(
-            (global_step > self.hpo_config["learning_starts"]),
-            #& (global_step % self.hpo_config["train_frequency"] == 0),  # todo: is this needed?
+            global_step > self.hpo_config["learning_starts"] // self.env.n_envs,
             do_update,
             dont_update,
             rng,
             train_state,
             buffer_state,
-        )
-        train_state = jax.lax.cond(  # todo: move this into the env_step loop?!
-            (global_step > self.hpo_config["learning_starts"])
-            & (global_step % self.hpo_config["target_network_update_freq"] == 0),
-            target_update,
-            dont_target_update,
         )
         runner_state = DQNRunnerState(
             rng=rng,
