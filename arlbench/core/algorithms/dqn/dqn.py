@@ -31,6 +31,7 @@ if TYPE_CHECKING:
 
 
 class DQNTrainState(TrainState):
+    """DQN training state."""
     target_params: None | chex.Array | dict | FrozenDict = None
     opt_state: optax.OptState
 
@@ -49,28 +50,33 @@ class DQNTrainState(TrainState):
         )
 
 class DQNRunnerState(NamedTuple):
+    """DQN runner state. Consists of (rng, train_state, env_state, obs, global_step)."""
     rng: chex.PRNGKey
     train_state: DQNTrainState
     env_state: Any
-    obs: chex.Array
+    obs: jnp.ndarray
     global_step: int
 
 class DQNState(NamedTuple):
+    """DQN algorithm state. Consists of (runner_state, buffer_state)."""
     runner_state: DQNRunnerState
     buffer_state: PrioritisedTrajectoryBufferState
 
 
 class DQNTrainingResult(NamedTuple):
+    """DQN training result. Consists of (eval_rewards, trajectories, metrics)."""
     eval_rewards: jnp.ndarray
     trajectories: Transition | None
     metrics: DQNMetrics | None
 
 class DQNMetrics(NamedTuple):
-    loss: Any
-    grads: Any
-    td_error: Any
+    """DQN metrics returned by train function. Consists of (loss, grads, td_error)."""
+    loss: jnp.ndarray | tuple
+    grads: jnp.ndarray | tuple
+    td_error: jnp.ndarray | tuple
 
 class Transition(NamedTuple):
+    """DQN Transition. Consists of (done, action, reward, obs, info)."""
     done: jnp.ndarray
     action: jnp.ndarray
     reward: jnp.ndarray
@@ -82,6 +88,7 @@ DQNTrainReturnT = tuple[DQNState, DQNTrainingResult]
 
 
 class DQN(Algorithm):
+    """JAX-based implementation of Deep Q-Network (DQN)."""
     name = "dqn"
 
     def __init__(
@@ -94,6 +101,17 @@ class DQN(Algorithm):
         track_trajectories: bool = False,
         track_metrics: bool = False
     ) -> None:
+        """Creates a DQN algorithm instance.
+
+        Args:
+            hpo_config (Configuration): Hyperparameter configuration.
+            env (Environment | AutoRLWrapper): Training environment.
+            eval_env (Environment | AutoRLWrapper | None, optional): Evaluation environent (otherwise training environment is used for evaluation). Defaults to None.
+            cnn_policy (bool, optional): Use CNN network architecture. Defaults to False.
+            nas_config (Configuration | None, optional): Neural architecture configuration. Defaults to None.
+            track_trajectories (bool, optional):  Track metrics such as loss and gradients during training. Defaults to False.
+            track_metrics (bool, optional): Track trajectories during training. Defaults to False.
+        """
         if nas_config is None:
             nas_config = DQN.get_default_nas_config()
 
@@ -183,6 +201,15 @@ class DQN(Algorithm):
         runner_state: DQNRunnerState,
         train_result: DQNTrainingResult,
     ) -> dict[str, Callable]:
+        """Creates a factory dictionary of all posssible checkpointing options for DQN.
+
+        Args:
+            runner_state (PPORunnerState): Algorithm runner state.
+            train_result (PPOTrainingResult): Training result.
+
+        Returns:
+            dict[str, Callable]: Dictionary of factory functions containing [opt_state, params, target_params, loss, trajectories].
+        """
         train_state = runner_state.train_state
 
         def get_trajectories():
@@ -213,6 +240,18 @@ class DQN(Algorithm):
             target_params: FrozenDict | dict | None = None,
             opt_state: optax.OptState | None = None
         ) -> DQNState:
+        """Initializes DQN state. Passed parameters are not initialized and included in the final state.  
+
+        Args:
+            rng (chex.PRNGKey): Random generator key.
+            buffer_state (PrioritisedTrajectoryBufferState | None, optional): Buffer state. Defaults to None.
+            network_params (FrozenDict | dict | None, optional): Networks params. Defaults to None.
+            target_params (FrozenDict | dict | None, optional): Target network params. Defaults to None.
+            opt_state (optax.OptState | None, optional): Optimizer state. Defaults to None.
+
+        Returns:
+            DQNState: DQN state.
+        """
         rng, reset_rng = jax.random.split(rng)
 
         env_state, obs = self.env.reset(reset_rng)
@@ -262,6 +301,17 @@ class DQN(Algorithm):
 
     @functools.partial(jax.jit, static_argnums=0)
     def predict(self, runner_state: DQNRunnerState, obs: jnp.ndarray, rng: chex.PRNGKey, deterministic: bool = True) -> jnp.ndarray:
+        """Predict action(s) based on the current observation(s).
+
+        Args:
+            runner_state (DQNRunnerState): Algorithm runner state.
+            obs (jnp.ndarray): Observation(s).
+            rng (chex.PRNGKey | None, optional): Not used in DQN. Random generator key in other algorithms. Defaults to None.
+            deterministic (bool): Not used in DQN. Return deterministic action in other algorithms. Defaults to True.
+
+        Returns:
+            jnp.ndarray: Action(s).
+        """
         q_values = self.network.apply(runner_state.train_state.params, obs)
         return q_values.argmax(axis=-1)
 
@@ -274,6 +324,18 @@ class DQN(Algorithm):
         n_eval_steps: int = 100,
         n_eval_episodes: int = 10,
     )-> DQNTrainReturnT:
+        """Performs one iteration of training.
+
+        Args:
+            runner_state (DQNRunnerState): DQN runner state.
+            _ (None): Unused parameter (buffer_state in other algorithms).
+            n_total_timesteps (int, optional): Total number of training timesteps. Update steps = n_total_timesteps // n_envs. Defaults to 1000000.
+            n_eval_steps (int, optional): Number of evaluation steps during training. Defaults to 100.
+            n_eval_episodes (int, optional): Number of evaluation episodes per evaluation during training. Defaults to 10.
+
+        Returns:
+            DQNTrainReturnT: Tuple of DQN algorithm state and training result.
+        """
         def train_eval_step(
             carry: tuple[DQNRunnerState, PrioritisedTrajectoryBufferState],
             _: None
@@ -286,7 +348,7 @@ class DQN(Algorithm):
                 n_total_timesteps//self.env.n_envs//self.hpo_config["train_frequency"]//n_eval_steps
             )
             eval_returns = self.eval(runner_state, n_eval_episodes)
-            jax.debug.print("{eval_returns}", eval_returns=eval_returns)
+            # jax.debug.print("{eval_returns}", eval_returns=eval_returns)
 
             return (runner_state, buffer_state), DQNTrainingResult(eval_rewards=eval_returns, trajectories=trajectories, metrics=metrics)
 

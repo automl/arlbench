@@ -333,10 +333,22 @@ class SAC(Algorithm):
         self,
         runner_state: SACRunnerState,
         buffer_state: PrioritisedTrajectoryBufferState,
-        n_total_timesteps: int,
-        n_eval_steps: int,
-        n_eval_episodes: int
+        n_total_timesteps: int = 1000000,
+        n_eval_steps:  int= 100,
+        n_eval_episodes: int = 10,
     )-> SACTrainReturnT:
+        """Performs one iteration of training.
+
+        Args:
+            runner_state (SACTrainReturnT): SAC runner state.
+            _ (None): Unused parameter (buffer_state in other algorithms).
+            n_total_timesteps (int, optional): Total number of training timesteps. Update steps = n_total_timesteps // n_envs. Defaults to 1000000.
+            n_eval_steps (int, optional): Number of evaluation steps during training.
+            n_eval_episodes (int, optional): Number of evaluation episodes per evaluation during training.
+
+        Returns:
+            SACTrainReturnT: Tuple of PPO algorithm state and training result.
+        """
         def train_eval_step(
                 carry: tuple[SACRunnerState, PrioritisedTrajectoryBufferState],
                 _: None
