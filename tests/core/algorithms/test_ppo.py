@@ -7,9 +7,9 @@ import numpy as np
 from arlbench.core.algorithms import PPO
 from arlbench.core.environments import make_env
 
-N_UPDATES = 1e5
+TRAINING_STEPS = 1e6
 EVAL_STEPS = 1
-EVAL_EPISODES = 128
+EVAL_EPISODES = 10
 N_ENVS = 4
 
 def test_default_ppo_discrete(n_envs=10):
@@ -24,7 +24,7 @@ def test_default_ppo_discrete(n_envs=10):
     start = time.time()
     algorithm_state, results = agent.train(
         *algorithm_state,
-        n_total_timesteps=N_UPDATES * n_envs,
+        n_total_timesteps=TRAINING_STEPS,
         n_eval_steps=EVAL_STEPS,
         n_eval_episodes=EVAL_EPISODES
     )
@@ -49,7 +49,7 @@ def test_default_ppo_continuous(n_envs=N_ENVS):
     start = time.time()
     algorithm_state, results = agent.train(
         *algorithm_state,
-        n_total_timesteps=N_UPDATES,
+        n_total_timesteps=TRAINING_STEPS,
         n_eval_steps=EVAL_STEPS,
         n_eval_episodes=EVAL_EPISODES
     )

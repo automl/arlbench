@@ -6,16 +6,16 @@ import jax
 from arlbench.core.algorithms import DQN
 from arlbench.core.environments import make_env
 
-N_UPDATES = 1e6
+TRAINING_STEPS = 1e7
 EVAL_STEPS = 100
-EVAL_EPISODES = 128
+EVAL_EPISODES = 10
 N_ENVS = 10
 
 
 # Default hyperparameter configuration
 def test_default_dqn(n_envs=N_ENVS):
     env = make_env("gymnax", "CartPole-v1", seed=42, n_envs=n_envs)
-    eval_env = make_env("gymnax", "CartPole-v1", seed=42, n_envs=1)
+    eval_env = make_env("gymnax", "CartPole-v1", seed=42, n_envs=EVAL_EPISODES)
     rng = jax.random.PRNGKey(42)
 
     config = DQN.get_default_hpo_config()
@@ -25,7 +25,7 @@ def test_default_dqn(n_envs=N_ENVS):
     start = time.time()
     algorithm_state, results = agent.train(
         *algorithm_state,
-        n_total_timesteps=N_UPDATES * n_envs,
+        n_total_timesteps=TRAINING_STEPS,
         n_eval_steps=EVAL_STEPS,
         n_eval_episodes=EVAL_EPISODES
     )
@@ -38,17 +38,19 @@ def test_default_dqn(n_envs=N_ENVS):
 
 def test_gradient_steps_dqn(n_envs=N_ENVS):
     env = make_env("gymnax", "CartPole-v1", seed=42, n_envs=n_envs)
+    eval_env = make_env("gymnax", "CartPole-v1", seed=42, n_envs=EVAL_EPISODES)
+
     rng = jax.random.PRNGKey(42)
 
     config = DQN.get_default_hpo_config()
     config["gradient_steps"] = 4
-    agent = DQN(config, env)
+    agent = DQN(config, env, eval_env=eval_env)
     algorithm_state = agent.init(rng)
 
     start = time.time()
     algorithm_state, results = agent.train(
         *algorithm_state,
-        n_total_timesteps=N_UPDATES * n_envs,
+        n_total_timesteps=TRAINING_STEPS,
         n_eval_steps=EVAL_STEPS,
         n_eval_episodes=EVAL_EPISODES
     )
@@ -61,17 +63,18 @@ def test_gradient_steps_dqn(n_envs=N_ENVS):
 # uniform experience replay
 def test_uniform_dqn(n_envs=N_ENVS):
     env = make_env("gymnax", "CartPole-v1", seed=42, n_envs=n_envs)
+    eval_env = make_env("gymnax", "CartPole-v1", seed=42, n_envs=EVAL_EPISODES)
     rng = jax.random.PRNGKey(42)
 
     config = DQN.get_default_hpo_config()
     config["buffer_prio_sampling"] = False
-    agent = DQN(config, env)
+    agent = DQN(config, env, eval_env=eval_env)
     algorithm_state = agent.init(rng)
     
     start = time.time()
     algorithm_state, result = agent.train(
         *algorithm_state,
-        n_total_timesteps=N_UPDATES * n_envs,
+        n_total_timesteps=TRAINING_STEPS,
         n_eval_steps=EVAL_STEPS,
         n_eval_episodes=EVAL_EPISODES
     )
@@ -84,17 +87,18 @@ def test_uniform_dqn(n_envs=N_ENVS):
 # no target network
 def test_no_target_dqn(n_envs=N_ENVS):
     env = make_env("gymnax", "CartPole-v1", seed=42, n_envs=n_envs)
+    eval_env = make_env("gymnax", "CartPole-v1", seed=42, n_envs=EVAL_EPISODES)
     rng = jax.random.PRNGKey(42)
 
     config = DQN.get_default_hpo_config()
     config["use_target_network"] = False
-    agent = DQN(config, env)
+    agent = DQN(config, env, eval_env=eval_env)
     algorithm_state = agent.init(rng)
     
     start = time.time()
     algorithm_state, result = agent.train(
         *algorithm_state,
-        n_total_timesteps=N_UPDATES * n_envs,
+        n_total_timesteps=TRAINING_STEPS,
         n_eval_steps=EVAL_STEPS,
         n_eval_episodes=EVAL_EPISODES
     )
@@ -107,17 +111,18 @@ def test_no_target_dqn(n_envs=N_ENVS):
 # ReLU activation
 def test_relu_dqn(n_envs=N_ENVS):
     env = make_env("gymnax", "CartPole-v1", seed=42, n_envs=n_envs)
+    eval_env = make_env("gymnax", "CartPole-v1", seed=42, n_envs=EVAL_EPISODES)
     rng = jax.random.PRNGKey(42)
 
     config = DQN.get_default_hpo_config()
     config["activation"] = "relu"
-    agent = DQN(config, env)
+    agent = DQN(config, env, eval_env=eval_env)
     algorithm_state = agent.init(rng)
     
     start = time.time()
     algorithm_state, result = agent.train(
         *algorithm_state,
-        n_total_timesteps=N_UPDATES * n_envs,
+        n_total_timesteps=TRAINING_STEPS,
         n_eval_steps=EVAL_STEPS,
         n_eval_episodes=EVAL_EPISODES
     )
@@ -131,5 +136,4 @@ def test_relu_dqn(n_envs=N_ENVS):
 if __name__ == "__main__":
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
-        test_default_dqn(n_envs=1)
-        test_default_dqn(n_envs=10)
+        test_default_dqn()

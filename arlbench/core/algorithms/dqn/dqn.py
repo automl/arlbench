@@ -341,6 +341,15 @@ class DQN(Algorithm):
             carry: tuple[DQNRunnerState, PrioritisedTrajectoryBufferState],
             _: None
         ) -> tuple[tuple[DQNRunnerState, PrioritisedTrajectoryBufferState], DQNTrainingResult]:
+            """Performs one iteration of training and evaluation.
+
+            Args:
+                carry (tuple[DQNRunnerState, PrioritisedTrajectoryBufferState]): DQN runner state and buffer state.
+                _ (None): Unused parameter (required for jax.lax.scan).
+
+            Returns:
+                tuple[tuple[DQNRunnerState, PrioritisedTrajectoryBufferState], DQNTrainingResult]: Tuple of (DQN runner state, buffer state) and training result.
+            """
             runner_state, buffer_state = carry
             (runner_state, buffer_state), (metrics, trajectories) = jax.lax.scan(
                 self._update_step,
