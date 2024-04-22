@@ -39,17 +39,9 @@ if TYPE_CHECKING:
 # todo: separate learning rate for critic and actor??
 
 
-class SACRunnerState(NamedTuple):
-    rng: chex.PRNGKey
-    actor_train_state: Any
-    critic_train_state: Any
-    alpha_train_state: Any
-    env_state: Any
-    obs: chex.Array
-    global_step: int
-
-
 class SACTrainState(TrainState):
+    """SAC training state."""
+
     target_params: None | chex.Array | dict = None
     network_state = None
 
@@ -70,27 +62,47 @@ class SACTrainState(TrainState):
         )
 
 
+class SACRunnerState(NamedTuple):
+    """SAC runner state. Consists of (rng, actor_train_state, critic_train_state, alpha_train_state, env_state, obs, global_step)."""
+
+    rng: chex.PRNGKey
+    actor_train_state: SACTrainState
+    critic_train_state: SACTrainState
+    alpha_train_state: SACTrainState
+    env_state: Any
+    obs: chex.Array
+    global_step: int
+
+
 class SACState(NamedTuple):
+    """SAC algorithm state. Consists of (runner_state, buffer_state)."""
+
     runner_state: SACRunnerState
     buffer_state: PrioritisedTrajectoryBufferState
 
 
 class SACTrainingResult(NamedTuple):
+    """SAC training result. Consists of (eval_rewards, trajectories, metrics)."""
+
     eval_rewards: jnp.ndarray
     trajectories: Transition | None
     metrics: SACMetrics | None
 
 
 class SACMetrics(NamedTuple):
+    """SAC metrics returned by train function. Consists of (actor_loss, critic_loss, alpha_loss, td_error, actor_grads, critic_grads)."""
+
     actor_loss: jnp.ndarray
     critic_loss: jnp.ndarray
     alpha_loss: jnp.ndarray
     td_error: jnp.ndarray
-    actor_grads: Any
-    critic_grads: Any
+    actor_grads: jnp.ndarray
+    critic_grads: jnp.ndarray
 
 
 class Transition(NamedTuple):
+    """SAC Transition. Consists of (done, action, value, reward, obs, info)."""
+
     done: jnp.ndarray
     action: jnp.ndarray
     value: jnp.ndarray
@@ -103,6 +115,8 @@ SACTrainReturnT = tuple[SACState, SACTrainingResult]
 
 
 class SAC(Algorithm):
+    """JAX-based implementation of Soft-Actor-Critic (SAC)."""
+
     name: str = "sac"
 
     def __init__(
@@ -115,6 +129,17 @@ class SAC(Algorithm):
         track_metrics: bool = False,
         track_trajectories: bool = False,
     ) -> None:
+        """Creates a SAC algorithm instance.
+
+        Args:
+            hpo_config (Configuration): Hyperparameter configuration.
+            env (Environment | AutoRLWrapper): Training environment.
+            eval_env (Environment | AutoRLWrapper | None, optional): Evaluation environent (otherwise training environment is used for evaluation). Defaults to None.
+            cnn_policy (bool, optional): Use CNN network architecture. Defaults to False.
+            nas_config (Configuration | None, optional): Neural architecture configuration. Defaults to None.
+            track_trajectories (bool, optional):  Track metrics such as loss and gradients during training. Defaults to False.
+            track_metrics (bool, optional): Track trajectories during training. Defaults to False.
+        """
         if nas_config is None:
             nas_config = SAC.get_default_nas_config()
         super().__init__(
@@ -214,6 +239,26 @@ class SAC(Algorithm):
         runner_state: SACRunnerState,
         train_result: SACTrainingResult,
     ) -> dict[str, Callable]:
+        """Creates a factory dictionary of all posssible checkpointing options for SAC.
+
+        Args:
+            runner_state (PPORunnerState): Algorithm runner state.
+            train_result (PPOTrainingResult): Training result.
+
+        Returns:
+            dict[str, Callable]: Dictionary of factory functions containing:
+             - actor_opt_state
+             - critic_opt_state
+             - alpha_opt_state
+             - actor_network_params
+             - critic_network_params
+             - critic_target_params
+             - alpha_network_params
+             - actor_loss
+             - critic_loss
+             - alpha_loss
+             - trajectories
+        """
         actor_train_state = runner_state.actor_train_state
         critic_train_state = runner_state.critic_train_state
         alpha_train_state = runner_state.alpha_train_state
@@ -262,6 +307,20 @@ class SAC(Algorithm):
         critic_opt_state: optax.OptState | None = None,
         alpha_opt_state: optax.OptState | None = None,
     ) -> SACState:
+        """Initializes SAC state. Passed parameters are not initialized and included in the final state.
+
+        Args:
+            actor_network_params (FrozenDict | dict | None, optional): Actor network parameters. Defaults to None.
+            critic_network_params (FrozenDict | dict | None, optional): Critic network parameters. Defaults to None.
+            critic_target_params (FrozenDict | dict | None, optional): Critic target network parameters. Defaults to None.
+            alpha_network_params (FrozenDict | dict | None, optional): Alpha network parameters. Defaults to None.
+            actor_opt_state (optax.OptState | None, optional): Actor optimizer state. Defaults to None.
+            critic_opt_state (optax.OptState | None, optional): Critic optimizer state. Defaults to None.
+            alpha_opt_state (optax.OptState | None, optional): Alpha optimizer state. Defaults to None.
+
+        Returns:
+            SACState: SAC state.
+        """
         rng, env_rng = jax.random.split(rng)
         env_state, obs = self.env.reset(env_rng)
 
@@ -352,6 +411,17 @@ class SAC(Algorithm):
         rng: chex.PRNGKey,
         deterministic: bool = True,
     ) -> jnp.ndarray:
+        """Predict action(s) based on the current observation(s).
+
+        Args:
+            runner_state (SACRunnerState): Algorithm runner state.
+            obs (jnp.ndarray): Observation(s).
+            rng (chex.PRNGKey | None, optional): Not used in DQN. Random generator key in other algorithms. Defaults to None.
+            deterministic (bool): Not used in DQN. Return deterministic action in other algorithms. Defaults to True.
+
+        Returns:
+            jnp.ndarray: Action(s).
+        """
         pi = self.actor_network.apply(runner_state.actor_train_state.params, obs)
 
         def deterministic_action():
@@ -402,6 +472,15 @@ class SAC(Algorithm):
         ) -> tuple[
             tuple[SACRunnerState, PrioritisedTrajectoryBufferState], SACTrainingResult
         ]:
+            """_summary_
+
+            Args:
+                carry (tuple[SACRunnerState, PrioritisedTrajectoryBufferState]): _description_
+                _ (None): _description_
+
+            Returns:
+                tuple[ tuple[SACRunnerState, PrioritisedTrajectoryBufferState], SACTrainingResult ]: _description_
+            """
             runner_state, buffer_state = carry
             (runner_state, buffer_state), (metrics, trajectories) = jax.lax.scan(
                 self._update_step,
@@ -433,7 +512,19 @@ class SAC(Algorithm):
         alpha_train_state: SACTrainState,
         batch: Transition,
         rng: chex.PRNGKey,
-    ) -> tuple[SACTrainState, jnp.ndarray, jnp.ndarra, FrozenDict, chex.PRNGKey]:
+    ) -> tuple[SACTrainState, jnp.ndarray, jnp.ndarray, FrozenDict, chex.PRNGKey]:
+        """_summary_
+
+        Args:
+            actor_train_state (SACTrainState): _description_
+            critic_train_state (SACTrainState): _description_
+            alpha_train_state (SACTrainState): _description_
+            batch (Transition): _description_
+            rng (chex.PRNGKey): _description_
+
+        Returns:
+            tuple[SACTrainState, jnp.ndarray, jnp.ndarray, FrozenDict, chex.PRNGKey]: _description_
+        """
         rng, action_rng = jax.random.split(rng, 2)
         pi = self.actor_network.apply(actor_train_state.params, batch.obs)
         next_state_actions, next_log_prob = pi.sample_and_log_prob(seed=action_rng)
@@ -450,7 +541,15 @@ class SAC(Algorithm):
             batch.reward + (1 - batch.done) * self.hpo_config["gamma"] * qf_next_target
         )
 
-        def mse_loss(params):
+        def mse_loss(params: FrozenDict):
+            """_summary_
+
+            Args:
+                params (FrozenDict): _description_
+
+            Returns:
+                _type_: _description_
+            """
             q_pred = self.critic_network.apply(params, batch.last_obs, batch.action)
             td_error = target_q_value - q_pred
             return 0.5 * (td_error**2).mean(axis=1).sum(), jnp.abs(td_error)
@@ -469,6 +568,18 @@ class SAC(Algorithm):
         batch: Transition,
         rng: chex.PRNGKey,
     ) -> tuple[SACTrainState, jnp.ndarray, jnp.ndarray, FrozenDict, chex.PRNGKey]:
+        """_summary_
+
+        Args:
+            actor_train_state (SACTrainState): _description_
+            critic_train_state (SACTrainState): _description_
+            alpha_train_state (SACTrainState): _description_
+            batch (Transition): _description_
+            rng (chex.PRNGKey): _description_
+
+        Returns:
+            tuple[SACTrainState, jnp.ndarray, jnp.ndarray, FrozenDict, chex.PRNGKey]: _description_
+        """
         rng, action_rng = jax.random.split(rng, 2)
 
         def actor_loss(
@@ -476,6 +587,16 @@ class SAC(Algorithm):
             critic_params: FrozenDict,
             alpha_params: FrozenDict,
         ) -> tuple[jnp.ndarray, jnp.ndarray]:
+            """_summary_
+
+            Args:
+                actor_params (FrozenDict): _description_
+                critic_params (FrozenDict): _description_
+                alpha_params (FrozenDict): _description_
+
+            Returns:
+                tuple[jnp.ndarray, jnp.ndarray]: _description_
+            """
             pi = self.actor_network.apply(actor_params, batch.last_obs)
             actor_actions, log_prob = pi.sample_and_log_prob(seed=action_rng)
 
@@ -500,7 +621,25 @@ class SAC(Algorithm):
     def update_alpha(
         self, alpha_train_state: SACTrainState, entropy: jnp.ndarray
     ) -> tuple[SACTrainState, jnp.ndarray]:
+        """_summary_
+
+        Args:
+            alpha_train_state (SACTrainState): _description_
+            entropy (jnp.ndarray): _description_
+
+        Returns:
+            tuple[SACTrainState, jnp.ndarray]: _description_
+        """
+
         def get_alpha_loss(params: FrozenDict) -> jnp.ndarray:
+            """_summary_
+
+            Args:
+                params (FrozenDict): _description_
+
+            Returns:
+                jnp.ndarray: _description_
+            """
             alpha_value = self.alpha.apply(params)
             return alpha_value * (entropy - self.target_entropy).mean()  # type: ignore[union-attr]
 
@@ -515,6 +654,16 @@ class SAC(Algorithm):
         tuple[SACRunnerState, PrioritisedTrajectoryBufferState],
         tuple[SACMetrics | None, Transition | None],
     ]:
+        """_summary_
+
+        Args:
+            carry (tuple[SACRunnerState, PrioritisedTrajectoryBufferState]): _description_
+            _ (None): _description_
+
+        Returns:
+            tuple[ tuple[SACRunnerState, PrioritisedTrajectoryBufferState], tuple[SACMetrics | None, Transition | None], ]: _description_
+        """
+
         def do_update(
             rng: chex.PRNGKey,
             actor_train_state: SACTrainState,
@@ -529,6 +678,19 @@ class SAC(Algorithm):
             PrioritisedTrajectoryBufferState,
             SACMetrics,
         ]:
+            """_summary_
+
+            Args:
+                rng (chex.PRNGKey): _description_
+                actor_train_state (SACTrainState): _description_
+                critic_train_state (SACTrainState): _description_
+                alpha_train_state (SACTrainState): _description_
+                buffer_state (PrioritisedTrajectoryBufferState): _description_
+
+            Returns:
+                tuple[ chex.PRNGKey, SACTrainState, SACTrainState, SACTrainState, PrioritisedTrajectoryBufferState, SACMetrics, ]: _description_
+            """
+
             def gradient_step(
                 carry: tuple[
                     chex.PRNGKey,
@@ -548,6 +710,15 @@ class SAC(Algorithm):
                 ],
                 SACMetrics,
             ]:
+                """_summary_
+
+                Args:
+                    carry (tuple[ chex.PRNGKey, SACTrainState, SACTrainState, SACTrainState, PrioritisedTrajectoryBufferState, ]): _description_
+                    _ (None): _description_
+
+                Returns:
+                    tuple[ tuple[ chex.PRNGKey, SACTrainState, SACTrainState, SACTrainState, PrioritisedTrajectoryBufferState, ], SACMetrics, ]: _description_
+                """
                 (
                     rng,
                     actor_train_state,
@@ -643,6 +814,18 @@ class SAC(Algorithm):
             PrioritisedTrajectoryBufferState,
             SACMetrics,
         ]:
+            """_summary_
+
+            Args:
+                rng (chex.PRNGKey): _description_
+                actor_train_state (SACTrainState): _description_
+                critic_train_state (SACTrainState): _description_
+                alpha_train_state (SACTrainState): _description_
+                buffer_state (PrioritisedTrajectoryBufferState): _description_
+
+            Returns:
+                tuple[ chex.PRNGKey, SACTrainState, SACTrainState, SACTrainState, PrioritisedTrajectoryBufferState, SACMetrics, ]: _description_
+            """
             single_loss = jnp.array(
                 [((jnp.array([0]) - jnp.array([0])) ** 2).mean()]
                 * self.hpo_config["gradient steps"]
@@ -680,6 +863,11 @@ class SAC(Algorithm):
 
         # Soft update
         def target_update() -> SACTrainState:
+            """_summary_
+
+            Returns:
+                SACTrainState: _description_
+            """
             return critic_train_state.replace(
                 target_params=optax.incremental_update(
                     critic_train_state.params,
@@ -689,6 +877,11 @@ class SAC(Algorithm):
             )
 
         def dont_target_update() -> SACTrainState:
+            """_summary_
+
+            Returns:
+                SACTrainState: _description_
+            """
             return critic_train_state
 
         runner_state, buffer_state = carry
@@ -780,6 +973,15 @@ class SAC(Algorithm):
     def _env_step(
         self, carry: tuple[SACRunnerState, PrioritisedTrajectoryBufferState], _: None
     ) -> tuple[tuple[SACRunnerState, PrioritisedTrajectoryBufferState], Transition]:
+        """_summary_
+
+        Args:
+            carry (tuple[SACRunnerState, PrioritisedTrajectoryBufferState]): _description_
+            _ (None): _description_
+
+        Returns:
+            tuple[tuple[SACRunnerState, PrioritisedTrajectoryBufferState], Transition]: _description_
+        """
         runner_state, buffer_state = carry
         (
             rng,

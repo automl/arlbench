@@ -275,8 +275,8 @@ class DQN(Algorithm):
         Args:
             rng (chex.PRNGKey): Random generator key.
             buffer_state (PrioritisedTrajectoryBufferState | None, optional): Buffer state. Defaults to None.
-            network_params (FrozenDict | dict | None, optional): Networks params. Defaults to None.
-            target_params (FrozenDict | dict | None, optional): Target network params. Defaults to None.
+            network_params (FrozenDict | dict | None, optional): Networks parameters. Defaults to None.
+            target_params (FrozenDict | dict | None, optional): Target network parameters. Defaults to None.
             opt_state (optax.OptState | None, optional): Optimizer state. Defaults to None.
 
         Returns:
@@ -470,24 +470,63 @@ class DQN(Algorithm):
         tuple[DQNRunnerState, PrioritisedTrajectoryBufferState],
         tuple[DQNMetrics | None, Transition | None],
     ]:
+        """_summary_
+
+        Args:
+            carry (tuple[DQNRunnerState, PrioritisedTrajectoryBufferState]): _description_
+            _ (_type_): _description_
+
+        Returns:
+            tuple[ tuple[DQNRunnerState, PrioritisedTrajectoryBufferState], tuple[DQNMetrics | None, Transition | None], ]: _description_
+        """
         runner_state, buffer_state = carry
         (rng, train_state, env_state, last_obs, global_step) = runner_state
 
         def take_step(
             carry: tuple[
-                jnp.ndarray, jnp.ndarray, Any, int, PrioritisedTrajectoryBufferState
+                chex.PRNGKey,
+                DQNTrainState,
+                jnp.ndarray,
+                Any,
+                int,
+                PrioritisedTrajectoryBufferState,
             ],
             _: None,
         ) -> tuple[
-            tuple[jnp.ndarray, jnp.ndarray, Any, int, PrioritisedTrajectoryBufferState],
+            tuple[
+                chex.PRNGKey,
+                DQNTrainState,
+                jnp.ndarray,
+                Any,
+                int,
+                PrioritisedTrajectoryBufferState,
+            ],
             tuple[jnp.ndarray, jnp.ndarray, jnp.ndarray, jnp.ndarray, dict],
         ]:
             rng, train_state, last_obs, env_state, global_step, buffer_state = carry
 
             def random_action(rng: chex.PRNGKey, _) -> jnp.ndarray:
+                """_summary_
+
+                Args:
+                    rng (chex.PRNGKey): _description_
+                    _ (_type_): _description_
+
+                Returns:
+                    jnp.ndarray: _description_
+                """
                 return self.env.sample_actions(rng)
 
             def greedy_action(_: chex.PRNGKey, obs: jnp.ndarray) -> jnp.ndarray:
+                """_summary_
+
+                Args:
+                    _ (chex.PRNGKey): _description_
+                    obs (jnp.ndarray): _description_
+
+                Returns:
+                    jnp.ndarray: _description_
+                """
                 q_values = self.network.apply(train_state.params, obs)
                 return q_values.argmax(axis=-1)
 
@@ -513,6 +552,14 @@ class DQN(Algorithm):
             global_step += 1
 
             def target_update(train_state) -> DQNTrainState:
+                """_summary_
+
+                Args:
+                    train_state (_type_): _description_
+
+                Returns:
+                    DQNTrainState: _description_
+                """
                 return train_state.replace(
                     target_params=optax.incremental_update(
                         train_state.params,
@@ -522,6 +569,14 @@ class DQN(Algorithm):
                 )
 
             def dont_target_update(train_state) -> DQNTrainState:
+                """_summary_
+
+                Args:
+                    train_state (_type_): _description_
+
+                Returns:
+                    DQNTrainState: _description_
+                """
                 return train_state
 
             train_state = jax.lax.cond(  # todo: move this into the env_step loop?!
@@ -556,6 +611,17 @@ class DQN(Algorithm):
         ) -> tuple[
             chex.PRNGKey, DQNTrainState, PrioritisedTrajectoryBufferState, DQNMetrics
         ]:
+            """_summary_
+
+            Args:
+                rng (chex.PRNGKey): _description_
+                train_state (DQNTrainState): _description_
+                buffer_state (PrioritisedTrajectoryBufferState): _description_
+
+            Returns:
+                tuple[ chex.PRNGKey, DQNTrainState, PrioritisedTrajectoryBufferState, DQNMetrics ]: _description_
+            """
+
             def gradient_step(
                 carry: tuple[
                     chex.PRNGKey, DQNTrainState, PrioritisedTrajectoryBufferState
@@ -565,6 +631,15 @@ class DQN(Algorithm):
                 tuple[chex.PRNGKey, DQNTrainState, PrioritisedTrajectoryBufferState],
                 DQNMetrics,
             ]:
+                """_summary_
+
+                Args:
+                    carry (tuple[ chex.PRNGKey, DQNTrainState, PrioritisedTrajectoryBufferState ]): _description_
+                    _ (None): _description_
+
+                Returns:
+                    tuple[ tuple[chex.PRNGKey, DQNTrainState, PrioritisedTrajectoryBufferState], DQNMetrics, ]: _description_
+                """
                 rng, train_state, buffer_state = carry
                 rng, batch_sample_rng = jax.random.split(rng)
                 batch = self.buffer.sample(buffer_state, batch_sample_rng)
@@ -610,6 +685,16 @@ class DQN(Algorithm):
         ) -> tuple[
             chex.PRNGKey, DQNTrainState, PrioritisedTrajectoryBufferState, DQNMetrics
         ]:
+            """_summary_
+
+            Args:
+                rng (chex.PRNGKey): _description_
+                train_state (DQNTrainState): _description_
+                buffer_state (PrioritisedTrajectoryBufferState): _description_
+
+            Returns:
+                tuple[ chex.PRNGKey, DQNTrainState, PrioritisedTrajectoryBufferState, DQNMetrics ]: _description_
+            """
             if self.track_metrics:
                 loss = jnp.array(
                     [((jnp.array([0]) - jnp.array([0])) ** 2).mean()]
