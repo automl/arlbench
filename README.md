@@ -1,9 +1,9 @@
 <p align="center">
     <a href="./docs/images/logo_lm.png#gh-light-mode-only">
-        <img src="./docs/images/logo_lm.png#gh-light-mode-only" alt="ARLBench Logo" width="70%"/>
+        <img src="./docs/images/logo_lm.png#gh-light-mode-only" alt="ARLBench Logo" width="80%"/>
     </a>
     <a href="./docs/images/logo_dm.png#gh-dark-mode-only">
-        <img src="./docs/images/logo_dm.png#gh-dark-mode-only" alt="ARLBench Logo" width="70%"/>
+        <img src="./docs/images/logo_dm.png#gh-dark-mode-only" alt="ARLBench Logo" width="80%"/>
     </a>
 </p>
 
