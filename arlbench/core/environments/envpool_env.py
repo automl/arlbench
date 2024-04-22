@@ -126,7 +126,6 @@ class EnvpoolEnv(Environment):
         super().__init__(env_name, env, n_envs, seed)
 
         self.reset_shape = self._env.reset()
-        self.single_reset_shape = jax.tree_map(lambda x: x[:1], self.reset_shape)
 
         rng = jax.random.key(42)
         _rngs = jax.random.split(rng, self._n_envs)
@@ -152,8 +151,6 @@ class EnvpoolEnv(Environment):
         def reset(obs):
             def reset_idx(i, obs):
                 new_obs, _, _, _, _ = jax.experimental.io_callback(self._env.step, self.single_step_shape, action=self.dummy_action[:1], env_id=np.array([i]))
-                #if i == 0:
-                #    jax.debug.print("{new_obs}", new_obs=new_obs)
                 obs = obs.at[i].set(new_obs[0])
                 return obs
 
