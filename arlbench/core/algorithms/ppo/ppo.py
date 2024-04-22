@@ -102,13 +102,13 @@ class PPO(Algorithm):
         """Creates a PPO algorithm instance.
 
         Args:
-            hpo_config (Configuration): Hyperparameter configuration of the algorithm which can be optimized using hyperparameter optimization (HPO).
-            env (Environment | AutoRLWrapper): Target environment which the agent is trained on.
-            eval_env (Environment | AutoRLWrapper | None, optional): Evaluation environment which the agent is evaluated on. Defaults to None. In this case, the training environment is used.
-            cnn_policy (bool, optional): If true, a CNN-based policy network is used. If false, a MLP-based policy network is used. Defaults to False.
-            nas_config (Configuration | None, optional): Neural architecture of the algorithm components. Defaults to None. In that case, default NAS config is used.
-            track_trajectories (bool, optional): Track trajectories during training. Defaults to False.
-            track_metrics (bool, optional): Track metrics such as loss and gradients during training. Defaults to False.
+            hpo_config (Configuration): Hyperparameter configuration.
+            env (Environment | AutoRLWrapper): Training environment.
+            eval_env (Environment | AutoRLWrapper | None, optional): Evaluation environent (otherwise training environment is used for evaluation). Defaults to None.
+            cnn_policy (bool, optional): Use CNN network architecture. Defaults to False.
+            nas_config (Configuration | None, optional): Neural architecture configuration. Defaults to None.
+            track_trajectories (bool, optional):  Track metrics such as loss and gradients during training. Defaults to False.
+            track_metrics (bool, optional): Track trajectories during training. Defaults to False.
         """
         if nas_config is None:
             nas_config = PPO.get_default_nas_config()
@@ -187,14 +187,14 @@ class PPO(Algorithm):
         runner_state: PPORunnerState,
         train_result: PPOTrainingResult,
     ) -> dict[str, Callable]:
-        """Creates a factory dictionary of all posssible checkpointing options of the Algorithm.
+        """Creates a factory dictionary of all posssible checkpointing options for PPO.
 
         Args:
             runner_state (PPORunnerState): Algorithm runner state.
             train_result (PPOTrainingResult): Training result.
 
         Returns:
-            dict[str, Callable]: Dictionary of factory functions.
+            dict[str, Callable]: Dictionary of factory functions containing [opt_state, params, loss, trajectories].
         """
         train_state = runner_state.train_state
 
@@ -225,7 +225,7 @@ class PPO(Algorithm):
             network_params: FrozenDict | dict | None = None,
             opt_state: optax.OptState | None = None
         ) -> PPOState:
-        """Initializes PPO state.
+        """Initializes PPO state. Passed parameters are not initialized and included in the final state. 
 
         Args:
             rng (chex.PRNGKey): Random generator key.
@@ -272,15 +272,16 @@ class PPO(Algorithm):
             rng: chex.PRNGKey,
             deterministic: bool = True
         ) -> jnp.ndarray:
-        """Predict an action(s) based on the current observation(s).
+        """Predict action(s) based on the current observation(s).
 
         Args:
-            runner_state (PPORunnerState): PPO runner state.
-            obs (jnp.ndarray): Observation.
-            rng (chex.PRNGKey): Random generator key. Defaults to None.
+            runner_state (PPORunnerState): Algorithm runner state.
+            obs (jnp.ndarray): Observation(s).
+            rng (chex.PRNGKey | None, optional): Random generator key. Defaults to None.
+            deterministic (bool): Return deterministic action. Defaults to True.
 
         Returns:
-            jnp.ndarray: Action(s)
+            jnp.ndarray: Action(s).
         """
         pi, _ = self.network.apply(runner_state.train_state.params, obs)
         def deterministic_action() -> jnp.ndarray:
@@ -301,7 +302,7 @@ class PPO(Algorithm):
     def train(
         self,
         runner_state: PPORunnerState,
-        _,  # dummy for buffer state
+        _, 
         n_total_timesteps: int = 1000000,
         n_eval_steps:  int= 100,
         n_eval_episodes: int = 10,
