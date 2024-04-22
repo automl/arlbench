@@ -29,18 +29,19 @@ class Algorithm(ABC):
             hpo_config: Configuration,
             nas_config: Configuration,
             env: Environment | AutoRLWrapper,
-            eval_env: Environment | AutoRLWrapper = None,
-            track_metrics: bool = False,
-            track_trajectories: bool = False
+            eval_env: Environment | AutoRLWrapper | None = None,
+            track_trajectories: bool = False,
+            track_metrics: bool = False
         ) -> None:
         """Algorithm super-class constructor, is only called by sub-classes.
 
         Args:
-            hpo_config (Configuration): Hyperparameter configuration of the algorithm which can be optimized using hyperparameter optimization (HPO).
-            nas_config (Configuration): Neural architecture of the algorithm components which can be optimized using neural architecture search (NAS).
-            env (Environment | AutoRLWrapper): Target environment which the agent is trained on.
-            track_metrics (bool, optional): Track metrics such as loss and gradients during training. Defaults to False.
-            track_trajectories (bool, optional): Track trajectories during training. Defaults to False.
+            hpo_config (Configuration): Hyperparameter configuration.
+            nas_config (Configuration): Neural architecture configuration.
+            env (Environment | AutoRLWrapper): Training environment.
+            eval_env (Environment | AutoRLWrapper | None, optional): Evaluation environent (otherwise training environment is used for evaluation). Defaults to None.
+            track_trajectories (bool, optional):  Track metrics such as loss and gradients during training. Defaults to False.
+            track_metrics (bool, optional): Track trajectories during training. Defaults to False.
         """
         super().__init__()
 
@@ -121,7 +122,7 @@ class Algorithm(ABC):
         runner_state: Any,
         train_result: Any,
     ) -> dict[str, Callable]:
-        """Creates a factory dictionary of all posssible checkpointing options of the Algorithm.
+        """Creates a factory dictionary of all posssible checkpointing options for Algorithm.
 
         Args:
             runner_state (Any): Algorithm runner state.
@@ -133,7 +134,7 @@ class Algorithm(ABC):
 
     @abstractmethod
     def init(self, rng: chex.PRNGKey) -> Any:
-        """Initializes the algorithm state.
+        """Initializes the algorithm state. Passed parameters are not initialized and included in the final state.
 
         Args:
             rng (chex.PRNGKey): Random generator key.
@@ -148,7 +149,7 @@ class Algorithm(ABC):
         runner_state: Any,
         buffer_state: Any,
         n_total_timesteps: int = 1000000,
-        n_eval_steps:  int= 100,
+        n_eval_steps: int = 100,
         n_eval_episodes: int = 10,
     ) -> tuple[Any, Any]:
         """Performs one iteration of training.
@@ -156,9 +157,9 @@ class Algorithm(ABC):
         Args:
             runner_state (Any): Algorithm runner state.
             buffer_state (Any): Algorithm buffer state.
-            n_total_timesteps (int, optional): Total number of training timesteps. Environment steps = n_total_timesteps * n_envs. Defaults to 1000000.
-            n_eval_steps (int, optional): Number of evaluation steps during training. Defaults to 100.
-            n_eval_episodes (int, optional): Number of evaluation episodes per evaluation during training. Defaults to 10.
+            n_total_timesteps (int, optional): Total number of training timesteps. Update steps = n_total_timesteps // n_envs. Defaults to 1000000.
+            n_eval_steps (int, optional): Number of evaluation steps during training.
+            n_eval_episodes (int, optional): Number of evaluation episodes per evaluation during training.
 
         Returns:
             tuple[Any, Any]: (algorithm_state, training_result).
@@ -173,16 +174,16 @@ class Algorithm(ABC):
         rng: chex.PRNGKey | None = None,
         deterministic: bool = True
     ) -> jnp.ndarray:
-        """Predict an action(s) based on the current observation(s).
+        """Predict action(s) based on the current observation(s).
 
         Args:
             runner_state (Any): Algorithm runner state.
             obs (jnp.ndarray): Observation(s).
             rng (chex.PRNGKey | None, optional): Random generator key. Defaults to None.
-            deterministic (bool): Determine action deterministically. Defaults to True.
+            deterministic (bool): Return deterministic action. Defaults to True.
 
         Returns:
-            Any: Action(s).
+            jnp.ndarray: Action(s).
         """
 
     @functools.partial(jax.jit, static_argnums=0)
