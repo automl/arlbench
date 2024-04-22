@@ -148,7 +148,7 @@ class EvalTrainingMetricsCallback(BaseCallback):
         return self.return_list
 
 
-def test_sac(dir_name, log, framework, env_name, sac_config, seed):
+def test_sac(dir_name, log, framework, env_name, sac_config, seed, cnn_policy):
 
     if framework == "brax":
         env = envs.create(env_name, backend="spring", episode_length=1000)
@@ -165,7 +165,7 @@ def test_sac(dir_name, log, framework, env_name, sac_config, seed):
 
     hpo_config = {}
     nas_config = dict(net_arch=[256, 256])
-    model = SAC("MlpPolicy", env, policy_kwargs=nas_config, verbose=4, seed=seed)
+    model = SAC("CnnPolicy" if cnn_policy else "MlpPolicy", env, policy_kwargs=nas_config, verbose=4, seed=seed)
 
     start = time.time()
     model.learn(total_timesteps=int(sac_config["n_total_timesteps"]), callback=eval_callback)
@@ -202,6 +202,7 @@ if __name__ == "__main__":
     parser.add_argument("--env-framework", type=str)
     parser.add_argument("--env", type=str)
     parser.add_argument("--n-env-steps", type=int)
+    parser.add_argument("--cnn-policy", type=bool, default=False)
     args = parser.parse_args()
 
     logger = logging.getLogger(__name__)
@@ -225,4 +226,5 @@ if __name__ == "__main__":
             env_name=args.env,
             sac_config=sac_config,
             seed=args.seed,
+            cnn_policy=args.cnn_policy
         )

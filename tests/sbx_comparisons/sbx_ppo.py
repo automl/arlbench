@@ -148,7 +148,7 @@ class EvalTrainingMetricsCallback(BaseCallback):
         return self.return_list
 
 
-def ppo_runner(dir_name, log, framework, env_name, ppo_config, seed):
+def ppo_runner(dir_name, log, framework, env_name, ppo_config, seed, cnn_policy):
 
     if framework == "brax":
         env = envs.create(env_name, backend="spring", episode_length=1000)
@@ -174,7 +174,7 @@ def ppo_runner(dir_name, log, framework, env_name, ppo_config, seed):
     hpo_config = {}
     nas_config = dict(net_arch=[256, 256])
     model = PPO(
-        "MlpPolicy", 
+        "CnnPolicy" if cnn_policy else "MlpPolicy",
         env, 
         policy_kwargs=nas_config, 
         verbose=4, 
@@ -222,6 +222,7 @@ if __name__ == "__main__":
     parser.add_argument("--env-framework", type=str, default="gymnax")
     parser.add_argument("--env", type=str, default="CartPole-v1")
     parser.add_argument("--n-env-steps", type=int, default=500)
+    parser.add_argument("--cnn-policy", type=bool, default=False)
     args = parser.parse_args()
 
     logger = logging.getLogger(__name__)
@@ -245,4 +246,5 @@ if __name__ == "__main__":
             env_name=args.env,
             ppo_config=ppo_config,
             seed=args.seed,
+            cnn_policy=args.cnn_policy
         )
