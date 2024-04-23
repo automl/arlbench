@@ -15,6 +15,7 @@ dependencies = [
   "gymnax>=0.0.6",
   "ConfigSpace",
   "distrax",
+  "flax",
   "brax",
   "pytest",
   "coverage",

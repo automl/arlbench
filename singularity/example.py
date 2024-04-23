@@ -3,9 +3,8 @@ from __future__ import annotations
 import argparse
 
 parser = argparse.ArgumentParser(
-                    prog = "Cluster example",
-                    description = "Prints Hello World.",
-                    epilog = "Have fun :).")
+    prog="Cluster example", description="Prints Hello World.", epilog="Have fun :)."
+)
 
 parser.add_argument("--job_id")
 
