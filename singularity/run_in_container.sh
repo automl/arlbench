@@ -1,5 +1,7 @@
 . /opt/conda/etc/profile.d/conda.sh
 conda activate arlb
 
+cd /tmp/scratch/git_repos/arlbench/tests/sbx_comparisons
+
 # code to run your program
-python arlb_dqn.py --training-steps=125000 --n-eval-steps=125 --n-eval-episodes=10 --dir-name=arlb --n-envs=10 --env-framework=envpool --env=Pong-v5 --seed=0
+python arlb_dqn.py --training-steps=10000000 --n-eval-steps=1000 --n-eval-episodes=10 --dir-name=arlb_pc2 --n-envs=10 --env-framework=envpool --env=Pong-v5 --seed=0
