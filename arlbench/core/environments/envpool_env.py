@@ -4,7 +4,9 @@ import functools
 from typing import Any
 
 import jax
+import numpy as np
 import jax.numpy as jnp
+import numpy as np
 
 from arlbench.utils import gymnasium_space_to_gymnax_space
 
@@ -121,47 +123,57 @@ ATARI_ENVS = [
 class EnvpoolEnv(Environment):
     def __init__(self, env_name: str, n_envs: int, seed: int):
         import envpool
-
         env = envpool.make(env_name, env_type="gymnasium", num_envs=n_envs, seed=seed)
+
         super().__init__(env_name, env, n_envs, seed)
+
+        self.reset_shape = self._env.reset()
+
+        rng = jax.random.key(42)
+        _rngs = jax.random.split(rng, self._n_envs)
+        self.dummy_action = np.array([
+                self.action_space.sample(_rngs[i])
+                for i in range(self._n_envs)
+        ])
+        self.step_shape = self._env.step(self.dummy_action)
+        self.single_step_shape = jax.tree_map(lambda x: x[:1], self.step_shape)
+        
         self._handle0, _, _, self._xla_step = self._env.xla()
 
     @functools.partial(jax.jit, static_argnums=0)
     def reset(self, _):
-        obs, _ = self._env.reset()
+        obs, _ = jax.experimental.io_callback(self._env.reset, self.reset_shape)
         return self._handle0, obs
 
     @functools.partial(jax.jit, static_argnums=0)
     def step(self, env_state: Any, action: Any, _):
-        handle1, (obs, reward, term, trunc, info) = self._xla_step(env_state, action)
+        # todo: update info correctly as well
+        self._handle0, (obs, reward, term, trunc, info) = self._xla_step(env_state, action)
         done = jnp.logical_or(term, trunc)
 
-        # auto reset for environments that are done
-        def _reset(handle, obs, done, info):
-            # todo: update info correctly
-            env_ids = jnp.arange(done.size)
-            default_id = jnp.ones(done.size, dtype=jnp.int32) * jnp.argmax(done)
-            reset_idx = jnp.where(done, env_ids, default_id)
-            handle, (new_obs, reward, term, trunc, info) = self._xla_step(
-                handle, action, reset_idx
-            )
+        def reset(obs):
+            def reset_idx(i, obs):
+                new_obs, _, _, _, _ = jax.experimental.io_callback(self._env.step, self.single_step_shape, action=self.dummy_action[:1], env_id=np.array([i]))
+                obs = obs.at[i].set(new_obs[0])
+                return obs
 
-            def update_index(i, obs):
-                return jax.lax.cond(
-                    done[i], lambda obs: obs.at[i].set(new_obs[i]), lambda obs: obs, obs
+            for i in range(self._n_envs):
+                obs = jax.lax.cond(
+                    done[i],
+                    lambda obs: reset_idx(i, obs),
+                    lambda obs: obs,
+                    obs,
                 )
+            return obs
 
-            obs = jax.lax.fori_loop(0, done.size, update_index, obs)
-            return handle, obs, info
-
-        def _noop(handle, obs, _, info):
-            return handle, obs, info
-
-        requires_reset = jnp.any(done)
-        handle1, obs, info = jax.lax.cond(
-            requires_reset, _reset, _noop, handle1, obs, done, info
+        obs = jax.lax.cond(
+            jnp.any(done),
+            reset,
+            lambda obs: obs,
+            obs
         )
-        return handle1, (obs, reward, done, info)
+
+        return self._handle0, (obs, reward, done, info)
 
     @property
     def action_space(self):
