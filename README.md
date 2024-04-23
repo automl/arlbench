@@ -1,9 +1,9 @@
 <p align="center">
     <a href="./docs/images/logo_lm.png#gh-light-mode-only">
-        <img src="./docs/images/logo_lm.png#gh-light-mode-only" alt="ARLBench Logo" width="70%"/>
+        <img src="./docs/images/logo_lm.png#gh-light-mode-only" alt="ARLBench Logo" width="80%"/>
     </a>
     <a href="./docs/images/logo_dm.png#gh-dark-mode-only">
-        <img src="./docs/images/logo_dm.png#gh-dark-mode-only" alt="ARLBench Logo" width="70%"/>
+        <img src="./docs/images/logo_dm.png#gh-dark-mode-only" alt="ARLBench Logo" width="80%"/>
     </a>
 </p>
 
@@ -27,42 +27,42 @@
 
 # 🦾 Automated Reinforcement Learning Benchmark
 
-## ToDos
-
-### Experimental Pipeline
-
-- [ ] Implement
-
-### AutoRLEnv
-
-- [x] Seeding for reset/step
-- [x] State Features
-- [x] Objectives
-- [x] Checkpointing -> Add missing parts for SAC and test saving/loading for all 3 agents
-
-### Agents general
-
-- [ ] verify parameters n_eval_steps, n_total_timesteps => agent performance varies based on these settings (at least for DQN)
-
-### DQN
-
-### PPO
-
-### SAC
-
-- [ ] Support for discrete action spaces
-
-### Environments
-
-- [ ] Brax tests
-- [ ] Envpool tests
-- [ ] Add support for Gymnasium VectorEnv? Only if we really need gymnasium envs
-
 ## Overview
+
+## Features
+
+**JAX-Based implementations of DQN, PPO, and SAC**
 
 ## Setup
 
+1. **Installation**: You can install ARLBench using `pip`:
+
+```bash
+pip install arlbench
+```
+
+TODO insert instructions to use SMAC/PBT2 etc
+
+2. **Usage**:
+
 ## Quickstart
+
+### Use the CLI
+
+### Use the AutoRL environment
+
+Import ARLBench and use the `AutoRLEnv` to run an RL agent:
+
+```python
+from arlbench import AutoRLEnv
+
+env = AutoRLEnv()
+
+obs, info = env.reset()
+
+action = env.config_space.sample_configuration()
+obs, objectives, term, trunc, info = env.step(action)
+```
 
 ## Examples
 

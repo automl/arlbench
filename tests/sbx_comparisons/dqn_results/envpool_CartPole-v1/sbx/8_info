@@ -1,0 +1,4 @@
+sac_config: {'n_total_timesteps': 50000, 'n_envs': 1, 'n_env_steps': 500, 'eval_freq': 5000, 'n_eval_episodes': 128, 'track_metrics': False, 'track_traj': False}
+hpo_config: {}
+time: 116.22813081741333
+returns: ['224.77+-40.57', '152.17+-8.01', '117.88+-7.60', '115.61+-5.88', '132.75+-7.79', '192.98+-5.63', '123.31+-8.08', '500.00+-0.00', '52.38+-62.48', '330.20+-80.28']

@@ -9,11 +9,14 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 import orbax.checkpoint as ocp
-from flashbax.buffers.prioritised_trajectory_buffer import \
-    PrioritisedTrajectoryBufferState
+from flashbax.buffers.prioritised_trajectory_buffer import (
+    PrioritisedTrajectoryBufferState,
+)
 from flashbax.buffers.sum_tree import SumTreeState
 from flashbax.vault import Vault
 from flax.core.frozen_dict import FrozenDict
+
+from optax import ScaleByAdamState, EmptyState
 
 from arlbench.core.algorithms import DQN, PPO, SAC
 from arlbench.core.algorithms.dqn import DQNRunnerState, DQNTrainingResult
@@ -36,19 +39,20 @@ class Checkpointer:
     MRP_FILE = "max_recorded_priority.npy"
 
     @staticmethod
-    def _save_orbax_checkpoint(checkpoint: dict[str, Any], checkpoint_dir: str, checkpoint_name: str) -> None:
-        checkpointer = ocp.StandardCheckpointer()
-        # save_args = orbax_utils.save_args_from_target(checkpoint)
+    def _save_orbax_checkpoint(
+        checkpoint: dict[str, Any], checkpoint_dir: str, checkpoint_name: str
+    ) -> None:
         checkpointer = ocp.PyTreeCheckpointer()
         checkpointer.save(
             os.path.join(checkpoint_dir, checkpoint_name),
             checkpoint,
-            #save_args=save_args,
-            force=True  # TODO debug, remove later on
+            force=True,
         )
 
     @staticmethod
-    def _load_orbax_checkpoint(checkpoint_dir: str, checkpoint_name: str) -> dict[str, Any]:
+    def _load_orbax_checkpoint(
+        checkpoint_dir: str, checkpoint_name: str
+    ) -> dict[str, Any]:
         checkpointer = ocp.PyTreeCheckpointer()
         return checkpointer.restore(os.path.join(checkpoint_dir, checkpoint_name))
 
@@ -62,13 +66,12 @@ class Checkpointer:
         c_episode: int,
         c_step: int,
         train_result: TrainResult,
-        tag: str | None = None
+        tag: str | None = None,
     ) -> str:
         # Checkpoint setup
-        checkpoint = autorl_config["checkpoint"]   # list of strings
+        checkpoint = autorl_config["checkpoint"]  # list of strings
         if "all" in checkpoint:
             checkpoint = ["all"]
-
 
         checkpoint_name = autorl_config["checkpoint_name"]
         checkpoint_dir = os.path.join(autorl_config["checkpoint_dir"], checkpoint_name)
@@ -90,60 +93,80 @@ class Checkpointer:
 
         runner_state = algorithm_state.runner_state
 
-        if algorithm == "dqn" and isinstance(runner_state, DQNRunnerState) and isinstance(train_result, DQNTrainingResult):
+        if (
+            algorithm == "dqn"
+            and isinstance(runner_state, DQNRunnerState)
+            and isinstance(train_result, DQNTrainingResult)
+        ):
             algorithm_ckpt = DQN.get_checkpoint_factory(runner_state, train_result)
-        elif algorithm == "ppo" and isinstance(runner_state, PPORunnerState) and isinstance(train_result, PPOTrainingResult):
+        elif (
+            algorithm == "ppo"
+            and isinstance(runner_state, PPORunnerState)
+            and isinstance(train_result, PPOTrainingResult)
+        ):
             algorithm_ckpt = PPO.get_checkpoint_factory(runner_state, train_result)
-        elif algorithm == "sac" and isinstance(runner_state, SACRunnerState) and isinstance(train_result, SACTrainingResult):
+        elif (
+            algorithm == "sac"
+            and isinstance(runner_state, SACRunnerState)
+            and isinstance(train_result, SACTrainingResult)
+        ):
             algorithm_ckpt = SAC.get_checkpoint_factory(runner_state, train_result)
         else:
-            raise ValueError(f"Invalid type of runner state or training result for {algorithm}: {type(runner_state)}, {type(train_result)}.")
+            raise ValueError(
+                f"Invalid type of runner state or training result for {algorithm}: {type(runner_state)}, {type(train_result)}."
+            )
 
         ckpt: dict[str, Any] = {
             "autorl_config": autorl_config,
             "hp_config": dict(hp_config),
             "c_step": c_step,
-            "c_episode": c_episode
+            "c_episode": c_episode,
         }
 
         if checkpoint == ["all"]:
             # use all available checkpoint options
             for key in algorithm_ckpt:
-                ckpt[key] = algorithm_ckpt[key]()   # get actual checkpoint by calling factory function
+                ckpt[key] = algorithm_ckpt[
+                    key
+                ]()  # get actual checkpoint by calling factory function
         else:
             # only use selected checkpoint options
             for key in checkpoint:
                 if key in algorithm_ckpt:
-                    ckpt[key] = algorithm_ckpt[key]()   # get actual checkpoint by calling factory function
+                    ckpt[key] = algorithm_ckpt[
+                        key
+                    ]()  # get actual checkpoint by calling factory function
                 else:
-                    raise ValueError(f"Invalid checkpoint for algorithm {algorithm}: {key}. Valid keys are {list(algorithm_ckpt.keys())!s}.")
+                    raise ValueError(
+                        f"Invalid checkpoint for algorithm {algorithm}: {key}. Valid keys are {list(algorithm_ckpt.keys())!s}."
+                    )
 
         Checkpointer._save_orbax_checkpoint(ckpt, checkpoint_dir, checkpoint_name)
 
         if "buffer" in checkpoint and algorithm_state.buffer_state is not None:
             ckpt["buffer"] = Checkpointer.save_buffer(
-                algorithm_state.buffer_state, checkpoint_dir, checkpoint_name)
+                algorithm_state.buffer_state, checkpoint_dir, checkpoint_name
+            )
 
         return os.path.join(checkpoint_dir, checkpoint_name)
 
     @staticmethod
     def _load_buffer(
-        ckpt: dict[str, Any],
-        dummy_buffer_state: PrioritisedTrajectoryBufferState
+        ckpt: dict[str, Any], dummy_buffer_state: PrioritisedTrajectoryBufferState
     ) -> PrioritisedTrajectoryBufferState | None:
         if "buffer" in ckpt:
             return Checkpointer.load_buffer(
                 dummy_buffer_state,
                 ckpt["buffer"]["priority_state_path"],
                 ckpt["buffer"]["buffer_dir"],
-                ckpt["buffer"]["vault_uuid"]
+                ckpt["buffer"]["vault_uuid"],
             )
         else:
             return None
 
     @staticmethod
     def _load_params(ckpt: dict[str, Any], key: str) -> FrozenDict | None:
-        if key not in ckpt:
+        if key not in ckpt or ckpt[key] is None:
             return None
         else:
             params = ckpt[key]
@@ -152,9 +175,33 @@ class Checkpointer:
             return FrozenDict(params)
 
     @staticmethod
+    def _load_adam_opt_state(ckpt: dict[str, Any], key: str) -> tuple | None:
+        def apply(func, t: dict | tuple):
+            if isinstance(t, tuple) or isinstance(t, list):
+                return tuple(apply(func, item) for item in t)
+            else:
+                return func(t)
+
+        def make_opt_state(opt_state: dict | None) -> ScaleByAdamState | EmptyState:
+            if opt_state is None:
+                return EmptyState()
+            else:
+                return ScaleByAdamState(
+                    count=opt_state["count"],
+                    mu=FrozenDict(opt_state["mu"]),
+                    nu=FrozenDict(opt_state["nu"]),
+                )
+
+        if key not in ckpt or ckpt[key] is None:
+            return None
+        else:
+            opt_state = ckpt[key]
+
+            return apply(make_opt_state, opt_state)
+
+    @staticmethod
     def load(
-        checkpoint_path: str,
-        algorithm_state: AlgorithmState
+        checkpoint_path: str, algorithm_state: AlgorithmState
     ) -> tuple[tuple[dict[str, Any], int, int], dict]:
         checkpointer = ocp.PyTreeCheckpointer()
         restored = checkpointer.restore(checkpoint_path)
@@ -165,48 +212,71 @@ class Checkpointer:
         hp_config = restored["hp_config"]
 
         if algorithm_state.buffer_state is not None:
-            buffer_state = Checkpointer._load_buffer(restored, algorithm_state.buffer_state)
+            buffer_state = Checkpointer._load_buffer(
+                restored, algorithm_state.buffer_state
+            )
         else:
             buffer_state = None
-
 
         common = (hp_config, c_step, c_episode)
 
         if autorl_config["algorithm"] == "ppo":
             algorithm_kw_args = {
                 "network_params": Checkpointer._load_params(restored, "params"),
-                "opt_state": restored.get("opt_state", None)
+                "opt_state": Checkpointer._load_adam_opt_state(restored, "opt_state"),
             }
         elif autorl_config["algorithm"] == "dqn":
             algorithm_kw_args = {
                 "buffer_state": buffer_state,
                 "network_params": Checkpointer._load_params(restored, "params"),
                 "target_params": Checkpointer._load_params(restored, "target_params"),
-                "opt_state": restored.get("opt_state", None)
+                "opt_state": Checkpointer._load_adam_opt_state(restored, "opt_state"),
             }
         elif autorl_config["algorithm"] == "sac":
             algorithm_kw_args = {
                 "buffer_state": buffer_state,
-                "actor_network_params": Checkpointer._load_params(restored, "actor_network_params"),
-                "critic_network_params": Checkpointer._load_params(restored, "critic_network_params"),
-                "critic_target_params": Checkpointer._load_params(restored, "critic_target_params"),
-                "alpha_network_params": Checkpointer._load_params(restored, "alpha_network_params"),
-                "actor_opt_state": restored.get("actor_opt_state", None),
-                "critic_opt_state": restored.get("critic_opt_state", None),
-                "alpha_opt_state": restored.get("alpha_opt_state", None),
+                "actor_network_params": Checkpointer._load_params(
+                    restored, "actor_network_params"
+                ),
+                "critic_network_params": Checkpointer._load_params(
+                    restored, "critic_network_params"
+                ),
+                "critic_target_params": Checkpointer._load_params(
+                    restored, "critic_target_params"
+                ),
+                "alpha_network_params": Checkpointer._load_params(
+                    restored, "alpha_network_params"
+                ),
+                "actor_opt_state": Checkpointer._load_adam_opt_state(
+                    restored, "actor_opt_state"
+                ),
+                "critic_opt_state": Checkpointer._load_adam_opt_state(
+                    restored, "critic_opt_state"
+                ),
+                "alpha_opt_state": Checkpointer._load_adam_opt_state(
+                    restored, "alpha_opt_state"
+                ),
             }
         else:
-            raise ValueError(f"Invalid algorithm in checkpoint: {autorl_config['algorithm']}")
+            raise ValueError(
+                f"Invalid algorithm in checkpoint: {autorl_config['algorithm']}"
+            )
         return common, algorithm_kw_args
 
     @staticmethod
-    def save_buffer(buffer_state: TrajectoryBufferState | PrioritisedTrajectoryBufferState, checkpoint_dir: str, checkpoint_name: str) -> dict:
+    def save_buffer(
+        buffer_state: TrajectoryBufferState | PrioritisedTrajectoryBufferState,
+        checkpoint_dir: str,
+        checkpoint_name: str,
+    ) -> dict:
         buffer_dir = os.path.join(checkpoint_dir, checkpoint_name + "_buffer_state")
         os.makedirs(buffer_dir, exist_ok=True)
 
         if isinstance(buffer_state, PrioritisedTrajectoryBufferState):
             priority_state_path = os.path.join(buffer_dir, "buffer_priority_state")
-            Checkpointer._save_sum_tree_state(buffer_state.priority_state, priority_state_path)
+            Checkpointer._save_sum_tree_state(
+                buffer_state.priority_state, priority_state_path
+            )
         else:
             priority_state_path = ""
 
@@ -215,7 +285,7 @@ class Checkpointer:
             vault_name="buffer_state_vault",
             experience_structure=buffer_state.experience,
             rel_dir=buffer_dir,
-            vault_uid=vault_uuid
+            vault_uid=vault_uuid,
         )
 
         # write buffer
@@ -227,7 +297,7 @@ class Checkpointer:
         return {
             "vault_uuid": vault_uuid,
             "buffer_dir": buffer_dir,
-            "priority_state_path": priority_state_path
+            "priority_state_path": priority_state_path,
         }
 
     @staticmethod
@@ -235,13 +305,13 @@ class Checkpointer:
         dummy_buffer_state: PrioritisedTrajectoryBufferState,
         priority_state_path: str,
         buffer_dir: str,
-        vault_uuid: str
-    ) ->  PrioritisedTrajectoryBufferState:
+        vault_uuid: str,
+    ) -> PrioritisedTrajectoryBufferState:
         v = Vault(
             vault_name="buffer_state_vault",
             experience_structure=dummy_buffer_state.experience,
             rel_dir=buffer_dir,
-            vault_uid=vault_uuid
+            vault_uid=vault_uuid,
         )
         buffer_state = v.read()
         priority_state = Checkpointer._load_sum_tree_state(priority_state_path)
@@ -250,7 +320,7 @@ class Checkpointer:
             experience=buffer_state.experience,
             current_index=buffer_state.current_index,
             is_full=buffer_state.is_full,
-            priority_state=priority_state
+            priority_state=priority_state,
         )
 
     @staticmethod
@@ -259,8 +329,14 @@ class Checkpointer:
         os.makedirs(directory, exist_ok=True)
 
         # Serialize and save the JAX arrays as .npy files
-        np.save(os.path.join(directory, Checkpointer.NODES_FILE), np.array(sum_tree_state.nodes))
-        np.save(os.path.join(directory, Checkpointer.MRP_FILE), np.array(sum_tree_state.max_recorded_priority))
+        np.save(
+            os.path.join(directory, Checkpointer.NODES_FILE),
+            np.array(sum_tree_state.nodes),
+        )
+        np.save(
+            os.path.join(directory, Checkpointer.MRP_FILE),
+            np.array(sum_tree_state.max_recorded_priority),
+        )
 
         # Serialize scalar values to JSON
         scalar_values = {
@@ -274,7 +350,9 @@ class Checkpointer:
     def _load_sum_tree_state(directory: str) -> SumTreeState:
         # Load the JAX arrays from .npy files
         nodes = jnp.array(np.load(os.path.join(directory, Checkpointer.NODES_FILE)))
-        max_recorded_priority = jnp.array(np.load(os.path.join(directory, Checkpointer.MRP_FILE)))
+        max_recorded_priority = jnp.array(
+            np.load(os.path.join(directory, Checkpointer.MRP_FILE))
+        )
 
         # Load scalar values from JSON
         with open(os.path.join(directory, Checkpointer.SCALARS_FILE)) as json_file:

@@ -1,17 +1,24 @@
+from __future__ import annotations
+
 import argparse
 import logging
 import os
 import time
+from pathlib import Path
 
 import jax
 import pandas as pd
-
 from arlbench.core.algorithms import PPO
 from arlbench.core.environments import make_env
 
 
-def ppo_runner(dir_name, log, framework, env_name, config, training_kw_args, seed):
+def ppo_runner(
+    dir_name, log, framework, env_name, config, training_kw_args, seed, cnn_policy
+):
     env = make_env(framework, env_name, n_envs=config["n_envs"], seed=seed)
+    eval_env = make_env(
+        framework, env_name, n_envs=training_kw_args["n_eval_episodes"], seed=seed
+    )
     rng = jax.random.PRNGKey(seed)
 
     hpo_config = PPO.get_default_hpo_config()
@@ -28,27 +35,42 @@ def ppo_runner(dir_name, log, framework, env_name, config, training_kw_args, see
     nas_config["activation"] = "tanh"
     nas_config["hidden_size"] = 256
 
-    agent = PPO(hpo_config, env, nas_config=nas_config)
+    agent = PPO(
+        hpo_config, env, eval_env=eval_env, nas_config=nas_config, cnn_policy=cnn_policy
+    )
     algorithm_state = agent.init(rng)
 
     start = time.time()
-    log.info(f"training started")
+    log.info("training started")
     algorithm_state, result = agent.train(*algorithm_state, **training_kw_args)
-    log.info(f"training finished")
+    log.info("training finished")
     training_time = time.time() - start
 
     mean_return = result.eval_rewards.mean(axis=1)
     std_return = result.eval_rewards.std(axis=1)
-    str_results = [f"{mean:.2f}+-{std:.2f}" for mean, std in zip(mean_return, std_return)]
+    str_results = [
+        f"{mean:.2f}+-{std:.2f}"
+        for mean, std in zip(mean_return, std_return, strict=False)
+    ]
     log.info(f"{training_time}, {str_results}")
 
     train_info_df = pd.DataFrame()
     for i in range(len(mean_return)):
         train_info_df[f"return_{i}"] = result.eval_rewards[i]
-
-    os.makedirs(os.path.join("ppo_results", f"{framework}_{env_name}", dir_name), exist_ok=True)
-    train_info_df.to_csv(os.path.join("ppo_results", f"{framework}_{env_name}", dir_name, f"{seed}_results.csv"))
-    with open(os.path.join("ppo_results", f"{framework}_{env_name}", dir_name, f"{seed}_info"), "w") as f:
+    os.makedirs(
+        os.path.join("ppo_results", f"{framework}_{env_name}", dir_name), exist_ok=True
+    )
+    train_info_df.to_csv(
+        os.path.join(
+            "ppo_results", f"{framework}_{env_name}", dir_name, f"{seed}_results.csv"
+        )
+    )
+    with open(
+        os.path.join(
+            "ppo_results", f"{framework}_{env_name}", dir_name, f"{seed}_info"
+        ),
+        "w",
+    ) as f:
         f.write(f"ppo_config: {config}\n")
         f.write(f"hpo_config: {hpo_config}\n")
         f.write(f"nas_config: {nas_config}\n")
@@ -67,6 +89,7 @@ if __name__ == "__main__":
     parser.add_argument("--env-framework", type=str, default="gymnax")
     parser.add_argument("--env", type=str, default="CartPole-v1")
     parser.add_argument("--n-env-steps", type=int, default=500)
+    parser.add_argument("--cnn-policy", type=bool, default=False)
     args = parser.parse_args()
 
     logger = logging.getLogger(__name__)
@@ -93,4 +116,5 @@ if __name__ == "__main__":
             config=config,
             training_kw_args=training_kw_args,
             seed=args.seed,
+            cnn_policy=args.cnn_policy,
         )
