@@ -7,7 +7,7 @@ import hydra
 import memray
 from codecarbon import track_emissions
 
-from arlbench.arlbench import cool_things
+from arlbench.arlbench import run_arlbench
 
 
 @hydra.main(version_base=None, config_path="configs", config_name="base")
@@ -15,20 +15,13 @@ from arlbench.arlbench import cool_things
 def main(cfg):
     """Console script for arlbench."""
     with memray.Tracker("memray.bin"):
-        print(f"Hello, I am a test! My ID is {cfg.id}")
-        print("\n")
-        print("Add arguments to this script like this:")
-        print("     'python arlbench/cli.py +hello=world'")
-        print("Or use a yaml config file to store your arguments.")
-        print("See click documentation at https://hydra.cc/docs/intro/")
-        print("\n")
-        cool_things(cfg)
+        objectives = run_arlbench(cfg)
         with open("./performance.csv", "w+") as f:
-            f.write("epoch,train_loss,train_acc,val_loss,val_acc\n")
+            f.write(str(objectives))
             f.write("1,0.1,0.2,0.3,0.4\n")
         with open("./done.txt", "w+") as f:
             f.write("yes")
-        return 0
+        return objectives
 
 
 if __name__ == "__main__":
