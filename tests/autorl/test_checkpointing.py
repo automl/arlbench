@@ -145,6 +145,6 @@ def test_checkpointing_sac():
 
 
 if __name__ == "__main__":
-    # test_checkpointing_dqn()
-    # test_checkpointing_ppo()
+    test_checkpointing_dqn()
+    test_checkpointing_ppo()
     test_checkpointing_sac()
