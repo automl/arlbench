@@ -1,6 +1,7 @@
+from __future__ import annotations
+
 import jax
 import numpy as np
-
 from arlbench.autorl import AutoRLEnv
 from arlbench.autorl.checkpointing import Checkpointer
 from arlbench.core.algorithms import DQN
@@ -28,24 +29,38 @@ def test_read_write_buffer():
         buffer_state,
         n_total_timesteps=N_TOTAL_TIMESTEPS,
         n_eval_steps=EVAL_STEPS,
-        n_eval_episodes=EVAL_EPISODES
+        n_eval_episodes=EVAL_EPISODES,
     )
-    buffer_checkpoint = Checkpointer.save_buffer(buffer_state, CHECKPOINT_DIR, CHECKPOINT_NAME)
+    buffer_checkpoint = Checkpointer.save_buffer(
+        buffer_state, CHECKPOINT_DIR, CHECKPOINT_NAME
+    )
 
     _, init_buffer_state = algorithm.init(rng)
     disk_buffer_state = Checkpointer.load_buffer(
         init_buffer_state,
         buffer_checkpoint["priority_state_path"],
         buffer_checkpoint["buffer_dir"],
-        buffer_checkpoint["vault_uuid"]
+        buffer_checkpoint["vault_uuid"],
     )
 
-    assert np.allclose(buffer_state.experience.obs, disk_buffer_state.experience.obs, atol=1e-7)
-    assert np.allclose(buffer_state.experience.last_obs, disk_buffer_state.experience.last_obs, atol=1e-7)
-    assert np.allclose(buffer_state.experience.reward, disk_buffer_state.experience.reward, atol=1e-7)
-    assert np.allclose(buffer_state.experience.action, disk_buffer_state.experience.action, atol=1e-7)
+    assert np.allclose(
+        buffer_state.experience.obs, disk_buffer_state.experience.obs, atol=1e-7
+    )
+    assert np.allclose(
+        buffer_state.experience.last_obs,
+        disk_buffer_state.experience.last_obs,
+        atol=1e-7,
+    )
+    assert np.allclose(
+        buffer_state.experience.reward, disk_buffer_state.experience.reward, atol=1e-7
+    )
+    assert np.allclose(
+        buffer_state.experience.action, disk_buffer_state.experience.action, atol=1e-7
+    )
 
-    runner_state, disk_buffer_state, _ = algorithm.train(runner_state, disk_buffer_state, n_total_timesteps=1e6)
+    runner_state, disk_buffer_state, _ = algorithm.train(
+        runner_state, disk_buffer_state, n_total_timesteps=1e6
+    )
     rewards = algorithm.eval(runner_state, 10)
     reward = np.mean(rewards)
     assert reward > 480
@@ -58,7 +73,7 @@ def test_checkpointing_dqn():
         "n_envs": 10,
         "algorithm": "dqn",
         "checkpoint": ["all"],
-        "checkpoint_name": "test_checkpointing_dqn"
+        "checkpoint_name": "test_checkpointing_dqn",
     }
 
     env = AutoRLEnv(config=config)
@@ -68,13 +83,13 @@ def test_checkpointing_dqn():
     _, objectives, _, _, info = env.step(action)
 
     reward = objectives["reward_mean"]
-    
+
     _ = env.reset(checkpoint_path=info["checkpoint"])
 
     new_reward = np.mean(env.eval(10))
-    assert np.isclose(reward, new_reward, rtol=1.)
+    assert np.isclose(reward, new_reward, rtol=1.0)
 
-    env.step(action)
+    env.step(action, n_total_timesteps=10000)
 
 
 def test_checkpointing_ppo():
@@ -84,7 +99,7 @@ def test_checkpointing_ppo():
         "n_envs": 10,
         "algorithm": "ppo",
         "checkpoint": ["all"],
-        "checkpoint_name": "test_checkpointing_ppo"
+        "checkpoint_name": "test_checkpointing_ppo",
     }
 
     env = AutoRLEnv(config=config)
@@ -94,13 +109,13 @@ def test_checkpointing_ppo():
     _, objectives, _, _, info = env.step(action)
 
     reward = objectives["reward_mean"]
-    
+
     _ = env.reset(checkpoint_path=info["checkpoint"])
 
     new_reward = np.mean(env.eval(10))
-    assert np.isclose(reward, new_reward, rtol=1.)
+    assert np.isclose(reward, new_reward, rtol=1.0)
 
-    env.step(action)
+    env.step(action, n_total_timesteps=10000)
 
 
 def test_checkpointing_sac():
@@ -110,7 +125,7 @@ def test_checkpointing_sac():
         "n_envs": 10,
         "algorithm": "sac",
         "checkpoint": ["all"],
-        "checkpoint_name": "test_checkpointing_sac"
+        "checkpoint_name": "test_checkpointing_sac",
     }
 
     env = AutoRLEnv(config=config)
@@ -120,14 +135,16 @@ def test_checkpointing_sac():
     _, objectives, _, _, info = env.step(action, n_total_timesteps=10000)
 
     reward = objectives["reward_mean"]
-    
+
     _ = env.reset(checkpoint_path=info["checkpoint"])
 
     new_reward = np.mean(env.eval(10))
-    assert np.isclose(reward, new_reward, rtol=1.)
+    assert np.isclose(reward, new_reward, rtol=1.0)
 
-    env.step(action)
+    env.step(action, n_total_timesteps=10000)
 
 
 if __name__ == "__main__":
+    test_checkpointing_dqn()
+    test_checkpointing_ppo()
     test_checkpointing_sac()

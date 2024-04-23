@@ -1,11 +1,11 @@
+from __future__ import annotations
+
 import argparse
 import functools
 import logging
 import os
 import time
-from typing import Optional
 
-import envpool
 import gymnax
 import jax
 import jax.numpy as jnp
@@ -19,13 +19,11 @@ from sbx import DQN
 from stable_baselines3.common.callbacks import BaseCallback
 from stable_baselines3.common.evaluation import evaluate_policy
 from stable_baselines3.common.vec_env import VecEnvWrapper, VecMonitor
-from stable_baselines3.common.vec_env.base_vec_env import (VecEnvObs,
-                                                           VecEnvStepReturn)
+from stable_baselines3.common.vec_env.base_vec_env import VecEnvObs, VecEnvStepReturn
 
 
 class VecAdapter(VecEnvWrapper):
-    """
-    Convert EnvPool object to a Stable-Baselines3 (SB3) VecEnv.
+    """Convert EnvPool object to a Stable-Baselines3 (SB3) VecEnv.
 
     :param venv: The envpool object.
     """
@@ -41,7 +39,7 @@ class VecAdapter(VecEnvWrapper):
     def reset(self) -> VecEnvObs:
         return self.venv.reset()[0]
 
-    def seed(self, seed: Optional[int] = None) -> None:
+    def seed(self, seed: int | None = None) -> None:
         # You can only seed EnvPool env by calling envpool.make()
         pass
 
@@ -55,7 +53,7 @@ class VecAdapter(VecEnvWrapper):
             infos.append(
                 {
                     key: info_dict[key][i]
-                    for key in info_dict.keys()
+                    for key in info_dict
                     if isinstance(info_dict[key], np.ndarray)
                 }
             )
@@ -67,11 +65,11 @@ class VecAdapter(VecEnvWrapper):
 
 class EvalTrainingMetricsCallback(BaseCallback):
     def __init__(
-            self,
-            eval_env,
-            eval_freq,
-            n_eval_episodes,
-            seed,
+        self,
+        eval_env,
+        eval_freq,
+        n_eval_episodes,
+        seed,
     ):
         super().__init__(verbose=0)
 
@@ -88,11 +86,7 @@ class EvalTrainingMetricsCallback(BaseCallback):
 
         env_state = self.eval_env.reset(reset_rng)
 
-        initial_state = (
-            env_state,
-            jnp.full((1), 0.),
-            jnp.full((1), False)
-        )
+        initial_state = (env_state, jnp.full((1), 0.0), jnp.full((1), False))
 
         def cond_fn(carry):
             state, ret, done = carry
@@ -118,35 +112,40 @@ class EvalTrainingMetricsCallback(BaseCallback):
 
     def eval(self, num_eval_episodes):
         # Number of parallel evaluations, each with n_envs environments
-        #n_evals = int(np.ceil(num_eval_episodes / self.eval_env.n_envs))
+        # n_evals = int(np.ceil(num_eval_episodes / self.eval_env.n_envs))
         (self.rng, _), returns = jax.lax.scan(
-            self._env_episode, (self.rng, self.model.policy.actor_state.params), None, num_eval_episodes
+            self._env_episode,
+            (self.rng, self.model.policy.actor_state.params),
+            None,
+            num_eval_episodes,
         )
         return jnp.concat(returns)[:num_eval_episodes]
 
     def _on_step(self) -> bool:
         if self.eval_freq > 0 and self.n_calls % self.eval_freq == 0:
-            #returns = self.eval(self.n_eval_episodes)
+            # returns = self.eval(self.n_eval_episodes)
             returns, _ = evaluate_policy(
-                self.model, self.eval_env, n_eval_episodes=self.n_eval_episodes, return_episode_rewards=True
+                self.model,
+                self.eval_env,
+                n_eval_episodes=self.n_eval_episodes,
+                return_episode_rewards=True,
             )
             self.return_list.append(returns)
             jax.debug.print("{returns}", returns=np.array(returns).mean())
         return True
 
     def _on_training_end(self) -> None:
-        a = 0
-        #returns, _ = evaluate_policy(
+        pass
+        # returns, _ = evaluate_policy(
         #    self.model, self.eval_env, n_eval_episodes=self.n_eval_episodes, return_episode_rewards=True
-        #)
-        #self.return_list.append(returns)
+        # )
+        # self.return_list.append(returns)
 
     def get_returns(self):
         return self.return_list
 
 
 def test_sac(dir_name, log, framework, env_name, sac_config, seed, cnn_policy):
-
     if framework == "brax":
         env = brax_envs.create(env_name, backend="spring", episode_length=1000)
         env = GymWrapper(env)
@@ -158,16 +157,34 @@ def test_sac(dir_name, log, framework, env_name, sac_config, seed, cnn_policy):
         eval_env = GymnaxToGymWrapper(eval_env)
     if framework == "envpool":
         import envpool
-        env = VecMonitor(VecAdapter(envpool.make(env_name, env_type="gymnasium", num_envs=sac_config["n_envs"], seed=seed)))
-        eval_env = VecMonitor(VecAdapter(envpool.make(env_name, env_type="gymnasium", num_envs=128, seed=seed)))
+
+        env = VecMonitor(
+            VecAdapter(
+                envpool.make(
+                    env_name,
+                    env_type="gymnasium",
+                    num_envs=sac_config["n_envs"],
+                    seed=seed,
+                )
+            )
+        )
+        eval_env = VecMonitor(
+            VecAdapter(
+                envpool.make(env_name, env_type="gymnasium", num_envs=128, seed=seed)
+            )
+        )
 
     eval_callback = EvalTrainingMetricsCallback(
-        eval_env=eval_env, eval_freq=sac_config["eval_freq"], n_eval_episodes=128, seed=seed
+        eval_env=eval_env,
+        eval_freq=sac_config["eval_freq"],
+        n_eval_episodes=128,
+        seed=seed,
     )
 
     hpo_config = {}
     from jax import nn
-    nas_config = dict(net_arch=[350, 350], activation_fn=nn.relu)
+
+    nas_config = {"net_arch": [350, 350], "activation_fn": nn.relu}
     model = DQN(
         "CnnPolicy" if cnn_policy else "MlpPolicy",
         env,
@@ -185,22 +202,38 @@ def test_sac(dir_name, log, framework, env_name, sac_config, seed, cnn_policy):
     )
 
     start = time.time()
-    model.learn(total_timesteps=int(sac_config["n_total_timesteps"]), callback=eval_callback)
+    model.learn(
+        total_timesteps=int(sac_config["n_total_timesteps"]), callback=eval_callback
+    )
     training_time = time.time() - start
 
     eval_returns = np.array(eval_callback.get_returns())
     mean_return = eval_returns.mean(axis=1)
     std_return = eval_returns.std(axis=1)
-    str_results = [f"{mean:.2f}+-{std:.2f}" for mean, std in zip(mean_return, std_return)]
+    str_results = [
+        f"{mean:.2f}+-{std:.2f}"
+        for mean, std in zip(mean_return, std_return, strict=False)
+    ]
     log.info(f"{training_time}, {str_results}")
 
     train_info_df = pd.DataFrame()
     for i in range(len(mean_return)):
         train_info_df[f"return_{i}"] = eval_returns[i]
 
-    os.makedirs(os.path.join("dqn_results", f"{framework}_{env_name}", dir_name), exist_ok=True)
-    train_info_df.to_csv(os.path.join("dqn_results", f"{framework}_{env_name}", dir_name, f"{seed}_results.csv"))
-    with open(os.path.join("dqn_results", f"{framework}_{env_name}", dir_name, f"{seed}_info"), "w") as f:
+    os.makedirs(
+        os.path.join("dqn_results", f"{framework}_{env_name}", dir_name), exist_ok=True
+    )
+    train_info_df.to_csv(
+        os.path.join(
+            "dqn_results", f"{framework}_{env_name}", dir_name, f"{seed}_results.csv"
+        )
+    )
+    with open(
+        os.path.join(
+            "dqn_results", f"{framework}_{env_name}", dir_name, f"{seed}_info"
+        ),
+        "w",
+    ) as f:
         f.write(f"sac_config: {sac_config}\n")
         f.write(f"hpo_config: {hpo_config}\n")
         f.write(f"nas_config: {nas_config}\n")
@@ -243,5 +276,5 @@ if __name__ == "__main__":
             env_name=args.env,
             sac_config=sac_config,
             seed=args.seed,
-            cnn_policy=args.cnn_policy
+            cnn_policy=args.cnn_policy,
         )

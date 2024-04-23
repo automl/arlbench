@@ -1,11 +1,11 @@
+from __future__ import annotations
+
 import argparse
 import functools
 import logging
 import os
 import time
-from typing import Optional
 
-import envpool
 import jax
 import jax.numpy as jnp
 import numpy as np
@@ -17,60 +17,58 @@ from sbx import PPO
 from stable_baselines3.common.callbacks import BaseCallback
 from stable_baselines3.common.evaluation import evaluate_policy
 from stable_baselines3.common.vec_env import VecEnvWrapper, VecMonitor
-from stable_baselines3.common.vec_env.base_vec_env import (VecEnvObs,
-                                                           VecEnvStepReturn)
+from stable_baselines3.common.vec_env.base_vec_env import VecEnvObs, VecEnvStepReturn
 
 
 class VecAdapter(VecEnvWrapper):
-  """
-  Convert EnvPool object to a Stable-Baselines3 (SB3) VecEnv.
+    """Convert EnvPool object to a Stable-Baselines3 (SB3) VecEnv.
 
-  :param venv: The envpool object.
-  """
+    :param venv: The envpool object.
+    """
 
-  def __init__(self, venv: EnvPool):
-    # Retrieve the number of environments from the config
-    venv.num_envs = venv.spec.config.num_envs
-    super().__init__(venv=venv)
+    def __init__(self, venv: EnvPool):
+        # Retrieve the number of environments from the config
+        venv.num_envs = venv.spec.config.num_envs
+        super().__init__(venv=venv)
 
-  def step_async(self, actions: np.ndarray) -> None:
-    self.actions = actions
+    def step_async(self, actions: np.ndarray) -> None:
+        self.actions = actions
 
-  def reset(self) -> VecEnvObs:
-    return self.venv.reset()[0]
+    def reset(self) -> VecEnvObs:
+        return self.venv.reset()[0]
 
-  def seed(self, seed: Optional[int] = None) -> None:
-    # You can only seed EnvPool env by calling envpool.make()
-    pass
+    def seed(self, seed: int | None = None) -> None:
+        # You can only seed EnvPool env by calling envpool.make()
+        pass
 
-  def step_wait(self) -> VecEnvStepReturn:
-    obs, rewards, terms, truncs, info_dict = self.venv.step(self.actions)
-    dones = terms + truncs
-    infos = []
-    # Convert dict to list of dict
-    # and add terminal observation
-    for i in range(self.num_envs):
-      infos.append(
-        {
-          key: info_dict[key][i]
-          for key in info_dict.keys()
-          if isinstance(info_dict[key], np.ndarray)
-        }
-      )
-      if dones[i]:
-        infos[i]["terminal_observation"] = obs[i]
-        obs[i] = self.venv.reset(np.array([i]))[0]
-    return obs, rewards, dones, infos
+    def step_wait(self) -> VecEnvStepReturn:
+        obs, rewards, terms, truncs, info_dict = self.venv.step(self.actions)
+        dones = terms + truncs
+        infos = []
+        # Convert dict to list of dict
+        # and add terminal observation
+        for i in range(self.num_envs):
+            infos.append(
+                {
+                    key: info_dict[key][i]
+                    for key in info_dict
+                    if isinstance(info_dict[key], np.ndarray)
+                }
+            )
+            if dones[i]:
+                infos[i]["terminal_observation"] = obs[i]
+                obs[i] = self.venv.reset(np.array([i]))[0]
+        return obs, rewards, dones, infos
 
 
 class EvalTrainingMetricsCallback(BaseCallback):
     def __init__(
-            self,
-            framework,
-            eval_env,
-            eval_freq,
-            n_eval_episodes,
-            seed,
+        self,
+        framework,
+        eval_env,
+        eval_freq,
+        n_eval_episodes,
+        seed,
     ):
         super().__init__(verbose=0)
 
@@ -88,11 +86,7 @@ class EvalTrainingMetricsCallback(BaseCallback):
 
         env_state = self.eval_env.reset(reset_rng)
 
-        initial_state = (
-            env_state,
-            jnp.full((1), 0.),
-            jnp.full((1), False)
-        )
+        initial_state = (env_state, jnp.full((1), 0.0), jnp.full((1), False))
 
         def cond_fn(carry):
             state, ret, done = carry
@@ -118,9 +112,12 @@ class EvalTrainingMetricsCallback(BaseCallback):
 
     def eval(self, num_eval_episodes):
         # Number of parallel evaluations, each with n_envs environments
-        #n_evals = int(np.ceil(num_eval_episodes / self.eval_env.n_envs))
+        # n_evals = int(np.ceil(num_eval_episodes / self.eval_env.n_envs))
         (self.rng, _), returns = jax.lax.scan(
-            self._env_episode, (self.rng, self.model.policy.actor_state.params), None, num_eval_episodes
+            self._env_episode,
+            (self.rng, self.model.policy.actor_state.params),
+            None,
+            num_eval_episodes,
         )
         return jnp.concat(returns)[:num_eval_episodes]
 
@@ -130,7 +127,10 @@ class EvalTrainingMetricsCallback(BaseCallback):
                 returns = self.eval(self.n_eval_episodes)
             else:
                 returns, lengths = evaluate_policy(
-                    self.model, self.eval_env, n_eval_episodes=self.n_eval_episodes, return_episode_rewards=True
+                    self.model,
+                    self.eval_env,
+                    n_eval_episodes=self.n_eval_episodes,
+                    return_episode_rewards=True,
                 )
                 returns = np.array(returns)
             self.return_list.append(returns)
@@ -138,46 +138,63 @@ class EvalTrainingMetricsCallback(BaseCallback):
         return True
 
     def _on_training_end(self) -> None:
-        a = 0
-        #returns, _ = evaluate_policy(
+        pass
+        # returns, _ = evaluate_policy(
         #    self.model, self.eval_env, n_eval_episodes=self.n_eval_episodes, return_episode_rewards=True
-        #)
-        #self.return_list.append(returns)
+        # )
+        # self.return_list.append(returns)
 
     def get_returns(self):
         return self.return_list
 
 
 def ppo_runner(dir_name, log, framework, env_name, ppo_config, seed, cnn_policy):
-
     if framework == "brax":
         env = envs.create(env_name, backend="spring", episode_length=1000)
         env = GymWrapper(env)
         eval_env = envs.create(env_name, backend="spring", episode_length=1000)
     if framework == "envpool":
         import envpool
-        env = VecMonitor(VecAdapter(envpool.make(env_name, env_type="gymnasium", num_envs=ppo_config["n_envs"], seed=seed)))
-        eval_env = VecMonitor(VecAdapter(envpool.make(env_name, env_type="gymnasium", num_envs=128, seed=seed)))
+
+        env = VecMonitor(
+            VecAdapter(
+                envpool.make(
+                    env_name,
+                    env_type="gymnasium",
+                    num_envs=ppo_config["n_envs"],
+                    seed=seed,
+                )
+            )
+        )
+        eval_env = VecMonitor(
+            VecAdapter(
+                envpool.make(env_name, env_type="gymnasium", num_envs=128, seed=seed)
+            )
+        )
     if framework == "gymnax":
         import gymnax
         from gymnax.wrappers.gym import GymnaxToGymWrapper
+
         env, env_params = gymnax.make(env_name)
         env = GymnaxToGymWrapper(env)
         eval_env, eval_env_params = gymnax.make(env_name)
         eval_env = GymnaxToGymWrapper(eval_env)
 
-
     eval_callback = EvalTrainingMetricsCallback(
-        framework=framework, eval_env=eval_env, eval_freq=ppo_config["eval_freq"], n_eval_episodes=128, seed=seed
+        framework=framework,
+        eval_env=eval_env,
+        eval_freq=ppo_config["eval_freq"],
+        n_eval_episodes=128,
+        seed=seed,
     )
 
     hpo_config = {}
-    nas_config = dict(net_arch=[256, 256])
+    nas_config = {"net_arch": [256, 256]}
     model = PPO(
         "CnnPolicy" if cnn_policy else "MlpPolicy",
-        env, 
-        policy_kwargs=nas_config, 
-        verbose=4, 
+        env,
+        policy_kwargs=nas_config,
+        verbose=4,
         seed=seed,
         batch_size=64,
         n_steps=1024,
@@ -188,22 +205,38 @@ def ppo_runner(dir_name, log, framework, env_name, ppo_config, seed, cnn_policy)
     )
 
     start = time.time()
-    model.learn(total_timesteps=int(ppo_config["n_total_timesteps"]), callback=eval_callback)
+    model.learn(
+        total_timesteps=int(ppo_config["n_total_timesteps"]), callback=eval_callback
+    )
     training_time = time.time() - start
 
     eval_returns = np.array(eval_callback.get_returns())
     mean_return = eval_returns.mean(axis=1)
     std_return = eval_returns.std(axis=1)
-    str_results = [f"{mean:.2f}+-{std:.2f}" for mean, std in zip(mean_return, std_return)]
+    str_results = [
+        f"{mean:.2f}+-{std:.2f}"
+        for mean, std in zip(mean_return, std_return, strict=False)
+    ]
     log.info(f"{training_time}, {str_results}")
 
     train_info_df = pd.DataFrame()
     for i in range(len(mean_return)):
         train_info_df[f"return_{i}"] = eval_returns[i]
 
-    os.makedirs(os.path.join("ppo_results", f"{framework}_{env_name}", dir_name), exist_ok=True)
-    train_info_df.to_csv(os.path.join("ppo_results", f"{framework}_{env_name}", dir_name, f"{seed}_results.csv"))
-    with open(os.path.join("ppo_results", f"{framework}_{env_name}", dir_name, f"{seed}_info"), "w") as f:
+    os.makedirs(
+        os.path.join("ppo_results", f"{framework}_{env_name}", dir_name), exist_ok=True
+    )
+    train_info_df.to_csv(
+        os.path.join(
+            "ppo_results", f"{framework}_{env_name}", dir_name, f"{seed}_results.csv"
+        )
+    )
+    with open(
+        os.path.join(
+            "ppo_results", f"{framework}_{env_name}", dir_name, f"{seed}_info"
+        ),
+        "w",
+    ) as f:
         f.write(f"ppo_config: {ppo_config}\n")
         f.write(f"hpo_config: {hpo_config}\n")
         f.write(f"nas_config: {nas_config}\n")
@@ -246,5 +279,5 @@ if __name__ == "__main__":
             env_name=args.env,
             ppo_config=ppo_config,
             seed=args.seed,
-            cnn_policy=args.cnn_policy
+            cnn_policy=args.cnn_policy,
         )

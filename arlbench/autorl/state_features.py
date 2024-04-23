@@ -10,12 +10,14 @@ import jaxlib.xla_client
 import jaxlib.xla_extension
 import numpy as np
 
+from arlbench.core.algorithms import DQNMetrics, PPOMetrics, SACMetrics
+
 if TYPE_CHECKING:
     from arlbench.core.algorithms import TrainFunc
 
 
 class StateFeature(ABC):
-    KEY: str        # Unique identifier
+    KEY: str  # Unique identifier
 
     def __new__(cls, *args, **kwargs):
         instance = super().__new__(cls)
@@ -41,30 +43,23 @@ class GradInfo(StateFeature):
             result = train_func(*args, **kwargs)
 
             _, train_result = result
+            metrics = train_result.metrics
 
-            if train_result.metrics and len(train_result.metrics) >= 3:
-                grad_info = train_result.metrics[1]
-            else:
-                raise ValueError("Tying to extract grad_info but 'self.metrics' does not match.")
+            if metrics is None:
+                raise ValueError(
+                    "Metrics in train_result are None. Can't compute gradient info without gradients."
+                )
 
-            if isinstance(grad_info, jaxlib.xla_extension.ArrayImpl):
-                # SAC
-                grad_info = list(np.array(grad_info).flatten())
-            elif isinstance(grad_info, tuple):
-                # PPO
-                grad_info = list(grad_info)
-            else:
-                # DQN
-                grad_info = grad_info["params"]
-                grad_info = {
-                    k: v
-                    for (k, v) in grad_info.items()
-                    if isinstance(v, dict)
-                }
+            if isinstance(metrics, DQNMetrics):
+                grad_info = metrics.grads["params"]
+            elif isinstance(metrics, PPOMetrics):
+                grad_info = metrics.grads["params"]
+            elif isinstance(metrics, SACMetrics):
+                grad_info = metrics.actor_grads["params"]
 
-                grad_info = [
-                    grad_info[g][k] for g in grad_info for k in grad_info[g]
-                ]
+            grad_info = {k: v for (k, v) in grad_info.items() if isinstance(v, dict)}
+
+            grad_info = [grad_info[g][k] for g in grad_info for k in grad_info[g]]
 
             grad_norm = np.mean([jnp.linalg.norm(g) for g in grad_info])
             grad_var = np.mean([jnp.var(g) for g in grad_info])
@@ -72,19 +67,14 @@ class GradInfo(StateFeature):
             state_features[GradInfo.KEY] = np.array([grad_norm, grad_var])
 
             return result
+
         return wrapper
 
     @staticmethod
     def get_state_space() -> gymnasium.spaces.Space:
         return gymnasium.spaces.Box(
-            low=np.array([-np.inf, 0]),
-            high=np.array([np.inf, np.inf])
+            low=np.array([-np.inf, 0]), high=np.array([np.inf, np.inf])
         )
 
 
-STATE_FEATURES = {
-    o.KEY: o for o in [GradInfo]
-}
-
-
-
+STATE_FEATURES = {o.KEY: o for o in [GradInfo]}

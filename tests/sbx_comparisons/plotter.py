@@ -1,7 +1,8 @@
+from __future__ import annotations
+
 import os
 
 import matplotlib.pyplot as plt
-import numpy as np
 import pandas as pd
 import seaborn as sns
 
@@ -12,8 +13,9 @@ def plot_compare_trainings(df_1, df_1_name, df_2, df_2_name, plot_name, save_dir
     df = pd.concat([df_1, df_2])
     ax = sns.lineplot(data=df, x="step", y="return", hue="type", errorbar="sd")
     ax.set_title(plot_name)
-    plt.legend(loc='upper left')
+    plt.legend(loc="upper left")
     plt.savefig(os.path.join(save_dir, f"{plot_name}.png"))
+
 
 def get_mean_df(path):
     df = pd.DataFrame()
@@ -31,4 +33,6 @@ def get_mean_df(path):
 if __name__ == "__main__":
     df_1 = get_mean_df(os.path.join("./ppo_results", "envpool_CartPole-v1", "arlb"))
     df_2 = get_mean_df(os.path.join("./ppo_results", "envpool_CartPole-v1", "sbx"))
-    plot_compare_trainings(df_1, "ARLB", df_2, "SBX", "PPO CartPole tuned", "ppo_results")
+    plot_compare_trainings(
+        df_1, "ARLB", df_2, "SBX", "PPO CartPole tuned", "ppo_results"
+    )
