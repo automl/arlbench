@@ -26,6 +26,6 @@ From: continuumio/miniconda3
    conda activate arlb
 
    pip install -U "jax[cuda12_pip]" -f https://storage.googleapis.com/jax-releases/jax_cuda_releases.html
-   pip install /scratch/hpc-prf-intexml/jbecktepe/git_repos/arlbench
+   pip install /tmp/scratch/git_repos/arlbench
 
    echo "Successfully installed all features"
