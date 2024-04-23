@@ -42,7 +42,7 @@ DEFAULT_AUTO_RL_CONFIG = {
     "checkpoint_dir": "/tmp",
     "objectives": ["reward_mean"],
     "optimize_objectives": "upper",
-    "state_features": ["grad_info"],
+    "state_features": [],
     "n_steps": 10,
     "n_total_timesteps": 1e5,
     "n_eval_steps": 100,
