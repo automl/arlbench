@@ -96,8 +96,8 @@ class SACMetrics(NamedTuple):
     critic_loss: jnp.ndarray
     alpha_loss: jnp.ndarray
     td_error: jnp.ndarray
-    actor_grads: jnp.ndarray
-    critic_grads: jnp.ndarray
+    actor_grads: FrozenDict
+    critic_grads: FrozenDict
 
 
 class Transition(NamedTuple):
@@ -181,6 +181,11 @@ class SAC(Algorithm):
             priority_exponent=self.hpo_config["buffer_beta"],
         )
 
+        # target for automatic entropy tuning
+        self.target_entropy = -jnp.prod(jnp.array(self.env.action_space.shape)).astype(
+            jnp.float32
+        )
+
     @staticmethod
     def get_hpo_config_space(seed: int | None = None) -> ConfigurationSpace:
         return ConfigurationSpace(
@@ -237,13 +242,13 @@ class SAC(Algorithm):
     @staticmethod
     def get_checkpoint_factory(
         runner_state: SACRunnerState,
-        train_result: SACTrainingResult,
+        train_result: SACTrainingResult | None,
     ) -> dict[str, Callable]:
         """Creates a factory dictionary of all posssible checkpointing options for SAC.
 
         Args:
-            runner_state (PPORunnerState): Algorithm runner state.
-            train_result (PPOTrainingResult): Training result.
+            runner_state (SACRunnerState): Algorithm runner state.
+            train_result (SACTrainingResult | None): Training result.
 
         Returns:
             dict[str, Callable]: Dictionary of factory functions containing:
@@ -264,8 +269,10 @@ class SAC(Algorithm):
         alpha_train_state = runner_state.alpha_train_state
 
         def get_trajectories():
+            if train_result is None or train_result.trajectories is None:
+                return None
+
             traj = train_result.trajectories
-            assert traj is not None
 
             trajectories = {}
             trajectories["states"] = jnp.concatenate(traj.obs, axis=0)
@@ -284,13 +291,13 @@ class SAC(Algorithm):
             "critic_target_params": lambda: critic_train_state.target_params,
             "alpha_network_params": lambda: alpha_train_state.params,
             "actor_loss": lambda: train_result.metrics.actor_loss
-            if train_result.metrics
+            if train_result and train_result.metrics
             else None,
             "critic_loss": lambda: train_result.metrics.critic_loss
-            if train_result.metrics
+            if train_result and train_result.metrics
             else None,
             "alpha_loss": lambda: train_result.metrics.alpha_loss
-            if train_result.metrics
+            if train_result and train_result.metrics
             else None,
             "trajectories": get_trajectories,
         }
@@ -381,10 +388,6 @@ class SAC(Algorithm):
                 self.hpo_config["lr"], eps=1e-5
             ),  # todo: how to set lr, check with stable-baselines
             opt_state=alpha_opt_state,
-        )
-        # target for automatic entropy tuning
-        self.target_entropy = -jnp.prod(jnp.array(self.env.action_space.shape)).astype(
-            jnp.float32
         )
 
         global_step = 0

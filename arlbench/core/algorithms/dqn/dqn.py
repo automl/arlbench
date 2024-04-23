@@ -43,8 +43,8 @@ class DQNTrainState(TrainState):
         *,
         apply_fn: Callable,
         params: FrozenDict[str, Any],
-        target_params: Any,
-        tx,
+        target_params: FrozenDict[str, Any],
+        tx: Any,
         opt_state: optax.OptState,
         **kwargs,
     ):
@@ -229,13 +229,13 @@ class DQN(Algorithm):
     @staticmethod
     def get_checkpoint_factory(
         runner_state: DQNRunnerState,
-        train_result: DQNTrainingResult,
+        train_result: DQNTrainingResult | None,
     ) -> dict[str, Callable]:
         """Creates a factory dictionary of all posssible checkpointing options for DQN.
 
         Args:
-            runner_state (PPORunnerState): Algorithm runner state.
-            train_result (PPOTrainingResult): Training result.
+            runner_state (DQNRunnerState): Algorithm runner state.
+            train_result (DQNTrainingResult | None): Training result.
 
         Returns:
             dict[str, Callable]: Dictionary of factory functions containing [opt_state, params, target_params, loss, trajectories].
@@ -243,8 +243,10 @@ class DQN(Algorithm):
         train_state = runner_state.train_state
 
         def get_trajectories():
+            if train_result is None or train_result.trajectories is None:
+                return None
+
             traj = train_result.trajectories
-            assert traj is not None
 
             trajectories = {}
             trajectories["states"] = jnp.concatenate(traj.obs, axis=0)
@@ -258,7 +260,9 @@ class DQN(Algorithm):
             "opt_state": lambda: train_state.opt_state,
             "params": lambda: train_state.params,
             "target_params": lambda: train_state.target_params,
-            "loss": lambda: train_result.metrics.loss if train_result.metrics else None,
+            "loss": lambda: train_result.metrics.loss
+            if train_result and train_result.metrics
+            else None,
             "trajectories": get_trajectories,
         }
 

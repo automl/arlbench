@@ -29,9 +29,40 @@
 
 ## Overview
 
+## Features
+
+**JAX-Based implementations of DQN, PPO, and SAC**
+
 ## Setup
 
+1. **Installation**: You can install ARLBench using `pip`:
+
+```bash
+pip install arlbench
+```
+
+TODO insert instructions to use SMAC/PBT2 etc
+
+2. **Usage**:
+
 ## Quickstart
+
+### Use the CLI
+
+### Use the AutoRL environment
+
+Import ARLBench and use the `AutoRLEnv` to run an RL agent:
+
+```python
+from arlbench import AutoRLEnv
+
+env = AutoRLEnv()
+
+obs, info = env.reset()
+
+action = env.config_space.sample_configuration()
+obs, objectives, term, trunc, info = env.step(action)
+```
 
 ## Examples
 
