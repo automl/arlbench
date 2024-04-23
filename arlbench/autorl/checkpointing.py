@@ -16,6 +16,8 @@ from flashbax.buffers.sum_tree import SumTreeState
 from flashbax.vault import Vault
 from flax.core.frozen_dict import FrozenDict
 
+from optax import ScaleByAdamState, EmptyState
+
 from arlbench.core.algorithms import DQN, PPO, SAC
 from arlbench.core.algorithms.dqn import DQNRunnerState, DQNTrainingResult
 from arlbench.core.algorithms.ppo import PPORunnerState, PPOTrainingResult
@@ -40,14 +42,11 @@ class Checkpointer:
     def _save_orbax_checkpoint(
         checkpoint: dict[str, Any], checkpoint_dir: str, checkpoint_name: str
     ) -> None:
-        checkpointer = ocp.StandardCheckpointer()
-        # save_args = orbax_utils.save_args_from_target(checkpoint)
         checkpointer = ocp.PyTreeCheckpointer()
         checkpointer.save(
             os.path.join(checkpoint_dir, checkpoint_name),
             checkpoint,
-            # save_args=save_args,
-            force=True,  # TODO debug, remove later on
+            force=True,
         )
 
     @staticmethod
@@ -167,13 +166,38 @@ class Checkpointer:
 
     @staticmethod
     def _load_params(ckpt: dict[str, Any], key: str) -> FrozenDict | None:
-        if key not in ckpt:
+        if key not in ckpt or ckpt[key] is None:
             return None
         else:
             params = ckpt[key]
             if isinstance(params, list):
                 params = params[0]
             return FrozenDict(params)
+
+    @staticmethod
+    def _load_adam_opt_state(ckpt: dict[str, Any], key: str) -> tuple | None:
+        def apply(func, t: dict | tuple):
+            if isinstance(t, tuple) or isinstance(t, list):
+                return tuple(apply(func, item) for item in t)
+            else:
+                return func(t)
+
+        def make_opt_state(opt_state: dict | None) -> ScaleByAdamState | EmptyState:
+            if opt_state is None:
+                return EmptyState()
+            else:
+                return ScaleByAdamState(
+                    count=opt_state["count"],
+                    mu=FrozenDict(opt_state["mu"]),
+                    nu=FrozenDict(opt_state["nu"]),
+                )
+
+        if key not in ckpt or ckpt[key] is None:
+            return None
+        else:
+            opt_state = ckpt[key]
+
+            return apply(make_opt_state, opt_state)
 
     @staticmethod
     def load(
@@ -199,14 +223,14 @@ class Checkpointer:
         if autorl_config["algorithm"] == "ppo":
             algorithm_kw_args = {
                 "network_params": Checkpointer._load_params(restored, "params"),
-                "opt_state": restored.get("opt_state", None),
+                "opt_state": Checkpointer._load_adam_opt_state(restored, "opt_state"),
             }
         elif autorl_config["algorithm"] == "dqn":
             algorithm_kw_args = {
                 "buffer_state": buffer_state,
                 "network_params": Checkpointer._load_params(restored, "params"),
                 "target_params": Checkpointer._load_params(restored, "target_params"),
-                "opt_state": restored.get("opt_state", None),
+                "opt_state": Checkpointer._load_adam_opt_state(restored, "opt_state"),
             }
         elif autorl_config["algorithm"] == "sac":
             algorithm_kw_args = {
@@ -223,9 +247,15 @@ class Checkpointer:
                 "alpha_network_params": Checkpointer._load_params(
                     restored, "alpha_network_params"
                 ),
-                "actor_opt_state": restored.get("actor_opt_state", None),
-                "critic_opt_state": restored.get("critic_opt_state", None),
-                "alpha_opt_state": restored.get("alpha_opt_state", None),
+                "actor_opt_state": Checkpointer._load_adam_opt_state(
+                    restored, "actor_opt_state"
+                ),
+                "critic_opt_state": Checkpointer._load_adam_opt_state(
+                    restored, "critic_opt_state"
+                ),
+                "alpha_opt_state": Checkpointer._load_adam_opt_state(
+                    restored, "alpha_opt_state"
+                ),
             }
         else:
             raise ValueError(

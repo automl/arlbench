@@ -89,7 +89,7 @@ def test_checkpointing_dqn():
     new_reward = np.mean(env.eval(10))
     assert np.isclose(reward, new_reward, rtol=1.0)
 
-    env.step(action)
+    env.step(action, n_total_timesteps=10000)
 
 
 def test_checkpointing_ppo():
@@ -115,7 +115,7 @@ def test_checkpointing_ppo():
     new_reward = np.mean(env.eval(10))
     assert np.isclose(reward, new_reward, rtol=1.0)
 
-    env.step(action)
+    env.step(action, n_total_timesteps=10000)
 
 
 def test_checkpointing_sac():
@@ -141,8 +141,10 @@ def test_checkpointing_sac():
     new_reward = np.mean(env.eval(10))
     assert np.isclose(reward, new_reward, rtol=1.0)
 
-    env.step(action)
+    env.step(action, n_total_timesteps=10000)
 
 
 if __name__ == "__main__":
+    # test_checkpointing_dqn()
+    # test_checkpointing_ppo()
     test_checkpointing_sac()

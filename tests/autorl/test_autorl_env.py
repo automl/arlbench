@@ -41,6 +41,35 @@ def test_autorl_env_dqn_grad_obs():
         "n_envs": 10,
         "algorithm": "dqn",
         "cnn_policy": False,
+        "n_total_timesteps": 1e5,
+        "n_eval_steps": 10,
+        "checkpoint": [],
+        "objectives": ["reward_mean"],
+        "state_features": ["grad_info"],
+        "n_steps": 10,
+    }
+
+    env = AutoRLEnv(config=config)
+    init_obs, _ = env.reset()
+    assert len(init_obs.keys()) == 0
+
+    action = env.config_space.get_default_configuration()
+    obs, objectives, _, trunc, _ = env.step(action)
+    assert len(obs.keys()) == 2
+    assert obs["steps"].shape == (2,)
+    assert obs["grad_info"].shape == (2,)
+    assert trunc is False
+    assert objectives["reward_mean"] > 0
+
+
+def test_autorl_env_ppo_grad_obs():
+    config = {
+        "seed": 42,
+        "env_framework": "gymnax",
+        "env_name": "CartPole-v1",
+        "n_envs": 10,
+        "algorithm": "ppo",
+        "cnn_policy": False,
         "n_total_timesteps": 1e6,
         "n_eval_steps": 10,
         "checkpoint": [],
@@ -53,7 +82,36 @@ def test_autorl_env_dqn_grad_obs():
     init_obs, _ = env.reset()
     assert len(init_obs.keys()) == 0
 
-    action = env.config_space.sample_configuration()
+    action = env.config_space.get_default_configuration()
+    obs, objectives, _, trunc, _ = env.step(action)
+    assert len(obs.keys()) == 2
+    assert obs["steps"].shape == (2,)
+    assert obs["grad_info"].shape == (2,)
+    assert trunc is False
+    assert objectives["reward_mean"] > 0
+
+
+def test_autorl_env_sac_grad_obs():
+    config = {
+        "seed": 42,
+        "env_framework": "gymnax",
+        "env_name": "Pendulum-v1",
+        "n_envs": 10,
+        "algorithm": "sac",
+        "cnn_policy": False,
+        "n_total_timesteps": 1e6,
+        "n_eval_steps": 10,
+        "checkpoint": [],
+        "objectives": ["reward_mean"],
+        "state_features": ["grad_info"],
+        "n_steps": 10,
+    }
+
+    env = AutoRLEnv(config=config)
+    init_obs, _ = env.reset()
+    assert len(init_obs.keys()) == 0
+
+    action = env.config_space.get_default_configuration()
     obs, objectives, _, trunc, _ = env.step(action)
     assert len(obs.keys()) == 2
     assert obs["steps"].shape == (2,)
@@ -222,4 +280,6 @@ def test_autorl_env_forbidden_step():
 
 
 if __name__ == "__main__":
-    test_autorl_env_dqn_hpo()
+    # test_autorl_env_dqn_grad_obs()
+    # test_autorl_env_ppo_grad_obs()
+    test_autorl_env_sac_grad_obs()

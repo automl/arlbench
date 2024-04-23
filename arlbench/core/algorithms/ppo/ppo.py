@@ -12,14 +12,15 @@ import optax
 from ConfigSpace import Categorical, Configuration, ConfigurationSpace, Float, Integer
 from flax.training.train_state import TrainState
 
+from flax.core.frozen_dict import FrozenDict
+
 from arlbench.core.algorithms.algorithm import Algorithm
-from arlbench.utils import flatten_dict
+from arlbench.utils import recursive_concat, tuple_concat
 
 from .models import CNNActorCritic, MLPActorCritic
 
 if TYPE_CHECKING:
     import chex
-    from flax.core.frozen_dict import FrozenDict
 
     from arlbench.core.environments import Environment
     from arlbench.core.wrappers import AutoRLWrapper
@@ -202,22 +203,24 @@ class PPO(Algorithm):
     @staticmethod
     def get_checkpoint_factory(
         runner_state: PPORunnerState,
-        train_result: PPOTrainingResult,
+        train_result: PPOTrainingResult | None,
     ) -> dict[str, Callable]:
         """Creates a factory dictionary of all posssible checkpointing options for PPO.
 
         Args:
             runner_state (PPORunnerState): Algorithm runner state.
-            train_result (PPOTrainingResult): Training result.
+            train_result (PPOTrainingResult | None): Training result.
 
         Returns:
             dict[str, Callable]: Dictionary of factory functions containing [opt_state, params, loss, trajectories].
         """
         train_state = runner_state.train_state
 
-        def get_trajectories():
+        def get_trajectories() -> dict | None:
+            if train_result is None or train_result.trajectories is None:
+                return None
+
             traj = train_result.trajectories
-            assert traj is not None
 
             trajectories = {}
             trajectories["states"] = jnp.concatenate(traj.obs, axis=0)
@@ -232,7 +235,9 @@ class PPO(Algorithm):
         return {
             "opt_state": lambda: train_state.opt_state,
             "params": lambda: train_state.params,
-            "loss": lambda: train_result.metrics.loss if train_result.metrics else None,
+            "loss": lambda: train_result.metrics.loss
+            if train_result and train_result.metrics
+            else None,
             "trajectories": get_trajectories,
         }
 
@@ -523,7 +528,7 @@ class PPO(Algorithm):
         _: None,
     ) -> tuple[
         tuple[PPOTrainState, Transition, jnp.ndarray, jnp.ndarray, chex.PRNGKey],
-        tuple[tuple | None, tuple | None],
+        tuple[tuple | None, FrozenDict | None],
     ]:
         """One epoch of network updates using minibatches of the current transition batch.
 
@@ -558,7 +563,7 @@ class PPO(Algorithm):
             trimmed_batch,
         )
 
-        train_state, (total_loss, grads) = jax.lax.scan(
+        train_state, (loss, grads) = jax.lax.scan(
             self._update_minibatch, train_state, minibatches
         )
 
@@ -570,22 +575,26 @@ class PPO(Algorithm):
                 lambda x: jnp.reshape(x, [1, -1, *list(x.shape[1:])]),
                 remaining_batch,
             )
-            train_state, (remaining_total_loss, remaining_grads) = jax.lax.scan(
+            train_state, (remaining_loss, remaining_grads) = jax.lax.scan(
                 self._update_minibatch, train_state, remaining_minibatch
             )
             if self.track_metrics:
-                total_loss = (*total_loss, *remaining_total_loss)
-                grads = (*grads, *remaining_grads)
+                loss = jax.tree_util.tree_map(
+                    lambda x, y: jnp.concatenate((x, y), axis=0), loss, remaining_loss
+                )
+                grads = jax.tree_util.tree_map(
+                    lambda x, y: jnp.concatenate((x, y), axis=0), grads, remaining_grads
+                )
 
         update_state = (train_state, traj_batch, advantages, targets, rng)
-        return update_state, (total_loss, grads)
+        return update_state, (loss, grads) if self.track_metrics else (None, None)
 
     @functools.partial(jax.jit, static_argnums=0)
     def _update_minibatch(
         self,
         train_state: PPOTrainState,
         batch_info: tuple[jnp.ndarray, jnp.ndarray, jnp.ndarray],
-    ) -> tuple[PPOTrainState, tuple[tuple | None, tuple | None]]:
+    ) -> tuple[PPOTrainState, tuple[tuple | None, FrozenDict | None]]:
         """Update network parameters using one minibatch.
 
         Args:
@@ -601,9 +610,6 @@ class PPO(Algorithm):
         total_loss, grads = grad_fn(train_state.params, traj_batch, advantages, targets)
 
         train_state = train_state.apply_gradients(grads=grads)
-
-        # TODO find a better way of doing this
-        grads = flatten_dict(grads)
 
         out = (total_loss, grads) if self.track_metrics else (None, None)
         return train_state, out
