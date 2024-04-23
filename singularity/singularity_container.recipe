@@ -21,11 +21,14 @@ From: continuumio/miniconda3
     . /opt/conda/etc/profile.d/conda.sh
 
    conda update -n base -c defaults conda  
-   conda create -n environment python=3.9
+   conda create -n arlb python=3.10
    conda init bash
-   conda activate environment
+   conda activate arlb
+
+   pip install -U "jax[cuda12_pip]" -f https://storage.googleapis.com/jax-releases/jax_cuda_releases.html
    pip install -r requirements.txt
 
-   pip install git+https://github.com/mlindauer/ASlibScenario.git
+   cd ..
+   pip install .
 
    echo "Successfully installed all features"
