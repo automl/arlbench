@@ -7,6 +7,7 @@ from collections.abc import Callable
 from typing import TYPE_CHECKING, Any, NamedTuple
 
 import jax
+import numpy as np
 import jax.numpy as jnp
 import optax
 from ConfigSpace import Categorical, Configuration, ConfigurationSpace, Float, Integer
@@ -359,10 +360,7 @@ class PPO(Algorithm):
                 self._update_step,
                 _runner_state,
                 None,
-                n_total_timesteps
-                // self.env.n_envs
-                // self.hpo_config["n_steps"]
-                // n_eval_steps,
+                np.ceil(n_total_timesteps / self.env.n_envs / self.hpo_config["n_steps"] / n_eval_steps),
             )
             eval_returns = self.eval(_runner_state, n_eval_episodes)
 
