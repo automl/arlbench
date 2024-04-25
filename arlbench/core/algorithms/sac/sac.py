@@ -15,6 +15,7 @@ from ConfigSpace import Categorical, Configuration, ConfigurationSpace, Float, I
 from flax.training.train_state import TrainState
 
 from arlbench.core.algorithms.algorithm import Algorithm
+from arlbench.core.algorithms.buffers import uniform_sample
 from arlbench.core.algorithms.common import TimeStep
 
 from .models import (
@@ -180,6 +181,14 @@ class SAC(Algorithm):
             add_batch_size=self.env.n_envs,
             priority_exponent=self.hpo_config["buffer_beta"],
         )
+        if self.hpo_config["buffer_prio_sampling"] is False:
+            sample_fn = functools.partial(
+                uniform_sample,
+                batch_size=self.hpo_config["buffer_batch_size"],
+                sequence_length=2,
+                period=1,
+            )
+            self.buffer = self.buffer.replace(sample=sample_fn)
 
         # target for automatic entropy tuning
         self.target_entropy = -jnp.prod(jnp.array(self.env.action_space.shape)).astype(
@@ -195,6 +204,9 @@ class SAC(Algorithm):
                 "buffer_size": Integer("buffer_size", (1, int(1e7)), default=int(1e6)),
                 "buffer_batch_size": Integer(
                     "buffer_batch_size", (1, 1024), default=256
+                ),
+                "buffer_prio_sampling": Categorical(
+                    "buffer_prio_sampling", [True, False], default=False
                 ),
                 "buffer_alpha": Float("buffer_alpha", (0.0, 1.0), default=0.9),
                 "buffer_beta": Float("buffer_beta", (0.0, 1.0), default=0.9),
@@ -489,10 +501,7 @@ class SAC(Algorithm):
                 self._update_step,
                 (runner_state, buffer_state),
                 None,
-                n_total_timesteps
-                // self.env.n_envs
-                // self.hpo_config["train_frequency"]
-                // n_eval_steps,
+                np.ceil(n_total_timesteps / self.env.n_envs / self.hpo_config["train_frequency"] / n_eval_steps),
             )
             eval_returns = self.eval(runner_state, n_eval_episodes)
 
@@ -864,29 +873,6 @@ class SAC(Algorithm):
                 metrics,
             )
 
-        # Soft update
-        def target_update() -> SACTrainState:
-            """_summary_
-
-            Returns:
-                SACTrainState: _description_
-            """
-            return critic_train_state.replace(
-                target_params=optax.incremental_update(
-                    critic_train_state.params,
-                    critic_train_state.target_params,
-                    self.hpo_config["tau"],
-                )
-            )
-
-        def dont_target_update() -> SACTrainState:
-            """_summary_
-
-            Returns:
-                SACTrainState: _description_
-            """
-            return critic_train_state
-
         runner_state, buffer_state = carry
         (
             (runner_state, buffer_state),
@@ -932,12 +918,6 @@ class SAC(Algorithm):
             critic_train_state,
             alpha_train_state,
             buffer_state,
-        )
-        critic_train_state = jax.lax.cond(
-            (global_step > self.hpo_config["learning_starts"])
-            & (global_step % self.hpo_config["target_network_update_freq"] == 0),
-            target_update,
-            dont_target_update,
         )
         runner_state = SACRunnerState(
             rng=rng,
@@ -1017,6 +997,44 @@ class SAC(Algorithm):
         )
         buffer_state = self.buffer.add(buffer_state, timestep)
 
+        global_step += 1
+
+        def target_update(train_state) -> SACTrainState:
+            """_summary_
+
+            Args:
+                train_state (_type_): _description_
+
+            Returns:
+                SACTrainState: _description_
+            """
+            return train_state.replace(
+                target_params=optax.incremental_update(
+                    train_state.params,
+                    train_state.target_params,
+                    self.hpo_config["tau"],
+                )
+            )
+
+        def dont_target_update(train_state) -> SACTrainState:
+            """_summary_
+
+            Args:
+                train_state (_type_): _description_
+
+            Returns:
+                SACTrainState: _description_
+            """
+            return train_state
+
+        critic_train_state = jax.lax.cond(  # todo: move this into the env_step loop?!
+            (global_step > np.ceil(self.hpo_config["learning_starts"] / self.env.n_envs))
+            & (global_step % np.ceil(self.hpo_config["target_network_update_freq"] / self.env.n_envs) == 0),
+            target_update,
+            dont_target_update,
+            critic_train_state,
+        )
+
         value = jnp.zeros_like(reward)
         transition = Transition(done, action, value, reward, last_obs, info)
         runner_state = SACRunnerState(
@@ -1026,6 +1044,6 @@ class SAC(Algorithm):
             env_state=env_state,
             obs=obsv,
             rng=rng,
-            global_step=global_step + 1,
+            global_step=global_step,
         )
         return (runner_state, buffer_state), transition
