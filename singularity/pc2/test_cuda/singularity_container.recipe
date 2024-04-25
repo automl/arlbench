@@ -4,7 +4,6 @@ From: continuumio/miniconda3
 %runscript
 
 %files
-    requirements.txt
 
 %environment
 
@@ -21,11 +20,11 @@ From: continuumio/miniconda3
     . /opt/conda/etc/profile.d/conda.sh
 
    conda update -n base -c defaults conda  
-   conda create -n arlb python=3.10
+   conda create -n cuda_test_env python=3.10
    conda init bash
-   conda activate arlb
+   conda activate cuda_test_env
 
-   pip install -U "jax[cuda12_pip]" -f https://storage.googleapis.com/jax-releases/jax_cuda_releases.html
-   pip install /tmp/scratch/git_repos/arlbench
+   pip install -U pip
+   pip install -U numpy torch
 
    echo "Successfully installed all features"
