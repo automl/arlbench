@@ -126,6 +126,7 @@ class CNNActorCritic(nn.Module):
         )
 
     def __call__(self, x):
+        x = x / 255.  # todo: make a clean solution for this 
         features = self.feature_conv0(x)
         features = self.activation_func(features)
         features = self.feature_conv1(features)

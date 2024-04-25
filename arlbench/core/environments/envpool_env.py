@@ -119,9 +119,11 @@ ATARI_ENVS = [
 ]
 
 class EnvpoolEnv(Environment):
-    def __init__(self, env_name: str, n_envs: int, seed: int):
+    def __init__(self, env_name: str, n_envs: int, seed: int, env_kwargs):
         import envpool
-        env = envpool.make(env_name, env_type="gymnasium", num_envs=n_envs, seed=seed)
+        env = envpool.make(
+            env_name, env_type="gymnasium", num_envs=n_envs, seed=seed, **env_kwargs
+        )
 
         super().__init__(env_name, env, n_envs, seed)
 
