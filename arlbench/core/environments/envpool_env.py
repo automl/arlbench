@@ -6,6 +6,7 @@ from typing import Any
 import jax
 import numpy as np
 import jax.numpy as jnp
+import numpy as np
 
 from arlbench.utils import gymnasium_space_to_gymnax_space
 
@@ -115,8 +116,9 @@ ATARI_ENVS = [
     "WizardOfWor-v5",
     "WordZapper-v5",
     "YarsRevenge-v5",
-    "Zaxxon-v5"
+    "Zaxxon-v5",
 ]
+
 
 class EnvpoolEnv(Environment):
     def __init__(self, env_name: str, n_envs: int, seed: int, env_kwargs):
@@ -182,4 +184,3 @@ class EnvpoolEnv(Environment):
     @property
     def observation_space(self):
         return gymnasium_space_to_gymnax_space(self._env.observation_space)
-
