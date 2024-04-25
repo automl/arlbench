@@ -198,3 +198,6 @@ pyrightconfig.json
 
 # MacOS specific
 *.DS_Store
+
+results/*
+smac3_output/*

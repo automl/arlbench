@@ -17,10 +17,10 @@ def run_arlbench(cfg: dict):
             else None
         )
 
-        _ = env.reset(checkpoint_path=checkpoint_path)
+        _ = env.reset()
         obs, reward, term, trunc, info = env.step(cfg.hp_config)
 
         if len(reward) == 1:
-            return reward[next(iter(reward.keys()))]
+            return reward[list(reward.keys())[0]]
         else:
             return tuple(reward.values())
