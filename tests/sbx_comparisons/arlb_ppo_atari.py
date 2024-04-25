@@ -15,13 +15,32 @@ from arlbench.core.environments import make_env
 
 
 def ppo_runner(dir_name, log, framework, env_name, config, training_kw_args, seed, cnn_policy):
-    env = make_env(framework, env_name, n_envs=config["n_envs"], seed=seed, cnn_policy=cnn_policy)
-    eval_env = make_env(framework, env_name, n_envs=training_kw_args["n_eval_episodes"], seed=seed, cnn_policy=cnn_policy)
+    env = make_env(
+        framework, 
+        env_name, 
+        n_envs=config["n_envs"], 
+        seed=seed, 
+        cnn_policy=cnn_policy,
+        env_kwargs={
+            "episodic_life": True,
+            "reward_clip": True,
+        }
+    )
+    eval_env = make_env(
+        framework, 
+        env_name, 
+        n_envs=training_kw_args["n_eval_episodes"], 
+        seed=seed, 
+        cnn_policy=cnn_policy,
+        env_kwargs={
+            "episodic_life": True,
+            "reward_clip": True,
+        }
+    )
     rng = jax.random.PRNGKey(seed)
 
-    log.info(jax.devices())
-    log.info(jax.default_backend())
-    log.info("test!!!")
+    log.info(f"JAX devices: {jax.devices()}")
+    log.info(f"JAX default backend: {jax.default_backend()}")
 
     hpo_config = PPO.get_default_hpo_config()
     hpo_config["minibatch_size"] = 256
