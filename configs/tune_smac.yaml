@@ -1,0 +1,55 @@
+defaults:
+  - cluster/local
+  - algorithm/dqn
+  - environment/cartpole
+  - search_space: dqn
+  - override hydra/sweeper: HyperSMAC
+
+hydra:
+  sweeper:
+    budget: 10_000_000
+    budget_variable: autorl.n_total_timesteps
+    search_space: ${search_space}
+    sweeper_kwargs:
+      optimizer_kwargs:
+        smac_facade: 
+          _target_: smac.facade.multi_fidelity_facade.MultiFidelityFacade
+          _partial_: true
+        intensifier: 
+          _target_: smac.facade.multi_fidelity_facade.MultiFidelityFacade.get_intensifier
+          _partial_: true
+          eta: 3
+        scenario:
+          n_trials: 45
+          seed: ${smac_seed}
+          min_budget: 1000
+          max_budget: 100000
+          deterministic: false
+          n_workers: 1
+  run:
+    dir: results/smac/${smac_seed}/${algorithm}_${autorl.env_name}/${autorl.seed}
+  sweep:
+    dir: results/smac/${smac_seed}/${algorithm}_${autorl.env_name}/${autorl.seed}
+  job:
+    chdir: true
+
+load_checkpoint: ""
+smac_seed: 0
+
+autorl:
+  seed: 42
+  env_framework: ${env_framework}
+  env_name: ${env_name}
+  n_envs: ${n_envs}
+  algorithm: ${algorithm}
+  cnn_policy: ${cnn_policy}
+  checkpoint: []
+  checkpoint_name: "default_checkpoint"
+  checkpoint_dir: "/tmp"
+  objectives: ["reward_mean"]
+  optimize_objectives: "upper"
+  state_features: ["grad_info"]
+  n_steps: 10
+  n_total_timesteps: ${n_total_time_steps}
+  n_eval_steps: 100
+  n_eval_episodes: 10

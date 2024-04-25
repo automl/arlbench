@@ -30,7 +30,7 @@ class HandleTermination:
         signal.signal(signal.SIGTERM, self.old_sigterm_handler)
         if exc_type is not None:
             logger.info("Oh no, there was an exception!")
-            path = self.env.save(tag="exc")
+            path = self.env._save(tag="exc")
             logger.info(f"Saving checkpoint to {path}")
 
             # torch.save({
