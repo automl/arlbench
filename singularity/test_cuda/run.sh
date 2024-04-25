@@ -17,7 +17,6 @@
 #SBATCH --output cuda_test.out
 #SBATCH --error cuda_test.err
 
-module reset
 module load system singularity
 
-singularity exec singularity_container.sif bash -c "./run_in_container.sh"
+singularity exec --nv singularity_container.sif bash -c "./run_in_container.sh"
