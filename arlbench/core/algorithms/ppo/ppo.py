@@ -168,9 +168,6 @@ class PPO(Algorithm):
                 "lr": Float("lr", (1e-5, 0.1), default=2.5e-4),
                 "n_steps": Integer("n_steps", (1, 10000), default=1024),
                 "update_epochs": Integer("update_epochs", (1, int(1e5)), default=10),
-                "activation": Categorical(
-                    "activation", ["tanh", "relu"], default="tanh"
-                ),
                 "gamma": Float("gamma", (0.0, 1.0), default=0.99),
                 "gae_lambda": Float("gae_lambda", (0.0, 1.0), default=0.95),
                 "clip_eps": Float("clip_eps", (0.0, 1.0), default=0.2),
@@ -363,6 +360,7 @@ class PPO(Algorithm):
                 np.ceil(n_total_timesteps / self.env.n_envs / self.hpo_config["n_steps"] / n_eval_steps),
             )
             eval_returns = self.eval(_runner_state, n_eval_episodes)
+            jax.debug.print("{ret}", ret=eval_returns.mean())
 
             return _runner_state, PPOTrainingResult(
                 eval_rewards=eval_returns, trajectories=trajectories, metrics=metrics
