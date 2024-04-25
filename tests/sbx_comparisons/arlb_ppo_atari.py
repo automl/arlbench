@@ -10,27 +10,17 @@ from arlbench.core.algorithms import PPO
 from arlbench.core.environments import make_env
 
 
+#jax.config.update('jax_platform_name', 'cpu')
+
+
 def ppo_runner(dir_name, log, framework, env_name, config, training_kw_args, seed, cnn_policy):
-    env = make_env(framework, env_name, n_envs=config["n_envs"], seed=seed)
+    env = make_env(framework, env_name, n_envs=config["n_envs"], seed=seed, cnn_policy=cnn_policy)
+    eval_env = make_env(framework, env_name, n_envs=training_kw_args["n_eval_episodes"], seed=seed, cnn_policy=cnn_policy)
     rng = jax.random.PRNGKey(seed)
 
-    # OrderedDict([('batch_size', 256),
-    #          ('clip_range', 'lin_0.1'),
-    #          ('ent_coef', 0.01),
-    #          ('frame_stack', 4),
-    #          ('n_timesteps', 10000000.0),
-
-    #    "minibatch_size": Integer("minibatch_size", (4, 1024), default=64),
-    #     "lr": Float("lr", (1e-5, 0.1), default=2.5e-4),
-    #     "n_steps": Integer("n_steps", (1, 10000), default=1024),
-    #     "update_epochs": Integer("update_epochs", (1, int(1e5)), default=10),
-    #     "activation": Categorical("activation", ["tanh", "relu"], default="tanh"),
-    #     "gamma": Float("gamma", (0., 1.), default=0.99),
-    #     "gae_lambda": Float("gae_lambda", (0., 1.), default=0.95),
-    #     "clip_eps": Float("clip_eps", (0., 1.), default=0.2),
-    #     "ent_coef": Float("ent_coef", (0., 1.), default=0.01),
-    #     "vf_coef": Float("vf_coef", (0., 1.), default=0.5),
-    #     "max_grad_norm": Float("max_grad_norm", (0., 10.), default=0.5)
+    print(jax.devices())
+    print(jax.default_backend())
+    print("test!!!")
 
     hpo_config = PPO.get_default_hpo_config()
     hpo_config["minibatch_size"] = 256
@@ -39,10 +29,14 @@ def ppo_runner(dir_name, log, framework, env_name, config, training_kw_args, see
     hpo_config["gae_lambda"] = 0.95
     hpo_config["ent_coef"] = 0.01
     hpo_config["max_grad_norm"] = 0.5
+    hpo_config["clip_eps"] = 0.2
+    hpo_config["n_steps"] = 128
+    hpo_config["vf_coef"] = 1.0
+    #hpo_config["lr"] = 2.5e-4
 
     nas_config = PPO.get_default_nas_config()
     nas_config["activation"] = "relu"
-    nas_config["hidden_size"] = 256
+    nas_config["hidden_size"] = 512
 
     agent = PPO(hpo_config, env, nas_config=nas_config, cnn_policy=cnn_policy)
     algorithm_state = agent.init(rng)
@@ -57,6 +51,7 @@ def ppo_runner(dir_name, log, framework, env_name, config, training_kw_args, see
     std_return = result.eval_rewards.std(axis=1)
     str_results = [f"{mean:.2f}+-{std:.2f}" for mean, std in zip(mean_return, std_return)]
     log.info(f"{training_time}, {str_results}")
+    print(f"{training_time}, {str_results}")
 
     train_info_df = pd.DataFrame()
     for i in range(len(mean_return)):
@@ -75,15 +70,15 @@ def ppo_runner(dir_name, log, framework, env_name, config, training_kw_args, see
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--dir-name", type=str, default="test")
-    parser.add_argument("--training-steps", type=int, default=100000)
+    parser.add_argument("--training-steps", type=int, default=10000000)
     parser.add_argument("--n-eval-steps", type=int, default=100)
     parser.add_argument("--n-eval-episodes", type=int, default=10)
     parser.add_argument("--n-envs", type=int, default=8)
     parser.add_argument("--seed", type=int, default=42)
-    parser.add_argument("--env-framework", type=str, default="gymnax")
-    parser.add_argument("--env", type=str, default="CartPole-v1")
-    parser.add_argument("--n-env-steps", type=int, default=500)
-    parser.add_argument("--cnn-policy", type=bool, default=False)
+    parser.add_argument("--env-framework", type=str, default="envpool")
+    parser.add_argument("--env", type=str, default="Pong-v5")
+    parser.add_argument("--n-env-steps", type=int, default=1000)
+    parser.add_argument("--cnn-policy", type=bool, default=True)
     args = parser.parse_args()
 
     logger = logging.getLogger(__name__)
