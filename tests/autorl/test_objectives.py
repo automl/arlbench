@@ -1,10 +1,8 @@
-import gymnax
-import numpy as np
-import pytest
+from __future__ import annotations
 
+import numpy as np
 from arlbench import AutoRLEnv
-from arlbench.core.algorithms import DQN, PPO
-from arlbench.core.environments import make_env
+from arlbench.core.algorithms import DQN
 
 
 def test_autorl_env_dqn_single_objective_upper():
@@ -22,7 +20,7 @@ def test_autorl_env_dqn_single_objective_upper():
         "optimize_objectives": "upper",
         "state_features": [],
         "grad_obs": False,
-        "n_steps": 10
+        "n_steps": 10,
     }
 
     env = AutoRLEnv(CONFIG)
@@ -40,6 +38,7 @@ def test_autorl_env_dqn_single_objective_upper():
 
     assert np.abs(objectives["reward_mean"] - reward) < 5
 
+
 def test_autorl_env_dqn_single_objective_lower():
     CONFIG = {
         "seed": 42,
@@ -55,7 +54,7 @@ def test_autorl_env_dqn_single_objective_lower():
         "optimize_objectives": "lower",
         "state_features": [],
         "grad_obs": False,
-        "n_steps": 10
+        "n_steps": 10,
     }
 
     env = AutoRLEnv(CONFIG)
@@ -72,6 +71,7 @@ def test_autorl_env_dqn_single_objective_lower():
     reward = np.mean(rewards)
 
     assert np.abs(-objectives["reward_mean"] - reward) < 5
+
 
 def test_autorl_env_dqn_multi_objective():
     CONFIG = {
@@ -101,7 +101,7 @@ def test_autorl_env_dqn_multi_objective():
     reward = np.mean(rewards)
 
     assert np.abs(objectives["reward_mean"] - reward) < 5
-    assert objectives["runtime"] < 0    # TODO improve? How can we estimate inner runtime?
+    assert objectives["runtime"] < 0  # TODO improve? How can we estimate inner runtime?
     assert objectives["emissions"] < 0
 
 

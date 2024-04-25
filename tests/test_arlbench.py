@@ -2,10 +2,12 @@
 
 """Tests for `arlbench` package."""
 
+from __future__ import annotations
+
 import pytest
 
 
-@pytest.fixture
+@pytest.fixture()
 def response():
     """Sample pytest fixture.
 
