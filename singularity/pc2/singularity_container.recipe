@@ -4,7 +4,7 @@ From: continuumio/miniconda3
 %runscript
 
 %files
-    requirements.txt
+    
 
 %environment
 
