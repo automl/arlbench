@@ -88,95 +88,60 @@ class CNNActorCritic(nn.Module):
         else:
             raise ValueError(f"Invalid activation function: {self.activation}")
 
-        self.actor_conv0 = nn.Conv(
+        self.feature_conv0 = nn.Conv(
             features=32,
             kernel_size=(8, 8),
             strides=(4, 4),
             kernel_init=orthogonal(jnp.sqrt(2)),
             bias_init=constant(0.0),
         )
-        self.actor_conv1 = nn.Conv(
+        self.feature_conv1 = nn.Conv(
             features=64,
             kernel_size=(4, 4),
             strides=(2, 2),
             kernel_init=orthogonal(jnp.sqrt(2)),
             bias_init=constant(0.0),
         )
-        self.actor_conv2 = nn.Conv(
+        self.feature_conv2 = nn.Conv(
             features=64,
             kernel_size=(3, 3),
             strides=(1, 1),
             kernel_init=orthogonal(jnp.sqrt(2)),
             bias_init=constant(0.0),
         )
-        self.actor_dense = nn.Dense(
+        self.feature_dense = nn.Dense(
             features=self.hidden_size,
             kernel_init=orthogonal(jnp.sqrt(2)),
             bias_init=constant(0.0),
         )
+        
         self.actor_out = nn.Dense(
             self.action_dim, kernel_init=orthogonal(0.01), bias_init=constant(0.0)
         )
         self.actor_logtstd = self.param(
             "log_std", nn.initializers.zeros, (self.action_dim,)
         )
-
-        self.critic_conv0 = nn.Conv(
-            features=32,
-            kernel_size=(8, 8),
-            strides=(4, 4),
-            kernel_init=orthogonal(jnp.sqrt(2)),
-            bias_init=constant(0.0),
-        )
-        self.critic_conv1 = nn.Conv(
-            features=64,
-            kernel_size=(4, 4),
-            strides=(2, 2),
-            kernel_init=orthogonal(jnp.sqrt(2)),
-            bias_init=constant(0.0),
-        )
-        self.critic_conv2 = nn.Conv(
-            features=64,
-            kernel_size=(3, 3),
-            strides=(1, 1),
-            kernel_init=orthogonal(jnp.sqrt(2)),
-            bias_init=constant(0.0),
-        )
-        self.critic_dense = nn.Dense(
-            features=self.hidden_size,
-            kernel_init=orthogonal(jnp.sqrt(2)),
-            bias_init=constant(0.0),
-        )
         self.critic_out = nn.Dense(
             1, kernel_init=orthogonal(1.0), bias_init=constant(0.0)
         )
 
     def __call__(self, x):
-        actor_mean = self.actor_conv0(x)
-        actor_mean = self.activation_func(actor_mean)
-        actor_mean = self.actor_conv1(actor_mean)
-        actor_mean = self.activation_func(actor_mean)
-        actor_mean = self.actor_conv2(actor_mean)
-        actor_mean = self.activation_func(actor_mean)
-        actor_mean = actor_mean.reshape((actor_mean.shape[0], -1))  # flatten
-        actor_mean = self.actor_dense(actor_mean)
-        actor_mean = self.activation_func(actor_mean)
-        actor_mean = self.actor_out(actor_mean)
+        features = self.feature_conv0(x)
+        features = self.activation_func(features)
+        features = self.feature_conv1(features)
+        features = self.activation_func(features)
+        features = self.feature_conv2(features)
+        features = self.activation_func(features)
+        features = features.reshape((features.shape[0], -1))  # flatten
+        features = self.feature_dense(features)
+        features = self.activation_func(features)
 
+        actor_mean = self.actor_out(features)
         if self.discrete:
             pi = distrax.Categorical(logits=actor_mean)
         else:
             pi = distrax.MultivariateNormalDiag(actor_mean, jnp.exp(self.actor_logtstd))
 
-        critic = self.critic_conv0(x)
-        critic = self.activation_func(critic)
-        critic = self.critic_conv1(critic)
-        critic = self.activation_func(critic)
-        critic = self.critic_conv2(critic)
-        critic = self.activation_func(critic)
-        critic = critic.reshape((critic.shape[0], -1))  # flatten
-        critic = self.critic_dense(critic)
-        critic = self.activation_func(critic)
-        critic = self.critic_out(critic)
+        critic = self.critic_out(features)
 
         return pi, jnp.squeeze(critic, axis=-1)
