@@ -13,10 +13,12 @@
 
 #SBATCH --mail-user=becktepe@stud.uni-hannover.de
 #SBATCH --mail-type=FAIL
-#SBATCH --output arlb_atari-job_%j.out
-#SBATCH --error arlb_atari-job_%j.err
+#SBATCH --output arlb_atari-job_%A_%a.out
+#SBATCH --error arlb_atari-job_%A_%a.err
+
+#SBATCH --array=0-9
 
 module reset
 module load system singularity
 
-singularity exec singularity_container.sif bash -c "./run_in_container.sh"
+singularity exec --nv singularity_container.sif bash -c "./run_in_container.sh $SLURM_ARRAY_TASK_ID"
