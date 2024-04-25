@@ -172,7 +172,7 @@ class DQN(Algorithm):
             self.buffer = self.buffer.replace(sample=sample_fn)
 
     @staticmethod
-    def get_hpo_config_space(seed=None) -> ConfigurationSpace:
+    def get_hpo_config_space(seed: int | None = None) -> ConfigurationSpace:
         return ConfigurationSpace(
             name="DQNConfigSpace",
             seed=seed,
