@@ -4,7 +4,9 @@ import functools
 from typing import Any
 
 import jax
+import numpy as np
 import jax.numpy as jnp
+import numpy as np
 
 from arlbench.utils import gymnasium_space_to_gymnax_space
 
@@ -114,29 +116,66 @@ ATARI_ENVS = [
     "WizardOfWor-v5",
     "WordZapper-v5",
     "YarsRevenge-v5",
-    "Zaxxon-v5"
+    "Zaxxon-v5",
 ]
 
-class EnvpoolEnv(Environment):
-    def __init__(self, env_name: str, n_envs: int, seed: int):
-        import envpool
 
-        env = envpool.make(env_name, env_type="gymnasium", num_envs=n_envs, seed=seed)
+class EnvpoolEnv(Environment):
+    def __init__(self, env_name: str, n_envs: int, seed: int, env_kwargs: dict):
+        import envpool
+        env = envpool.make(
+            env_name, env_type="gymnasium", num_envs=n_envs, seed=seed, **env_kwargs
+        )
+
         super().__init__(env_name, env, n_envs, seed)
+
+        self.reset_shape = self._env.reset()
+
+        rng = jax.random.key(42)
+        _rngs = jax.random.split(rng, self._n_envs)
+        self.dummy_action = np.array([
+                self.action_space.sample(_rngs[i])
+                for i in range(self._n_envs)
+        ])
+        self.step_shape = self._env.step(self.dummy_action)
+        self.single_step_shape = jax.tree_map(lambda x: x[:1], self.step_shape)
+        
         self._handle0, _, _, self._xla_step = self._env.xla()
 
     @functools.partial(jax.jit, static_argnums=0)
     def reset(self, _):
-        obs, _ = self._env.reset()
+        obs, _ = jax.experimental.io_callback(self._env.reset, self.reset_shape)
         return self._handle0, obs
 
     @functools.partial(jax.jit, static_argnums=0)
     def step(self, env_state: Any, action: Any, _):
-        handle1, (obs, reward, term, trunc, info) = self._xla_step(env_state, action)
+        # todo: update info correctly as well
+        self._handle0, (obs, reward, term, trunc, info) = self._xla_step(env_state, action)
         done = jnp.logical_or(term, trunc)
-        reset_ids = jnp.where(done)
-        obs, _ = self._env.reset(reset_ids)
-        return handle1, (obs, reward, done, info)
+
+        def reset(obs):
+            def reset_idx(i, obs):
+                new_obs, _, _, _, _ = jax.experimental.io_callback(self._env.step, self.single_step_shape, action=self.dummy_action[:1], env_id=np.array([i]))
+                obs = obs.at[i].set(new_obs[0])
+                return obs
+
+            for i in range(self._n_envs):
+                obs = jax.lax.cond(
+                    done[i],
+                    lambda obs: reset_idx(i, obs),
+                    lambda obs: obs,
+                    obs,
+                )
+            return obs
+
+        obs = jax.lax.cond(
+            jnp.any(done),
+            reset,
+            lambda obs: obs,
+            obs
+        )
+
+        return self._handle0, (obs, reward, done, info)
 
     @property
     def action_space(self):
@@ -145,4 +184,3 @@ class EnvpoolEnv(Environment):
     @property
     def observation_space(self):
         return gymnasium_space_to_gymnax_space(self._env.observation_space)
-
