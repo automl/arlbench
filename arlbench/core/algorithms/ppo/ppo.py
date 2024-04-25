@@ -7,6 +7,7 @@ from collections.abc import Callable
 from typing import TYPE_CHECKING, Any, NamedTuple
 
 import jax
+import numpy as np
 import jax.numpy as jnp
 import optax
 from ConfigSpace import Categorical, Configuration, ConfigurationSpace, Float, Integer
@@ -167,9 +168,6 @@ class PPO(Algorithm):
                 "lr": Float("lr", (1e-5, 0.1), default=2.5e-4),
                 "n_steps": Integer("n_steps", (1, 10000), default=1024),
                 "update_epochs": Integer("update_epochs", (1, int(1e5)), default=10),
-                "activation": Categorical(
-                    "activation", ["tanh", "relu"], default="tanh"
-                ),
                 "gamma": Float("gamma", (0.0, 1.0), default=0.99),
                 "gae_lambda": Float("gae_lambda", (0.0, 1.0), default=0.95),
                 "clip_eps": Float("clip_eps", (0.0, 1.0), default=0.2),
@@ -359,12 +357,10 @@ class PPO(Algorithm):
                 self._update_step,
                 _runner_state,
                 None,
-                n_total_timesteps
-                // self.env.n_envs
-                // self.hpo_config["n_steps"]
-                // n_eval_steps,
+                np.ceil(n_total_timesteps / self.env.n_envs / self.hpo_config["n_steps"] / n_eval_steps),
             )
             eval_returns = self.eval(_runner_state, n_eval_episodes)
+            jax.debug.print("{ret}", ret=eval_returns.mean())
 
             return _runner_state, PPOTrainingResult(
                 eval_rewards=eval_returns, trajectories=trajectories, metrics=metrics
@@ -638,7 +634,14 @@ class PPO(Algorithm):
         log_prob = pi.log_prob(traj_batch.action)
 
         # Calculate value loss
-        value_loss = jnp.square(value - targets).mean()
+        value_pred_clipped = traj_batch.value + (
+            value - traj_batch.value
+        ).clip(-self.hpo_config["clip_eps"], self.hpo_config["clip_eps"])
+        value_losses = jnp.square(value - targets)
+        value_losses_clipped = jnp.square(value_pred_clipped - targets)
+        value_loss = (
+            0.5 * jnp.maximum(value_losses, value_losses_clipped).mean()
+        )
 
         # Calculate actor loss
         ratio = jnp.exp(log_prob - traj_batch.log_prob)
