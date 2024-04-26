@@ -172,7 +172,7 @@ class DQN(Algorithm):
             self.buffer = self.buffer.replace(sample=sample_fn)
 
     @staticmethod
-    def get_hpo_config_space(seed=None) -> ConfigurationSpace:
+    def get_hpo_config_space(seed: int | None = None) -> ConfigurationSpace:
         return ConfigurationSpace(
             name="DQNConfigSpace",
             seed=seed,
@@ -397,10 +397,7 @@ class DQN(Algorithm):
                 self._update_step,
                 (runner_state, buffer_state),
                 None,
-                n_total_timesteps
-                // self.env.n_envs
-                // self.hpo_config["train_frequency"]
-                // n_eval_steps,
+                np.ceil(n_total_timesteps / self.env.n_envs / self.hpo_config["train_frequency"] / n_eval_steps),
             )
             eval_returns = self.eval(runner_state, n_eval_episodes)
             # jax.debug.print("{eval_returns}", eval_returns=eval_returns)
@@ -585,17 +582,7 @@ class DQN(Algorithm):
 
             train_state = jax.lax.cond(  # todo: move this into the env_step loop?!
                 (global_step > self.hpo_config["learning_starts"] // self.env.n_envs)
-                & (
-                    global_step
-                    % np.max(
-                        [
-                            self.hpo_config["target_network_update_freq"]
-                            // self.env.n_envs,
-                            1,
-                        ]
-                    )
-                    == 0
-                ),
+                & (global_step % np.ceil(self.hpo_config["target_network_update_freq"] / self.env.n_envs) == 0),
                 target_update,
                 dont_target_update,
                 train_state,
@@ -742,7 +729,7 @@ class DQN(Algorithm):
         )
 
         rng, train_state, buffer_state, metrics = jax.lax.cond(
-            global_step > self.hpo_config["learning_starts"] // self.env.n_envs,
+            global_step > np.ceil(self.hpo_config["learning_starts"] // self.env.n_envs),
             do_update,
             dont_update,
             rng,

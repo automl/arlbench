@@ -1,0 +1,3 @@
+[submodule "hypersweeper"]
+	path = hypersweeper
+	url = https://github.com/automl-private/hypersweeper.git

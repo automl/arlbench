@@ -1,0 +1,55 @@
+hyperparameters:
+  hp_config.lr:
+    type: uniform_float
+    upper: 0.1
+    lower: 0.00001
+    default: 0.00025
+  hp_config.minibatch_size:
+    type: uniform_int
+    upper: 1024
+    lower: 4
+    default: 64
+  hp_config.n_steps:
+    type: uniform_int
+    upper: 10000
+    lower: 1
+    default: 1024
+  hp_config.activation:
+    type: categorical
+    choices: ["tanh", "relu"]
+    default: "tanh"
+  hp_config.update_epochs:
+    type: uniform_int
+    upper: 100000
+    lower: 1
+    default: 10
+  hp_config.gamma:
+    type: uniform_float
+    upper: 1.0
+    lower: 0.0
+    default: 0.99
+  hp_config.gae_lambda:
+    type: uniform_float
+    upper: 1.0
+    lower: 0.0
+    default: 0.95
+  hp_config.clip_eps:
+    type: uniform_float
+    upper: 1.0
+    lower: 0.0
+    default: 0.2
+  hp_config.ent_coef:
+    type: uniform_float
+    upper: 1.0
+    lower: 0.0
+    default: 0.01
+  hp_config.vf_coef:
+    type: uniform_float
+    upper: 1.0
+    lower: 0.0
+    default: 0.5
+  hp_config.max_grad_norm:
+    type: uniform_float
+    upper: 10
+    lower: 0.0
+    default: 0.5

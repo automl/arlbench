@@ -1,0 +1,5 @@
+# @package _global_
+env_name: "CartPole-v1"
+env_framework: "gymnax"
+n_envs: 10
+n_total_time_steps: 1e5
