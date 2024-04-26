@@ -1,0 +1,18 @@
+# @package _global_
+algorithm: dqn
+hp_config:
+  buffer_alpha: '0.9'
+  buffer_batch_size: '64'
+  buffer_beta: '0.9'
+  buffer_epsilon: 1e-05
+  buffer_prio_sampling: 'False'
+  buffer_size: '1000000'
+  epsilon: '0.1'
+  gamma: '0.99'
+  gradient_steps: '1'
+  learning_starts: '1000'
+  lr: '0.00025'
+  target_network_update_freq: '10'
+  tau: '1.0'
+  train_frequency: '4'
+  use_target_network: 'True'

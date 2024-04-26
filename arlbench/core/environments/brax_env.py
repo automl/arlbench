@@ -15,11 +15,12 @@ if TYPE_CHECKING:
     import chex
     from brax.envs.base import State as BraxEnvState
     from chex import PRNGKey
+    from typing import Any
 
 
 class BraxEnv(Environment):
-    def __init__(self, env_name: str, n_envs: int):
-        env = envs.get_environment(env_name, backend="spring")
+    def __init__(self, env_name: str, n_envs: int, env_kwargs: dict[str, Any] = {}):
+        env = envs.get_environment(env_name, backend="spring", **env_kwargs)
         env = envs.training.wrap(env)
         super().__init__(env_name, env, n_envs)
         self.max_steps_in_episode = 1000

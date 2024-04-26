@@ -29,10 +29,8 @@ module load system apptainer
 apptainer build singularity_container.sif singularity_container.recipe
 ```
 
-4. Resolve any problems occuring while building the container until your have a Singularity container built from your recipe.
-5. Edit the `run_in_container.sh` to call your code. Everything inside this file will be executed inside the Singularity container when the corresponding job is allocated.
-6. Define the cluster job parameters at the top of the `run.sh` file.
-   **IMPORTANT**: If you want to use CUDA inside the container, you have to add the `--nv` flag:
+**Note for LUIS**: There is a singularity fakeroot user group on the LUIS cluster. If you ask the support for permission they add you to the group s.t. you can build singularity containers on the cluster. 4. Resolve any problems occuring while building the container until your have a Singularity container built from your recipe. 5. Edit the `run_in_container.sh` to call your code. Everything inside this file will be executed inside the Singularity container when the corresponding job is allocated. 6. Define the cluster job parameters at the top of the `run.sh` file.
+**IMPORTANT**: If you want to use CUDA inside the container, you have to add the `--nv` flag:
 
 ```bash
 singularity exec --nv singularity_container.sif bash -c "./run_in_container.sh"
