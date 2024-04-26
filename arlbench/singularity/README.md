@@ -8,16 +8,20 @@ Note: If you only need python packages, it is now possible to install python pac
 ## General Flow - Singularity
 1. Create a requirements.txt with all packages required to run your code.
 2. Adapt the Singularity container recipe called `singularity_container.recipe` to install anything additionally on the Ubuntu system inside to use. A recipe is essentially a build plan for the container. For more details refer to the [documentation](https://docs.sylabs.io/guides/3.5/user-guide/definition_files.html).
-3. Build your Singularity container on a Linux machine, where you have admin rights. You CANNOT do this on the cluster itself due to missing permissions.
+   By exporting a singularity bind path you can access and install locally stored (private) git repositories.
+4. Build your Singularity container on a Linux machine, where you have admin rights. You CANNOT do this on the cluster itself due to missing permissions.
 
     ``sudo singularity build singularity_container.sif singularity_container.recipe``
-4. Resolve any problems occuring while building the container until your have a Singularity container built from your recipe.
-5. Edit the `run_in_container.sh` to call your code. Everything inside this file will be executed inside the Singularity container when the corresponding job is allocated.
-6. Define the cluster job parameters at the top of the `run.sh` file. 
-7. Upload everything onto the cluster and submit your job via
+   **Note for PC2**: The Apptainer module allows for Singularity container building on the cluster without root privileges. You can run ```apptainer build ...``` instead of ```sudo singularity build ...```
+   **Note for LUIS**: There is a singularity fakeroot user group on the LUIS cluster. If you ask the support for permission they add you to the group s.t. you can build singularity containers on the cluster.
+6. Resolve any problems occuring while building the container until your have a Singularity container built from your recipe.
+7. Edit the `run_in_container.sh` to call your code. Everything inside this file will be executed inside the Singularity container when the corresponding job is allocated.
+8. Define the cluster job parameters at the top of the `run.sh` file.
+   **Important note for CUDA**: If you need CUDA inside your container, you have to add the flag ```--nv``` to the ```singularity exec``` command!
+10. Upload everything onto the cluster and submit your job via
 
     ``sbatch run.sh``
-8. Check the status of your job via one of the following commands: 
+11. Check the status of your job via one of the following commands: 
     * `squeue_pretty`
     * `spredict` (to get a prediction of the starttime of your job) 
 
