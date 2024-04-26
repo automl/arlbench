@@ -18,9 +18,10 @@ hydra:
         intensifier: 
           _target_: smac.facade.multi_fidelity_facade.MultiFidelityFacade.get_intensifier
           _partial_: true
-          eta: 3
+          eta: 2
+          n_seeds: 5
         scenario:
-          n_trials: 45
+          n_trials: 1000
           seed: ${smac_seed}
           min_budget: 1000
           max_budget: 100000
