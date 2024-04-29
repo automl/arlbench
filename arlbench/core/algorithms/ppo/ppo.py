@@ -54,7 +54,9 @@ class PPORunnerState(NamedTuple):
     env_state: Any
     obs: chex.Array
     global_step: int
+    reward_idx: int
     cur_rewards: chex.Array | None = None
+    sum_rewards: chex.Array | None = None
 
 
 class PPOState(NamedTuple):
@@ -281,7 +283,9 @@ class PPO(Algorithm):
             env_state=env_state,
             obs=obs,
             global_step=0,
-            cur_rewards=jnp.zeros(self.env.n_envs),
+            reward_idx=jnp.array([0]),
+            cur_rewards=jnp.zeros(100),
+            sum_rewards=jnp.zeros(self.env.n_envs),
         )
 
         return PPOState(runner_state=runner_state, buffer_state=None)
@@ -394,7 +398,7 @@ class PPO(Algorithm):
         )
 
         # Calculate advantage
-        (rng, train_state, env_state, last_obs, global_step) = runner_state
+        (rng, train_state, env_state, last_obs, global_step, reward_idx, cur_reward, sum_reward) = runner_state
         _, last_val = self.network.apply(train_state.params, last_obs)
 
         advantages, targets = self._calculate_gae(traj_batch, last_val)
@@ -413,7 +417,9 @@ class PPO(Algorithm):
             env_state=env_state,
             obs=last_obs,
             global_step=global_step,
+            reward_idx=reward_idx,
             cur_rewards=runner_state.cur_rewards,
+            sum_rewards=runner_state.sum_rewards
         )
         metrics, trajectories = None, None
         if self.track_metrics:
@@ -435,7 +441,7 @@ class PPO(Algorithm):
         Returns:
             tuple[PPORunnerState, Transition]: Tuple of PPO runner state and batch of transitions.
         """
-        (rng, train_state, env_state, last_obs, global_step) = runner_state
+        (rng, train_state, env_state, last_obs, global_step, reward_idx, cur_reward, sum_reward) = runner_state
 
         # Select action(s)
         rng, _rng = jax.random.split(rng)
@@ -456,11 +462,29 @@ class PPO(Algorithm):
         global_step += 1
 
         transition = Transition(done, action, value, reward, log_prob, last_obs, info)
-        new_cur_rewards = runner_state.cur_rewards
-        new_cur_rewards += reward
-        new_cur_rewards *= (1 - done)
+        sum_reward += reward
+        for i in range(self.env.n_envs):
+            def rew_update(i, cur_reward, reward_idx):
+                cur_reward = cur_reward.at[reward_idx%100].set(sum_reward[i])
+                reward_idx += 1
+                return cur_reward, reward_idx
+            cur_reward, reward_idx = jax.lax.cond(
+                done[i],
+                lambda rew, idx: rew_update(i, rew, idx),
+                lambda rew, idx: (rew, idx),
+                cur_reward, reward_idx,
+            )
+        sum_reward *= (1 - done)
 
-        jax.debug.print("{reward}", reward=reward)
+        def print_return(cur_reward):
+            jax.debug.print("{rew}", rew=cur_reward.mean())
+            return cur_reward
+        jax.lax.cond(
+            (reward_idx[0]%25==0) & jnp.any(done),
+            print_return,
+            lambda x: x,
+            cur_reward,
+        )
 
         runner_state = PPORunnerState(
             train_state=train_state,
@@ -468,7 +492,9 @@ class PPO(Algorithm):
             obs=obsv,
             rng=rng,
             global_step=global_step,
-            cur_rewards=new_cur_rewards,
+            reward_idx=reward_idx,
+            cur_rewards=cur_reward,
+            sum_rewards=sum_reward,
         )
         return runner_state, transition
 
