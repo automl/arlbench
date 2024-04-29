@@ -10,8 +10,12 @@ export SINGULARITY_TMPDIR=/dev/shm/$2
 export APPTAINER_CACHEDIR=$PC2PFS/$1/$2/SINGULARITY_CACHE
 export APPTAINER_TMPDIR=/dev/shm/$2
 
-export TMPDIR=$PC2PFS/$1/$2/TEMPDIR
-export TEMP=$PC2PFS/$1/$2/TEMPDIR
-export TMP=$PC2PFS/$1/$2/TEMPDIR
+#export TMPDIR=$PC2PFS/$1/$2/TEMPDIR
+#export TEMP=$PC2PFS/$1/$2/TEMPDIR
+#export TMP=$PC2PFS/$1/$2/TEMPDIR
+
+export TMPDIR=/dev/shm/$2
+export TEMP=/dev/shm/$2
+export TMP=/dev/shm/$2
 
 apptainer build singularity_container.sif singularity_container.recipe

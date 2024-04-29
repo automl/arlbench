@@ -1,6 +1,5 @@
-name: "CartPole-v1"
+name: "Pendulum-v1"
 framework: "gymnax"
 n_total_timesteps: 1e5
 env_kwargs: {}
 cnn_policy: False
-n_envs: 10
