@@ -54,6 +54,7 @@ class PPORunnerState(NamedTuple):
     env_state: Any
     obs: chex.Array
     global_step: int
+    cur_rewards: chex.Array | None = None
 
 
 class PPOState(NamedTuple):
@@ -280,6 +281,7 @@ class PPO(Algorithm):
             env_state=env_state,
             obs=obs,
             global_step=0,
+            cur_rewards=jnp.zeros(self.env.n_envs),
         )
 
         return PPOState(runner_state=runner_state, buffer_state=None)
@@ -411,13 +413,14 @@ class PPO(Algorithm):
             env_state=env_state,
             obs=last_obs,
             global_step=global_step,
+            cur_rewards=runner_state.cur_rewards,
         )
-        metrics, tracjectories = None, None
+        metrics, trajectories = None, None
         if self.track_metrics:
             metrics = PPOMetrics(loss=loss, grads=grads, advantages=advantages)
         if self.track_trajectories:
-            tracjectories = traj_batch
-        return runner_state, (metrics, tracjectories)
+            trajectories = traj_batch
+        return runner_state, (metrics, trajectories)
 
     @functools.partial(jax.jit, static_argnums=0)
     def _env_step(
@@ -453,12 +456,19 @@ class PPO(Algorithm):
         global_step += 1
 
         transition = Transition(done, action, value, reward, log_prob, last_obs, info)
+        new_cur_rewards = runner_state.cur_rewards
+        new_cur_rewards += reward
+        new_cur_rewards *= (1 - done)
+
+        jax.debug.print("{reward}", reward=reward)
+
         runner_state = PPORunnerState(
             train_state=train_state,
             env_state=env_state,
             obs=obsv,
             rng=rng,
             global_step=global_step,
+            cur_rewards=new_cur_rewards,
         )
         return runner_state, transition
 
