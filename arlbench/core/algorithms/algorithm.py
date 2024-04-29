@@ -197,10 +197,12 @@ class Algorithm(ABC):
         Returns:
             tuple[tuple[chex.PRNGKey, Any], jnp.ndarray]: ((rng, runner_state), reward). Current state of the evaluation and cumulative rewards.
         """
+        #jax.debug.print("\n\n\n\n\n\nStart Eval Episode")
         rng, runner_state = state
         rng, reset_rng = jax.random.split(rng)
 
         env_state, obs = self.eval_env.reset(reset_rng)
+        #jax.debug.print("obs: {obs}", obs=obs.mean(axis=(-1,-2,-3)))
         initial_state = (
             env_state,
             obs,
@@ -220,6 +222,9 @@ class Algorithm(ABC):
                 jnp.bool: True if not all environments are done.
             """
             _, _, _, done, _, _ = state
+            #jax.debug.print("{done}", done=done)
+            #jax.debug.print("{not_done}", not_done=jnp.logical_not(jnp.all(done)))
+
             return jnp.logical_not(jnp.all(done))
 
         def body_fn(state: tuple) -> tuple:
@@ -236,13 +241,22 @@ class Algorithm(ABC):
             # Select action
             rng, action_rng = jax.random.split(rng)
             action = self.predict(runner_state, obs, action_rng, deterministic=True)
+            #jax.debug.print("obs: {obs}", obs=obs.mean(axis=(-1,-2,-3)))
+            #jax.debug.print("action: {action}", action=action)
 
             # Step
             rng, step_rng = jax.random.split(rng)
-            env_state, (obs, reward_, done_, _) = self.eval_env.step(env_state, action, step_rng)
+            env_state, (obs, reward_, done_, info_) = self.eval_env.step(env_state, action, step_rng)
+            #jax.debug.print("{done_}", done_=done_)
+            #jax.debug.print("done: {done}", done=done)
+            #jax.debug.print("{info}", info=info_["elapsed_step"])
+            #jax.debug.print("{info}", info=info_["terminated"])
+            #jax.debug.print("lives: {info}", info=info_["lives"])
+            #jax.debug.print("info: {info}", info=info_)
 
             # Count rewards only for envs that are not already done
             reward += reward_ * ~done
+            #jax.debug.print("reward: {reward}", reward=reward)
             done = jnp.logical_or(done, done_)
 
             return env_state, obs, reward, done, rng, runner_state
