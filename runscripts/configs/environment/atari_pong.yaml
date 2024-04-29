@@ -1,0 +1,8 @@
+name: "Pong-v5"
+framework: "envpool"
+n_total_timesteps: 10e6
+kwargs:
+  episodic_life: True
+  reward_clip: True
+cnn_policy: True
+n_envs: 10

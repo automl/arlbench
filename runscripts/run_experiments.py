@@ -25,6 +25,8 @@ from arlbench.core.environments import Environment
 from gymnax.wrappers.gym import GymnaxToGymWrapper
 from datetime import timedelta
 from omegaconf import DictConfig, OmegaConf
+from envpool.python.protocol import EnvPool
+
 
 import jax.numpy as jnp
 import os 
@@ -86,15 +88,18 @@ def train_purejaxrl_ppo(
         cfg: DictConfig,
         logger: logging.Logger
     ):
-    env, env_params = gymnax.make(cfg.environment.name)
-    env.action_space
+    if cfg.environment.framework == "gymnax":
+        env, env_params = gymnax.make(cfg.environment.name)
 
-    if isinstance(env.action_space(env_params), gymnax.spaces.Discrete):
-        from purejaxrl.purejaxrl.ppo import make_train
-    elif isinstance(env.action_space(env_params), gymnax.spaces.Box):
-        from purejaxrl.purejaxrl.ppo_continuous_action import make_train
+        if isinstance(env.action_space(env_params), gymnax.spaces.Discrete):
+            from purejaxrl.purejaxrl.ppo import make_train
+        elif isinstance(env.action_space(env_params), gymnax.spaces.Box):
+            from purejaxrl.purejaxrl.ppo_continuous_action import make_train
+        else:
+            raise ValueError(f"Invalid action space type: {type(env.action_space)}.")
     else:
-        raise ValueError(f"Invalid action space type: {type(env.action_space)}.")
+        # brax only has continuous action spaces
+        from purejaxrl.purejaxrl.ppo_continuous_action import make_train
     
     # TODO
     start = time.time()
@@ -142,14 +147,8 @@ def train_sbx(cfg: DictConfig, logger: logging.Logger):
     from stable_baselines3.common.evaluation import evaluate_policy
     from stable_baselines3.common.vec_env import VecEnvWrapper, VecMonitor
     from stable_baselines3.common.vec_env.base_vec_env import VecEnvObs, VecEnvStepReturn
-
     from sbx import DQN, PPO, SAC
-    SBX_ALGORITHMS = {
-        "dqn": DQN,
-        "ppo": PPO,
-        "sac": SAC,
-    }
-
+    from jax import nn
 
     class VecAdapter(VecEnvWrapper):
         """Convert EnvPool object to a Stable-Baselines3 (SB3) VecEnv.
@@ -282,6 +281,7 @@ def train_sbx(cfg: DictConfig, logger: logging.Logger):
                 env_type="gymnasium",
                 num_envs=cfg.environment.n_envs,
                 seed=cfg.seed,
+                **cfg.environment.kwargs
             )
         )
     )
@@ -302,31 +302,67 @@ def train_sbx(cfg: DictConfig, logger: logging.Logger):
         seed=cfg.seed,
     )
 
-    algorithm_cls = SBX_ALGORITHMS[cfg.algorithm]
-
-    from jax import nn
-
-    # TODO read from config
-    nas_config = {"net_arch": [350, 350], "activation_fn": nn.relu}
-    model = algorithm_cls(
-        "CnnPolicy" if cfg.environment.cnn_policy else "MlpPolicy",
-        env,
-        policy_kwargs=nas_config,
-        verbose=4,
-        seed=cfg.seed,
-        learning_starts=1024,
-        target_update_interval=250,
-        exploration_final_eps=0.1,
-        exploration_initial_eps=0.1,
-        gradient_steps=-1,
-        buffer_size=50000,
-        learning_rate=1e-4,
-        batch_size=128,
-    )
+    if cfg.algorithm == "dqn":
+        nas_config = {"net_arch": [350, 350], "activation_fn": nn.relu}
+        model = DQN(
+            "CnnPolicy" if cfg.environment.cnn_policy else "MlpPolicy",
+            env,
+            policy_kwargs=nas_config,
+            verbose=4,
+            seed=cfg.seed,
+            learning_starts=cfg.hp_config.learning_starts,
+            target_update_interval=cfg.hp_config.target_network_update_freq,
+            exploration_final_eps=cfg.hp_config.epsilon,
+            exploration_initial_eps=cfg.hp_config.epsilon,
+            gradient_steps=cfg.hp_config.gradient_steps,
+            buffer_size=cfg.hp_config.buffer_size,
+            learning_rate=cfg.hp_config.lr,
+            batch_size=cfg.hp_config.buffer_batch_size,
+            train_freq=cfg.hp_config.train_frequency,
+            tau=cfg.hp_config.tau,
+            gamma=cfg.hp_config.gamma
+        )
+    elif cfg.algorithm == "ppo":
+        nas_config = {"net_arch": [350, 350], "activation_fn": nn.relu}
+        model = PPO(
+            "CnnPolicy" if cfg.environment.cnn_policy else "MlpPolicy",
+            env,
+            policy_kwargs=nas_config,
+            verbose=4,
+            seed=cfg.seed,
+            clip_range=cfg.hp_config.clip_eps,
+            ent_coef=cfg.hp_config.ent_coef,
+            gae_lambda=cfg.hp_config.gae_lambda,
+            gamma=cfg.hp_config.gamma,
+            learning_rate=cfg.hp_config.lr,
+            max_grad_norm=cfg.hp_config.max_grad_norm,
+            batch_size=cfg.hp_config.minibatch_size,
+            n_steps=cfg.hp_config.n_steps,
+            n_epochs=cfg.hp_config.update_epochs,
+            vf_coef=cfg.hp_config.vf_coef
+        )
+    elif cfg.algorithm == "sac":
+        nas_config = {"net_arch": [256, 256]}
+        model = SAC(
+            "CnnPolicy" if cfg.environment.cnn_policy else "MlpPolicy",
+            env,
+            policy_kwargs=nas_config,
+            verbose=4,
+            seed=cfg.seed,
+            batch_size=cfg.hp_config.buffer_batch_size,
+            buffer_size=cfg.hp_config.buffer_size,
+            gamma=cfg.hp_config.gamma,
+            gradient_steps=cfg.hp_config.gradient_steps,
+            learning_starts=cfg.hp_config.learning_starts,
+            learning_rate=cfg.hp_config.lr,
+            train_freq=cfg.hp_config.train_frequency
+        )
+    else: 
+        raise ValueError(f"Invalid algorithm: {cfg.algorithm}.")
 
     start = time.time()
     model.learn(
-        total_timesteps=int(cfg.autorl.n_total_timesteps), callback=eval_callback
+        total_timesteps=int(cfg.n_total_timesteps), callback=eval_callback
     )
     training_time = time.time() - start
 
@@ -355,8 +391,14 @@ def main(cfg: DictConfig):
     if cfg.algorithm_framework == "arlbench":
         train_info_df, training_time = train_arlbench(cfg, logger)
     elif cfg.algorithm_framework == "purejaxrl":
-        if cfg.environment.framework != "gymnax":
+        if cfg.environment.framework != "gymnax" and cfg.environment.framework != "brax":
             raise ValueError("Only gymnax is supported as environment framework for purejaxrl.")
+        
+        if cfg.environment.framework != "gymnax":
+            env = gymnax.make(cfg.environment.name)
+        else:
+            env = brax_envs.get_environment(cfg.environment.name, backend="spring", **cfg.environment.env_kwargs)
+            env = brax_envs.training.wrap(env)
         
         train_info_df, training_time = train_purejaxrl(cfg, logger)
     elif cfg.algorithm_framework == "sbx":
