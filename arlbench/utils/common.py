@@ -31,8 +31,16 @@ def save_defaults_to_yaml(config_space, algorithm: str, config_key: str = 'hp_co
     }
     
     for hp_name, hp in config_space.items():
-        yaml_dict[config_key][hp_name] = str(hp.default_value)
-
+        if isinstance(hp, ConfigSpace.UniformIntegerHyperparameter):
+            yaml_dict[config_key][hp_name] = int(hp.default_value)
+        elif isinstance(hp, ConfigSpace.UniformFloatHyperparameter):
+            yaml_dict[config_key][hp_name] = float(hp.default_value)
+        elif isinstance(hp, ConfigSpace.CategoricalHyperparameter):
+            try:
+                yaml_dict[config_key][hp_name] = bool(hp.default_value)
+            except:
+                yaml_dict[config_key][hp_name] = str(hp.default_value)
+        
     return yaml.dump(yaml_dict, sort_keys=False)
 
 
