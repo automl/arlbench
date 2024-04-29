@@ -1,7 +1,7 @@
 defaults:
   - cluster/local
   - algorithm/dqn
-  - environment/cartpole
+  - environment/cc_cartpole
 
 hydra:
   run:
@@ -17,9 +17,11 @@ autorl:
   seed: 42
   env_framework: ${environment.framework}
   env_name: ${environment.name}
-  n_envs: ${n_envs}
+  env_kwargs: ${environment.kwargs}
+  n_envs: ${environment.n_envs}
   algorithm: ${algorithm}
   cnn_policy: ${environment.cnn_policy}
+  n_total_timesteps: ${environment.n_total_timesteps}
   checkpoint: []
   checkpoint_name: "default_checkpoint"
   checkpoint_dir: "/tmp"
@@ -27,6 +29,5 @@ autorl:
   optimize_objectives: "upper"
   state_features: []
   n_steps: 10
-  n_total_timesteps: ${environment.n_total_timesteps}
   n_eval_steps: 100
   n_eval_episodes: 10

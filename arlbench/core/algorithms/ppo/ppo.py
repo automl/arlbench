@@ -394,7 +394,7 @@ class PPO(Algorithm):
         )
 
         # Calculate advantage
-        (rng, train_state, env_state, last_obs, global_step) = runner_state
+        (rng, train_state, env_state, last_obs, global_step, cur_rewards) = runner_state
         _, last_val = self.network.apply(train_state.params, last_obs)
 
         advantages, targets = self._calculate_gae(traj_batch, last_val)
@@ -413,7 +413,7 @@ class PPO(Algorithm):
             env_state=env_state,
             obs=last_obs,
             global_step=global_step,
-            cur_rewards=runner_state.cur_rewards,
+            cur_rewards=cur_rewards,
         )
         metrics, trajectories = None, None
         if self.track_metrics:
@@ -435,7 +435,7 @@ class PPO(Algorithm):
         Returns:
             tuple[PPORunnerState, Transition]: Tuple of PPO runner state and batch of transitions.
         """
-        (rng, train_state, env_state, last_obs, global_step) = runner_state
+        (rng, train_state, env_state, last_obs, global_step, cur_rewards) = runner_state
 
         # Select action(s)
         rng, _rng = jax.random.split(rng)
@@ -456,11 +456,11 @@ class PPO(Algorithm):
         global_step += 1
 
         transition = Transition(done, action, value, reward, log_prob, last_obs, info)
-        new_cur_rewards = runner_state.cur_rewards
+        new_cur_rewards = cur_rewards
         new_cur_rewards += reward
         new_cur_rewards *= (1 - done)
 
-        jax.debug.print("{reward}", reward=reward)
+        #jax.debug.print("{reward}", reward=reward)
 
         runner_state = PPORunnerState(
             train_state=train_state,
