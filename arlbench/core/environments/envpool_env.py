@@ -126,6 +126,7 @@ class EnvpoolEnv(Environment):
         env = envpool.make(
             env_name, env_type="gymnasium", num_envs=n_envs, seed=seed, **env_kwargs
         )
+        self.is_atari = env_name in ATARI_ENVS
 
         super().__init__(env_name, env, n_envs, seed)
 
@@ -140,42 +141,56 @@ class EnvpoolEnv(Environment):
         self.step_shape = self._env.step(self.dummy_action)
         self.single_step_shape = jax.tree_map(lambda x: x[:1], self.step_shape)
         
-        self._handle0, _, _, self._xla_step = self._env.xla()
+        self._handle0, self.recv, self.send, self._xla_step = self._env.xla()
 
     @functools.partial(jax.jit, static_argnums=0)
     def reset(self, _):
         obs, _ = jax.experimental.io_callback(self._env.reset, self.reset_shape)
+
         return self._handle0, obs
 
     @functools.partial(jax.jit, static_argnums=0)
     def step(self, env_state: Any, action: Any, _):
         # todo: update info correctly as well
-        self._handle0, (obs, reward, term, trunc, info) = self._xla_step(env_state, action)
+        #import ipdb
+        #ipdb.set_trace()
+        env_state, (obs, reward, term, trunc, info) = self._xla_step(env_state, action)
+        #jax.debug.print("info: {info}", info=info)
+        #jax.debug.print("action: {action}", action=action)
         done = jnp.logical_or(term, trunc)
 
-        def reset(obs):
+        def reset(obs, info):
             def reset_idx(i, obs):
                 new_obs, _, _, _, _ = jax.experimental.io_callback(self._env.step, self.single_step_shape, action=self.dummy_action[:1], env_id=np.array([i]))
                 obs = obs.at[i].set(new_obs[0])
                 return obs
 
             for i in range(self._n_envs):
-                obs = jax.lax.cond(
-                    done[i],
-                    lambda obs: reset_idx(i, obs),
-                    lambda obs: obs,
-                    obs,
-                )
+                if not self.is_atari:
+                    obs = jax.lax.cond(
+                        done[i],
+                        lambda obs: reset_idx(i, obs),
+                        lambda obs: obs,
+                        obs,
+                    )
+                else:
+                    obs = jax.lax.cond(
+                        done[i] & (info["lives"][i] == 0),
+                        lambda obs: reset_idx(i, obs),
+                        lambda obs: obs,
+                        obs,
+                    )
             return obs
 
         obs = jax.lax.cond(
             jnp.any(done),
             reset,
-            lambda obs: obs,
-            obs
+            lambda obs, info: obs,
+            obs,
+            info
         )
 
-        return self._handle0, (obs, reward, done, info)
+        return env_state, (obs, reward, done, info)
 
     @property
     def action_space(self):
