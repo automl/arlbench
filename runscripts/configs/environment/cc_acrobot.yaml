@@ -1,0 +1,6 @@
+name: "Acrobot-v1"
+framework: "gymnax"
+n_total_timesteps: 1e5
+kwargs: {}
+cnn_policy: False
+n_envs: 10

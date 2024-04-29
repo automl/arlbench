@@ -2,7 +2,7 @@ from arlbench.utils import config_space_to_yaml, save_defaults_to_yaml
 from arlbench.core.algorithms import DQN, PPO, SAC
 
 
-def create_configs():
+def create_algorithm_configs():
     for algorithm in [DQN, PPO, SAC]:
         config_space = algorithm.get_hpo_config_space()
         search_space = config_space_to_yaml(config_space, config_key="hp_config")
@@ -17,4 +17,4 @@ def create_configs():
 
 
 if __name__ == "__main__":
-    create_configs()
+    create_algorithm_configs()
