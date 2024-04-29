@@ -1,7 +1,7 @@
 defaults:
   - cluster/local
   - algorithm/dqn
-  - environment/cartpole
+  - environment/cc_cartpole
   - search_space: dqn
   - override hydra/sweeper: HyperSMAC
 
@@ -38,11 +38,14 @@ smac_seed: 0
 
 autorl:
   seed: 42
-  env_framework: ${env_framework}
-  env_name: ${env_name}
-  n_envs: ${n_envs}
+  env_framework: ${environment.framework}
+  env_name: ${environment.name}
+  env_kwargs: ${environment.kwargs}
+  n_envs: ${environment.n_envs}
   algorithm: ${algorithm}
-  cnn_policy: ${cnn_policy}
+  cnn_policy: ${environment.cnn_policy}
+  n_total_timesteps: ${environment.n_total_timesteps}
+  algorithm: ${algorithm}
   checkpoint: []
   checkpoint_name: "default_checkpoint"
   checkpoint_dir: "/tmp"
@@ -50,6 +53,5 @@ autorl:
   optimize_objectives: "upper"
   state_features: ["grad_info"]
   n_steps: 10
-  n_total_timesteps: ${n_total_timesteps}
   n_eval_steps: 100
   n_eval_episodes: 10

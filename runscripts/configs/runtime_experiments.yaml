@@ -1,7 +1,7 @@
 defaults:
   - cluster/local
   - algorithm/dqn
-  - environment/cartpole
+  - environment/cc_cartpole
 
 hydra:
   run:
@@ -14,7 +14,6 @@ hydra:
 load_checkpoint: ""
 
 n_total_timesteps: ${environment.n_total_timesteps}
-algorithm_framework: arlbench
 n_eval_steps: 100
 n_eval_episodes: 10
 seed: 42

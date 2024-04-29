@@ -26,6 +26,7 @@ from gymnax.wrappers.gym import GymnaxToGymWrapper
 from datetime import timedelta
 from omegaconf import DictConfig, OmegaConf
 from envpool.python.protocol import EnvPool
+from gymnax.wrappers.purerl import FlattenObservationWrapper, LogWrapper
 
 
 import jax.numpy as jnp
@@ -46,7 +47,22 @@ ARLBENCH_ALGORITHMS = {
 
 
 def train_arlbench(cfg: DictConfig, logger: logging.Logger):
-    env = make_env(cfg.environment.framework, cfg.environment.name, n_envs=cfg.environment.n_envs, seed=cfg.seed, env_kwargs=cfg.environment.env_kwargs)
+    env = make_env(
+        cfg.environment.framework,
+        cfg.environment.name,
+        n_envs=cfg.environment.n_envs,
+        seed=cfg.seed,
+        env_kwargs=cfg.environment.kwargs,
+        cnn_policy=cfg.environment.cnn_policy
+    )
+    eval_env = make_env(
+        cfg.environment.framework,
+        cfg.environment.name,
+        n_envs=cfg.n_eval_episodes,
+        seed=cfg.seed,
+        env_kwargs=cfg.environment.kwargs,
+        cnn_policy=cfg.environment.cnn_policy
+    )
     rng = jax.random.PRNGKey(cfg.seed)
 
     algorithm_cls = ARLBENCH_ALGORITHMS[cfg.algorithm]
@@ -57,20 +73,32 @@ def train_arlbench(cfg: DictConfig, logger: logging.Logger):
         for k, v in cfg.nas_config:
             nas_config[k] = v
 
-    agent = algorithm_cls(cfg.hp_config, env, nas_config=nas_config, cnn_policy=cfg.environment.cnn_policy)
+    agent = algorithm_cls(
+        cfg.hp_config,
+        env,
+        nas_config=nas_config,
+        eval_env=eval_env,
+        cnn_policy=cfg.environment.cnn_policy
+    )
     algorithm_state = agent.init(rng)
 
+    logger.info("Training started.")
+
     start = time.time()
-    logger.info("training started")
-    (algorithm_state, results) = agent.train(*algorithm_state, n_total_timesteps=cfg.n_total_timesteps)
-    logger.info("training finished")
+    (algorithm_state, results) = agent.train(
+        *algorithm_state,
+        n_eval_steps=cfg.n_eval_steps,
+        n_eval_episodes=cfg.n_eval_episodes,
+        n_total_timesteps=cfg.n_total_timesteps
+    )
     training_time = time.time() - start
 
-    logging.info(f"Finished in {format_time(training_time)}s.")
+    logger.info(f"Finished in {format_time(training_time)}s.")
 
-    train_info_df = pd.DataFrame()
-    for i in range(len(results.eval_rewards)):
-        train_info_df[f"return_{i}"] = results.eval_rewards[i]
+    steps = np.arange(1, cfg.n_eval_steps + 1) * cfg.n_total_timesteps // cfg.n_eval_steps
+    returns = results.eval_rewards.mean(axis=1)
+
+    train_info_df = pd.DataFrame({'timesteps': steps, 'returns': returns})
 
     return train_info_df, training_time
 
@@ -111,25 +139,28 @@ def train_purejaxrl_ppo(
 
 
 def train_purejaxrl_dqn(cfg: DictConfig, logger: logging.Logger):
-    from purejaxrl.purejaxrl.dqn import make_train
+    # this is a bit hacky but it allows us to access the PureJaxRL submodule 
+    root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '../purejaxrl'))
+    sys.path.append(root_dir)
+    from purejaxrl.dqn import make_train
 
     config = {
-        "NUM_ENVS": 10,
-        "BUFFER_SIZE": 10000,
-        "BUFFER_BATCH_SIZE": 128,
-        "TOTAL_TIMESTEPS": 5e5,
-        "EPSILON_START": 1.0,
-        "EPSILON_FINISH": 0.05,
-        "EPSILON_ANNEAL_TIME": 25e4,
-        "TARGET_UPDATE_INTERVAL": 500,
-        "LR": 2.5e-4,
-        "LEARNING_STARTS": 10000,
-        "TRAINING_INTERVAL": 10,
+        "NUM_ENVS": cfg.environment.n_envs,
+        "BUFFER_SIZE": cfg.hp_config.buffer_size,
+        "BUFFER_BATCH_SIZE": cfg.hp_config.buffer_batch_size,
+        "TOTAL_TIMESTEPS": cfg.n_total_timesteps,
+        "EPSILON_START": cfg.hp_config.epsilon,
+        "EPSILON_FINISH": cfg.hp_config.epsilon,
+        "EPSILON_ANNEAL_TIME": 1,
+        "TARGET_UPDATE_INTERVAL": cfg.hp_config.target_network_update_freq,
+        "LR": cfg.hp_config.lr,
+        "LEARNING_STARTS": cfg.hp_config.learning_starts,
+        "TRAINING_INTERVAL": cfg.hp_config.train_frequency,
         "LR_LINEAR_DECAY": False,
-        "GAMMA": 0.99,
-        "TAU": 1.0,
+        "GAMMA": cfg.hp_config.gamma,
+        "TAU": cfg.hp_config.tau,
         "ENV_NAME": cfg.environment.name,
-        "SEED": 0,
+        "SEED": cfg.seed,
         "NUM_SEEDS": 1,
         "WANDB_MODE": "disabled",  # set to online to activate wandb
         "ENTITY": "",
@@ -138,8 +169,20 @@ def train_purejaxrl_dqn(cfg: DictConfig, logger: logging.Logger):
 
     rng = jax.random.PRNGKey(cfg.seed)
     rngs = jax.random.split(rng, 1)
+
+    logger.info("Training started.")
+
+    start = time.time()
     train_vjit = jax.jit(jax.vmap(make_train(config)))
     outs = jax.block_until_ready(train_vjit(rngs))
+    training_time = time.time() - start
+
+    logging.info(f"Finished in {format_time(training_time)}s.")
+    print(outs.keys())
+
+    train_info_df = pd.DataFrame({'timesteps': outs["metrics"]["timesteps"][0], 'returns': outs["metrics"]["returns"][0]})
+
+    return train_info_df, training_time
 
 
 def train_sbx(cfg: DictConfig, logger: logging.Logger):
@@ -297,7 +340,7 @@ def train_sbx(cfg: DictConfig, logger: logging.Logger):
 
     eval_callback = EvalTrainingMetricsCallback(
         eval_env=eval_env,
-        eval_freq=cfg.n_total_timesteps // cfg.n_eval_steps,
+        eval_freq=cfg.n_total_timesteps // cfg.n_eval_steps // cfg.environment.n_envs,
         n_eval_episodes=cfg.n_eval_episodes,
         seed=cfg.seed,
     )
@@ -369,9 +412,11 @@ def train_sbx(cfg: DictConfig, logger: logging.Logger):
     logging.info(f"Finished in {format_time(training_time)}s.")
 
     eval_returns = np.array(eval_callback.get_returns())
-    train_info_df = pd.DataFrame()
-    for i in range(len(eval_returns)):
-        train_info_df[f"return_{i}"] = eval_returns[i]
+
+    steps = np.arange(1, cfg.n_eval_steps + 1) * cfg.n_total_timesteps // cfg.n_eval_steps
+    returns = eval_returns.mean(axis=1)
+
+    train_info_df = pd.DataFrame({'timesteps': steps, 'returns': returns})
 
     return train_info_df, training_time
 
@@ -391,14 +436,8 @@ def main(cfg: DictConfig):
     if cfg.algorithm_framework == "arlbench":
         train_info_df, training_time = train_arlbench(cfg, logger)
     elif cfg.algorithm_framework == "purejaxrl":
-        if cfg.environment.framework != "gymnax" and cfg.environment.framework != "brax":
-            raise ValueError("Only gymnax is supported as environment framework for purejaxrl.")
-        
         if cfg.environment.framework != "gymnax":
-            env = gymnax.make(cfg.environment.name)
-        else:
-            env = brax_envs.get_environment(cfg.environment.name, backend="spring", **cfg.environment.env_kwargs)
-            env = brax_envs.training.wrap(env)
+            raise ValueError("Only gymnax is supported as environment framework for purejaxrl.")
         
         train_info_df, training_time = train_purejaxrl(cfg, logger)
     elif cfg.algorithm_framework == "sbx":

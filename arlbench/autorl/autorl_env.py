@@ -34,6 +34,7 @@ DEFAULT_AUTO_RL_CONFIG = {
     "seed": 42,
     "env_framework": "gymnax",
     "env_name": "CartPole-v1",
+    "env_kwargs": {},
     "n_envs": 10,
     "algorithm": "dqn",
     "cnn_policy": False,
@@ -101,6 +102,7 @@ class AutoRLEnv(gymnasium.Env):
             cnn_policy=self._config["cnn_policy"],
             n_envs=self._config["n_envs"],
             seed=self._seed,
+            env_kwargs=self._config["env_kwargs"]
         )
 
         self._eval_env = make_env(
