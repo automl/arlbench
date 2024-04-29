@@ -151,12 +151,7 @@ class EnvpoolEnv(Environment):
 
     @functools.partial(jax.jit, static_argnums=0)
     def step(self, env_state: Any, action: Any, _):
-        # todo: update info correctly as well
-        #import ipdb
-        #ipdb.set_trace()
         env_state, (obs, reward, term, trunc, info) = self._xla_step(env_state, action)
-        #jax.debug.print("info: {info}", info=info)
-        #jax.debug.print("action: {action}", action=action)
         done = jnp.logical_or(term, trunc)
 
         def reset(obs, info):
