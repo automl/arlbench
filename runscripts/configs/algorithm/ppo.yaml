@@ -11,3 +11,6 @@ hp_config:
   n_steps: 1024
   update_epochs: 10
   vf_coef: 0.5
+nas_config:
+  activation: tanh
+  hidden_size: 64
