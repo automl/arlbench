@@ -13,6 +13,7 @@ hydra:
 
 load_checkpoint: ""
 
+algorithm_framework: arlbench
 n_total_timesteps: ${environment.n_total_timesteps}
 n_eval_steps: 100
 n_eval_episodes: 10
