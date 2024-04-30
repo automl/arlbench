@@ -13,9 +13,9 @@ hp_config:
   gradient steps: 1
   learning_starts: 100
   lr: 0.0003
-  target_network_update_freq: 1
+  target_update_interval: 1
   tau: 0.005
-  train_frequency: 1
+  train_freq: 1
   use_target_network: true
 nas_config:
   activation: tanh

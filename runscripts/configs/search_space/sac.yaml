@@ -62,7 +62,7 @@ hyperparameters:
     upper: 0.1
     lower: 1.0e-05
     default: 0.0003
-  hp_config.target_network_update_freq:
+  hp_config.target_update_interval:
     type: uniform_int
     upper: 100000
     lower: 1
@@ -72,7 +72,7 @@ hyperparameters:
     upper: 1.0
     lower: 0.0
     default: 0.005
-  hp_config.train_frequency:
+  hp_config.train_freq:
     type: uniform_int
     upper: 100000
     lower: 1
