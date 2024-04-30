@@ -13,7 +13,7 @@ override /hp_config/buffer_size: 100000
 override /hp_config/epsilon: 0.1
 override /hp_config/gamma: 0.99
 override /hp_config/gradient_steps: 128
-override /hp_config/lr: 0.0023
+override /hp_config/learning_rate: 0.0023
 override /hp_config/target_update_interval: 10
 override /hp_config/train_freq: 256
 

@@ -13,8 +13,8 @@ override /hp_config/clip_eps: 0.2
 override /hp_config/ent_coef: 0.0
 override /hp_config/gae_lambda: 0.8
 override /hp_config/gamma: 0.98
-# since we do not support learning rate schedules we set lr to a fixed value
-override /hp_config/lr: 0.001
+# since we do not support learning rate schedules we set learning_rate to a fixed value
+override /hp_config/learning_rate: 0.001
 override /hp_config/update_epochs: 20
 override /hp_config/n_steps: 32
 override /hp_config/n_steps: 32
