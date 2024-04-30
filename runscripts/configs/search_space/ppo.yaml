@@ -9,7 +9,7 @@ hyperparameters:
     type: uniform_float
     upper: 1.0
     lower: 0.0
-    default: 0.01
+    default: 0.0
   hp_config.gae_lambda:
     type: uniform_float
     upper: 1.0
@@ -24,7 +24,7 @@ hyperparameters:
     type: uniform_float
     upper: 0.1
     lower: 1.0e-05
-    default: 0.00025
+    default: 0.0003
   hp_config.max_grad_norm:
     type: uniform_float
     upper: 10.0
@@ -39,7 +39,7 @@ hyperparameters:
     type: uniform_int
     upper: 10000
     lower: 1
-    default: 1024
+    default: 2048
   hp_config.update_epochs:
     type: uniform_int
     upper: 100000
