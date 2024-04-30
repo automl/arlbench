@@ -167,7 +167,7 @@ class PPO(Algorithm):
             seed=seed,
             space={
                 "minibatch_size": Integer("minibatch_size", (4, 1024), default=64),
-                "lr": Float("lr", (1e-5, 0.1), default=0.0003),
+                "learning_rate": Float("learning_rate", (1e-5, 0.1), default=0.0003),
                 "n_steps": Integer("n_steps", (1, 10000), default=2048),
                 "update_epochs": Integer("update_epochs", (1, int(1e5)), default=10),
                 "gamma": Float("gamma", (0.0, 1.0), default=0.99),
@@ -266,7 +266,7 @@ class PPO(Algorithm):
 
         tx = optax.chain(
             optax.clip_by_global_norm(self.hpo_config["max_grad_norm"]),
-            optax.adam(self.hpo_config["lr"], eps=1e-5),
+            optax.adam(self.hpo_config["learning_rate"], eps=1e-5),
         )
 
         train_state = PPOTrainState.create_with_opt_state(

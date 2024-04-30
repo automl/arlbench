@@ -11,8 +11,8 @@ hp_config:
   buffer_size: 1000000
   gamma: 0.99
   gradient steps: 1
+  learning_rate: 0.0003
   learning_starts: 100
-  lr: 0.0003
   target_update_interval: 1
   tau: 0.005
   train_freq: 1
