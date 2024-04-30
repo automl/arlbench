@@ -23,23 +23,27 @@ def to_gymnasium_space(space):
     return new_space
 
 
-def save_defaults_to_yaml(config_space, algorithm: str, config_key: str = 'hp_config'):
+def save_defaults_to_yaml(hp_config_space, nas_config_sapce, algorithm: str):
     yaml_dict = {
         'algorithm': algorithm,
-        config_key: False,
-        f'{config_key}': {}
+        'hp_config': {},
+        'nas_config': {}
     }
-    
-    for hp_name, hp in config_space.items():
-        if isinstance(hp, ConfigSpace.UniformIntegerHyperparameter):
-            yaml_dict[config_key][hp_name] = int(hp.default_value)
-        elif isinstance(hp, ConfigSpace.UniformFloatHyperparameter):
-            yaml_dict[config_key][hp_name] = float(hp.default_value)
-        elif isinstance(hp, ConfigSpace.CategoricalHyperparameter):
-            try:
-                yaml_dict[config_key][hp_name] = bool(hp.default_value)
-            except:
-                yaml_dict[config_key][hp_name] = str(hp.default_value)
+
+    def add_hps(config_space, config_key):
+        for hp_name, hp in config_space.items():
+            if isinstance(hp, ConfigSpace.UniformIntegerHyperparameter):
+                yaml_dict[config_key][hp_name] = int(hp.default_value)
+            elif isinstance(hp, ConfigSpace.UniformFloatHyperparameter):
+                yaml_dict[config_key][hp_name] = float(hp.default_value)
+            elif isinstance(hp, ConfigSpace.CategoricalHyperparameter):
+                if isinstance(hp.default_value, bool):
+                    yaml_dict[config_key][hp_name] = bool(hp.default_value)
+                else:
+                    yaml_dict[config_key][hp_name] = str(hp.default_value)
+
+    add_hps(hp_config_space, "hp_config")
+    add_hps(nas_config_sapce, "nas_config")
         
     return yaml.dump(yaml_dict, sort_keys=False)
 

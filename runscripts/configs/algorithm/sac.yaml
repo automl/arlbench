@@ -17,3 +17,6 @@ hp_config:
   tau: 0.005
   train_frequency: 1
   use_target_network: true
+nas_config:
+  activation: tanh
+  hidden_size: 256
