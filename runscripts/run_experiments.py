@@ -25,7 +25,6 @@ from arlbench.core.environments import Environment
 from gymnax.wrappers.gym import GymnaxToGymWrapper
 from datetime import timedelta
 from omegaconf import DictConfig, OmegaConf
-from envpool.python.protocol import EnvPool
 from gymnax.wrappers.purerl import FlattenObservationWrapper, LogWrapper
 
 
@@ -234,6 +233,8 @@ def train_sbx(cfg: DictConfig, logger: logging.Logger):
     from stable_baselines3.common.vec_env.base_vec_env import VecEnvObs, VecEnvStepReturn
     from sbx import DQN, PPO, SAC
     from jax import nn
+    import envpool
+    from envpool.python.protocol import EnvPool
 
     class VecAdapter(VecEnvWrapper):
         """Convert EnvPool object to a Stable-Baselines3 (SB3) VecEnv.
@@ -303,7 +304,7 @@ def train_sbx(cfg: DictConfig, logger: logging.Logger):
             initial_state = (env_state, jnp.full((1), 0.0), jnp.full((1), False))
 
             def cond_fn(carry):
-                state, ret, done = carry
+                _, _, done = carry
                 return jnp.logical_not(jnp.all(done))
 
             def body_fn(carry):
@@ -325,19 +326,17 @@ def train_sbx(cfg: DictConfig, logger: logging.Logger):
             return (rng, actor_params), returns
 
         def eval(self, num_eval_episodes):
-            # Number of parallel evaluations, each with n_envs environments
-            # n_evals = int(np.ceil(num_eval_episodes / self.eval_env.n_envs))
             (self.rng, _), returns = jax.lax.scan(
                 self._env_episode,
                 (self.rng, self.model.policy.actor_state.params),
                 None,
-                num_eval_episodes,
+                # with n_envs = n_eval_episodes for eval_env we only need one parallel episode
+                1, # num_eval_episodes,
             )
             return jnp.concat(returns)[:num_eval_episodes]
 
         def _on_step(self) -> bool:
             if self.eval_freq > 0 and self.n_calls % self.eval_freq == 0:
-                # returns = self.eval(self.n_eval_episodes)
                 returns, _ = evaluate_policy(
                     self.model,
                     self.eval_env,
@@ -346,21 +345,14 @@ def train_sbx(cfg: DictConfig, logger: logging.Logger):
                 )
                 self.return_list.append(returns)
                 self.step_list.append(self.n_calls)
-                # jax.debug.print("{returns}", returns=np.array(returns).mean())
             return True
 
         def _on_training_end(self) -> None:
             pass
-            # returns, _ = evaluate_policy(
-            #    self.model, self.eval_env, n_eval_episodes=self.n_eval_episodes, return_episode_rewards=True
-            # )
-            # self.return_list.append(returns)
 
         def get_returns(self):
             return np.array(self.step_list), np.array(self.return_list)
-
-    import envpool
-
+        
     env = VecMonitor(
         VecAdapter(
             envpool.make(
@@ -479,11 +471,8 @@ def train_sbx(cfg: DictConfig, logger: logging.Logger):
 
 
 @hydra.main(version_base=None, config_path="configs", config_name="runtime_experiments")
-# @track_emissions(offline=True, country_iso_code="DEU")
+@track_emissions(offline=True, country_iso_code="DEU")
 def main(cfg: DictConfig):
-    print(OmegaConf.to_yaml(cfg))
-
-    dir_name= "./"      # TODO add to config
     logger = logging.getLogger()
     logger.setLevel(logging.INFO)
 
