@@ -188,7 +188,7 @@ class DQN(Algorithm):
                 "buffer_alpha": Float("buffer_alpha", (0.0, 1.0), default=0.9),
                 "buffer_beta": Float("buffer_beta", (0.0, 1.0), default=0.9),
                 "buffer_epsilon": Float("buffer_epsilon", (0.0, 1e-3), default=1e-5),
-                "lr": Float("lr", (1e-5, 0.1), default=0.0001),
+                "learning_rate": Float("learning_rate", (1e-5, 0.1), default=0.0001),
                 "gamma": Float("gamma", (0.0, 1.0), default=0.99),
                 "tau": Float("tau", (0.0, 1.0), default=1.0),
                 "epsilon": Float("epsilon", (0.0, 1.0), default=0.1),
@@ -316,7 +316,7 @@ class DQN(Algorithm):
             "apply_fn": self.network.apply,
             "params": network_params,
             "target_params": target_params,
-            "tx": optax.adam(self.hpo_config["lr"]),
+            "tx": optax.adam(self.hpo_config["learning_rate"]),
             "opt_state": opt_state,
         }
         train_state = DQNTrainState.create_with_opt_state(**train_state_kwargs)

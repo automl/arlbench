@@ -212,7 +212,7 @@ class SAC(Algorithm):
                 "buffer_alpha": Float("buffer_alpha", (0.0, 1.0), default=0.9),
                 "buffer_beta": Float("buffer_beta", (0.0, 1.0), default=0.9),
                 "buffer_epsilon": Float("buffer_epsilon", (0.0, 1e-3), default=1e-5),
-                "lr": Float("lr", (1e-5, 0.1), default=0.0003),
+                "learning_rate": Float("learning_rate", (1e-5, 0.1), default=0.0003),
                 "gradient steps": Integer("gradient steps", (1, int(1e5)), default=1),
                 "gamma": Float("gamma", (0.0, 1.0), default=0.99),
                 "tau": Float("tau", (0.0, 1.0), default=0.005),
@@ -377,8 +377,8 @@ class SAC(Algorithm):
             params=actor_network_params,
             target_params=None,
             tx=optax.adam(
-                self.hpo_config["lr"], eps=1e-5
-            ),  # todo: change to actor specific lr
+                self.hpo_config["learning_rate"], eps=1e-5
+            ),  # todo: change to actor specific learning_rate
             opt_state=actor_opt_state,
         )
         critic_train_state = SACTrainState.create_with_opt_state(
@@ -386,8 +386,8 @@ class SAC(Algorithm):
             params=critic_network_params,
             target_params=critic_target_params,
             tx=optax.adam(
-                self.hpo_config["lr"], eps=1e-5
-            ),  # todo: change to critic specific lr
+                self.hpo_config["learning_rate"], eps=1e-5
+            ),  # todo: change to critic specific learning_rate
             opt_state=critic_opt_state,
         )
         if alpha_network_params is None:
@@ -398,8 +398,8 @@ class SAC(Algorithm):
             params=alpha_network_params,
             target_params=None,
             tx=optax.adam(
-                self.hpo_config["lr"], eps=1e-5
-            ),  # todo: how to set lr, check with stable-baselines
+                self.hpo_config["learning_rate"], eps=1e-5
+            ),  # todo: how to set learning_rate, check with stable-baselines
             opt_state=alpha_opt_state,
         )
 
