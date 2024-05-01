@@ -486,6 +486,9 @@ class PPO(Algorithm):
         env_state, (obsv, reward, done, info) = self.env.step(
             env_state, clipped_action, _rng
         )
+        #jax.debug.print("\ndone: {done}", done=done)
+        #jax.debug.print("lives: {lives}", lives=info["lives"])
+        #jax.debug.print("info: {info}", info=info)
         global_step += 1
 
         transition = Transition(done, action, value, reward, log_prob, last_obs, info)
