@@ -1,0 +1,19 @@
+ppo_config: {'n_envs': 8, 'track_metrics': False, 'track_traj': False}
+hpo_config: Configuration(values={
+  'clip_eps': 0.1,
+  'ent_coef': 0.01,
+  'gae_lambda': 0.95,
+  'gamma': 0.99,
+  'lr': 0.00025,
+  'max_grad_norm': 0.5,
+  'minibatch_size': 256,
+  'n_steps': 128,
+  'update_epochs': 4,
+  'vf_coef': 0.5,
+})
+nas_config: Configuration(values={
+  'activation': 'relu',
+  'hidden_size': 512,
+})
+time: 1247.6802623271942
+returns: ['-11.48+-9.23', '-3.04+-14.06', '-3.37+-10.59', '-0.86+-4.98', '-1.45+-4.86', '5.07+-7.76', '10.23+-6.65', '10.71+-6.60', '10.98+-6.75', '10.08+-7.69']

@@ -55,7 +55,8 @@ def ppo_runner(dir_name, log, framework, env_name, config, training_kw_args, see
     hpo_config["clip_eps"] = 0.2
     hpo_config["n_steps"] = 2048 // 8
     hpo_config["vf_coef"] = 0.5
-    hpo_config["lr"] = 2.5e-4
+    hpo_config["learning_rate"] = 2.5e-4
+    hpo_config["normalize_observations"] = True
 
     nas_config = PPO.get_default_nas_config()
     nas_config["activation"] = "relu"
