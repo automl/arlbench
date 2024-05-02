@@ -13,14 +13,13 @@ EVAL_EPISODES = 128
 N_ENVS = 1
 
 
-# Normalize observations
-def test_normalize_observations_sac(n_envs=N_ENVS):
+# Default SAC
+def test_default_sac(n_envs=N_ENVS):
     env = make_env("gymnax", "Pendulum-v1", seed=42, n_envs=n_envs)
     eval_env = make_env("gymnax", "Pendulum-v1", seed=42, n_envs=EVAL_EPISODES)
     rng = jax.random.PRNGKey(42)
 
     config = SAC.get_default_hpo_config()
-    config["normalize_observations"] = True
     nas_config = SAC.get_default_nas_config()
     nas_config["hidden_size"] = 64
     agent = SAC(config, env, eval_env=eval_env, nas_config=nas_config)
@@ -42,13 +41,14 @@ def test_normalize_observations_sac(n_envs=N_ENVS):
     assert reward > -300
 
 
-# Default SAC
-def test_default_sac(n_envs=N_ENVS):
+# Normalize observations
+def test_normalize_observations_sac(n_envs=N_ENVS):
     env = make_env("gymnax", "Pendulum-v1", seed=42, n_envs=n_envs)
     eval_env = make_env("gymnax", "Pendulum-v1", seed=42, n_envs=EVAL_EPISODES)
     rng = jax.random.PRNGKey(42)
 
     config = SAC.get_default_hpo_config()
+    config["normalize_observations"] = True
     nas_config = SAC.get_default_nas_config()
     nas_config["hidden_size"] = 64
     agent = SAC(config, env, eval_env=eval_env, nas_config=nas_config)
