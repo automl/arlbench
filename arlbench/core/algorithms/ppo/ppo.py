@@ -270,7 +270,15 @@ class PPO(Algorithm):
 
         tx = optax.chain(
             optax.clip_by_global_norm(self.hpo_config["max_grad_norm"]),
-            optax.adam(self.hpo_config["lr"], eps=1e-5),
+            optax.adam(
+                self.hpo_config["lr"],
+                #optax.linear_schedule(
+                #    init_value=self.hpo_config["lr"], 
+                #    end_value=0.0,
+                #    transition_steps=self.hpo_config["update_epochs"] * (10000000 // self.hpo_config["n_steps"] //self.env.n_envs),
+                #),
+                eps=1e-5
+            ),
         )
 
         train_state = PPOTrainState.create_with_opt_state(
@@ -486,9 +494,6 @@ class PPO(Algorithm):
         env_state, (obsv, reward, done, info) = self.env.step(
             env_state, clipped_action, _rng
         )
-        #jax.debug.print("\ndone: {done}", done=done)
-        #jax.debug.print("lives: {lives}", lives=info["lives"])
-        #jax.debug.print("info: {info}", info=info)
         global_step += 1
 
         transition = Transition(done, action, value, reward, log_prob, last_obs, info)
