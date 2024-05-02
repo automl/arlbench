@@ -127,11 +127,15 @@ class EnvpoolEnv(Environment):
             env_name, env_type="gymnasium", num_envs=n_envs, seed=seed, **env_kwargs
         )
         self.is_atari = env_name in ATARI_ENVS
-        self.episodic_life = env_kwargs["episodic_life"]
+        if self.is_atari:
+            self.episodic_life = env_kwargs.get("episodic_life", False)
+            self.use_fire_reset = env_kwargs.get("use_fire_reset", True)
 
         super().__init__(env_name, env, n_envs, seed)
 
         self.reset_shape = self._env.reset()
+        if self.is_atari:
+            self.has_lives = jnp.all(self.reset_shape[1]["lives"] > 0)
 
         rng = jax.random.key(42)
         _rngs = jax.random.split(rng, self._n_envs)
@@ -139,7 +143,9 @@ class EnvpoolEnv(Environment):
                 self.action_space.sample(_rngs[i])
                 for i in range(self._n_envs)
         ])
-        self.dummy_action = np.ones_like(self.dummy_action)
+        if self.is_atari:
+            # fire action for reset
+            self.dummy_action = np.ones_like(self.dummy_action)
         self.step_shape = self._env.step(self.dummy_action)
         self.single_step_shape = jax.tree_map(lambda x: x[:1], self.step_shape)
         
@@ -148,13 +154,19 @@ class EnvpoolEnv(Environment):
     @functools.partial(jax.jit, static_argnums=0)
     def reset(self, _):
         obs, info = jax.experimental.io_callback(self._env.reset, self.reset_shape)
-        lives = jnp.array(info["lives"])
+        if self.is_atari:
+            lives = jnp.array(info["lives"])
+        else:
+            lives = None
 
         return (self._handle0, lives), obs
 
     @functools.partial(jax.jit, static_argnums=0)
     def step(self, env_state: Any, action: Any, _):
-        env_state, lives = env_state
+        if not self.is_atari:
+            env_state, _ = env_state
+        else:
+            env_state, lives = env_state
         env_state, (obs, reward, term, trunc, info) = self._xla_step(env_state, action)
         done = jnp.logical_or(term, trunc)
 
@@ -164,39 +176,49 @@ class EnvpoolEnv(Environment):
                 return obs
 
             for i in range(self._n_envs):
-                #if not self.is_atari:
-                obs = jax.lax.cond(
-                    lives_gone[i],
-                    lambda obs: reset_idx(i, obs),
-                    lambda obs: obs,
-                    obs,
-                )
-                #else:
-                #    obs = jax.lax.cond(
-                #        lives_gone[i] & (info["lives"][i] == 0),
-                #        lambda obs: reset_idx(i, obs),
-                #        lambda obs: obs,
-                #        obs,
-                #    )
+                if self.is_atari and self.episodic_life and self.has_lives:
+                    obs = jax.lax.cond(
+                        done[i] & (info["lives"][i] == 0),
+                        lambda obs: reset_idx(i, obs),
+                        lambda obs: obs,
+                        obs,
+                    )
+                elif self.is_atari and not self.episodic_life and self.has_lives:
+                    obs = jax.lax.cond(
+                        lives_gone[i],
+                        lambda obs: reset_idx(i, obs),
+                        lambda obs: obs,
+                        obs,
+                    )
+                else:
+                    obs = jax.lax.cond(
+                        done[i],
+                        lambda obs: reset_idx(i, obs),
+                        lambda obs: obs,
+                        obs,
+                    )
+
             return obs
 
-        new_lives = jnp.array(info["lives"]) 
-        #jax.debug.print("\nold_live {lives}", lives=lives)
-        #jax.debug.print("new_live {lives}", lives=new_lives)
-        lives_gone = new_lives < lives
-        #jax.debug.print("lives_gone: {lives}", lives=lives_gone)
+        if self.is_atari:
+            new_lives = jnp.array(info["lives"]) 
+            lives_gone = new_lives < lives
+        else:
+            new_lives = None
+
+        if self.is_atari and not self.episodic_life and self.has_lives:
+            auto_reset = lives_gone
+        else:
+            auto_reset = done
         obs = jax.lax.cond(
-            jnp.any(lives_gone),
+            jnp.any(auto_reset),
             reset,
             lambda obs, info: obs,
             obs,
             info
         )
 
-        if not self.episodic_life:
-            lives_gone = done
-
-        return (env_state, new_lives), (obs, reward, lives_gone, info)
+        return (env_state, new_lives), (obs, reward, done, info)
 
     @property
     def action_space(self):
