@@ -13,6 +13,7 @@ EVAL_EPISODES = 128
 N_ENVS = 10
 GRADIENT_STEPS = 10
 
+
 # Default hyperparameter configuration
 def test_default_dqn(n_envs=N_ENVS):
     env = make_env("gymnax", "CartPole-v1", seed=42, n_envs=n_envs)
@@ -21,6 +22,9 @@ def test_default_dqn(n_envs=N_ENVS):
 
     config = DQN.get_default_hpo_config()
     config["gradient_steps"] = GRADIENT_STEPS
+    config["target_update_interval"] = 10
+    config["buffer_batch_size"] = 64
+    config["learning_rate"] = 1e-3
     agent = DQN(config, env, eval_env=eval_env)
     algorithm_state = agent.init(rng)
 
@@ -40,27 +44,30 @@ def test_default_dqn(n_envs=N_ENVS):
     assert reward > 400
 
 
-# uniform experience replay
-def test_uniform_dqn(n_envs=N_ENVS):
+# Normalise observations
+def test_normalise_obs_dqn(n_envs=N_ENVS):
     env = make_env("gymnax", "CartPole-v1", seed=42, n_envs=n_envs)
     eval_env = make_env("gymnax", "CartPole-v1", seed=42, n_envs=EVAL_EPISODES)
     rng = jax.random.PRNGKey(42)
 
     config = DQN.get_default_hpo_config()
     config["gradient_steps"] = GRADIENT_STEPS
-    config["buffer_prio_sampling"] = False
+    config["target_update_interval"] = 10
+    config["buffer_batch_size"] = 64
+    config["learning_rate"] = 1e-3
+    config["normalize_observations"] = True
     agent = DQN(config, env, eval_env=eval_env)
     algorithm_state = agent.init(rng)
 
     start = time.time()
-    algorithm_state, result = agent.train(
+    algorithm_state, results = agent.train(
         *algorithm_state,
         n_total_timesteps=N_UPDATES,
         n_eval_steps=EVAL_STEPS,
         n_eval_episodes=EVAL_EPISODES,
     )
     training_time = time.time() - start
-    reward = result.eval_rewards[-1].mean()
+    reward = results.eval_rewards[-1].mean()
 
     print(
         f"n_envs = {n_envs}, time = {training_time:.2f}, env_steps = {n_envs * algorithm_state.runner_state.global_step}, updates = {algorithm_state.runner_state.global_step}, reward = {reward:.2f}"
@@ -76,6 +83,7 @@ def test_no_target_dqn(n_envs=N_ENVS):
 
     config = DQN.get_default_hpo_config()
     config["gradient_steps"] = GRADIENT_STEPS
+    config["buffer_batch_size"] = 64
     config["use_target_network"] = False
     agent = DQN(config, env, eval_env=eval_env)
     algorithm_state = agent.init(rng)
@@ -104,6 +112,9 @@ def test_relu_dqn(n_envs=N_ENVS):
 
     config = DQN.get_default_hpo_config()
     config["gradient_steps"] = GRADIENT_STEPS
+    config["target_update_interval"] = 10
+    config["buffer_batch_size"] = 64
+    config["learning_rate"] = 1e-3
     nas_config = DQN.get_default_nas_config()
     nas_config["activation"] = "relu"
     agent = DQN(config, env, eval_env=eval_env, nas_config=nas_config)

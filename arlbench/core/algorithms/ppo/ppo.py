@@ -17,6 +17,7 @@ from flax.core.frozen_dict import FrozenDict
 
 from arlbench.core.algorithms.algorithm import Algorithm
 from arlbench.core import running_statistics
+from arlbench.core.running_statistics import RunningStatisticsState
 from arlbench.utils import recursive_concat, tuple_concat
 
 from .models import CNNActorCritic, MLPActorCritic
@@ -52,7 +53,7 @@ class PPORunnerState(NamedTuple):
 
     rng: chex.PRNGKey
     train_state: PPOTrainState
-    normalizer_state: running_statistics.RunningStatisticsState
+    normalizer_state: RunningStatisticsState
     env_state: Any
     obs: chex.Array
     global_step: int
@@ -272,7 +273,7 @@ class PPO(Algorithm):
         tx = optax.chain(
             optax.clip_by_global_norm(self.hpo_config["max_grad_norm"]),
             optax.adam(
-                self.hpo_config["lr"],
+                self.hpo_config["learning_rate"],
                 #optax.linear_schedule(
                 #    init_value=self.hpo_config["lr"], 
                 #    end_value=0.0,
@@ -325,8 +326,6 @@ class PPO(Algorithm):
         if self.hpo_config["normalize_observations"]:
             obs = running_statistics.normalize(obs, runner_state.normalizer_state)
         pi, _ = self.network.apply(runner_state.train_state.params, obs)
-
-
 
         def deterministic_action() -> jnp.ndarray:
             return pi.mode()
@@ -431,9 +430,6 @@ class PPO(Algorithm):
 
 
         # Calculate advantage
-        (rng, train_state, env_state, last_obs, global_step, cur_rewards) = runner_state
-        _, last_val = self.network.apply(train_state.params, last_obs)
-
         advantages, targets = self._calculate_gae(traj_batch, last_val)
 
         # Update network parameters
@@ -517,7 +513,7 @@ class PPO(Algorithm):
         cur_rewards *= (1 - done)
 
         def print_return(return_buffer):
-            jax.debug.print("Current Return: {rew}", rew=return_buffer.mean())
+            #jax.debug.print("Current Return: {rew}", rew=return_buffer.mean())
             return return_buffer
         jax.lax.cond(
             print_reward[0],

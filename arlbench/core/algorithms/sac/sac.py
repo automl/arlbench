@@ -12,8 +12,11 @@ import jax.numpy as jnp
 import numpy as np
 import optax
 from ConfigSpace import Categorical, Configuration, ConfigurationSpace, Float, Integer
+from flashbax.buffers.flat_buffer import ExperiencePair
 from flax.training.train_state import TrainState
 
+from arlbench.core import running_statistics
+from arlbench.core.running_statistics import RunningStatisticsState
 from arlbench.core.algorithms.algorithm import Algorithm
 from arlbench.core.algorithms.buffers import uniform_sample
 from arlbench.core.algorithms.common import TimeStep
@@ -70,6 +73,7 @@ class SACRunnerState(NamedTuple):
     actor_train_state: SACTrainState
     critic_train_state: SACTrainState
     alpha_train_state: SACTrainState
+    normalizer_state: RunningStatisticsState
     env_state: Any
     obs: chex.Array
     global_step: int
@@ -213,7 +217,7 @@ class SAC(Algorithm):
                 "buffer_beta": Float("buffer_beta", (0.0, 1.0), default=0.9),
                 "buffer_epsilon": Float("buffer_epsilon", (0.0, 1e-3), default=1e-5),
                 "learning_rate": Float("learning_rate", (1e-5, 0.1), default=0.0003),
-                "gradient steps": Integer("gradient steps", (1, int(1e5)), default=1),
+                "gradient steps": Integer("gradient_steps", (1, int(1e5)), default=1),
                 "gamma": Float("gamma", (0.0, 1.0), default=0.99),
                 "tau": Float("tau", (0.0, 1.0), default=0.005),
                 "use_target_network": Categorical(
@@ -228,6 +232,9 @@ class SAC(Algorithm):
                 ),
                 "alpha_auto": Categorical("alpha_auto", [True, False], default=True),
                 "alpha": Float("alpha", (0.0, 1.0), default=1.0),
+                "normalize_observations": Categorical(
+                    "normalize_observations", [True, False], default=False
+                ),
             },
         )
 
@@ -410,6 +417,7 @@ class SAC(Algorithm):
             actor_train_state=actor_train_state,
             critic_train_state=critic_train_state,
             alpha_train_state=alpha_train_state,
+            normalizer_state=running_statistics.init_state(obs[0]),
             env_state=env_state,
             obs=obs,
             global_step=global_step,
@@ -438,6 +446,8 @@ class SAC(Algorithm):
         Returns:
             jnp.ndarray: Action(s).
         """
+        if self.hpo_config["normalize_observations"]:
+            obs = running_statistics.normalize(obs, runner_state.normalizer_state)
         pi = self.actor_network.apply(runner_state.actor_train_state.params, obs)
 
         def deterministic_action():
@@ -682,6 +692,7 @@ class SAC(Algorithm):
             actor_train_state: SACTrainState,
             critic_train_state: SACTrainState,
             alpha_train_state: SACTrainState,
+            normalizer_state: RunningStatisticsState,
             buffer_state: PrioritisedTrajectoryBufferState,
         ) -> tuple[
             chex.PRNGKey,
@@ -741,6 +752,19 @@ class SAC(Algorithm):
                 ) = carry
                 rng, batch_sample_rng = jax.random.split(rng)
                 batch = self.buffer.sample(buffer_state, batch_sample_rng)
+                if self.hpo_config["normalize_observations"]:
+                    batch = batch.replace(
+                        experience=ExperiencePair(
+                            first=batch.experience.first.replace(
+                                obs=running_statistics.normalize(batch.experience.first.obs, normalizer_state),
+                                last_obs=running_statistics.normalize(batch.experience.first.last_obs, normalizer_state),
+                            ),
+                            second=batch.experience.second.replace(
+                                obs=running_statistics.normalize(batch.experience.second.obs, normalizer_state),
+                                last_obs=running_statistics.normalize(batch.experience.second.last_obs, normalizer_state),
+                            ),
+                        )
+                    )
                 critic_train_state, critic_loss, td_error, critic_grads, rng = (
                     self.update_critic(
                         actor_train_state,
@@ -795,7 +819,7 @@ class SAC(Algorithm):
                     buffer_state,
                 ),
                 None,
-                self.hpo_config["gradient steps"],
+                self.hpo_config["gradient_steps"],
             )
             (
                 rng,
@@ -818,6 +842,7 @@ class SAC(Algorithm):
             actor_train_state: SACTrainState,
             critic_train_state: SACTrainState,
             alpha_train_state: SACTrainState,
+            normalizer_state: RunningStatisticsState,
             buffer_state: PrioritisedTrajectoryBufferState,
         ) -> tuple[
             chex.PRNGKey,
@@ -841,20 +866,20 @@ class SAC(Algorithm):
             """
             single_loss = jnp.array(
                 [((jnp.array([0]) - jnp.array([0])) ** 2).mean()]
-                * self.hpo_config["gradient steps"]
+                * self.hpo_config["gradient_steps"]
             )
             td_error = jnp.array(
                 [
                     [[0] * self.hpo_config["buffer_batch_size"]]
-                    * self.hpo_config["gradient steps"]
+                    * self.hpo_config["gradient_steps"]
                 ]
             ).mean(axis=0)
             actor_grads = jax.tree_map(
-                lambda x: jnp.stack([x] * self.hpo_config["gradient steps"]),
+                lambda x: jnp.stack([x] * self.hpo_config["gradient_steps"]),
                 actor_train_state.params,
             )
             critic_grads = jax.tree_map(
-                lambda x: jnp.stack([x] * self.hpo_config["gradient steps"]),
+                lambda x: jnp.stack([x] * self.hpo_config["gradient_steps"]),
                 critic_train_state.params,
             )
             metrics = SACMetrics(
@@ -896,11 +921,15 @@ class SAC(Algorithm):
             actor_train_state,
             critic_train_state,
             alpha_train_state,
+            normalizer_state,
             _,
             _,
             global_step,
         ) = runner_state
         rng, _rng = jax.random.split(rng)
+
+        if self.hpo_config["normalize_observations"]:
+            normalizer_state = running_statistics.update(normalizer_state, last_obs)
 
         (
             rng,
@@ -918,6 +947,7 @@ class SAC(Algorithm):
             actor_train_state,
             critic_train_state,
             alpha_train_state,
+            normalizer_state,
             buffer_state,
         )
         runner_state = SACRunnerState(
@@ -925,6 +955,7 @@ class SAC(Algorithm):
             actor_train_state=actor_train_state,
             critic_train_state=critic_train_state,
             alpha_train_state=alpha_train_state,
+            normalizer_state=normalizer_state,
             env_state=runner_state.env_state,
             obs=runner_state.obs,
             global_step=runner_state.global_step,
@@ -972,6 +1003,7 @@ class SAC(Algorithm):
             actor_train_state,
             critic_train_state,
             alpha_train_state,
+            normalizer_state,
             env_state,
             last_obs,
             global_step,
@@ -979,7 +1011,12 @@ class SAC(Algorithm):
 
         # Select action(s)
         rng, _rng = jax.random.split(rng)
-        pi = self.actor_network.apply(actor_train_state.params, last_obs)
+        if self.hpo_config["normalize_observations"]:
+            pi = self.actor_network.apply(
+                actor_train_state.params, running_statistics.normalize(last_obs, normalizer_state)
+            )
+        else:
+            pi = self.actor_network.apply(actor_train_state.params, last_obs)
 
         buffer_action = pi.sample(seed=_rng)
         low, high = self.env.action_space.low, self.env.action_space.high
@@ -1042,6 +1079,7 @@ class SAC(Algorithm):
             actor_train_state=actor_train_state,
             critic_train_state=critic_train_state,
             alpha_train_state=alpha_train_state,
+            normalizer_state=normalizer_state,
             env_state=env_state,
             obs=obsv,
             rng=rng,
