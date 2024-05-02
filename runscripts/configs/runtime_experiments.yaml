@@ -1,0 +1,20 @@
+defaults:
+  - cluster/local
+  - algorithm/dqn
+  - environment/cc_cartpole
+
+hydra:
+  run:
+    dir: results/runtime_experiments/${algorithm_framework}_${algorithm}_${environment.name}/${seed}
+  sweep:
+    dir: results/runtime_experiments/${algorithm_framework}_${algorithm}_${environment.name}/${seed}
+  job:
+    chdir: true
+
+load_checkpoint: ""
+
+algorithm_framework: arlbench
+n_total_timesteps: ${environment.n_total_timesteps}
+n_eval_steps: 100
+n_eval_episodes: 10
+seed: 42

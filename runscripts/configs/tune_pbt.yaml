@@ -1,0 +1,50 @@
+defaults:
+  - cluster/local
+  - algorithm/dqn
+  - environment/cc_cartpole
+  - search_space: dqn
+  - override hydra/sweeper: HyperPBT
+
+hydra:
+  sweeper:
+    budget: 800_000
+    budget_variable: autorl.n_total_timesteps
+    loading_variable: load_checkpoint
+    saving_variable: autorl.checkpoint_name
+    search_space: ${search_space}
+    sweeper_kwargs:
+      optimizer_kwargs:
+        population_size: 8
+        config_interval: 1e5
+        seed: ${pbt_seed}
+      checkpoint_tf: true
+      load_tf: true
+  run:
+    dir: results/pbt/${pbt_seed}/${algorithm}_${autorl.env_name}/${autorl.seed}
+  sweep:
+    dir: results/pbt/${pbt_seed}/${algorithm}_${autorl.env_name}/${autorl.seed}
+  job:
+    chdir: true
+
+load_checkpoint: ""
+pbt_seed: 42
+
+autorl:
+  seed: 42
+  env_framework: ${environment.framework}
+  env_name: ${environment.name}
+  env_kwargs: ${environment.kwargs}
+  n_envs: ${environment.n_envs}
+  algorithm: ${algorithm}
+  cnn_policy: ${environment.cnn_policy}
+  n_total_timesteps: ${environment.n_total_timesteps}
+  algorithm: ${algorithm}
+  checkpoint: []
+  checkpoint_name: "default_checkpoint"
+  checkpoint_dir: "/tmp"
+  objectives: ["reward_mean"]
+  optimize_objectives: "upper"
+  state_features: []
+  n_steps: 10
+  n_eval_steps: 100
+  n_eval_episodes: 10

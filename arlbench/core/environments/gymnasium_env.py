@@ -14,10 +14,11 @@ from .autorl_env import Environment
 if TYPE_CHECKING:
     import chex
     from chex import PRNGKey
+    from typing import Any
 
 class GymnasiumEnv(Environment):
-    def __init__(self, env_name: str, seed: int):
-        env = gymnasium.make(env_name)# , seed=seed)
+    def __init__(self, env_name: str, seed: int, env_kwargs: dict[str, Any] = {}):
+        env = gymnasium.make(env_name, **env_kwargs)
         super().__init__(env_name, env, 1, seed)
 
         self._reset_result = jnp.array(self._env.observation_space.sample())
