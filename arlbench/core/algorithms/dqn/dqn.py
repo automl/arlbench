@@ -14,6 +14,8 @@ import optax
 from ConfigSpace import Categorical, Configuration, ConfigurationSpace, Float, Integer
 from flax.training.train_state import TrainState
 
+from arlbench.core import running_statistics
+from arlbench.core.running_statistics import RunningStatisticsState
 from arlbench.core.algorithms.algorithm import Algorithm
 from arlbench.core.algorithms.buffers import uniform_sample
 from arlbench.core.algorithms.common import TimeStep
@@ -66,6 +68,7 @@ class DQNRunnerState(NamedTuple):
 
     rng: chex.PRNGKey
     train_state: DQNTrainState
+    normalizer_state: RunningStatisticsState
     env_state: Any
     obs: jnp.ndarray
     global_step: int
@@ -203,6 +206,9 @@ class DQN(Algorithm):
                 "target_update_interval": Integer(
                     "target_update_interval", (1, int(1e5)), default=10000
                 ),
+                "normalize_observations": Categorical(
+                    "normalize_observations", [True, False], default=False
+                ),
             },
         )
 
@@ -326,6 +332,7 @@ class DQN(Algorithm):
         runner_state = DQNRunnerState(
             rng=rng,
             train_state=train_state,
+            normalizer_state=running_statistics.init_state(obs[0]),
             env_state=env_state,
             obs=obs,
             global_step=global_step,
@@ -354,6 +361,8 @@ class DQN(Algorithm):
         Returns:
             jnp.ndarray: Action(s).
         """
+        if self.hpo_config["normalize_observations"]:
+            obs = running_statistics.normalize(obs, runner_state.normalizer_state)
         q_values = self.network.apply(runner_state.train_state.params, obs)
         return q_values.argmax(axis=-1)
 
@@ -482,12 +491,13 @@ class DQN(Algorithm):
             tuple[ tuple[DQNRunnerState, PrioritisedTrajectoryBufferState], tuple[DQNMetrics | None, Transition | None], ]: _description_
         """
         runner_state, buffer_state = carry
-        (rng, train_state, env_state, last_obs, global_step) = runner_state
+        (rng, train_state, normalizer_state, env_state, last_obs, global_step) = runner_state
 
         def take_step(
             carry: tuple[
                 chex.PRNGKey,
                 DQNTrainState,
+                RunningStatisticsState,
                 jnp.ndarray,
                 Any,
                 int,
@@ -498,6 +508,7 @@ class DQN(Algorithm):
             tuple[
                 chex.PRNGKey,
                 DQNTrainState,
+                RunningStatisticsState,
                 jnp.ndarray,
                 Any,
                 int,
@@ -505,7 +516,7 @@ class DQN(Algorithm):
             ],
             tuple[jnp.ndarray, jnp.ndarray, jnp.ndarray, jnp.ndarray, dict],
         ]:
-            rng, train_state, last_obs, env_state, global_step, buffer_state = carry
+            rng, train_state, normalizer_state, last_obs, env_state, global_step, buffer_state = carry
 
             def random_action(rng: chex.PRNGKey, _) -> jnp.ndarray:
                 """_summary_
@@ -529,7 +540,11 @@ class DQN(Algorithm):
                 Returns:
                     jnp.ndarray: _description_
                 """
-                q_values = self.network.apply(train_state.params, obs)
+                if self.hpo_config["normalize_observations"]:
+                    q_values = self.network.apply(train_state.params, running_statistics.normalize(obs, normalizer_state))
+                else:
+                    q_values = self.network.apply(train_state.params, obs)
+
                 return q_values.argmax(axis=-1)
 
             rng, sample_rng, action_rng = jax.random.split(rng, 3)
@@ -588,7 +603,7 @@ class DQN(Algorithm):
                 dont_target_update,
                 train_state,
             )
-            return (rng, train_state, obsv, env_state, global_step, buffer_state), (
+            return (rng, train_state, normalizer_state, obsv, env_state, global_step, buffer_state), (
                 obsv,
                 action,
                 reward,
@@ -599,6 +614,7 @@ class DQN(Algorithm):
         def do_update(
             rng: chex.PRNGKey,
             train_state: DQNTrainState,
+            normalizer_state: RunningStatisticsState,
             buffer_state: PrioritisedTrajectoryBufferState,
         ) -> tuple[
             chex.PRNGKey, DQNTrainState, PrioritisedTrajectoryBufferState, DQNMetrics
@@ -635,11 +651,17 @@ class DQN(Algorithm):
                 rng, train_state, buffer_state = carry
                 rng, batch_sample_rng = jax.random.split(rng)
                 batch = self.buffer.sample(buffer_state, batch_sample_rng)
+                if self.hpo_config["normalize_observations"]:
+                    last_obs = running_statistics.normalize(batch.experience.first.last_obs, normalizer_state)
+                    obs = running_statistics.normalize(batch.experience.first.obs, normalizer_state)
+                else:
+                    last_obs = batch.experience.first.last_obs
+                    obs = batch.experience.first.obs
                 train_state, loss, td_error, grads = self.update(
                     train_state,
-                    batch.experience.first.last_obs,
+                    last_obs,
                     batch.experience.first.action,
-                    batch.experience.first.obs,
+                    obs,
                     batch.experience.first.reward,
                     batch.experience.first.done,
                 )
@@ -674,9 +696,10 @@ class DQN(Algorithm):
         def dont_update(
             rng: chex.PRNGKey,
             train_state: DQNTrainState,
+            normalizer_state: RunningStatisticsState,
             buffer_state: PrioritisedTrajectoryBufferState,
         ) -> tuple[
-            chex.PRNGKey, DQNTrainState, PrioritisedTrajectoryBufferState, DQNMetrics
+            chex.PRNGKey, DQNTrainState, RunningStatisticsState, PrioritisedTrajectoryBufferState, DQNMetrics
         ]:
             """_summary_
 
@@ -715,7 +738,7 @@ class DQN(Algorithm):
             )
 
         (
-            (rng, train_state, last_obs, env_state, global_step, buffer_state),
+            (rng, train_state, normalizer_state, last_obs, env_state, global_step, buffer_state),
             (
                 observations,
                 action,
@@ -725,10 +748,12 @@ class DQN(Algorithm):
             ),
         ) = jax.lax.scan(
             take_step,
-            (rng, train_state, last_obs, env_state, global_step, buffer_state),
+            (rng, train_state, normalizer_state, last_obs, env_state, global_step, buffer_state),
             None,
             self.hpo_config["train_freq"],
         )
+        if self.hpo_config["normalize_observations"]:
+            normalizer_state = running_statistics.update(normalizer_state, observations)
 
         rng, train_state, buffer_state, metrics = jax.lax.cond(
             global_step > np.ceil(self.hpo_config["learning_starts"] // self.env.n_envs),
@@ -736,11 +761,13 @@ class DQN(Algorithm):
             dont_update,
             rng,
             train_state,
+            normalizer_state,
             buffer_state,
         )
         runner_state = DQNRunnerState(
             rng=rng,
             train_state=train_state,
+            normalizer_state=normalizer_state,
             env_state=env_state,
             obs=last_obs,
             global_step=global_step,
