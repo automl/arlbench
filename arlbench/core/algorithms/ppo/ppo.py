@@ -16,6 +16,8 @@ from flax.training.train_state import TrainState
 from flax.core.frozen_dict import FrozenDict
 
 from arlbench.core.algorithms.algorithm import Algorithm
+from arlbench.core import running_statistics
+from arlbench.core.running_statistics import RunningStatisticsState
 from arlbench.utils import recursive_concat, tuple_concat
 
 from .models import CNNActorCritic, MLPActorCritic
@@ -51,9 +53,12 @@ class PPORunnerState(NamedTuple):
 
     rng: chex.PRNGKey
     train_state: PPOTrainState
+    normalizer_state: RunningStatisticsState
     env_state: Any
     obs: chex.Array
     global_step: int
+    return_buffer_idx: chex.Array | None = None
+    return_buffer: chex.Array | None = None
     cur_rewards: chex.Array | None = None
 
 
@@ -176,6 +181,7 @@ class PPO(Algorithm):
                 "ent_coef": Float("ent_coef", (0.0, 1.0), default=0.0),
                 "vf_coef": Float("vf_coef", (0.0, 1.0), default=0.5),
                 "max_grad_norm": Float("max_grad_norm", (0.0, 10.0), default=0.5),
+                "normalize_observations": Categorical("normalize_observations", [True, False], default=False),
             },
         )
 
@@ -266,7 +272,10 @@ class PPO(Algorithm):
 
         tx = optax.chain(
             optax.clip_by_global_norm(self.hpo_config["max_grad_norm"]),
-            optax.adam(self.hpo_config["learning_rate"], eps=1e-5),
+            optax.adam(
+                self.hpo_config["learning_rate"],
+                eps=1e-5
+            ),
         )
 
         train_state = PPOTrainState.create_with_opt_state(
@@ -279,9 +288,12 @@ class PPO(Algorithm):
         runner_state = PPORunnerState(
             rng=rng,
             train_state=train_state,
+            normalizer_state=running_statistics.init_state(obs[0]),
             env_state=env_state,
             obs=obs,
             global_step=0,
+            return_buffer_idx=jnp.array([0]),
+            return_buffer=jnp.zeros(100),
             cur_rewards=jnp.zeros(self.env.n_envs),
         )
 
@@ -306,6 +318,8 @@ class PPO(Algorithm):
         Returns:
             jnp.ndarray: Action(s).
         """
+        if self.hpo_config["normalize_observations"]:
+            obs = running_statistics.normalize(obs, runner_state.normalizer_state)
         pi, _ = self.network.apply(runner_state.train_state.params, obs)
 
         def deterministic_action() -> jnp.ndarray:
@@ -393,11 +407,24 @@ class PPO(Algorithm):
         runner_state, traj_batch = jax.lax.scan(
             self._env_step, runner_state, None, self.hpo_config["n_steps"]
         )
+        (rng, train_state, normalizer_state, env_state, last_obs, global_step, return_buffer_idx, return_buffer, cur_rewards) = runner_state
+        if self.hpo_config["normalize_observations"]:
+            normalizer_state = running_statistics.update(normalizer_state, traj_batch.obs)
+            traj_batch = Transition(
+                done = traj_batch.done,
+                action = traj_batch.action,
+                value = traj_batch.value,
+                reward = traj_batch.reward,
+                log_prob = traj_batch.log_prob,
+                obs = running_statistics.normalize(traj_batch.obs, normalizer_state),
+                info = traj_batch.info,
+            )
+            _, last_val = self.network.apply(train_state.params, running_statistics.normalize(last_obs, normalizer_state))
+        else:
+            _, last_val = self.network.apply(train_state.params, last_obs)
+
 
         # Calculate advantage
-        (rng, train_state, env_state, last_obs, global_step, cur_rewards) = runner_state
-        _, last_val = self.network.apply(train_state.params, last_obs)
-
         advantages, targets = self._calculate_gae(traj_batch, last_val)
 
         # Update network parameters
@@ -411,10 +438,13 @@ class PPO(Algorithm):
         runner_state = PPORunnerState(
             rng=rng,
             train_state=train_state,
+            normalizer_state=normalizer_state,
             env_state=env_state,
             obs=last_obs,
             global_step=global_step,
-            cur_rewards=cur_rewards,
+            return_buffer_idx=return_buffer_idx,
+            return_buffer=runner_state.return_buffer,
+            cur_rewards=runner_state.cur_rewards
         )
         metrics, trajectories = None, None
         if self.track_metrics:
@@ -436,11 +466,15 @@ class PPO(Algorithm):
         Returns:
             tuple[PPORunnerState, Transition]: Tuple of PPO runner state and batch of transitions.
         """
-        (rng, train_state, env_state, last_obs, global_step, cur_rewards) = runner_state
+        (rng, train_state, normalizer_state, env_state, last_obs, global_step, return_buffer_idx, return_buffer, cur_rewards) = runner_state
 
         # Select action(s)
         rng, _rng = jax.random.split(rng)
-        pi, value = self.network.apply(train_state.params, last_obs)
+        if self.hpo_config["normalize_observations"]:
+            pi, value = self.network.apply(train_state.params, running_statistics.normalize(last_obs, normalizer_state))
+        else:
+            pi, value = self.network.apply(train_state.params, last_obs)
+
         action, log_prob = pi.sample_and_log_prob(seed=_rng)
 
         clipped_action = action
@@ -457,19 +491,42 @@ class PPO(Algorithm):
         global_step += 1
 
         transition = Transition(done, action, value, reward, log_prob, last_obs, info)
-        new_cur_rewards = cur_rewards
-        new_cur_rewards += reward
-        new_cur_rewards *= (1 - done)
+        cur_rewards += reward
+        print_reward = jnp.array([False])
+        for i in range(self.env.n_envs):
+            def rew_update(i, return_buffer, return_buffer_idx):
+                return_buffer = return_buffer.at[return_buffer_idx%100].set(cur_rewards[i])
+                return_buffer_idx += 1
+                return return_buffer, return_buffer_idx, return_buffer_idx%100==0
+            return_buffer, return_buffer_idx, cur_print_rew = jax.lax.cond(
+                done[i],
+                lambda rew, idx: rew_update(i, rew, idx),
+                lambda rew, idx: (rew, idx, jnp.array([False])),
+                return_buffer, return_buffer_idx
+            )
+            print_reward = jnp.logical_or(print_reward, cur_print_rew)
+        cur_rewards *= (1 - done)
 
-        #jax.debug.print("{reward}", reward=reward)
+        def print_return(return_buffer):
+            #jax.debug.print("Current Return: {rew}", rew=return_buffer.mean())
+            return return_buffer
+        jax.lax.cond(
+            print_reward[0],
+            print_return,
+            lambda x: x,
+            return_buffer,
+        )
 
         runner_state = PPORunnerState(
             train_state=train_state,
+            normalizer_state=normalizer_state,
             env_state=env_state,
             obs=obsv,
             rng=rng,
             global_step=global_step,
-            cur_rewards=new_cur_rewards,
+            return_buffer_idx=return_buffer_idx,
+            return_buffer=return_buffer,
+            cur_rewards=cur_rewards,
         )
         return runner_state, transition
 

@@ -33,7 +33,7 @@ def ppo_runner(dir_name, log, framework, env_name, config, training_kw_args, see
         seed=seed, 
         cnn_policy=cnn_policy,
         env_kwargs={
-            "episodic_life": True,
+            "episodic_life": False,
             "reward_clip": True,
         }
     )
@@ -44,21 +44,21 @@ def ppo_runner(dir_name, log, framework, env_name, config, training_kw_args, see
 
     hpo_config = PPO.get_default_hpo_config()
     hpo_config["minibatch_size"] = 256
-    hpo_config["update_epochs"] = 3
+    hpo_config["update_epochs"] = 4
     hpo_config["gamma"] = 0.99
     hpo_config["gae_lambda"] = 0.95
     hpo_config["ent_coef"] = 0.01
     hpo_config["max_grad_norm"] = 0.5
-    hpo_config["clip_eps"] = 0.2
+    hpo_config["clip_eps"] = 0.1
     hpo_config["n_steps"] = 128
     hpo_config["vf_coef"] = 0.5
-    hpo_config["lr"] = 2.5e-4
+    hpo_config["learning_rate"] = 2.5e-4
 
     nas_config = PPO.get_default_nas_config()
     nas_config["activation"] = "relu"
     nas_config["hidden_size"] = 512
 
-    agent = PPO(hpo_config, env, nas_config=nas_config, cnn_policy=cnn_policy)
+    agent = PPO(hpo_config, env, eval_env=eval_env, nas_config=nas_config, cnn_policy=cnn_policy)
     algorithm_state = agent.init(rng)
 
     start = time.time()
@@ -92,10 +92,10 @@ if __name__ == "__main__":
     parser.add_argument("--training-steps", type=int, default=10000000)
     parser.add_argument("--n-eval-steps", type=int, default=10)
     parser.add_argument("--n-eval-episodes", type=int, default=128)
-    parser.add_argument("--n-envs", type=int, default=16)
+    parser.add_argument("--n-envs", type=int, default=8)
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--env-framework", type=str, default="envpool")
-    parser.add_argument("--env", type=str, default="Pong-v5")
+    parser.add_argument("--env", type=str, default="Breakout-v5")
     parser.add_argument("--n-env-steps", type=int, default=1000)
     parser.add_argument("--cnn-policy", type=bool, default=True)
     args = parser.parse_args()
