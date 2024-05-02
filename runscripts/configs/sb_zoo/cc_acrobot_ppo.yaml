@@ -1,0 +1,14 @@
+# @package _global_
+defaults:
+  - /environment: cc_acrobot
+  - /algorithm: dqn
+
+# https://huggingface.co/sb3/ppo-Acrobot-v1
+override /environment/n_envs: 16
+override /environment/n_total_timesteps: 1000000
+
+override /hp_config/ent_coef: 0.0
+override /hp_config/gae_lambda: 0.94
+override /hp_config/gamma: 0.99
+override /hp_config/update_epochs: 4
+override /hp_config/n_steps: 256

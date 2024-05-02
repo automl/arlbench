@@ -1,0 +1,10 @@
+# @package _global_
+defaults:
+  - /environment: cc_continuous_mountain_car
+  - /algorithm: sac
+
+# https://huggingface.co/sb3/sac-Pendulum-v0
+override /environment/n_envs: 1
+override /environment/n_total_timesteps: 20000
+
+override /hp_config/learning_rate: 0.001
