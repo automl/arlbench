@@ -4,7 +4,7 @@
 #SBATCH -n 4                                    # Number of CPUs you want on that machine (<=128)
 #SBATCH --gres=gpu:a100:1
 #SBATCH --mem-per-cpu=4GB
-#SBATCH --time=12:00:00
+#SBATCH --time=24:00:00
 
 #SBATCH --job-name=arlb
 #SBATCH -A hpc-prf-intexml                      # Project name, do not change

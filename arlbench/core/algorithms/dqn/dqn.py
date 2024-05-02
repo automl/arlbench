@@ -398,7 +398,7 @@ class DQN(Algorithm):
                 self._update_step,
                 (runner_state, buffer_state),
                 None,
-                np.ceil(n_total_timesteps / self.env.n_envs / self.hpo_config["train_frequency"] / n_eval_steps),
+                np.ceil(n_total_timesteps / self.env.n_envs / self.hpo_config["train_freq"] / n_eval_steps),
             )
             eval_returns = self.eval(runner_state, n_eval_episodes)
             # jax.debug.print("{eval_returns}", eval_returns=eval_returns)
@@ -646,7 +646,8 @@ class DQN(Algorithm):
                 new_prios = jnp.power(
                     jnp.abs(td_error) + self.hpo_config["buffer_epsilon"],
                     self.hpo_config["buffer_alpha"],
-                )
+                ).astype(jnp.float64)
+                print(new_prios.dtype)
                 buffer_state = self.buffer.set_priorities(
                     buffer_state, batch.indices, new_prios
                 )
@@ -726,7 +727,7 @@ class DQN(Algorithm):
             take_step,
             (rng, train_state, last_obs, env_state, global_step, buffer_state),
             None,
-            self.hpo_config["train_frequency"],
+            self.hpo_config["train_freq"],
         )
 
         rng, train_state, buffer_state, metrics = jax.lax.cond(

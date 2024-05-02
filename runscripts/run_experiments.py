@@ -130,7 +130,7 @@ def train_purejaxrl_ppo(cfg: DictConfig, logger: logging.Logger):
     from purejaxrl.ppo import make_train
 
     config = {
-        "LR": cfg.hp_config.lr,
+        "LR": cfg.hp_config.learning_rate,
         "NUM_ENVS": cfg.environment.n_envs,
         "NUM_STEPS": cfg.hp_config.n_steps,
         "TOTAL_TIMESTEPS": cfg.environment.n_total_timesteps,
@@ -199,11 +199,11 @@ def train_purejaxrl_dqn(cfg: DictConfig, logger: logging.Logger):
         "TOTAL_TIMESTEPS": cfg.n_total_timesteps,
         "EPSILON_START": cfg.hp_config.epsilon,
         "EPSILON_FINISH": cfg.hp_config.epsilon,
-        "EPSILON_ANNEAL_TIME": 1,
-        "TARGET_UPDATE_INTERVAL": cfg.hp_config.target_network_update_freq,
-        "LR": cfg.hp_config.lr,
+        "EPSILON_ANNEAL_TIME": cfg.n_total_timesteps,
+        "TARGET_UPDATE_INTERVAL": cfg.hp_config.target_update_interval,
+        "LR": cfg.hp_config.learning_rate,
         "LEARNING_STARTS": cfg.hp_config.learning_starts,
-        "TRAINING_INTERVAL": cfg.hp_config.train_frequency,
+        "TRAINING_INTERVAL": cfg.hp_config.train_freq,
         "LR_LINEAR_DECAY": False,
         "GAMMA": cfg.hp_config.gamma,
         "TAU": cfg.hp_config.tau,
@@ -421,14 +421,14 @@ def train_sbx(cfg: DictConfig, logger: logging.Logger):
             verbose=0,
             seed=cfg.seed,
             learning_starts=cfg.hp_config.learning_starts,
-            target_update_interval=cfg.hp_config.target_network_update_freq,
+            target_update_interval=cfg.hp_config.target_update_interval,
             exploration_final_eps=cfg.hp_config.epsilon,
             exploration_initial_eps=cfg.hp_config.epsilon,
             gradient_steps=cfg.hp_config.gradient_steps,
             buffer_size=cfg.hp_config.buffer_size,
-            learning_rate=cfg.hp_config.lr,
+            learning_rate=cfg.hp_config.learning_rate,
             batch_size=cfg.hp_config.buffer_batch_size,
-            train_freq=cfg.hp_config.train_frequency,
+            train_freq=cfg.hp_config.train_freq,
             tau=cfg.hp_config.tau,
             gamma=cfg.hp_config.gamma,
         )
@@ -443,7 +443,7 @@ def train_sbx(cfg: DictConfig, logger: logging.Logger):
             ent_coef=cfg.hp_config.ent_coef,
             gae_lambda=cfg.hp_config.gae_lambda,
             gamma=cfg.hp_config.gamma,
-            learning_rate=cfg.hp_config.lr,
+            learning_rate=cfg.hp_config.learning_rate,
             max_grad_norm=cfg.hp_config.max_grad_norm,
             batch_size=cfg.hp_config.minibatch_size,
             n_steps=cfg.hp_config.n_steps,
@@ -462,8 +462,8 @@ def train_sbx(cfg: DictConfig, logger: logging.Logger):
             gamma=cfg.hp_config.gamma,
             gradient_steps=cfg.hp_config.gradient_steps,
             learning_starts=cfg.hp_config.learning_starts,
-            learning_rate=cfg.hp_config.lr,
-            train_freq=cfg.hp_config.train_frequency,
+            learning_rate=cfg.hp_config.learning_rate,
+            train_freq=cfg.hp_config.train_freq,
         )
     else:
         raise ValueError(f"Invalid algorithm: {cfg.algorithm}.")
