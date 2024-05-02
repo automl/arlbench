@@ -13,8 +13,8 @@ if TYPE_CHECKING:
 
 
 class GymnaxEnv(Environment):
-    def __init__(self, env_name: str, n_envs: int):
-        env, env_params = gymnax.make(env_name)
+    def __init__(self, env_name: str, n_envs: int, env_kwargs: dict[str, Any] = {}):
+        env, env_params = gymnax.make(env_name, **env_kwargs)
         super().__init__(env_name, env, n_envs)
 
         self.env_params = env_params

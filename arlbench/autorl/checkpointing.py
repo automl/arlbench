@@ -65,7 +65,7 @@ class Checkpointer:
         done: bool,
         c_episode: int,
         c_step: int,
-        train_result: TrainResult,
+        train_result: TrainResult | None,
         tag: str | None = None,
     ) -> str:
         # Checkpoint setup

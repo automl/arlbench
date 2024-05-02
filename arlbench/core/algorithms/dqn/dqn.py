@@ -172,14 +172,15 @@ class DQN(Algorithm):
             self.buffer = self.buffer.replace(sample=sample_fn)
 
     @staticmethod
-    def get_hpo_config_space(seed=None) -> ConfigurationSpace:
+    def get_hpo_config_space(seed: int | None = None) -> ConfigurationSpace:
+        # defaults from https://stable-baselines3.readthedocs.io/en/master/modules/dqn.html
         return ConfigurationSpace(
             name="DQNConfigSpace",
             seed=seed,
             space={
-                "buffer_size": Integer("buffer_size", (1, int(1e7)), default=int(1e6)),
+                "buffer_size": Integer("buffer_size", (1024, int(1e7)), default=1000000),
                 "buffer_batch_size": Integer(
-                    "buffer_batch_size", (1, 1024), default=64
+                    "buffer_batch_size", (1, 1024), default=32
                 ),
                 "buffer_prio_sampling": Categorical(
                     "buffer_prio_sampling", [True, False], default=False
@@ -187,20 +188,20 @@ class DQN(Algorithm):
                 "buffer_alpha": Float("buffer_alpha", (0.0, 1.0), default=0.9),
                 "buffer_beta": Float("buffer_beta", (0.0, 1.0), default=0.9),
                 "buffer_epsilon": Float("buffer_epsilon", (0.0, 1e-3), default=1e-5),
-                "lr": Float("lr", (1e-5, 0.1), default=2.5e-4),
+                "learning_rate": Float("learning_rate", (1e-5, 0.1), default=0.0001),
                 "gamma": Float("gamma", (0.0, 1.0), default=0.99),
                 "tau": Float("tau", (0.0, 1.0), default=1.0),
                 "epsilon": Float("epsilon", (0.0, 1.0), default=0.1),
                 "use_target_network": Categorical(
                     "use_target_network", [True, False], default=True
                 ),
-                "train_frequency": Integer("train_frequency", (1, int(1e5)), default=4),
-                "gradient steps": Integer("gradient_steps", (1, int(1e5)), default=1),
+                "train_freq": Integer("train_freq", (1, int(1e5)), default=4),
+                "gradient steps": Integer("gradient_steps", (1, int(1e3)), default=1),
                 "learning_starts": Integer(
-                    "learning_starts", (10, int(1e5)), default=1000
+                    "learning_starts", (10, int(1e5)), default=100
                 ),
-                "target_network_update_freq": Integer(
-                    "target_network_update_freq", (1, int(1e5)), default=10
+                "target_update_interval": Integer(
+                    "target_update_interval", (1, int(1e5)), default=10000
                 ),
             },
         )
@@ -315,7 +316,7 @@ class DQN(Algorithm):
             "apply_fn": self.network.apply,
             "params": network_params,
             "target_params": target_params,
-            "tx": optax.adam(self.hpo_config["lr"]),
+            "tx": optax.adam(self.hpo_config["learning_rate"]),
             "opt_state": opt_state,
         }
         train_state = DQNTrainState.create_with_opt_state(**train_state_kwargs)
@@ -582,7 +583,7 @@ class DQN(Algorithm):
 
             train_state = jax.lax.cond(  # todo: move this into the env_step loop?!
                 (global_step > self.hpo_config["learning_starts"] // self.env.n_envs)
-                & (global_step % np.ceil(self.hpo_config["target_network_update_freq"] / self.env.n_envs) == 0),
+                & (global_step % np.ceil(self.hpo_config["target_update_interval"] / self.env.n_envs) == 0),
                 target_update,
                 dont_target_update,
                 train_state,
