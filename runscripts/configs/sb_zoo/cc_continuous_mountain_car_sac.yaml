@@ -1,0 +1,20 @@
+# @package _global_
+defaults:
+  - /environment: cc_continuous_mountain_car
+  - /algorithm: sac
+
+# https://huggingface.co/sb3/sac-MountainCarContinuous-v0
+override /environment/n_envs: 1
+override /environment/n_total_timesteps: 50000
+
+override /hp_config/buffer_batch_size: 512
+override /hp_config/buffer_size: 50000
+override /hp_config/ent_coef: 0.1
+override /hp_config/gamma: 0.9999
+override /hp_config/gradient_steps: 32
+override /hp_config/learning_rate: 0.0003
+override /hp_config/tau: 0.01
+override /hp_config/train_freq: 32
+override /hp_config/learning_starts: 0
+
+override /nas_config/hidden_size: 64

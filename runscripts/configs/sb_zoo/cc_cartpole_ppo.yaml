@@ -17,4 +17,3 @@ override /hp_config/gamma: 0.98
 override /hp_config/learning_rate: 0.001
 override /hp_config/update_epochs: 20
 override /hp_config/n_steps: 32
-override /hp_config/n_steps: 32
