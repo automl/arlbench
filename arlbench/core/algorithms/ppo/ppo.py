@@ -274,11 +274,6 @@ class PPO(Algorithm):
             optax.clip_by_global_norm(self.hpo_config["max_grad_norm"]),
             optax.adam(
                 self.hpo_config["learning_rate"],
-                #optax.linear_schedule(
-                #    init_value=self.hpo_config["lr"], 
-                #    end_value=0.0,
-                #    transition_steps=self.hpo_config["update_epochs"] * (10000000 // self.hpo_config["n_steps"] //self.env.n_envs),
-                #),
                 eps=1e-5
             ),
         )
