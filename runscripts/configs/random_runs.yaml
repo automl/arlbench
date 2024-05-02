@@ -1,0 +1,39 @@
+defaults:
+  - cluster/local
+  - algorithm/dqn
+  - environment/cc_cartpole
+  - search_space: dqn
+  - override hydra/sweeper: HyperRS
+
+hydra:
+  sweeper:
+    n_trials: 256
+    search_space: ${search_space}
+  run:
+    dir: results/sobol/${algorithm}_${autorl.env_name}/${autorl.seed}
+  sweep:
+    dir: results/sobol/${algorithm}_${autorl.env_name}/${autorl.seed}
+  job:
+    chdir: true
+
+load_checkpoint: ""
+
+autorl:
+  seed: 42
+  env_framework: ${environment.framework}
+  env_name: ${environment.name}
+  env_kwargs: ${environment.kwargs}
+  n_envs: ${environment.n_envs}
+  algorithm: ${algorithm}
+  cnn_policy: ${environment.cnn_policy}
+  n_total_timesteps: ${environment.n_total_timesteps}
+  algorithm: ${algorithm}
+  checkpoint: []
+  checkpoint_name: "default_checkpoint"
+  checkpoint_dir: "/tmp"
+  objectives: ["reward_mean"]
+  optimize_objectives: "upper"
+  state_features: []
+  n_steps: 10
+  n_eval_steps: 100
+  n_eval_episodes: 10

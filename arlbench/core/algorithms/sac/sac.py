@@ -197,11 +197,12 @@ class SAC(Algorithm):
 
     @staticmethod
     def get_hpo_config_space(seed: int | None = None) -> ConfigurationSpace:
+        # from 
         return ConfigurationSpace(
             name="SACConfigSpace",
             seed=seed,
             space={
-                "buffer_size": Integer("buffer_size", (1, int(1e7)), default=int(1e6)),
+                "buffer_size": Integer("buffer_size", (1, int(1e7)), default=1000000),
                 "buffer_batch_size": Integer(
                     "buffer_batch_size", (1, 1024), default=256
                 ),
@@ -211,19 +212,19 @@ class SAC(Algorithm):
                 "buffer_alpha": Float("buffer_alpha", (0.0, 1.0), default=0.9),
                 "buffer_beta": Float("buffer_beta", (0.0, 1.0), default=0.9),
                 "buffer_epsilon": Float("buffer_epsilon", (0.0, 1e-3), default=1e-5),
-                "lr": Float("lr", (1e-5, 0.1), default=3e-4),
+                "learning_rate": Float("learning_rate", (1e-5, 0.1), default=0.0003),
                 "gradient steps": Integer("gradient steps", (1, int(1e5)), default=1),
                 "gamma": Float("gamma", (0.0, 1.0), default=0.99),
                 "tau": Float("tau", (0.0, 1.0), default=0.005),
                 "use_target_network": Categorical(
                     "use_target_network", [True, False], default=True
                 ),
-                "train_frequency": Integer("train_frequency", (1, int(1e5)), default=1),
+                "train_freq": Integer("train_freq", (1, int(1e5)), default=1),
                 "learning_starts": Integer(
                     "learning_starts", (1, int(1e5)), default=100
                 ),
-                "target_network_update_freq": Integer(
-                    "target_network_update_freq", (1, int(1e5)), default=1
+                "target_update_interval": Integer(
+                    "target_update_interval", (1, int(1e5)), default=1
                 ),
                 "alpha_auto": Categorical("alpha_auto", [True, False], default=True),
                 "alpha": Float("alpha", (0.0, 1.0), default=1.0),
@@ -376,8 +377,8 @@ class SAC(Algorithm):
             params=actor_network_params,
             target_params=None,
             tx=optax.adam(
-                self.hpo_config["lr"], eps=1e-5
-            ),  # todo: change to actor specific lr
+                self.hpo_config["learning_rate"], eps=1e-5
+            ),  # todo: change to actor specific learning_rate
             opt_state=actor_opt_state,
         )
         critic_train_state = SACTrainState.create_with_opt_state(
@@ -385,8 +386,8 @@ class SAC(Algorithm):
             params=critic_network_params,
             target_params=critic_target_params,
             tx=optax.adam(
-                self.hpo_config["lr"], eps=1e-5
-            ),  # todo: change to critic specific lr
+                self.hpo_config["learning_rate"], eps=1e-5
+            ),  # todo: change to critic specific learning_rate
             opt_state=critic_opt_state,
         )
         if alpha_network_params is None:
@@ -397,8 +398,8 @@ class SAC(Algorithm):
             params=alpha_network_params,
             target_params=None,
             tx=optax.adam(
-                self.hpo_config["lr"], eps=1e-5
-            ),  # todo: how to set lr, check with stable-baselines
+                self.hpo_config["learning_rate"], eps=1e-5
+            ),  # todo: how to set learning_rate, check with stable-baselines
             opt_state=alpha_opt_state,
         )
 
@@ -501,7 +502,7 @@ class SAC(Algorithm):
                 self._update_step,
                 (runner_state, buffer_state),
                 None,
-                np.ceil(n_total_timesteps / self.env.n_envs / self.hpo_config["train_frequency"] / n_eval_steps),
+                np.ceil(n_total_timesteps / self.env.n_envs / self.hpo_config["train_freq"] / n_eval_steps),
             )
             eval_returns = self.eval(runner_state, n_eval_episodes)
 
@@ -888,7 +889,7 @@ class SAC(Algorithm):
             self._env_step,
             (runner_state, buffer_state),
             None,
-            self.hpo_config["train_frequency"],
+            self.hpo_config["train_freq"],
         )
         (
             rng,
@@ -910,7 +911,7 @@ class SAC(Algorithm):
             step_metrics,
         ) = jax.lax.cond(
             (global_step > self.hpo_config["learning_starts"])
-            & (global_step % self.hpo_config["train_frequency"] == 0),
+            & (global_step % self.hpo_config["train_freq"] == 0),
             do_update,
             dont_update,
             rng,
@@ -1029,7 +1030,7 @@ class SAC(Algorithm):
 
         critic_train_state = jax.lax.cond(  # todo: move this into the env_step loop?!
             (global_step > np.ceil(self.hpo_config["learning_starts"] / self.env.n_envs))
-            & (global_step % np.ceil(self.hpo_config["target_network_update_freq"] / self.env.n_envs) == 0),
+            & (global_step % np.ceil(self.hpo_config["target_update_interval"] / self.env.n_envs) == 0),
             target_update,
             dont_target_update,
             critic_train_state,

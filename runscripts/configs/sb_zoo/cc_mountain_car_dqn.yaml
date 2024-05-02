@@ -1,0 +1,21 @@
+# @package _global_
+defaults:
+  - /environment: cc_mountain_car
+  - /algorithm: dqn
+
+# https://huggingface.co/sb3/dqn-MountainCar-v0
+override /environment/n_envs: 1
+override /environment/n_total_timesteps: 120000
+
+override /hp_config/buffer_batch_size: 128
+override /hp_config/buffer_size: 10000
+# since we do not support epsilon schedules we stick to 0.1 here
+override /hp_config/epsilon: 0.1
+override /hp_config/gamma: 0.98
+override /hp_config/gradient_steps: 8
+override /hp_config/learning_rate: 0.004
+override /hp_config/target_update_interval: 600
+override /hp_config/train_freq: 16
+override /hp_config/learning_starts: 1000
+
+override /nas_config/hidden_size: 256

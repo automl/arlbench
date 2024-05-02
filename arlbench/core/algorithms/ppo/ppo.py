@@ -165,18 +165,19 @@ class PPO(Algorithm):
 
     @staticmethod
     def get_hpo_config_space(seed: int | None = None) -> ConfigurationSpace:
+        # from 
         return ConfigurationSpace(
             name="PPOConfigSpace",
             seed=seed,
             space={
                 "minibatch_size": Integer("minibatch_size", (4, 1024), default=64),
-                "lr": Float("lr", (1e-5, 0.1), default=2.5e-4),
-                "n_steps": Integer("n_steps", (1, 10000), default=1024),
+                "learning_rate": Float("learning_rate", (1e-5, 0.1), default=0.0003),
+                "n_steps": Integer("n_steps", (1, 10000), default=2048),
                 "update_epochs": Integer("update_epochs", (1, int(1e5)), default=10),
                 "gamma": Float("gamma", (0.0, 1.0), default=0.99),
                 "gae_lambda": Float("gae_lambda", (0.0, 1.0), default=0.95),
                 "clip_eps": Float("clip_eps", (0.0, 1.0), default=0.2),
-                "ent_coef": Float("ent_coef", (0.0, 1.0), default=0.01),
+                "ent_coef": Float("ent_coef", (0.0, 1.0), default=0.0),
                 "vf_coef": Float("vf_coef", (0.0, 1.0), default=0.5),
                 "max_grad_norm": Float("max_grad_norm", (0.0, 10.0), default=0.5),
                 "normalize_observations": Categorical("normalize_observations", [True, False], default=False),
@@ -430,6 +431,8 @@ class PPO(Algorithm):
 
 
         # Calculate advantage
+        (rng, train_state, env_state, last_obs, global_step, cur_rewards) = runner_state
+        _, last_val = self.network.apply(train_state.params, last_obs)
 
         advantages, targets = self._calculate_gae(traj_batch, last_val)
 
