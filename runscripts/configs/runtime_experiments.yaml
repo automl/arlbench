@@ -1,13 +1,14 @@
 defaults:
-  - cluster/local
-  - algorithm/dqn
-  - environment/cc_cartpole
+  - _self_
+  - /cluster: local
+  - /algorithm: dqn
+  - /environment: cc_cartpole
 
 hydra:
   run:
-    dir: results/runtime_experiments/${algorithm_framework}_${algorithm}_${environment.name}/${seed}
+    dir: results/runtime_experiments/${algorithm_framework}_${algorithm}_${environment.name}/${seed}_${n_eval_steps}
   sweep:
-    dir: results/runtime_experiments/${algorithm_framework}_${algorithm}_${environment.name}/${seed}
+    dir: results/runtime_experiments/${algorithm_framework}_${algorithm}_${environment.name}/${seed}_${n_eval_steps}
   job:
     chdir: true
 
