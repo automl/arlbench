@@ -55,12 +55,14 @@ def train_arlbench(cfg: DictConfig, logger: logging.Logger):
         env_kwargs=cfg.environment.kwargs,
         cnn_policy=cfg.environment.cnn_policy,
     )
+    eval_env_kwargs = cfg.environment.eval_kwargs if "eval_kwargs" in cfg.environment else cfg.environment.kwargs
+    print(eval_env_kwargs)
     eval_env = make_env(
         cfg.environment.framework,
         cfg.environment.name,
         n_envs=cfg.n_eval_episodes,
         seed=cfg.seed,
-        env_kwargs=cfg.environment.kwargs,
+        env_kwargs=eval_env_kwargs,
         cnn_policy=cfg.environment.cnn_policy,
     )
     rng = jax.random.PRNGKey(cfg.seed)

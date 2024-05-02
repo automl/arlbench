@@ -11,7 +11,7 @@ if TYPE_CHECKING:
 
 
 def make_env(
-    env_framework, env_name, cnn_policy: bool =False, n_envs: int = 1, seed: int = 0, env_kwargs: dict[str, Any] = {}
+    env_framework: str, env_name: str, cnn_policy: bool = False, n_envs: int = 1, seed: int = 0, env_kwargs: dict[str, Any] = {}
 ) -> Environment | AutoRLWrapper:
     # todo: add env_kwargs to all different environments
     if env_framework == "gymnasium":
