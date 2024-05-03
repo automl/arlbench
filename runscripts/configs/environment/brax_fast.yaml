@@ -1,0 +1,6 @@
+name: "fast"
+framework: "brax"
+n_total_timesteps: 1e6
+kwargs: {}
+cnn_policy: False
+n_envs: 10
