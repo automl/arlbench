@@ -120,6 +120,13 @@ ATARI_ENVS = [
 ]
 
 
+def numpy_to_jax(x):
+    """Converts numpy arrays to jax numpy arrays."""
+    if isinstance(x, np.ndarray):
+        return jnp.array(x)
+    else:
+        return x
+
 class EnvpoolEnv(Environment):
     def __init__(self, env_name: str, n_envs: int, seed: int, env_kwargs: dict[str, Any] = {}):
         import envpool
@@ -133,7 +140,8 @@ class EnvpoolEnv(Environment):
 
         super().__init__(env_name, env, n_envs, seed)
 
-        self.reset_shape = self._env.reset()
+        self.reset_shape = self._reset()
+
         if self.is_atari:
             self.has_lives = jnp.all(self.reset_shape[1]["lives"] > 0)
 
@@ -146,14 +154,21 @@ class EnvpoolEnv(Environment):
         if self.is_atari:
             # fire action for reset
             self.dummy_action = np.ones_like(self.dummy_action)
-        self.step_shape = self._env.step(self.dummy_action)
+        self.step_shape = self._step(self.dummy_action)
         self.single_step_shape = jax.tree_map(lambda x: x[:1], self.step_shape)
         
         self._handle0, self.recv, self.send, self._xla_step = self._env.xla()
 
+    def _reset(self):
+        return jax.tree_util.tree_map(numpy_to_jax, self._env.reset())
+    
+    def _step(self, action, env_id=None):
+        result = self._env.step(action=action, env_id=env_id)
+        return jax.tree_util.tree_map(numpy_to_jax, result)
+
     @functools.partial(jax.jit, static_argnums=0)
     def reset(self, _):
-        obs, info = jax.experimental.io_callback(self._env.reset, self.reset_shape)
+        obs, info = jax.experimental.io_callback(self._reset, self.reset_shape)
         if self.is_atari:
             lives = jnp.array(info["lives"])
         else:
@@ -172,7 +187,7 @@ class EnvpoolEnv(Environment):
 
         def reset(obs, info):
             def reset_idx(i, obs):
-                new_obs, _, _, _, _ = jax.experimental.io_callback(self._env.step, self.single_step_shape, action=self.dummy_action[:1], env_id=np.array([i]))
+                new_obs, _, _, _, _ = jax.experimental.io_callback(self._step, self.single_step_shape, action=self.dummy_action[:1], env_id=np.array([i]))
                 return obs
 
             for i in range(self._n_envs):

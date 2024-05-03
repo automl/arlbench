@@ -669,7 +669,6 @@ class DQN(Algorithm):
                     jnp.abs(td_error) + self.hpo_config["buffer_epsilon"],
                     self.hpo_config["buffer_alpha"],
                 ).astype(jnp.float64)
-                print(new_prios.dtype)
                 buffer_state = self.buffer.set_priorities(
                     buffer_state, batch.indices, new_prios
                 )

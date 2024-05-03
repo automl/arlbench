@@ -20,13 +20,9 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 import pandas as pd
-from brax import envs as brax_envs
-from brax.envs.wrappers.gym import GymWrapper
-from arlbench.core.environments import Environment
-from gymnax.wrappers.gym import GymnaxToGymWrapper
 from datetime import timedelta
 from omegaconf import DictConfig, OmegaConf
-from gymnax.wrappers.purerl import FlattenObservationWrapper, LogWrapper
+import traceback
 
 
 import jax.numpy as jnp
@@ -56,7 +52,6 @@ def train_arlbench(cfg: DictConfig, logger: logging.Logger):
         cnn_policy=cfg.environment.cnn_policy,
     )
     eval_env_kwargs = cfg.environment.eval_kwargs if "eval_kwargs" in cfg.environment else cfg.environment.kwargs
-    print(eval_env_kwargs)
     eval_env = make_env(
         cfg.environment.framework,
         cfg.environment.name,
@@ -493,14 +488,23 @@ def train_sbx(cfg: DictConfig, logger: logging.Logger):
 @hydra.main(version_base=None, config_path="configs", config_name="runtime_experiments")
 @track_emissions(offline=True, country_iso_code="DEU")
 def main(cfg: DictConfig):
+    try:
+        run(cfg)
+    except Exception:
+        traceback.print_exc(file=sys.stderr)
+        traceback.print_exc(file=sys.stdout)
+        raise
+
+def run(cfg: DictConfig):
     logger = logging.getLogger()
     logger.setLevel(logging.INFO)
 
     logger.info("Starting run with config:")
     logger.info(OmegaConf.to_yaml(cfg))
 
-    logger.info("Enabling x64 support for JAX.")
-    jax.config.update("jax_enable_x64", True)
+    if cfg.jax_enable_x64:
+        logger.info("Enabling x64 support for JAX.")
+        jax.config.update("jax_enable_x64", True)
 
     if "algorithm_framework" not in cfg:
         raise ValueError("Key 'algorithm_framework' not in config.")
