@@ -7,7 +7,7 @@ defaults:
 
 hydra:
   sweeper:
-    budget: 10_000_000
+    n_trials: 1000
     budget_variable: autorl.n_total_timesteps
     search_space: ${search_space}
     sweeper_kwargs:
