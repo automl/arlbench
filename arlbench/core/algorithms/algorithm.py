@@ -220,6 +220,7 @@ class Algorithm(ABC):
                 jnp.bool: True if not all environments are done.
             """
             _, _, _, done, _, _ = state
+
             return jnp.logical_not(jnp.all(done))
 
         def body_fn(state: tuple) -> tuple:
@@ -239,7 +240,7 @@ class Algorithm(ABC):
 
             # Step
             rng, step_rng = jax.random.split(rng)
-            env_state, (obs, reward_, done_, _) = self.eval_env.step(env_state, action, step_rng)
+            env_state, (obs, reward_, done_, info_) = self.eval_env.step(env_state, action, step_rng)
 
             # Count rewards only for envs that are not already done
             reward += reward_ * ~done

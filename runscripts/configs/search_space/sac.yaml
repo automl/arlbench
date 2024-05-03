@@ -1,0 +1,91 @@
+# @package _global_
+hyperparameters:
+  hp_config.alpha:
+    type: uniform_float
+    upper: 1.0
+    lower: 0.0
+    default: 1.0
+  hp_config.alpha_auto:
+    type: categorical
+    choices:
+    - true
+    - false
+    default: true
+  hp_config.buffer_alpha:
+    type: uniform_float
+    upper: 1.0
+    lower: 0.0
+    default: 0.9
+  hp_config.buffer_batch_size:
+    type: uniform_int
+    upper: 1024
+    lower: 1
+    default: 256
+  hp_config.buffer_beta:
+    type: uniform_float
+    upper: 1.0
+    lower: 0.0
+    default: 0.9
+  hp_config.buffer_epsilon:
+    type: uniform_float
+    upper: 0.001
+    lower: 0.0
+    default: 1.0e-05
+  hp_config.buffer_prio_sampling:
+    type: categorical
+    choices:
+    - true
+    - false
+    default: false
+  hp_config.buffer_size:
+    type: uniform_int
+    upper: 10000000
+    lower: 1
+    default: 1000000
+  hp_config.gamma:
+    type: uniform_float
+    upper: 1.0
+    lower: 0.0
+    default: 0.99
+  hp_config.gradient_steps:
+    type: uniform_int
+    upper: 100000
+    lower: 1
+    default: 1
+  hp_config.learning_rate:
+    type: uniform_float
+    upper: 0.1
+    lower: 1.0e-05
+    default: 0.0003
+  hp_config.learning_starts:
+    type: uniform_int
+    upper: 100000
+    lower: 1
+    default: 100
+  hp_config.normalize_observations:
+    type: categorical
+    choices:
+    - true
+    - false
+    default: false
+  hp_config.target_update_interval:
+    type: uniform_int
+    upper: 100000
+    lower: 1
+    default: 1
+  hp_config.tau:
+    type: uniform_float
+    upper: 1.0
+    lower: 0.0
+    default: 0.005
+  hp_config.train_freq:
+    type: uniform_int
+    upper: 100000
+    lower: 1
+    default: 1
+  hp_config.use_target_network:
+    type: categorical
+    choices:
+    - true
+    - false
+    default: true
