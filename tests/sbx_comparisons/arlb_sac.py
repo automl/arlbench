@@ -15,6 +15,7 @@ def test_sac(
     dir_name, log, framework, env_name, config, training_kw_args, seed, cnn_policy
 ):
     env = make_env(framework, env_name, n_envs=config["n_envs"], seed=seed)
+    eval_env = make_env(framework, env_name, n_envs=training_kw_args["n_eval_episodes"], seed=seed)
     rng = jax.random.PRNGKey(seed)
 
     hpo_config = SAC.get_default_hpo_config()
@@ -27,7 +28,7 @@ def test_sac(
     nas_config["activation"] = "relu"
     nas_config["hidden_size"] = 350
 
-    agent = SAC(hpo_config, env, nas_config=nas_config, cnn_policy=cnn_policy)
+    agent = SAC(hpo_config, env, eval_env=eval_env, nas_config=nas_config, cnn_policy=cnn_policy)
     algorithm_state = agent.init(rng)
 
     start = time.time()
@@ -36,8 +37,8 @@ def test_sac(
     log.info("training finished")
     training_time = time.time() - start
 
-    mean_return = result.eval_returns.mean(axis=1)
-    std_return = result.eval_returns.std(axis=1)
+    mean_return = result.eval_rewards.mean(axis=1)
+    std_return = result.eval_rewards.std(axis=1)
     str_results = [
         f"{mean:.2f}+-{std:.2f}"
         for mean, std in zip(mean_return, std_return, strict=False)
@@ -46,7 +47,7 @@ def test_sac(
 
     train_info_df = pd.DataFrame()
     for i in range(len(mean_return)):
-        train_info_df[f"return_{i}"] = result.eval_returns[i]
+        train_info_df[f"return_{i}"] = result.eval_rewards[i]
 
     os.makedirs(
         os.path.join("sac_results", f"{framework}_{env_name}", dir_name), exist_ok=True
@@ -71,15 +72,15 @@ def test_sac(
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--dir-name", type=str)
-    parser.add_argument("--training-steps", type=int)
-    parser.add_argument("--n-eval-steps", type=int)
-    parser.add_argument("--n-eval-episodes", type=int)
-    parser.add_argument("--n-envs", type=int)
-    parser.add_argument("--seed", type=int)
-    parser.add_argument("--env-framework", type=str)
-    parser.add_argument("--env", type=str)
-    parser.add_argument("--n-env-steps", type=int)
+    parser.add_argument("--dir-name", type=str, default="test")
+    parser.add_argument("--training-steps", type=int, default=500000)
+    parser.add_argument("--n-eval-steps", type=int, default=10)
+    parser.add_argument("--n-eval-episodes", type=int, default=128)
+    parser.add_argument("--n-envs", type=int, default=1)
+    parser.add_argument("--seed", type=int, default=42)
+    parser.add_argument("--env-framework", type=str, default="envpool")
+    parser.add_argument("--env", type=str, default="LunarLanderContinuous-v2")
+    parser.add_argument("--n-env-steps", type=int, default=1000)
     parser.add_argument("--cnn-policy", type=bool, default=False)
     args = parser.parse_args()
 

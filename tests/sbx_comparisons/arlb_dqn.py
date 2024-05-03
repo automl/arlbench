@@ -21,12 +21,12 @@ def test_dqn(
     hpo_config = DQN.get_default_hpo_config()
     hpo_config["learning_starts"] = 1024
     hpo_config["tau"] = 1.0
-    hpo_config["learning_rate"] = 1e-3
-    hpo_config["buffer_batch_size"] = 64
+    hpo_config["learning_rate"] = 2.3e-3
+    hpo_config["buffer_batch_size"] = 128
     hpo_config["buffer_alpha"] = 0.0
     hpo_config["buffer_beta"] = 0.0
-    hpo_config["buffer_size"] = 50000
-    hpo_config["train_freq"] = 32
+    hpo_config["buffer_size"] = 100000
+    hpo_config["train_freq"] = 256
     hpo_config["gradient_steps"] = 128
     hpo_config["target_update_interval"] = 10
     nas_config = DQN.get_default_nas_config()
@@ -79,10 +79,10 @@ def test_dqn(
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--dir-name", type=str, default="test")
-    parser.add_argument("--training-steps", type=int, default=100000)
+    parser.add_argument("--training-steps", type=int, default=50000)
     parser.add_argument("--n-eval-steps", type=int, default=10)
     parser.add_argument("--n-eval-episodes", type=int, default=128)
-    parser.add_argument("--n-envs", type=int, default=8)
+    parser.add_argument("--n-envs", type=int, default=1)
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--env-framework", type=str, default="envpool")
     parser.add_argument("--env", type=str, default="CartPole-v1")
