@@ -6,13 +6,15 @@ defaults:
 
 hydra:
   run:
-    dir: results/runtime_experiments/${environment.name}_${algorithm_framework}_${algorithm}/${n_eval_steps}/${seed}
+    dir: results/runtime_experiments/${environment.name}_${algorithm_framework}_${algorithm}/${n_eval_steps}
   sweep:
-    dir: results/runtime_experiments/${environment.name}_${algorithm_framework}_${algorithm}/${n_eval_steps}/${seed}
+    dir: results/runtime_experiments/${environment.name}_${algorithm_framework}_${algorithm}/${n_eval_steps}
   job:
     chdir: true
 
 load_checkpoint: ""
+
+jax_enable_x64: False
 
 algorithm_framework: arlbench
 n_total_timesteps: ${environment.n_total_timesteps}

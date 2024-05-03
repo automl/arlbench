@@ -1,20 +1,28 @@
 """Console script for arlbench."""
 
 from __future__ import annotations
-
+import traceback
 import sys
 
 import hydra
 from codecarbon import track_emissions
 import jax
 import logging
-from omegaconf import OmegaConf
+from omegaconf import OmegaConf, DictConfig
 from arlbench.arlbench import run_arlbench
 
 
-@hydra.main(version_base=None, config_path="configs", config_name="base")
+@hydra.main(version_base=None, config_path="configs", config_name="runtime_experiments")
 @track_emissions(offline=True, country_iso_code="DEU")
-def main(cfg):
+def main(cfg: DictConfig):
+    try:
+        run(cfg)
+    except Exception:
+        traceback.print_exc(file=sys.stderr)
+        raise
+
+
+def run(cfg: DictConfig):
     """Console script for arlbench."""
     logger = logging.getLogger()
     logger.setLevel(logging.INFO)

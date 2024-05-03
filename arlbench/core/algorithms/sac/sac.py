@@ -217,7 +217,7 @@ class SAC(Algorithm):
                 "buffer_beta": Float("buffer_beta", (0.0, 1.0), default=0.9),
                 "buffer_epsilon": Float("buffer_epsilon", (0.0, 1e-3), default=1e-5),
                 "learning_rate": Float("learning_rate", (1e-5, 0.1), default=0.0003),
-                "gradient steps": Integer("gradient_steps", (1, int(1e5)), default=1),
+                "gradient_steps": Integer("gradient_steps", (1, int(1e5)), default=1),
                 "gamma": Float("gamma", (0.0, 1.0), default=0.99),
                 "tau": Float("tau", (0.0, 1.0), default=0.005),
                 "use_target_network": Categorical(
@@ -789,7 +789,7 @@ class SAC(Algorithm):
                 new_prios = jnp.power(
                     td_error.mean(axis=0) + self.hpo_config["buffer_epsilon"],
                     self.hpo_config["buffer_alpha"],
-                )
+                ).astype(jnp.float64)
                 buffer_state = self.buffer.set_priorities(
                     buffer_state, batch.indices, new_prios
                 )
