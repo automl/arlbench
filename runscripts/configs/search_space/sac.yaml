@@ -47,7 +47,7 @@ hyperparameters:
     upper: 1.0
     lower: 0.0
     default: 0.99
-  hp_config.gradient steps:
+  hp_config.gradient_steps:
     type: uniform_int
     upper: 100000
     lower: 1
@@ -62,6 +62,12 @@ hyperparameters:
     upper: 100000
     lower: 1
     default: 100
+  hp_config.normalize_observations:
+    type: categorical
+    choices:
+    - true
+    - false
+    default: false
   hp_config.target_update_interval:
     type: uniform_int
     upper: 100000

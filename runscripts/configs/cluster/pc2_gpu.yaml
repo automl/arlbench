@@ -1,0 +1,17 @@
+# @package _global_
+defaults:
+  - override /hydra/launcher: submitit_slurm
+
+hydra:
+  launcher:
+    partition: gpu
+    cpus_per_task: 4
+    mem_per_cpu: 4GB
+    gpus_per_task: 1
+    timeout_min: 2880
+    setup:
+      - export JAX_PLATFORM_NAME=gpu
+    additional_parameters:
+      error: /dev/null  
+      output: /dev/null
+      begin: now+60

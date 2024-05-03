@@ -1,7 +1,7 @@
 # @package _global_
 defaults:
   - override /environment: procgen_bigfish_hard   
-  - override /algorithm: ppo    
+  - override /algorithm: dqn    
 
 # https://arxiv.org/pdf/1912.01588
 environment:
@@ -9,10 +9,4 @@ environment:
   n_total_timesteps: 200e6
 
 hp_config:
-  gae_labmda: 0.95
-  n_steps: 256
-  minibatch_size: 32
-  ent_coef: 0.01
-  clip_eps: 0.2
-  learning_rate: 5e-4
   normalize_observations: False

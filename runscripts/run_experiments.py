@@ -20,13 +20,9 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 import pandas as pd
-from brax import envs as brax_envs
-from brax.envs.wrappers.gym import GymWrapper
-from arlbench.core.environments import Environment
-from gymnax.wrappers.gym import GymnaxToGymWrapper
 from datetime import timedelta
 from omegaconf import DictConfig, OmegaConf
-from gymnax.wrappers.purerl import FlattenObservationWrapper, LogWrapper
+import traceback
 
 
 import jax.numpy as jnp
@@ -55,12 +51,13 @@ def train_arlbench(cfg: DictConfig, logger: logging.Logger):
         env_kwargs=cfg.environment.kwargs,
         cnn_policy=cfg.environment.cnn_policy,
     )
+    eval_env_kwargs = cfg.environment.eval_kwargs if "eval_kwargs" in cfg.environment else cfg.environment.kwargs
     eval_env = make_env(
         cfg.environment.framework,
         cfg.environment.name,
         n_envs=cfg.n_eval_episodes,
         seed=cfg.seed,
-        env_kwargs=cfg.environment.kwargs,
+        env_kwargs=eval_env_kwargs,
         cnn_policy=cfg.environment.cnn_policy,
     )
     rng = jax.random.PRNGKey(cfg.seed)
@@ -130,7 +127,7 @@ def train_purejaxrl_ppo(cfg: DictConfig, logger: logging.Logger):
     from purejaxrl.ppo import make_train
 
     config = {
-        "LR": cfg.hp_config.lr,
+        "LR": cfg.hp_config.learning_rate,
         "NUM_ENVS": cfg.environment.n_envs,
         "NUM_STEPS": cfg.hp_config.n_steps,
         "TOTAL_TIMESTEPS": cfg.environment.n_total_timesteps,
@@ -199,11 +196,11 @@ def train_purejaxrl_dqn(cfg: DictConfig, logger: logging.Logger):
         "TOTAL_TIMESTEPS": cfg.n_total_timesteps,
         "EPSILON_START": cfg.hp_config.epsilon,
         "EPSILON_FINISH": cfg.hp_config.epsilon,
-        "EPSILON_ANNEAL_TIME": 1,
-        "TARGET_UPDATE_INTERVAL": cfg.hp_config.target_network_update_freq,
-        "LR": cfg.hp_config.lr,
+        "EPSILON_ANNEAL_TIME": cfg.n_total_timesteps,
+        "TARGET_UPDATE_INTERVAL": cfg.hp_config.target_update_interval,
+        "LR": cfg.hp_config.learning_rate,
         "LEARNING_STARTS": cfg.hp_config.learning_starts,
-        "TRAINING_INTERVAL": cfg.hp_config.train_frequency,
+        "TRAINING_INTERVAL": cfg.hp_config.train_freq,
         "LR_LINEAR_DECAY": False,
         "GAMMA": cfg.hp_config.gamma,
         "TAU": cfg.hp_config.tau,
@@ -421,14 +418,14 @@ def train_sbx(cfg: DictConfig, logger: logging.Logger):
             verbose=0,
             seed=cfg.seed,
             learning_starts=cfg.hp_config.learning_starts,
-            target_update_interval=cfg.hp_config.target_network_update_freq,
+            target_update_interval=cfg.hp_config.target_update_interval,
             exploration_final_eps=cfg.hp_config.epsilon,
             exploration_initial_eps=cfg.hp_config.epsilon,
             gradient_steps=cfg.hp_config.gradient_steps,
             buffer_size=cfg.hp_config.buffer_size,
-            learning_rate=cfg.hp_config.lr,
+            learning_rate=cfg.hp_config.learning_rate,
             batch_size=cfg.hp_config.buffer_batch_size,
-            train_freq=cfg.hp_config.train_frequency,
+            train_freq=cfg.hp_config.train_freq,
             tau=cfg.hp_config.tau,
             gamma=cfg.hp_config.gamma,
         )
@@ -443,7 +440,7 @@ def train_sbx(cfg: DictConfig, logger: logging.Logger):
             ent_coef=cfg.hp_config.ent_coef,
             gae_lambda=cfg.hp_config.gae_lambda,
             gamma=cfg.hp_config.gamma,
-            learning_rate=cfg.hp_config.lr,
+            learning_rate=cfg.hp_config.learning_rate,
             max_grad_norm=cfg.hp_config.max_grad_norm,
             batch_size=cfg.hp_config.minibatch_size,
             n_steps=cfg.hp_config.n_steps,
@@ -462,8 +459,8 @@ def train_sbx(cfg: DictConfig, logger: logging.Logger):
             gamma=cfg.hp_config.gamma,
             gradient_steps=cfg.hp_config.gradient_steps,
             learning_starts=cfg.hp_config.learning_starts,
-            learning_rate=cfg.hp_config.lr,
-            train_freq=cfg.hp_config.train_frequency,
+            learning_rate=cfg.hp_config.learning_rate,
+            train_freq=cfg.hp_config.train_freq,
         )
     else:
         raise ValueError(f"Invalid algorithm: {cfg.algorithm}.")
@@ -491,14 +488,23 @@ def train_sbx(cfg: DictConfig, logger: logging.Logger):
 @hydra.main(version_base=None, config_path="configs", config_name="runtime_experiments")
 @track_emissions(offline=True, country_iso_code="DEU")
 def main(cfg: DictConfig):
+    try:
+        run(cfg)
+    except Exception:
+        traceback.print_exc(file=sys.stderr)
+        traceback.print_exc(file=sys.stdout)
+        raise
+
+def run(cfg: DictConfig):
     logger = logging.getLogger()
     logger.setLevel(logging.INFO)
 
     logger.info("Starting run with config:")
     logger.info(OmegaConf.to_yaml(cfg))
 
-    logger.info("Enabling x64 support for JAX.")
-    jax.config.update("jax_enable_x64", True)
+    if cfg.jax_enable_x64:
+        logger.info("Enabling x64 support for JAX.")
+        jax.config.update("jax_enable_x64", True)
 
     if "algorithm_framework" not in cfg:
         raise ValueError("Key 'algorithm_framework' not in config.")
