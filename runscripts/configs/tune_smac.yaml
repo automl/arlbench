@@ -1,7 +1,8 @@
 defaults:
-  - cluster/local
-  - algorithm/dqn
-  - environment/cc_cartpole
+  - _self_
+  - /cluster: local
+  - /algorithm: dqn
+  - /environment: cc_cartpole
   - search_space: dqn
   - override hydra/sweeper: HyperSMAC
 
