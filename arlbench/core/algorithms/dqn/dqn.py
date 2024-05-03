@@ -164,6 +164,7 @@ class DQN(Algorithm):
             add_sequences=False,
             add_batch_size=self.env.n_envs,
             priority_exponent=self.hpo_config["buffer_beta"],
+            device=jax.default_backend()   # todo: should we add a parameter for the device?
         )
         if self.hpo_config["buffer_prio_sampling"] is False:
             sample_fn = functools.partial(
