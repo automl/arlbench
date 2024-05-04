@@ -18,6 +18,8 @@ def run_arlbench(cfg: DictConfig, logger: Logger | None = None) -> float | tuple
         
         cfg.autorl.checkpoint_dir = cfg.save
         cfg.autorl.checkpoint = ["opt_state", "params", "buffer"]
+    else:
+        checkpoint_path = None
   
     _ = env.reset(checkpoint_path=checkpoint_path)
     _, objectives, _, _, info = env.step(cfg.hp_config)
