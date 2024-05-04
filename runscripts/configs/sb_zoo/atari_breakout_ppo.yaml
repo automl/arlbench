@@ -3,7 +3,7 @@ defaults:
   - override /environment: atari_pong    
   - override /algorithm: ppo    
 
-# https://huggingface.co/sb3/ppo-PongNoFrameskip-v4
+# https://huggingface.co/sb3/ppo-BreakoutNoFrameskip-v4
 environment:
   n_envs: 8
   n_total_timesteps: 10000000

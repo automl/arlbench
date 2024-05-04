@@ -10,3 +10,5 @@ environment:
 
 hp_config:
   normalize_observations: True
+
+jax_enable_x64: True
