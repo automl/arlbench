@@ -18,3 +18,7 @@ hp_config:
   n_steps: 128
   vf_coef: 0.5
   normalize_observations: False
+
+nas_config:
+  activation: relu
+  hidden_size: 256

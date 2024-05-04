@@ -22,3 +22,5 @@ hp_config:
 
 nas_config:
   activation: relu
+
+jax_enable_x64: True

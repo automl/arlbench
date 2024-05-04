@@ -5,8 +5,8 @@ defaults:
 hydra:
   launcher:
     partition: normal
-    cpus_per_task: 8
-    mem_per_cpu: 2GB
+    cpus_per_task: 16
+    mem_per_cpu: 4GB
     gres: null
     timeout_min: 2880
     setup:

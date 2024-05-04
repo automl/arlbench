@@ -6,12 +6,16 @@ defaults:
   - search_space: dqn
   - override hydra/sweeper: HyperPBT
 
+load: false
+save: false
+reward_curves: false
+
 hydra:
   sweeper:
     budget: 800_000
     budget_variable: autorl.n_total_timesteps
-    loading_variable: load_checkpoint
-    saving_variable: autorl.checkpoint_name
+    loading_variable: load
+    saving_variable: save
     search_space: ${search_space}
     sweeper_kwargs:
       optimizer_kwargs:
@@ -27,8 +31,8 @@ hydra:
   job:
     chdir: true
 
-load_checkpoint: ""
 pbt_seed: 42
+jax_enable_x64: false
 
 autorl:
   seed: 42
@@ -39,12 +43,11 @@ autorl:
   algorithm: ${algorithm}
   cnn_policy: ${environment.cnn_policy}
   n_total_timesteps: ${environment.n_total_timesteps}
-  algorithm: ${algorithm}
   checkpoint: []
   checkpoint_name: "default_checkpoint"
   checkpoint_dir: "/tmp"
   objectives: ["reward_mean"]
-  optimize_objectives: "upper"
+  optimize_objectives: "lower"
   state_features: []
   n_steps: 10
   n_eval_steps: 100

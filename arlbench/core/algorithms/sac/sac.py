@@ -217,7 +217,7 @@ class SAC(Algorithm):
                 "buffer_alpha": Float("buffer_alpha", (0.0, 1.0), default=0.9),
                 "buffer_beta": Float("buffer_beta", (0.0, 1.0), default=0.9),
                 "buffer_epsilon": Float("buffer_epsilon", (0.0, 1e-3), default=1e-5),
-                "learning_rate": Float("learning_rate", (1e-5, 0.1), default=0.0003),
+                "learning_rate": Float("learning_rate", (1e-5, 0.1), default=0.0003, log=True),
                 "gradient_steps": Integer("gradient_steps", (1, int(1e5)), default=1),
                 "gamma": Float("gamma", (0.0, 1.0), default=0.99),
                 "tau": Float("tau", (0.0, 1.0), default=0.005),

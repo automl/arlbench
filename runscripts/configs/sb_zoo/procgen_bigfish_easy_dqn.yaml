@@ -10,3 +10,7 @@ environment:
 
 hp_config:
   normalize_observations: False
+
+nas_config:
+  activation: relu
+  hidden_size: 256
