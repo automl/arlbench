@@ -14,8 +14,9 @@ def run_arlbench(cfg: DictConfig, logger: Logger | None = None) -> float | tuple
         logger.info(f"Your current config is: \n{cfg}")
 
     if "load" in cfg and cfg.load:
-        checkpoint_path = os.path.join(cfg.load, cfg.checkpoint_name)
-        
+        checkpoint_path = os.path.join(cfg.load, cfg.autorl.checkpoint_name)
+    
+    if "save" in cfg and cfg.save:
         cfg.autorl.checkpoint_dir = cfg.save
         cfg.autorl.checkpoint = ["opt_state", "params", "buffer"]
     else:
