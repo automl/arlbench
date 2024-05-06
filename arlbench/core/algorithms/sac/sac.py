@@ -133,6 +133,7 @@ class SAC(Algorithm):
         nas_config: Configuration | None = None,
         track_metrics: bool = False,
         track_trajectories: bool = False,
+        use_prio_buffer: bool = True
     ) -> None:
         """Creates a SAC algorithm instance.
 
@@ -155,6 +156,7 @@ class SAC(Algorithm):
             track_trajectories=track_trajectories,
             track_metrics=track_metrics,
         )
+        self._use_prio_buffer = use_prio_buffer
 
         action_size, discrete = self.action_type
         if discrete:
@@ -177,23 +179,45 @@ class SAC(Algorithm):
         assert alpha_init > 0.0, "The initial value of alpha must be greater than 0"
         self.alpha = AlphaCoef(alpha_init=alpha_init)
 
-        self.buffer = fbx.make_prioritised_flat_buffer(
-            max_length=self.hpo_config["buffer_size"],
-            min_length=self.hpo_config["buffer_batch_size"],
-            sample_batch_size=self.hpo_config["buffer_batch_size"],
-            add_sequences=False,
-            add_batch_size=self.env.n_envs,
-            priority_exponent=self.hpo_config["buffer_beta"],
-            device=jax.default_backend()   # todo: should we add a parameter for the device?
-        )
-        if self.hpo_config["buffer_prio_sampling"] is False:
-            sample_fn = functools.partial(
-                uniform_sample,
-                batch_size=self.hpo_config["buffer_batch_size"],
-                sequence_length=2,
-                period=1,
+        if self._use_prio_buffer:
+            self.buffer = fbx.make_prioritised_flat_buffer(
+                max_length=self.hpo_config["buffer_size"],
+                min_length=self.hpo_config["buffer_batch_size"],
+                sample_batch_size=self.hpo_config["buffer_batch_size"],
+                add_sequences=False,
+                add_batch_size=self.env.n_envs,
+                priority_exponent=self.hpo_config["buffer_beta"],
+                device=jax.default_backend()
             )
-            self.buffer = self.buffer.replace(sample=sample_fn)
+            self.buffer = self.buffer.replace(
+                init=jax.jit(self.buffer.init),
+                add=jax.jit(self.buffer.add, donate_argnums=0),
+                sample=jax.jit(self.buffer.sample),
+                can_sample=jax.jit(self.buffer.can_sample),
+                set_priorities=jax.jit(self.buffer.set_priorities, donate_argnums=0),
+            )
+            if self.hpo_config["buffer_prio_sampling"] is False:
+                sample_fn = functools.partial(
+                    uniform_sample,
+                    batch_size=self.hpo_config["buffer_batch_size"],
+                    sequence_length=2,
+                    period=1,
+                )
+                self.buffer = self.buffer.replace(sample=jax.jit(sample_fn))
+        else:
+            self.buffer = fbx.make_flat_buffer(
+                max_length=self.hpo_config["buffer_size"],
+                min_length=self.hpo_config["buffer_batch_size"],
+                sample_batch_size=self.hpo_config["buffer_batch_size"],
+                add_sequences=False,
+                add_batch_size=self.env.n_envs
+            )
+            self.buffer = self.buffer.replace(
+                init=jax.jit(self.buffer.init),
+                add=jax.jit(self.buffer.add, donate_argnums=0),
+                sample=jax.jit(self.buffer.sample),
+                can_sample=jax.jit(self.buffer.can_sample),
+            )
 
         # target for automatic entropy tuning
         self.target_entropy = -jnp.prod(jnp.array(self.env.action_space.shape)).astype(

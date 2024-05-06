@@ -1,3 +1,4 @@
+seed: 0
 hyperparameters:
   hp_config.buffer_alpha:
     type: uniform_float

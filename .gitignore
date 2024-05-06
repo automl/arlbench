@@ -1,6 +1,10 @@
 ### Slurm ###
 slurm_scripts
 
+### Run output ###
+*.out
+*.err
+
 ### Python ###
 # Byte-compiled / optimized / DLL files
 __pycache__/

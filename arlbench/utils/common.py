@@ -48,8 +48,9 @@ def save_defaults_to_yaml(hp_config_space, nas_config_sapce, algorithm: str):
     return yaml.dump(yaml_dict, sort_keys=False)
 
 
-def config_space_to_yaml(config_space: ConfigSpace.ConfigurationSpace, config_key: str = 'hp_config'):
+def config_space_to_yaml(config_space: ConfigSpace.ConfigurationSpace, config_key: str = 'hp_config', seed: int = 0):
     yaml_dict = {
+        'seed': seed,
         'hyperparameters': {}
     }
     for hp_name, hp in config_space.items():

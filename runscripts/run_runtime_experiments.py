@@ -485,7 +485,7 @@ def train_sbx(cfg: DictConfig, logger: logging.Logger):
 
 
 @hydra.main(version_base=None, config_path="configs", config_name="runtime_experiments")
-@track_emissions(offline=True, country_iso_code="DEU", log_level="error")
+@track_emissions(offline=True, country_iso_code="DEU")
 def main(cfg: DictConfig):
     logging.basicConfig(filename="job.log", 
 					format="%(asctime)s %(message)s", 
@@ -514,7 +514,11 @@ def run(cfg: DictConfig, logger: logging.Logger):
         raise ValueError("Key 'algorithm_framework' not in config.")
 
     if cfg.algorithm_framework == "arlbench":
-        train_info_df, training_time = train_arlbench(cfg, logger)
+        train_info_df, _ = train_arlbench(cfg, logger)
+
+        # Do only one evaluation for a fair comparison to purejaxrl
+        cfg["n_eval_steps"] = 1
+        _, training_time = train_arlbench(cfg, logger)
     elif cfg.algorithm_framework == "purejaxrl":
         if cfg.environment.framework != "gymnax":
             raise ValueError(
@@ -529,6 +533,10 @@ def run(cfg: DictConfig, logger: logging.Logger):
             )
 
         train_info_df, training_time = train_sbx(cfg, logger)
+
+        # Do only one evaluation for a fair comparison to purejaxrl
+        cfg["n_eval_steps"] = 1
+        _, training_time = train_sbx(cfg, logger)
     else:
         raise ValueError(
             f"Invalid value for 'algorithm_framework': '{cfg.algorithm_framework}'."

@@ -6,9 +6,9 @@ defaults:
 
 hydra:
   run:
-    dir: results/runtime_experiments/${environment.framework}_${environment.name}/${algorithm_framework}_${algorithm}/${n_eval_steps}
+    dir: results/runtime_experiments/${hydra.launcher.partition}/${environment.framework}_${environment.name}/${algorithm_framework}_${algorithm}
   sweep:
-    dir: results/runtime_experiments/${environment.framework}_${environment.name}/${algorithm_framework}_${algorithm}/${n_eval_steps}
+    dir: results/runtime_experiments/${hydra.launcher.partition}/${environment.framework}_${environment.name}/${algorithm_framework}_${algorithm}
   job:
     chdir: true
 

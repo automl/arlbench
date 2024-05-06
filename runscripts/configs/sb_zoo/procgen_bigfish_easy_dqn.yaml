@@ -5,11 +5,11 @@ defaults:
 
 # https://arxiv.org/pdf/1912.01588
 environment:
-  n_envs: 1
+  n_envs: 10
   n_total_timesteps: 25e6
 
 hp_config:
-  normalize_observations: False
+  normalize_observations: True
 
 nas_config:
   activation: relu

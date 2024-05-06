@@ -167,6 +167,7 @@ class DQN(Algorithm):
                 add_sequences=False,
                 add_batch_size=self.env.n_envs,
                 priority_exponent=self.hpo_config["buffer_beta"],
+                device=jax.default_backend()
             )
             self.buffer = self.buffer.replace(
                 init=jax.jit(self.buffer.init),
@@ -175,13 +176,21 @@ class DQN(Algorithm):
                 can_sample=jax.jit(self.buffer.can_sample),
                 set_priorities=jax.jit(self.buffer.set_priorities, donate_argnums=0),
             )
+            if self.hpo_config["buffer_prio_sampling"] is False:
+                sample_fn = functools.partial(
+                    uniform_sample,
+                    batch_size=self.hpo_config["buffer_batch_size"],
+                    sequence_length=2,
+                    period=1,
+                )
+                self.buffer = self.buffer.replace(sample=jax.jit(sample_fn))
         else:
             self.buffer = fbx.make_flat_buffer(
                 max_length=self.hpo_config["buffer_size"],
                 min_length=self.hpo_config["buffer_batch_size"],
                 sample_batch_size=self.hpo_config["buffer_batch_size"],
                 add_sequences=False,
-                add_batch_size=self.env.n_envs,
+                add_batch_size=self.env.n_envs
             )
             self.buffer = self.buffer.replace(
                 init=jax.jit(self.buffer.init),
@@ -189,14 +198,6 @@ class DQN(Algorithm):
                 sample=jax.jit(self.buffer.sample),
                 can_sample=jax.jit(self.buffer.can_sample),
             )
-        if self.hpo_config["buffer_prio_sampling"] is False:
-            sample_fn = functools.partial(
-                uniform_sample,
-                batch_size=self.hpo_config["buffer_batch_size"],
-                sequence_length=2,
-                period=1,
-            )
-            self.buffer = self.buffer.replace(sample=sample_fn)
 
     @staticmethod
     def get_hpo_config_space(seed: int | None = None) -> ConfigurationSpace:
@@ -689,13 +690,14 @@ class DQN(Algorithm):
                     batch.experience.first.reward,
                     batch.experience.first.done,
                 )
-                new_prios = jnp.power(
-                    jnp.abs(td_error) + self.hpo_config["buffer_epsilon"],
-                    self.hpo_config["buffer_alpha"],
-                ).astype(jnp.float64)
-                buffer_state = self.buffer.set_priorities(
-                    buffer_state, batch.indices, new_prios
-                )
+                if self._use_prio_buffer:
+                    new_prios = jnp.power(
+                        jnp.abs(td_error) + self.hpo_config["buffer_epsilon"],
+                        self.hpo_config["buffer_alpha"],
+                    ).astype(jnp.float64)
+                    buffer_state = self.buffer.set_priorities(
+                        buffer_state, batch.indices, new_prios
+                    )
 
                 if not self.track_metrics:
                     loss = None
