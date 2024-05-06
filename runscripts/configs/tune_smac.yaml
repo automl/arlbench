@@ -28,6 +28,7 @@ hydra:
           max_budget: ${environment.n_total_timesteps}
           deterministic: false
           n_workers: 1
+      seeds: [0,1,2,3,4,5,6,7,8,9]
   run:
     dir: results/smac/${smac_seed}/${algorithm}_${autorl.env_name}/${autorl.seed}
   sweep:
@@ -38,9 +39,10 @@ hydra:
 load_checkpoint: ""
 smac_seed: 0
 jax_enable_x64: false
+seed: 42
 
 autorl:
-  seed: 42
+  seed: ${seed}
   env_framework: ${environment.framework}
   env_name: ${environment.name}
   env_kwargs: ${environment.kwargs}
