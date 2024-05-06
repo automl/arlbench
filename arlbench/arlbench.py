@@ -15,12 +15,12 @@ def run_arlbench(cfg: DictConfig, logger: Logger | None = None) -> float | tuple
 
     if "load" in cfg and cfg.load:
         checkpoint_path = os.path.join(cfg.load, cfg.autorl.checkpoint_name)
+    else:
+        checkpoint_path = None
     
     if "save" in cfg and cfg.save:
         cfg.autorl.checkpoint_dir = cfg.save
         cfg.autorl.checkpoint = ["opt_state", "params", "buffer"]
-    else:
-        checkpoint_path = None
   
     _ = env.reset(checkpoint_path=checkpoint_path)
     _, objectives, _, _, info = env.step(cfg.hp_config)
