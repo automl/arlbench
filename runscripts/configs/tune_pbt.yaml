@@ -24,6 +24,7 @@ hydra:
         seed: ${pbt_seed}
       checkpoint_tf: true
       load_tf: true
+      checkpoint_path_typing: ""
   run:
     dir: results/pbt/${pbt_seed}/${algorithm}_${autorl.env_name}/${autorl.seed}
   sweep:
