@@ -1,7 +1,7 @@
 # @package _global_
 defaults:
-  - override /environment: procgen_bigfish_hard   
-  - override /algorithm: dqn    
+  - override /environment: procgen_bigfish_hard
+  - override /algorithm: ppo
 
 # https://arxiv.org/pdf/1912.01588
 environment:
@@ -9,7 +9,7 @@ environment:
   n_total_timesteps: 200e6
 
 hp_config:
-  normalize_observations: True
+  normalize_observations: True 
 
 nas_config:
   activation: relu

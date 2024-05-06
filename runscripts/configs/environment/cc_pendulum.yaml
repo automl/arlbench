@@ -1,6 +1,6 @@
 name: "Pendulum-v1"
 framework: "gymnax"
-n_total_timesteps: 5e4
+n_total_timesteps: 1e5
 kwargs: {}
 cnn_policy: False
-n_envs: 10
+n_envs: 8

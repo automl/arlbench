@@ -34,7 +34,7 @@ autorl:
   checkpoint_name: "default_checkpoint"
   checkpoint_dir: "/scratch/hpc-prf-intexml/jbecktepe/arlbench_checkpoints/random_runs/"
   objectives: ["reward_mean"]
-  optimize_objectives: "upper"
+  optimize_objectives: "lower"
   state_features: []
   n_steps: 10
   n_eval_steps: 100

@@ -1,6 +1,6 @@
 # @package _global_
 defaults:
-  - override /environment: atari_pong    
+  - override /environment: atari_breakout
   - override /algorithm: dqn    
 
 # https://huggingface.co/sb3/dqn-BreakoutNoFrameskip-v4
