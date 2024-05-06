@@ -1,6 +1,3 @@
-[submodule "hypersweeper"]
-	path = hypersweeper
-	url = https://github.com/automl-private/hypersweeper.git
 [submodule "purejaxrl"]
 	path = purejaxrl
 	url = https://github.com/luchris429/purejaxrl.git

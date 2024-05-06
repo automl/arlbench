@@ -59,14 +59,16 @@ def config_space_to_yaml(config_space: ConfigSpace.ConfigurationSpace, config_ke
                 'type': 'uniform_int',
                 'upper': int(hp.upper),
                 'lower': int(hp.lower),
-                'default': int(hp.default_value)
+                'default': int(hp.default_value),
+                'log': bool(hp.log)
             }
         elif isinstance(hp, ConfigSpace.UniformFloatHyperparameter):
             yaml_dict['hyperparameters'][hp_key] = {
                 'type': 'uniform_float',
                 'upper': float(hp.upper),
                 'lower': float(hp.lower),
-                'default': float(hp.default_value)
+                'default': float(hp.default_value),
+                'log': bool(hp.log)
             }
         elif isinstance(hp, ConfigSpace.CategoricalHyperparameter):
             try:

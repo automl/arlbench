@@ -3,7 +3,7 @@ defaults:
   - /cluster: local
   - /algorithm: dqn
   - /environment: cc_cartpole
-  - search_space: dqn
+  - /search_space: dqn
   - override hydra/sweeper: HyperSMAC
 
 hydra:
@@ -20,14 +20,15 @@ hydra:
           _target_: smac.facade.multi_fidelity_facade.MultiFidelityFacade.get_intensifier
           _partial_: true
           eta: 2
-          n_seeds: 5
+          n_seeds: 1
         scenario:
           n_trials: 1000
           seed: ${smac_seed}
           min_budget: 1000
-          max_budget: 100000
+          max_budget: ${environment.n_total_timesteps}
           deterministic: false
           n_workers: 1
+      seeds: [0,1,2,3,4,5,6,7,8,9]
   run:
     dir: results/smac/${smac_seed}/${algorithm}_${autorl.env_name}/${autorl.seed}
   sweep:
@@ -37,9 +38,11 @@ hydra:
 
 load_checkpoint: ""
 smac_seed: 0
+jax_enable_x64: false
+seed: 42
 
 autorl:
-  seed: 42
+  seed: ${seed}
   env_framework: ${environment.framework}
   env_name: ${environment.name}
   env_kwargs: ${environment.kwargs}
@@ -47,12 +50,11 @@ autorl:
   algorithm: ${algorithm}
   cnn_policy: ${environment.cnn_policy}
   n_total_timesteps: ${environment.n_total_timesteps}
-  algorithm: ${algorithm}
   checkpoint: []
   checkpoint_name: "default_checkpoint"
-  checkpoint_dir: "/tmp"
+  checkpoint_dir: "/scratch/hpc-prf-intexml/jbecktepe/arlbench_checkpoints/smac/"
   objectives: ["reward_mean"]
-  optimize_objectives: "upper"
+  optimize_objectives: "lower"
   state_features: []
   n_steps: 10
   n_eval_steps: 100
