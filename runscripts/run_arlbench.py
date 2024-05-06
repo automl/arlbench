@@ -13,7 +13,7 @@ from arlbench.arlbench import run_arlbench
 
 
 @hydra.main(version_base=None, config_path="configs", config_name="runtime_experiments")
-@track_emissions(offline=True, country_iso_code="DEU")
+@track_emissions(offline=True, country_iso_code="DEU", log_level="error")
 def main(cfg: DictConfig):
     logging.basicConfig(filename="job.log", 
 					format="%(asctime)s %(message)s", 
