@@ -171,7 +171,7 @@ class PPO(Algorithm):
             name="PPOConfigSpace",
             seed=seed,
             space={
-                "minibatch_size": Integer("minibatch_size", (4, 1024), default=64),
+                "minibatch_size": Integer("minibatch_size", (4, 16384), default=64),
                 "learning_rate": Float("learning_rate", (1e-5, 0.1), default=0.0003),
                 "n_steps": Integer("n_steps", (1, 10000), default=2048),
                 "update_epochs": Integer("update_epochs", (1, int(1e5)), default=10),
@@ -198,7 +198,7 @@ class PPO(Algorithm):
                 "activation": Categorical(
                     "activation", ["tanh", "relu"], default="tanh"
                 ),
-                "hidden_size": Integer("hidden_size", (1, 1024), default=64),
+                "hidden_size": Integer("hidden_size", (1, 2048), default=64),
             },
         )
 
