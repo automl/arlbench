@@ -22,8 +22,8 @@ hydra:
         population_size: 8
         config_interval: 1e5
         seed: ${pbt_seed}
-      checkpoint_tf: false
-      load_tf: false
+      checkpoint_tf: true
+      load_tf: true
   run:
     dir: results/pbt/${pbt_seed}/${algorithm}_${autorl.env_name}/${autorl.seed}
   sweep:
@@ -33,6 +33,12 @@ hydra:
 
 pbt_seed: 42
 jax_enable_x64: false
+
+algorithm_framework: arlbench
+n_total_timesteps: ${environment.n_total_timesteps}
+n_eval_steps: 100
+n_eval_episodes: 10
+seed: 42
 
 autorl:
   seed: 42
