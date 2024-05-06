@@ -14,10 +14,10 @@ hp_config:
   # since we do not support epsilon schedules we stick to 0.1 here
   epsilon: 0.1
   gamma: 0.99
-  gradient_steps: 128
+  gradient_steps: 1
   learning_rate: 0.0023
   target_update_interval: 10
-  train_freq: 256
+  train_freq: 2
   normalize_observations: False
 
 nas_config:

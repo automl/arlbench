@@ -124,6 +124,7 @@ class DQN(Algorithm):
         nas_config: Configuration | None = None,
         track_trajectories: bool = False,
         track_metrics: bool = False,
+        use_prio_buffer: bool = True
     ) -> None:
         """Creates a DQN algorithm instance.
 
@@ -147,6 +148,7 @@ class DQN(Algorithm):
             track_trajectories=track_trajectories,
             track_metrics=track_metrics,
         )
+        self._use_prio_buffer = use_prio_buffer
 
         action_size, discrete = self.action_type
         network_cls = CNNQ if cnn_policy else MLPQ
@@ -157,15 +159,36 @@ class DQN(Algorithm):
             hidden_size=self.nas_config["hidden_size"],
         )
 
-        self.buffer = fbx.make_prioritised_flat_buffer(
-            max_length=self.hpo_config["buffer_size"],
-            min_length=self.hpo_config["buffer_batch_size"],
-            sample_batch_size=self.hpo_config["buffer_batch_size"],
-            add_sequences=False,
-            add_batch_size=self.env.n_envs,
-            priority_exponent=self.hpo_config["buffer_beta"],
-            device=jax.default_backend()   # todo: should we add a parameter for the device?
-        )
+        if self._use_prio_buffer:
+            self.buffer = fbx.make_prioritised_flat_buffer(
+                max_length=self.hpo_config["buffer_size"],
+                min_length=self.hpo_config["buffer_batch_size"],
+                sample_batch_size=self.hpo_config["buffer_batch_size"],
+                add_sequences=False,
+                add_batch_size=self.env.n_envs,
+                priority_exponent=self.hpo_config["buffer_beta"],
+            )
+            self.buffer = self.buffer.replace(
+                init=jax.jit(self.buffer.init),
+                add=jax.jit(self.buffer.add, donate_argnums=0),
+                sample=jax.jit(self.buffer.sample),
+                can_sample=jax.jit(self.buffer.can_sample),
+                set_priorities=jax.jit(self.buffer.set_priorities, donate_argnums=0),
+            )
+        else:
+            self.buffer = fbx.make_flat_buffer(
+                max_length=self.hpo_config["buffer_size"],
+                min_length=self.hpo_config["buffer_batch_size"],
+                sample_batch_size=self.hpo_config["buffer_batch_size"],
+                add_sequences=False,
+                add_batch_size=self.env.n_envs,
+            )
+            self.buffer = self.buffer.replace(
+                init=jax.jit(self.buffer.init),
+                add=jax.jit(self.buffer.add, donate_argnums=0),
+                sample=jax.jit(self.buffer.sample),
+                can_sample=jax.jit(self.buffer.can_sample),
+            )
         if self.hpo_config["buffer_prio_sampling"] is False:
             sample_fn = functools.partial(
                 uniform_sample,
@@ -192,7 +215,7 @@ class DQN(Algorithm):
                 "buffer_alpha": Float("buffer_alpha", (0.0, 1.0), default=0.9),
                 "buffer_beta": Float("buffer_beta", (0.0, 1.0), default=0.9),
                 "buffer_epsilon": Float("buffer_epsilon", (0.0, 1e-3), default=1e-5),
-                "learning_rate": Float("learning_rate", (1e-5, 0.1), default=0.0001),
+                "learning_rate": Float("learning_rate", (1e-5, 0.1), default=0.0001, log=True),
                 "gamma": Float("gamma", (0.0, 1.0), default=0.99),
                 "tau": Float("tau", (0.0, 1.0), default=1.0),
                 "epsilon": Float("epsilon", (0.0, 1.0), default=0.1),

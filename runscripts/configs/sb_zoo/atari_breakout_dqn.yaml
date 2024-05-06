@@ -3,7 +3,7 @@ defaults:
   - override /environment: atari_pong    
   - override /algorithm: dqn    
 
-# https://huggingface.co/sb3/dqn-PongNoFrameskip-v4
+# https://huggingface.co/sb3/dqn-BreakoutNoFrameskip-v4
 environment:
   n_envs: 1
   n_total_timesteps: 10000000

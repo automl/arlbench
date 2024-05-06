@@ -13,7 +13,6 @@ from arlbench.core.algorithms import PPO as ARLBPPO
 from arlbench.core.algorithms import SAC as ARLBSAC
 import time
 import pandas as pd
-import functools
 import logging
 import gymnax
 import jax
@@ -22,7 +21,7 @@ import numpy as np
 import pandas as pd
 from datetime import timedelta
 from omegaconf import DictConfig, OmegaConf
-import traceback
+import logging.config
 
 
 import jax.numpy as jnp
@@ -304,7 +303,6 @@ def train_sbx(cfg: DictConfig, logger: logging.Logger):
             self.step_list = []
             self.rng = jax.random.PRNGKey(seed)
 
-        @functools.partial(jax.jit, static_argnums=0)
         def _env_episode(self, carry, _):
             rng, actor_params = carry
             rng, reset_rng = jax.random.split(rng)
@@ -338,8 +336,9 @@ def train_sbx(cfg: DictConfig, logger: logging.Logger):
             return (rng, actor_params), returns
 
         def eval(self, num_eval_episodes):
+            env_episode = jax.jit(self._env_episode, static_argnums=0)
             (self.rng, _), returns = jax.lax.scan(
-                self._env_episode,
+                env_episode,
                 (self.rng, self.model.policy.actor_state.params),
                 None,
                 # with n_envs = n_eval_episodes for eval_env we only need one parallel episode
@@ -486,21 +485,26 @@ def train_sbx(cfg: DictConfig, logger: logging.Logger):
 
 
 @hydra.main(version_base=None, config_path="configs", config_name="runtime_experiments")
-@track_emissions(offline=True, country_iso_code="DEU")
+@track_emissions(offline=True, country_iso_code="DEU", log_level="error")
 def main(cfg: DictConfig):
+    logging.basicConfig(filename="job.log", 
+					format="%(asctime)s %(message)s", 
+					filemode="w") 
+    logging.info("Logging configured")
+    logging.info(f"JAX devices: {jax.devices()}")
+    logging.info(f"JAX default backend: {jax.default_backend()}")
+
+    logger = logging.getLogger() 
+
     try:
-        run(cfg)
-    except Exception:
-        traceback.print_exc(file=sys.stderr)
-        traceback.print_exc(file=sys.stdout)
+        run(cfg, logger)
+    except Exception as e:
+        logging.exception(e)
         raise
 
-def run(cfg: DictConfig):
-    logger = logging.getLogger()
-    logger.setLevel(logging.INFO)
-
+def run(cfg: DictConfig, logger: logging.Logger):
     logger.info("Starting run with config:")
-    logger.info(OmegaConf.to_yaml(cfg))
+    logger.info("\n" + str(OmegaConf.to_yaml(cfg)))
 
     if cfg.jax_enable_x64:
         logger.info("Enabling x64 support for JAX.")

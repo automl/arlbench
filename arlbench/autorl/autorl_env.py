@@ -7,6 +7,7 @@ from typing import Any
 import gymnasium
 import jax
 import numpy as np
+import pandas as pd
 
 from arlbench.core.algorithms import (
     DQN,
@@ -319,17 +320,24 @@ class AutoRLEnv(gymnasium.Env):
             "n_total_timesteps": n_total_timesteps
             if n_total_timesteps
             else self._config["n_total_timesteps"],
-            "n_total_timesteps": n_eval_steps
+            "n_eval_steps": n_eval_steps
             if n_eval_steps
-            else self._config["n_total_timesteps"],
-            "n_total_timesteps": n_eval_episodes
+            else self._config["n_eval_steps"],
+            "n_eval_episodes": n_eval_episodes
             if n_eval_episodes
-            else self._config["n_total_timesteps"],
+            else self._config["n_eval_episodes"],
         }
 
         # Perform one iteration of training
         result, objectives, obs = self._train(**train_kw_args)
         self._algorithm_state, self._train_result = result
+
+        steps = (
+            np.arange(1, train_kw_args["n_eval_steps"] + 1) * train_kw_args["n_total_timesteps"] // train_kw_args["n_eval_steps"]
+        )
+        returns = self._train_result.eval_rewards.mean(axis=1)
+
+        info["train_info_df"] = pd.DataFrame({"steps": steps, "returns": returns})
 
         self._total_training_steps += train_kw_args["n_total_timesteps"]
 

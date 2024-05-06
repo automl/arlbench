@@ -18,6 +18,8 @@ hydra:
     chdir: true
 
 load_checkpoint: ""
+jax_enable_x64: false
+search_space.seed: 0
 
 autorl:
   seed: 42
@@ -28,10 +30,9 @@ autorl:
   algorithm: ${algorithm}
   cnn_policy: ${environment.cnn_policy}
   n_total_timesteps: ${environment.n_total_timesteps}
-  algorithm: ${algorithm}
   checkpoint: []
   checkpoint_name: "default_checkpoint"
-  checkpoint_dir: "/tmp"
+  checkpoint_dir: "/scratch/hpc-prf-intexml/jbecktepe/arlbench_checkpoints/random_runs/"
   objectives: ["reward_mean"]
   optimize_objectives: "upper"
   state_features: []

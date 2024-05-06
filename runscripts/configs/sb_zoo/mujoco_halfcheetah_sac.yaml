@@ -10,4 +10,6 @@ environment:
 
 hp_config:
   learning_starts: 10000
-  normalize_observations: False
+  normalize_observations: True
+
+jax_enable_x64: True
