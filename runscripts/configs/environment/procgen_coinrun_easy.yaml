@@ -1,0 +1,9 @@
+name: "CoinrunEasy-v0"
+framework: "envpool"
+n_total_timesteps: 25e6
+kwargs: {
+  num_levels: 200 
+}
+eval_kwargs: {}
+cnn_policy: True
+n_envs: 10
