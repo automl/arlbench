@@ -148,7 +148,6 @@ class DQN(Algorithm):
             track_trajectories=track_trajectories,
             track_metrics=track_metrics,
         )
-        self._use_prio_buffer = use_prio_buffer
 
         action_size, discrete = self.action_type
         network_cls = CNNQ if cnn_policy else MLPQ
@@ -159,45 +158,30 @@ class DQN(Algorithm):
             hidden_size=self.nas_config["hidden_size"],
         )
 
-        if self._use_prio_buffer:
-            self.buffer = fbx.make_prioritised_flat_buffer(
-                max_length=self.hpo_config["buffer_size"],
-                min_length=self.hpo_config["buffer_batch_size"],
-                sample_batch_size=self.hpo_config["buffer_batch_size"],
-                add_sequences=False,
-                add_batch_size=self.env.n_envs,
-                priority_exponent=self.hpo_config["buffer_beta"],
-                device=jax.default_backend()
+        self.buffer = fbx.make_prioritised_flat_buffer(
+            max_length=self.hpo_config["buffer_size"],
+            min_length=self.hpo_config["buffer_batch_size"],
+            sample_batch_size=self.hpo_config["buffer_batch_size"],
+            add_sequences=False,
+            add_batch_size=self.env.n_envs,
+            priority_exponent=self.hpo_config["buffer_beta"],
+            device=jax.default_backend()
+        )
+        self.buffer = self.buffer.replace(
+            init=jax.jit(self.buffer.init),
+            add=jax.jit(self.buffer.add, donate_argnums=0),
+            sample=jax.jit(self.buffer.sample),
+            can_sample=jax.jit(self.buffer.can_sample),
+            set_priorities=jax.jit(self.buffer.set_priorities, donate_argnums=0),
+        )
+        if self.hpo_config["buffer_prio_sampling"] is False:
+            sample_fn = functools.partial(
+                uniform_sample,
+                batch_size=self.hpo_config["buffer_batch_size"],
+                sequence_length=2,
+                period=1,
             )
-            self.buffer = self.buffer.replace(
-                init=jax.jit(self.buffer.init),
-                add=jax.jit(self.buffer.add, donate_argnums=0),
-                sample=jax.jit(self.buffer.sample),
-                can_sample=jax.jit(self.buffer.can_sample),
-                set_priorities=jax.jit(self.buffer.set_priorities, donate_argnums=0),
-            )
-            if self.hpo_config["buffer_prio_sampling"] is False:
-                sample_fn = functools.partial(
-                    uniform_sample,
-                    batch_size=self.hpo_config["buffer_batch_size"],
-                    sequence_length=2,
-                    period=1,
-                )
-                self.buffer = self.buffer.replace(sample=jax.jit(sample_fn))
-        else:
-            self.buffer = fbx.make_flat_buffer(
-                max_length=self.hpo_config["buffer_size"],
-                min_length=self.hpo_config["buffer_batch_size"],
-                sample_batch_size=self.hpo_config["buffer_batch_size"],
-                add_sequences=False,
-                add_batch_size=self.env.n_envs
-            )
-            self.buffer = self.buffer.replace(
-                init=jax.jit(self.buffer.init),
-                add=jax.jit(self.buffer.add, donate_argnums=0),
-                sample=jax.jit(self.buffer.sample),
-                can_sample=jax.jit(self.buffer.can_sample),
-            )
+            self.buffer = self.buffer.replace(sample=jax.jit(sample_fn))
 
     @staticmethod
     def get_hpo_config_space(seed: int | None = None) -> ConfigurationSpace:
@@ -690,14 +674,13 @@ class DQN(Algorithm):
                     batch.experience.first.reward,
                     batch.experience.first.done,
                 )
-                if self._use_prio_buffer:
-                    new_prios = jnp.power(
-                        jnp.abs(td_error) + self.hpo_config["buffer_epsilon"],
-                        self.hpo_config["buffer_alpha"],
-                    ).astype(jnp.float64)
-                    buffer_state = self.buffer.set_priorities(
-                        buffer_state, batch.indices, new_prios
-                    )
+                new_prios = jnp.power(
+                    jnp.abs(td_error) + self.hpo_config["buffer_epsilon"],
+                    self.hpo_config["buffer_alpha"],
+                ).astype(jnp.float64)
+                buffer_state = self.buffer.set_priorities(
+                    buffer_state, batch.indices, new_prios
+                )
 
                 if not self.track_metrics:
                     loss = None

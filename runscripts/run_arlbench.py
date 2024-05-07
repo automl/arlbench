@@ -12,8 +12,8 @@ from omegaconf import OmegaConf, DictConfig
 from arlbench.arlbench import run_arlbench
 
 
-@hydra.main(version_base=None, config_path="configs", config_name="runtime_experiments")
-@track_emissions(offline=True, country_iso_code="DEU", log_level="error")
+@hydra.main(version_base=None, config_path="configs", config_name="base")
+@track_emissions(offline=True, country_iso_code="DEU")
 def main(cfg: DictConfig):
     logging.basicConfig(filename="job.log", 
 					format="%(asctime)s %(message)s", 
@@ -22,12 +22,12 @@ def main(cfg: DictConfig):
     logger.setLevel(logging.INFO)
     logger.info("Logging configured")
     logger.info(f"JAX devices: {jax.devices()}")
+    logger.info(f"JAX device count: {jax.local_device_count()}")
     logger.info(f"JAX default backend: {jax.default_backend()}")
 
     if cfg.jax_enable_x64:
         logger.info("Enabling x64 support for JAX.")
         jax.config.update("jax_enable_x64", True)
-
     try:
         return run(cfg, logger)
     except Exception:

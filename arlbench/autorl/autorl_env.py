@@ -213,14 +213,6 @@ class AutoRLEnv(gymnasium.Env):
         if self._c_step >= self._config["n_steps"]:
             return True
         return False
-    
-    def _make_algorithm(self):
-        return self._algorithm_cls(
-            self._hpo_config,
-            self._env,
-            track_trajectories=self._track_trajectories,
-            track_metrics=self._track_metrics
-        )
 
     def _train(self, **train_kw_args) -> tuple[TrainReturnT, dict, dict]:
         """_summary_
@@ -264,6 +256,7 @@ class AutoRLEnv(gymnasium.Env):
             eval_env=self._eval_env,
             track_metrics=self._track_metrics,
             track_trajectories=self._track_trajectories,
+            cnn_policy=self._config["cnn_policy"]
         )
         return algorithm
 
