@@ -1,7 +1,8 @@
 defaults:
-  - cluster/local
-  - algorithm/dqn
-  - environment/cc_cartpole
+  - _self_
+  - /cluster: local
+  - /algorithm: dqn
+  - /environment: cc_cartpole
 
 hydra:
   run:
@@ -11,6 +12,7 @@ hydra:
   job:
     chdir: true
 
+jax_enable_x64: false
 load_checkpoint: ""
 
 autorl:

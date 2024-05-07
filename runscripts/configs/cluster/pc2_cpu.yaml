@@ -5,9 +5,10 @@ defaults:
 hydra:
   launcher:
     partition: normal
-    cpus_per_task: 16
-    mem_per_cpu: 4GB
+    cpus_per_task: 64
+    mem_gb: 200
     gres: null
     timeout_min: 2880
     setup:
       - export JAX_PLATFORM_NAME=cpu
+

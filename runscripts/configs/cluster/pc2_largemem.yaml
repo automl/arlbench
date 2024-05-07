@@ -4,10 +4,10 @@ defaults:
 
 hydra:
   launcher:
-    partition: gpu
-    gres: "gpu:a100:1"
-    cpus_per_task: 4
-    mem_gb: 16
+    partition: largemem
+    cpus_per_task: 64
+    mem_gb: 800
+    gres: null
     timeout_min: 2880
     setup:
-      - export JAX_PLATFORM_NAME=gpu
+      - export JAX_PLATFORM_NAME=cpu
