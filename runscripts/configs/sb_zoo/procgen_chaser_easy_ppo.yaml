@@ -1,6 +1,6 @@
 # @package _global_
 defaults:
-  - override /environment: procgen_bigfish_easy
+  - override /environment: procgen_chaser_easy
   - override /algorithm: ppo
 
 # https://arxiv.org/abs/2102.10330
