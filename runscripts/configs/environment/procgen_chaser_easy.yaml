@@ -1,4 +1,4 @@
-name: "BigfishEasy-v0"
+name: "ChaserEasy-v0"
 framework: "envpool"
 n_total_timesteps: 25e6
 kwargs: {
