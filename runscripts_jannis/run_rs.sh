@@ -1,7 +1,7 @@
 #!/bin/bash
 
-# USAGE run_rs.sh ALGORITHM ENVIRONMENT CLUSTER
-# USAGE run_rs.sh dqn cc_cartpole local
+# USAGE run_rs.sh ALGORITHM ENVIRONMENT CLUSTER SEARCH_SPACE
+# USAGE run_rs.sh dqn       cc_cartpole local   dqn_cc
 
 directory="sobol"
 
@@ -22,8 +22,9 @@ echo "#!/bin/bash
 #SBATCH --error $directory/log/arlb_rs_${1}_${2}_%A_%a.err
 #SBATCH --array=0-9
 
+
 cd ..
-python runscripts/run_arlbench.py -m --config-name=random_runs "autorl.seed=\$SLURM_ARRAY_TASK_ID" "algorithm=$1" "search_space=$1" "environment=$2" "cluster=$3"
+python runscripts/run_arlbench.py -m --config-name=random_runs "autorl.seed=\$SLURM_ARRAY_TASK_ID" "algorithm=$1" "search_space=$1" "environment=$2" "cluster=$3" "search_space=$4"
 " > $directory/${1}_${2}.sh
 echo "Submitting $directory for $1 on $2"
 chmod +x $directory/${1}_${2}.sh

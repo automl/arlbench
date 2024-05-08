@@ -123,8 +123,7 @@ class DQN(Algorithm):
         cnn_policy: bool = False,
         nas_config: Configuration | None = None,
         track_trajectories: bool = False,
-        track_metrics: bool = False,
-        use_prio_buffer: bool = True
+        track_metrics: bool = False
     ) -> None:
         """Creates a DQN algorithm instance.
 
@@ -201,25 +200,27 @@ class DQN(Algorithm):
                 "buffer_beta": Float("buffer_beta", (0.0, 1.0), default=0.9),
                 "buffer_epsilon": Float("buffer_epsilon", (0.0, 1e-3), default=1e-5),
                 "learning_rate": Float("learning_rate", (1e-5, 0.1), default=0.0001, log=True),
-                "gamma": Float("gamma", (0.0, 1.0), default=0.99),
+                "gamma": Float("gamma", (0.8, 1.0), default=0.99),
                 "tau": Float("tau", (0.0, 1.0), default=1.0),
                 "epsilon": Float("epsilon", (0.0, 1.0), default=0.1),
                 "use_target_network": Categorical(
                     "use_target_network", [True, False], default=True
                 ),
-                "train_freq": Integer("train_freq", (1, int(1e5)), default=4),
-                "gradient steps": Integer("gradient_steps", (1, int(1e3)), default=1),
+                "train_freq": Integer("train_freq", (1, 8), default=4),
+                "gradient steps": Integer("gradient_steps", (1, 8), default=1),
                 "learning_starts": Integer(
-                    "learning_starts", (10, int(1e5)), default=100
+                    "learning_starts", (128, 8192), default=128
                 ),
                 "target_update_interval": Integer(
-                    "target_update_interval", (1, int(1e5)), default=10000
+                    "target_update_interval", (1, 1000), default=1000
                 ),
                 "normalize_observations": Categorical(
                     "normalize_observations", [True, False], default=False
                 ),
             },
+            # TODO add condition for tau
         )
+    
 
     @staticmethod
     def get_default_hpo_config() -> Configuration:
