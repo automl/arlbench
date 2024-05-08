@@ -170,19 +170,39 @@ class PPO(Algorithm):
             name="PPOConfigSpace",
             seed=seed,
             space={
-                "minibatch_size": Integer("minibatch_size", (4, 4096), default=64),
+                "minibatch_size": Categorical("minibatch_size", [16, 32, 64, 128], default=64),
                 "learning_rate": Float("learning_rate", (1e-6, 0.1), default=3e-4, log=True),
-                "n_steps": Integer("n_steps", (1, 4096), default=2048),
-                "update_epochs": Integer("update_epochs", (1, 32), default=10),
+                "n_steps": Categorical("n_steps", [32, 64, 128, 256, 512], default=128),
+                "update_epochs": Integer("update_epochs", (5, 20), default=10),
                 "gamma": Float("gamma", (0.8, 1.0), default=0.99),
-                "gae_lambda": Float("gae_lambda", (0.8, 1.0), default=0.95),
+                "gae_lambda": Float("gae_lambda", (0.8, 0.9999), default=0.95),
+                "clip_eps": Float("clip_eps", (0.0, 0.5), default=0.2),
+                "vf_clip_eps": Float("vf_clip_eps", (0.0, 0.5), default=0.2),
+                "normalize_advantage": Categorical("normalize_advantage", [True, False], default=True),
+                "ent_coef": Float("ent_coef", (0.0, 0.5), default=0.0),
+                "vf_coef": Float("vf_coef", (0.0, 1.0), default=0.5),
+                "max_grad_norm": Float("max_grad_norm", (0.0, 1.0), default=0.5),
+                "normalize_observations": Categorical("normalize_observations", [True, False], default=False),
+            },
+        )
+    
+    @staticmethod
+    def get_hpo_search_space(seed: int | None = None) -> ConfigurationSpace:
+        return ConfigurationSpace(
+            name="PPOConfigSpace",
+            seed=seed,
+            space={
+                "minibatch_size": Categorical("minibatch_size", [16, 32, 64, 128], default=64),
+                "learning_rate": Float("learning_rate", (1e-6, 0.1), default=3e-4, log=True),
+                "n_steps": Categorical("n_steps", [32, 64, 128, 256, 512], default=128),
+                "update_epochs": Integer("update_epochs", (5, 20), default=10),
+                "gae_lambda": Float("gae_lambda", (0.8, 0.9999), default=0.95),
                 "clip_eps": Float("clip_eps", (0.0, 0.5), default=0.2),
                 "vf_clip_eps": Float("vf_clip_eps", (0.0, 0.5), default=0.2),
                 "normalize_advantage": Categorical("normalize_advatange", [True, False], default=True),
                 "ent_coef": Float("ent_coef", (0.0, 0.5), default=0.0),
                 "vf_coef": Float("vf_coef", (0.0, 1.0), default=0.5),
                 "max_grad_norm": Float("max_grad_norm", (0.0, 1.0), default=0.5),
-                "normalize_observations": Categorical("normalize_observations", [True, False], default=False),
             },
         )
 

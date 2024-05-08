@@ -2,7 +2,7 @@
 algorithm: dqn
 hp_config:
   buffer_alpha: 0.9
-  buffer_batch_size: '16'
+  buffer_batch_size: 16
   buffer_beta: 0.9
   buffer_epsilon: 0.001
   buffer_prio_sampling: false
