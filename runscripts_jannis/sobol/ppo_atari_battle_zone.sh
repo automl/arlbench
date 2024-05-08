@@ -13,6 +13,7 @@
 #SBATCH --error sobol/log/arlb_rs_ppo_atari_battle_zone_%A_%a.err
 #SBATCH --array=0-9
 
+
 cd ..
-python runscripts/run_arlbench.py -m --config-name=random_runs autorl.seed=$SLURM_ARRAY_TASK_ID algorithm=ppo search_space=ppo environment=atari_battle_zone cluster=pc2_gpu
+python runscripts/run_arlbench.py -m --config-name=random_runs autorl.seed=$SLURM_ARRAY_TASK_ID algorithm=ppo search_space=ppo environment=atari_battle_zone cluster=pc2_gpu search_space=ppo
 
