@@ -32,4 +32,4 @@ autorl:
   state_features: []
   n_steps: 10
   n_eval_steps: 100
-  n_eval_episodes: 10
+  n_eval_episodes: 128
