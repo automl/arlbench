@@ -44,9 +44,9 @@ hyperparameters:
     default: false
   hp_config.buffer_size:
     type: uniform_int
-    upper: 10000    # TODO update
-    lower: 1024
-    default: 10000  # TODO update
+    upper: 10000000
+    lower: 1
+    default: 1000000
     log: false
   hp_config.gamma:
     type: uniform_float
