@@ -20,7 +20,7 @@ hyperparameters:
     choices: [16, 32, 64, 128]
   hp_config.n_steps:
     type: categorical
-    choices: [128, 256, 512, 1024, 2048]
+    choices: [32, 64, 128, 256, 512]
   hp_config.gae_lambda:
     type: uniform_float
     upper: 0.9999
