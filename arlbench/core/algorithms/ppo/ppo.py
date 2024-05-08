@@ -178,7 +178,7 @@ class PPO(Algorithm):
                 "gae_lambda": Float("gae_lambda", (0.8, 1.0), default=0.95),
                 "clip_eps": Float("clip_eps", (0.0, 0.5), default=0.2),
                 "vf_clip_eps": Float("vf_clip_eps", (0.0, 0.5), default=0.2),
-                "normalize_advatange": Categorical("normalize_advatange", [True, False], default=True),
+                "normalize_advantage": Categorical("normalize_advatange", [True, False], default=True),
                 "ent_coef": Float("ent_coef", (0.0, 0.5), default=0.0),
                 "vf_coef": Float("vf_coef", (0.0, 1.0), default=0.5),
                 "max_grad_norm": Float("max_grad_norm", (0.0, 1.0), default=0.5),
@@ -714,7 +714,7 @@ class PPO(Algorithm):
 
         # Calculate actor loss
         ratio = jnp.exp(log_prob - traj_batch.log_prob)
-        if self.hpo_config["normalize_advatange"]:
+        if self.hpo_config["normalize_advantage"]:
             gae = (gae - gae.mean()) / (gae.std() + 1e-8)
         loss_actor1 = ratio * gae
         loss_actor2 = (
