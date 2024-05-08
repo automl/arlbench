@@ -13,7 +13,6 @@ hp_config:
   clip_eps: 0.1
   ent_coef: 0.01
   learning_rate: 2.5e-4
-  learning_starts: 10000
   update_epochs: 4
   n_steps: 128
   vf_coef: 0.5
@@ -21,4 +20,4 @@ hp_config:
 
 nas_config:
   activation: relu
-  hidden_size: 256
+  hidden_size: 512
