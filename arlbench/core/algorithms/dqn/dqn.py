@@ -11,7 +11,7 @@ import jax.lax
 import jax.numpy as jnp
 import numpy as np
 import optax
-from ConfigSpace import Categorical, Configuration, ConfigurationSpace, Float, Integer
+from ConfigSpace import Categorical, Configuration, ConfigurationSpace, Float, Integer, EqualsCondition
 from flax.training.train_state import TrainState
 
 from arlbench.core import running_statistics
@@ -178,31 +178,31 @@ class DQN(Algorithm):
     @staticmethod
     def get_hpo_config_space(seed: int | None = None) -> ConfigurationSpace:
         # defaults from https://stable-baselines3.readthedocs.io/en/master/modules/dqn.html
-        return ConfigurationSpace(
+        cs = ConfigurationSpace(
             name="DQNConfigSpace",
             seed=seed,
             space={
                 "buffer_size": Integer("buffer_size", (1024, int(1e7)), default=1000000),
-                "buffer_batch_size": Integer(
-                    "buffer_batch_size", (1, 1024), default=32
+                "buffer_batch_size": Categorical(
+                    "buffer_batch_size", [4, 8, 16, 32], default=16
                 ),
                 "buffer_prio_sampling": Categorical(
                     "buffer_prio_sampling", [True, False], default=False
                 ),
-                "buffer_alpha": Float("buffer_alpha", (0.0, 1.0), default=0.9),
-                "buffer_beta": Float("buffer_beta", (0.0, 1.0), default=0.9),
-                "buffer_epsilon": Float("buffer_epsilon", (0.0, 1e-3), default=1e-5),
-                "learning_rate": Float("learning_rate", (1e-5, 0.1), default=0.0001, log=True),
+                "buffer_alpha": Float("buffer_alpha", (0.01, 1.0), default=0.9),
+                "buffer_beta": Float("buffer_beta", (0.01, 1.0), default=0.9),
+                "buffer_epsilon": Float("buffer_epsilon", (1e-3, 1e-2), default=1e-3),
+                "learning_rate": Float("learning_rate", (1e-6, 0.1), default=3e-4, log=True),
                 "gamma": Float("gamma", (0.8, 1.0), default=0.99),
-                "tau": Float("tau", (0.0, 1.0), default=1.0),
-                "epsilon": Float("epsilon", (0.0, 1.0), default=0.1),
+                "tau": Float("tau", (0.01, 1.0), default=1.0),
+                "epsilon": Float("epsilon", (0.005, 0.5), default=0.1),
                 "use_target_network": Categorical(
                     "use_target_network", [True, False], default=True
                 ),
-                "train_freq": Integer("train_freq", (1, 8), default=4),
-                "gradient steps": Integer("gradient_steps", (1, 8), default=1),
+                "train_freq": Integer("train_freq", (1, 128), default=4),
+                "gradient steps": Integer("gradient_steps", (1, 10), default=1),
                 "learning_starts": Integer(
-                    "learning_starts", (128, 8192), default=128
+                    "learning_starts", (0, 1024), default=128
                 ),
                 "target_update_interval": Integer(
                     "target_update_interval", (1, 1000), default=1000
@@ -211,8 +211,13 @@ class DQN(Algorithm):
                     "normalize_observations", [True, False], default=False
                 ),
             },
-            # TODO add condition for tau
         )
+        cs.add_conditions([
+            EqualsCondition(cs["target_update_interval"], cs["use_target_network"], True),
+            EqualsCondition(cs["tau"], cs["use_target_network"], True)
+        ])
+
+        return cs
     
 
     @staticmethod
