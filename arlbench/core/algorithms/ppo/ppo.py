@@ -199,7 +199,7 @@ class PPO(Algorithm):
                 "gae_lambda": Float("gae_lambda", (0.8, 0.9999), default=0.95),
                 "clip_eps": Float("clip_eps", (0.0, 0.5), default=0.2),
                 "vf_clip_eps": Float("vf_clip_eps", (0.0, 0.5), default=0.2),
-                "normalize_advantage": Categorical("normalize_advatange", [True, False], default=True),
+                "normalize_advantage": Categorical("normalize_advantage", [True, False], default=True),
                 "ent_coef": Float("ent_coef", (0.0, 0.5), default=0.0),
                 "vf_coef": Float("vf_coef", (0.0, 1.0), default=0.5),
                 "max_grad_norm": Float("max_grad_norm", (0.0, 1.0), default=0.5),
