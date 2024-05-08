@@ -47,7 +47,7 @@ hyperparameters:
     - 256
     - 512
     default: 128
-  hp_config.normalize_advatange:
+  hp_config.normalize_advantage:
     type: categorical
     choices:
     - true
