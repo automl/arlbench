@@ -123,8 +123,7 @@ class DQN(Algorithm):
         cnn_policy: bool = False,
         nas_config: Configuration | None = None,
         track_trajectories: bool = False,
-        track_metrics: bool = False,
-        use_prio_buffer: bool = True
+        track_metrics: bool = False
     ) -> None:
         """Creates a DQN algorithm instance.
 
