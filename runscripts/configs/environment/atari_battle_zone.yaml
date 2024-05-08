@@ -8,4 +8,4 @@ eval_kwargs:
   episodic_life: False
   reward_clip: True
 cnn_policy: True
-n_envs: 10
+n_envs: 8
