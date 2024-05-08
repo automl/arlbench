@@ -21,7 +21,7 @@ echo "#!/bin/bash
 
 cd ..
 source .venv/bin/activate
-python runscripts/run_arlbench.py -m --config-name=base "autorl.n_eval_steps=100" "autorl.n_eval_episodes=128"  "autorl.seed=\$SLURM_ARRAY_TASK_ID" "algorithm=$1" "environment=$2"
+python runscripts/run_arlbench.py -m --config-name=base "autorl.n_eval_steps=100" "autorl.n_eval_episodes=128"  "autorl.seed=\$SLURM_ARRAY_TASK_ID" "algorithm=$1" "environment=$2" "+sb_zoo=$2_$1"
 " > $directory/${1}_${2}.sh
 echo "Submitting $directory for $1 on $2"
 chmod +x $directory/${1}_${2}.sh
