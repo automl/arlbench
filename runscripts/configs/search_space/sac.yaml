@@ -21,11 +21,11 @@ hyperparameters:
   hp_config.buffer_batch_size:
     type: categorical
     choices:
-    - true
-    - true
-    - true
-    - true
-    default: true
+    - 64
+    - 128
+    - 256
+    - 512
+    default: 256
   hp_config.buffer_beta:
     type: uniform_float
     upper: 1.0
@@ -49,12 +49,6 @@ hyperparameters:
     upper: 10000000
     lower: 1
     default: 1000000
-    log: false
-  hp_config.gamma:
-    type: uniform_float
-    upper: 1.0
-    lower: 0.8
-    default: 0.99
     log: false
   hp_config.gradient_steps:
     type: uniform_int
