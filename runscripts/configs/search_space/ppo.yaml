@@ -54,12 +54,6 @@ hyperparameters:
     - true
     - false
     default: true
-  hp_config.normalize_observations:
-    type: categorical
-    choices:
-    - true
-    - false
-    default: false
   hp_config.update_epochs:
     type: uniform_int
     upper: 32

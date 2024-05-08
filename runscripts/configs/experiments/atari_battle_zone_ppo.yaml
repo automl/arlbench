@@ -1,6 +1,6 @@
 # @package _global_
 defaults:
-  - override /environment: atari_breakout    
+  - override /environment: atari_battle_zone  
   - override /algorithm: ppo   
 
 nas_config:

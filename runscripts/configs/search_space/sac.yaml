@@ -74,12 +74,6 @@ hyperparameters:
     lower: 0
     default: 128
     log: false
-  hp_config.normalize_observations:
-    type: categorical
-    choices:
-    - true
-    - false
-    default: false
   hp_config.target_update_interval:
     type: uniform_int
     upper: 1000
