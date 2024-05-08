@@ -36,9 +36,11 @@ DEFAULT_AUTO_RL_CONFIG = {
     "env_framework": "gymnax",
     "env_name": "CartPole-v1",
     "env_kwargs": {},
+    "eval_env_kwargs": {},
     "n_envs": 10,
     "algorithm": "dqn",
     "cnn_policy": False,
+    "nas_config": {},
     "checkpoint": [],
     "checkpoint_name": "default_checkpoint",
     "checkpoint_dir": "/tmp",
@@ -86,7 +88,7 @@ class AutoRLEnv(gymnasium.Env):
                     self._config[k] = v
                 else:
                     warnings.warn(
-                        f"Invalid config key '{k}'. Falling back to default value."
+                        f"Invalid config key '{k}'. This item will be ignored."
                     )
 
         self._seed = int(self._config["seed"])
@@ -100,18 +102,19 @@ class AutoRLEnv(gymnasium.Env):
         self._env = make_env(
             self._config["env_framework"],
             self._config["env_name"],
-            cnn_policy=self._config["cnn_policy"],
             n_envs=self._config["n_envs"],
+            env_kwargs=self._config["env_kwargs"],
+            cnn_policy=self._config["cnn_policy"],
             seed=self._seed,
-            env_kwargs=self._config["env_kwargs"]
         )
 
         self._eval_env = make_env(
             self._config["env_framework"],
             self._config["env_name"],
+            n_envs=self._config["n_envs"],
+            env_kwargs=self._config["eval_env_kwargs"],
             cnn_policy=self._config["cnn_policy"],
-            n_envs=self._config["n_eval_episodes"],
-            seed=self._seed,
+            seed=self._seed + 1,
         )
 
         # Checkpointing
@@ -131,6 +134,9 @@ class AutoRLEnv(gymnasium.Env):
         self._config_space = self._algorithm_cls.get_hpo_config_space()
 
         # Instantiate algorithm with default hyperparameter configuration
+        self._nas_config = self._algorithm_cls.get_default_nas_config()
+        for k, v in self._config["nas_config"].items():
+            self._nas_config[k] = v
         self._hpo_config = self._algorithm_cls.get_default_hpo_config()
         self._algorithm = self._make_algorithm()
         self._algorithm_state = None
@@ -250,19 +256,20 @@ class AutoRLEnv(gymnasium.Env):
         return result, objectives, obs
 
     def _make_algorithm(self) -> Algorithm:
-        algorithm = self._algorithm_cls(
-            self.hpo_config,
+        return self._algorithm_cls(
+            self._hpo_config,
             self._env,
+            nas_config=self._nas_config,
             eval_env=self._eval_env,
             track_metrics=self._track_metrics,
             track_trajectories=self._track_trajectories,
             cnn_policy=self._config["cnn_policy"]
         )
-        return algorithm
 
     def step(
         self,
         action: Configuration | dict,
+        checkpoint_path: str | None = None,
         n_total_timesteps: int | None = None,
         n_eval_steps: int | None = None,
         n_eval_episodes: int | None = None,
@@ -288,9 +295,9 @@ class AutoRLEnv(gymnasium.Env):
                 "No agent configuration provided. Falling back to default configuration."
             )
 
-        if self._done or self._algorithm is None or self._algorithm_state is None:
+        if self._done:
             raise ValueError("Called step() before reset().")
-
+        
         # Set done if max. number of steps in DAC is reached or classic (one-step) HPO is performed
         self._done = self._step()
         info = {}
@@ -300,13 +307,14 @@ class AutoRLEnv(gymnasium.Env):
             action = Configuration(self.config_space, action)
         self._hpo_config = action
 
-        # Update hyperparameter configuration
+        seed = seed if seed else self._seed
+        
         self._algorithm = self._make_algorithm()
-
-        if seed:
-            print(self._algorithm_state)
-            runner_state = self._algorithm_state._replace(rng=jax.random.key(seed))
-            self._algorithm_state = self._algorithm_state._replace(runner_state=runner_state)
+        if checkpoint_path:
+            _, self._algorithm_state = self._load(checkpoint_path, seed)
+        else:
+            init_rng = jax.random.key(seed)
+            self._algorithm_state = self._algorithm.init(init_rng)
 
         # Training kwargs
         train_kw_args = {
@@ -347,7 +355,6 @@ class AutoRLEnv(gymnasium.Env):
     def reset(
         self,
         seed: int | None = None,
-        checkpoint_path: str | None = None,
     ) -> tuple[ObservationT, InfoT]:
         """_summary_
 
@@ -361,18 +368,6 @@ class AutoRLEnv(gymnasium.Env):
         self._done = False
         self._c_step = 0
         self._c_episode += 1
-
-        seed = seed if seed else self._seed
-
-        # Use default hyperparameter configuration
-        self._hpo_config = self._algorithm_cls.get_default_hpo_config()
-        self._algorithm = self._make_algorithm()
-
-        if checkpoint_path:
-            self._load(checkpoint_path, seed)
-        else:
-            init_rng = jax.random.key(seed)
-            self._algorithm_state = self._algorithm.init(init_rng)
 
         return {}, {}
 
@@ -408,14 +403,13 @@ class AutoRLEnv(gymnasium.Env):
             tag=tag,
         )
 
-    def _load(self, checkpoint_path: str, seed: int | None = None) -> None:
+    def _load(self, checkpoint_path: str, seed: int) -> tuple[Configuration, AlgorithmState]:
         """_summary_
 
         Args:
             checkpoint_path (str): _description_
             seed (int | None, optional): _description_. Defaults to None.
         """
-        seed = seed if seed else self._seed
         init_rng = jax.random.PRNGKey(seed)
         algorithm_state = self._algorithm.init(init_rng)
         (
@@ -426,9 +420,10 @@ class AutoRLEnv(gymnasium.Env):
             ),
             algorithm_kw_args,
         ) = Checkpointer.load(checkpoint_path, algorithm_state)
-        self._hpo_config = Configuration(self._config_space, hpo_config)
+        hpo_config = Configuration(self._config_space, hpo_config)
+        algorithm_state = self._algorithm.init(init_rng, **algorithm_kw_args)
 
-        self._algorithm_state = self._algorithm.init(init_rng, **algorithm_kw_args)
+        return hpo_config, algorithm_state
 
     @property
     def action_space(self) -> gymnasium.spaces.Space:

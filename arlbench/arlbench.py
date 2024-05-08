@@ -10,9 +10,6 @@ def run_arlbench(cfg: DictConfig, logger: Logger | None = None) -> float | tuple
     """Run ARLBench using the given config and return objective(s)."""
     env = AutoRLEnv(cfg.autorl)
 
-    if logger:
-        logger.info(f"Your current config is: \n{cfg}")
-
     if "load" in cfg and cfg.load:
         checkpoint_path = os.path.join(cfg.load, cfg.autorl.checkpoint_name)
     else:
@@ -22,8 +19,13 @@ def run_arlbench(cfg: DictConfig, logger: Logger | None = None) -> float | tuple
         cfg.autorl.checkpoint_dir = cfg.save
         cfg.autorl.checkpoint = ["opt_state", "params", "buffer"]
   
-    _ = env.reset(checkpoint_path=checkpoint_path)
-    _, objectives, _, _, info = env.step(cfg.hp_config)
+    _ = env.reset()
+
+    if logger:
+        logger.info("Training started.")
+    _, objectives, _, _, info = env.step(cfg.hp_config, checkpoint_path=checkpoint_path)
+    if logger:
+        logger.info("Training finished.")
 
     info["train_info_df"].to_csv("evaluation.csv", index=False)
 
