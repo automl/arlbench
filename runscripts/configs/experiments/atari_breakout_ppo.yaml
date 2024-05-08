@@ -1,13 +1,5 @@
 # @package _global_
-defaults:
-  - override /environment: atari_breakout    
-  - override /algorithm: ppo    
-
 # https://huggingface.co/sb3/ppo-BreakoutNoFrameskip-v4
-environment:
-  n_envs: 8
-  n_total_timesteps: 10000000
-
 hp_config:
   minibatch_size: 256
   clip_eps: 0.1
