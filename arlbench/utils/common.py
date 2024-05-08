@@ -55,6 +55,9 @@ def config_space_to_yaml(config_space: ConfigSpace.ConfigurationSpace, config_ke
         'conditions': []
     }
     for hp_name, hp in config_space.items():
+        if hp_name == "normalize_observations":
+            continue
+        
         hp_key = f"{config_key}.{hp_name}"
         if isinstance(hp, ConfigSpace.UniformIntegerHyperparameter):
             yaml_dict['hyperparameters'][hp_key] = {

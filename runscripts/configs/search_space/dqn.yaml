@@ -68,12 +68,6 @@ hyperparameters:
     lower: 0
     default: 128
     log: false
-  hp_config.normalize_observations:
-    type: categorical
-    choices:
-    - true
-    - false
-    default: false
   hp_config.train_freq:
     type: uniform_int
     upper: 128
