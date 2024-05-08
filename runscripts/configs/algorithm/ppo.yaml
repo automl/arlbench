@@ -2,6 +2,7 @@
 algorithm: ppo
 hp_config:
   clip_eps: 0.2
+  vf_clip_eps: 0.2
   ent_coef: 0.0
   gae_lambda: 0.95
   gamma: 0.99
@@ -10,6 +11,7 @@ hp_config:
   minibatch_size: 64
   n_steps: 2048
   normalize_observations: false
+  normalize_advantage: true
   update_epochs: 10
   vf_coef: 0.5
 nas_config:
