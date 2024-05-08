@@ -164,14 +164,7 @@ class DQN(Algorithm):
             add_sequences=False,
             add_batch_size=self.env.n_envs,
             priority_exponent=self.hpo_config["buffer_beta"],
-            device=jax.default_backend()
-        )
-        self.buffer = self.buffer.replace(
-            init=jax.jit(self.buffer.init),
-            add=jax.jit(self.buffer.add, donate_argnums=0),
-            sample=jax.jit(self.buffer.sample),
-            can_sample=jax.jit(self.buffer.can_sample),
-            set_priorities=jax.jit(self.buffer.set_priorities, donate_argnums=0),
+            #device=jax.default_backend()
         )
         if self.hpo_config["buffer_prio_sampling"] is False:
             sample_fn = functools.partial(
@@ -180,7 +173,7 @@ class DQN(Algorithm):
                 sequence_length=2,
                 period=1,
             )
-            self.buffer = self.buffer.replace(sample=jax.jit(sample_fn))
+            self.buffer = self.buffer.replace(sample=sample_fn)
 
     @staticmethod
     def get_hpo_config_space(seed: int | None = None) -> ConfigurationSpace:

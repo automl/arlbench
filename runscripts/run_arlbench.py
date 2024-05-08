@@ -39,7 +39,7 @@ def run(cfg: DictConfig, logger: logging.Logger):
     """Console script for arlbench."""
 
     logger.info("Starting run with config:")
-    logger.info("\n" + str(OmegaConf.to_yaml(cfg)))
+    logger.info(str(OmegaConf.to_yaml(cfg)))
 
     objectives = run_arlbench(cfg, logger=logger)
 

@@ -193,7 +193,7 @@ class SAC(Algorithm):
                 sequence_length=2,
                 period=1,
             )
-            self.buffer = self.buffer.replace(sample=jax.jit(sample_fn))
+            self.buffer = self.buffer.replace(sample=sample_fn)
 
         # target for automatic entropy tuning
         self.target_entropy = -jnp.prod(jnp.array(self.env.action_space.shape)).astype(
