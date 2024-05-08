@@ -51,7 +51,8 @@ def save_defaults_to_yaml(hp_config_space, nas_config_sapce, algorithm: str):
 def config_space_to_yaml(config_space: ConfigSpace.ConfigurationSpace, config_key: str = 'hp_config', seed: int = 0):
     yaml_dict = {
         'seed': seed,
-        'hyperparameters': {}
+        'hyperparameters': {},
+        'conditions': []
     }
     for hp_name, hp in config_space.items():
         hp_key = f"{config_key}.{hp_name}"
@@ -85,6 +86,20 @@ def config_space_to_yaml(config_space: ConfigSpace.ConfigurationSpace, config_ke
                     'default': str(hp.default_value)
                 }
             yaml_dict['hyperparameters'][hp_key] = param
+
+    # This part is experimental
+    for c in config_space.get_conditions():
+        cond = {
+            "child": str(c.child.name),
+            "parent": str(c.parent.name),
+            "value": bool(c.value)
+        }
+        if isinstance(c, ConfigSpace.EqualsCondition):
+            cond["type"] = "EQ"
+        else:
+            raise ValueError("Only EqualsCondition is supported.")
+        
+        yaml_dict['conditions'].append(cond)
 
     return yaml.dump(yaml_dict, sort_keys=False, default_flow_style=False)
 

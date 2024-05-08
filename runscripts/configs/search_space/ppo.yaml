@@ -1,0 +1,81 @@
+seed: 0
+hyperparameters:
+  hp_config.clip_eps:
+    type: uniform_float
+    upper: 0.5
+    lower: 0.0
+    default: 0.2
+    log: false
+  hp_config.ent_coef:
+    type: uniform_float
+    upper: 0.5
+    lower: 0.0
+    default: 0.0
+    log: false
+  hp_config.gae_lambda:
+    type: uniform_float
+    upper: 1.0
+    lower: 0.8
+    default: 0.95
+    log: false
+  hp_config.gamma:
+    type: uniform_float
+    upper: 1.0
+    lower: 0.8
+    default: 0.99
+    log: false
+  hp_config.learning_rate:
+    type: uniform_float
+    upper: 0.1
+    lower: 1.0e-06
+    default: 0.0003
+    log: true
+  hp_config.max_grad_norm:
+    type: uniform_float
+    upper: 1.0
+    lower: 0.0
+    default: 0.5
+    log: false
+  hp_config.minibatch_size:
+    type: uniform_int
+    upper: 4096
+    lower: 4
+    default: 64
+    log: false
+  hp_config.n_steps:
+    type: uniform_int
+    upper: 4096
+    lower: 1
+    default: 2048
+    log: false
+  hp_config.normalize_advatange:
+    type: categorical
+    choices:
+    - true
+    - false
+    default: true
+  hp_config.normalize_observations:
+    type: categorical
+    choices:
+    - true
+    - false
+    default: false
+  hp_config.update_epochs:
+    type: uniform_int
+    upper: 32
+    lower: 1
+    default: 10
+    log: false
+  hp_config.vf_clip_eps:
+    type: uniform_float
+    upper: 0.5
+    lower: 0.0
+    default: 0.2
+    log: false
+  hp_config.vf_coef:
+    type: uniform_float
+    upper: 1.0
+    lower: 0.0
+    default: 0.5
+    log: false
+conditions: []

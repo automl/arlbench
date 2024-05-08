@@ -11,7 +11,7 @@ import jax.lax
 import jax.numpy as jnp
 import numpy as np
 import optax
-from ConfigSpace import Categorical, Configuration, ConfigurationSpace, Float, Integer
+from ConfigSpace import Categorical, Configuration, ConfigurationSpace, Float, Integer, EqualsCondition
 from flashbax.buffers.flat_buffer import ExperiencePair
 from flax.training.train_state import TrainState
 
@@ -202,34 +202,33 @@ class SAC(Algorithm):
 
     @staticmethod
     def get_hpo_config_space(seed: int | None = None) -> ConfigurationSpace:
-        # from 
-        return ConfigurationSpace(
+        cs =  ConfigurationSpace(
             name="SACConfigSpace",
             seed=seed,
             space={
                 "buffer_size": Integer("buffer_size", (1, int(1e7)), default=1000000),
-                "buffer_batch_size": Integer(
-                    "buffer_batch_size", (1, 1024), default=256
+                "buffer_batch_size": Categorical(
+                    "buffer_batch_size", [64, 128, 256, 512], default=256
                 ),
                 "buffer_prio_sampling": Categorical(
                     "buffer_prio_sampling", [True, False], default=False
                 ),
-                "buffer_alpha": Float("buffer_alpha", (0.0, 1.0), default=0.9),
-                "buffer_beta": Float("buffer_beta", (0.0, 1.0), default=0.9),
-                "buffer_epsilon": Float("buffer_epsilon", (0.0, 1e-3), default=1e-5),
-                "learning_rate": Float("learning_rate", (1e-5, 0.1), default=0.0003, log=True),
+                "buffer_alpha": Float("buffer_alpha", (0.01, 1.0), default=0.9),
+                "buffer_beta": Float("buffer_beta", (0.01, 1.0), default=0.9),
+                "buffer_epsilon": Float("buffer_epsilon", (1e-3, 1e-2), default=1e-3),
+                "learning_rate": Float("learning_rate", (1e-6, 0.1), default=3e-4, log=True),
                 "gradient_steps": Integer("gradient_steps", (1, int(1e5)), default=1),
-                "gamma": Float("gamma", (0.0, 1.0), default=0.99),
-                "tau": Float("tau", (0.0, 1.0), default=0.005),
+                "gamma": Float("gamma", (0.8, 1.0), default=0.99),
+                "tau": Float("tau", (0.01, 1.0), default=1.0),
                 "use_target_network": Categorical(
                     "use_target_network", [True, False], default=True
                 ),
-                "train_freq": Integer("train_freq", (1, int(1e5)), default=1),
+                "train_freq": Integer("train_freq", (1, 128), default=1),
                 "learning_starts": Integer(
-                    "learning_starts", (1, int(1e5)), default=100
+                    "learning_starts", (0, 1024), default=128
                 ),
                 "target_update_interval": Integer(
-                    "target_update_interval", (1, int(1e5)), default=1
+                    "target_update_interval", (1, 1000), default=1000
                 ),
                 "alpha_auto": Categorical("alpha_auto", [True, False], default=True),
                 "alpha": Float("alpha", (0.0, 1.0), default=1.0),
@@ -238,6 +237,13 @@ class SAC(Algorithm):
                 ),
             },
         )
+        cond = EqualsCondition(cs["target_update_interval"], cs["use_target_network"], True)
+        cond = EqualsCondition(cs["tau"], cs["use_target_network"], True)
+
+        cs.add_condition(cond)
+
+        return cs
+
 
     @staticmethod
     def get_default_hpo_config() -> Configuration:
