@@ -10,6 +10,9 @@ hydra:
   sweeper:
     n_trials: 256
     search_space: ${search_space}
+    sweeper_kwargs:
+        max_parallelization: 0.1  #  hence, only 25 jobs per batch 
+        job_array_size_limit: 100
   run:
     dir: results/sobol/${algorithm}_${autorl.env_name}/${autorl.seed}
   sweep:
@@ -39,5 +42,5 @@ autorl:
   objectives: ["reward_mean"]
   optimize_objectives: "upper"
   n_steps: 10
-  n_eval_steps: 100
+  n_eval_steps: 10
   n_eval_episodes: 128
