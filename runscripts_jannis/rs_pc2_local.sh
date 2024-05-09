@@ -1,7 +1,7 @@
 #!/bin/bash
 
-# USAGE run_rs.sh EXPERIMENT      CLUSTER 
-# USAGE run_rs.sh cc_cartpole_dqn local  
+# USAGE run_rs.sh EXPERIMENT      
+# USAGE run_rs.sh cc_cartpole_dqn  
 
 directory="sobol"
 
@@ -24,7 +24,7 @@ echo "#!/bin/bash
 
 
 cd ..
-python runscripts/run_arlbench.py -m --config-name=random_runs "autorl.seed=\$SLURM_ARRAY_TASK_ID" "+experiments=$1" "cluster=$2" 
+python runscripts/run_arlbench.py -m --config-name=random_runs "autorl.seed=\$SLURM_ARRAY_TASK_ID" "+experiments=$1" "cluster=local" 
 " > $directory/${1}.sh
 echo "Submitting $directory for $1"
 chmod +x $directory/${1}.sh
