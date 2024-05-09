@@ -104,8 +104,8 @@ def config_space_to_yaml(config_space: ConfigSpace.ConfigurationSpace, config_ke
     # This part is experimental
     for c in config_space.get_conditions():
         cond = {
-            "child": str(c.child.name),
-            "parent": str(c.parent.name),
+            "child": f"{config_key}.{str(c.child.name)}",
+            "parent": f"{config_key}.{str(c.parent.name)}",
             "value": bool(c.value)
         }
         if isinstance(c, ConfigSpace.EqualsCondition):
