@@ -78,12 +78,12 @@ def test_dqn(
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--dir-name", type=str, default="test")
+    parser.add_argument("--dir-name", type=str, default="arlb_gpu_2")
     parser.add_argument("--training-steps", type=int, default=50000)
     parser.add_argument("--n-eval-steps", type=int, default=10)
     parser.add_argument("--n-eval-episodes", type=int, default=128)
     parser.add_argument("--n-envs", type=int, default=1)
-    parser.add_argument("--seed", type=int, default=42)
+    parser.add_argument("--seed", type=int, default=9)
     parser.add_argument("--env-framework", type=str, default="envpool")
     parser.add_argument("--env", type=str, default="CartPole-v1")
     parser.add_argument("--cnn-policy", type=bool, default=False)
