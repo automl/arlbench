@@ -22,8 +22,7 @@ def ppo_runner(dir_name, log, framework, env_name, config, training_kw_args, see
         seed=seed, 
         cnn_policy=cnn_policy,
         env_kwargs={
-            "episodic_life": True,
-            "reward_clip": True,
+            "num_levels": 200
         }
     )
     eval_env = make_env(
@@ -33,8 +32,7 @@ def ppo_runner(dir_name, log, framework, env_name, config, training_kw_args, see
         seed=seed, 
         cnn_policy=cnn_policy,
         env_kwargs={
-            "episodic_life": False,
-            "reward_clip": True,
+            #"num_levels": 200
         }
     )
     rng = jax.random.PRNGKey(seed)
@@ -43,16 +41,16 @@ def ppo_runner(dir_name, log, framework, env_name, config, training_kw_args, see
     log.info(f"JAX default backend: {jax.default_backend()}")
 
     hpo_config = PPO.get_default_hpo_config()
-    hpo_config["minibatch_size"] = 256
-    hpo_config["update_epochs"] = 4
-    hpo_config["gamma"] = 0.99
+    hpo_config["minibatch_size"] = 2048
+    hpo_config["update_epochs"] = 3
+    hpo_config["gamma"] = 0.999
     hpo_config["gae_lambda"] = 0.95
     hpo_config["ent_coef"] = 0.01
     hpo_config["max_grad_norm"] = 0.5
-    hpo_config["clip_eps"] = 0.1
-    hpo_config["n_steps"] = 128
+    hpo_config["clip_eps"] = 0.2
+    hpo_config["n_steps"] = 256
     hpo_config["vf_coef"] = 0.5
-    hpo_config["learning_rate"] = 2.5e-4
+    hpo_config["learning_rate"] = 5e-4
 
     nas_config = PPO.get_default_nas_config()
     nas_config["activation"] = "relu"
@@ -88,14 +86,14 @@ def ppo_runner(dir_name, log, framework, env_name, config, training_kw_args, see
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--dir-name", type=str, default="test")
-    parser.add_argument("--training-steps", type=int, default=10000000)
+    parser.add_argument("--dir-name", type=str, default="test_procgen")
+    parser.add_argument("--training-steps", type=int, default=25000000)
     parser.add_argument("--n-eval-steps", type=int, default=10)
     parser.add_argument("--n-eval-episodes", type=int, default=128)
-    parser.add_argument("--n-envs", type=int, default=8)
+    parser.add_argument("--n-envs", type=int, default=64)
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--env-framework", type=str, default="envpool")
-    parser.add_argument("--env", type=str, default="Breakout-v5")
+    parser.add_argument("--env", type=str, default="CoinrunEasy-v0")
     parser.add_argument("--n-env-steps", type=int, default=1000)
     parser.add_argument("--cnn-policy", type=bool, default=True)
     args = parser.parse_args()
