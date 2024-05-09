@@ -93,7 +93,7 @@ hyperparameters:
     default: 1.0
     log: false
 conditions:
-- child: tau
-  parent: use_target_network
+- child: hp_config.tau
+  parent: hp_config.use_target_network
   value: true
   type: EQ

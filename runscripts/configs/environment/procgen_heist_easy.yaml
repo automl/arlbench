@@ -6,4 +6,4 @@ kwargs: {
 }
 eval_kwargs: {}
 cnn_policy: True
-n_envs: 10
+n_envs: 8
