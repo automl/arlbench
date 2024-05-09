@@ -1,4 +1,4 @@
-name: "Halfcheetah-v4"
+name: "InvertedPendulum-v4"
 framework: "envpool"
 n_total_timesteps: 1e6
 kwargs:
