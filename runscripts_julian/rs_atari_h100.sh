@@ -1,2 +1,2 @@
 #!/bin/bash
-./run_rs_max10.sh ppo atari_breakout claix_gpu_h100
+./run_rs.sh ppo atari_breakout claix_gpu_h100 128 1.0 8
