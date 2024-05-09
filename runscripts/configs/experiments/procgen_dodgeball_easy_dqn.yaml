@@ -1,6 +1,6 @@
 # @package _global_
 defaults:
-  - override /environment: procgen_bigfish_easy    
+  - override /environment: procgen_dodgeball_easy
   - override /algorithm: dqn 
   - override /search_space: dqn_procgen       
 

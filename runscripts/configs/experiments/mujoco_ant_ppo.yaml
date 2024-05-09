@@ -1,14 +1,12 @@
 # @package _global_
 defaults:
   - override /environment: mujoco_ant    
-  - override /algorithm: ppo       
-
-# https://huggingface.co/sb3/ppo-Ant-v3
-environment:
-  n_envs: 1
-  n_total_timesteps: 1000000
+  - override /algorithm: ppo   
+  - override /search_space: ppo    
 
 hp_config:
   normalize_observations: True
+
+# TODO bigger network?
 
 jax_enable_x64: True

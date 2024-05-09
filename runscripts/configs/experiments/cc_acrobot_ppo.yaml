@@ -1,6 +1,6 @@
 # @package _global_
 defaults:
-  - override /environment: cc_pendulum  
+  - override /environment: cc_acrobot    
   - override /algorithm: ppo   
   - override /search_space: ppo    
 
