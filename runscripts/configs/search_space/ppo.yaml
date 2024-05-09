@@ -14,15 +14,9 @@ hyperparameters:
     log: false
   hp_config.gae_lambda:
     type: uniform_float
-    upper: 1.0
+    upper: 0.9999
     lower: 0.8
     default: 0.95
-    log: false
-  hp_config.gamma:
-    type: uniform_float
-    upper: 1.0
-    lower: 0.8
-    default: 0.99
     log: false
   hp_config.learning_rate:
     type: uniform_float
@@ -37,18 +31,23 @@ hyperparameters:
     default: 0.5
     log: false
   hp_config.minibatch_size:
-    type: uniform_int
-    upper: 4096
-    lower: 4
+    type: categorical
+    choices:
+    - 16
+    - 32
+    - 64
+    - 128
     default: 64
-    log: false
   hp_config.n_steps:
-    type: uniform_int
-    upper: 4096
-    lower: 1
-    default: 2048
-    log: false
-  hp_config.normalize_advatange:
+    type: categorical
+    choices:
+    - 32
+    - 64
+    - 128
+    - 256
+    - 512
+    default: 128
+  hp_config.normalize_advantage:
     type: categorical
     choices:
     - true
@@ -56,8 +55,8 @@ hyperparameters:
     default: true
   hp_config.update_epochs:
     type: uniform_int
-    upper: 32
-    lower: 1
+    upper: 20
+    lower: 5
     default: 10
     log: false
   hp_config.vf_clip_eps:

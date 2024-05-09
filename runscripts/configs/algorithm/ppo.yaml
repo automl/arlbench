@@ -8,7 +8,7 @@ hp_config:
   learning_rate: 0.0003
   max_grad_norm: 0.5
   minibatch_size: 64
-  n_steps: 2048
+  n_steps: 128
   normalize_advantage: true
   normalize_observations: false
   update_epochs: 10

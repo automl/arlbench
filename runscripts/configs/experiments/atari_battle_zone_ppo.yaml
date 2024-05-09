@@ -2,6 +2,7 @@
 defaults:
   - override /environment: atari_battle_zone  
   - override /algorithm: ppo   
+  - override /search_space: ppo
 
 nas_config:
   activation: relu
