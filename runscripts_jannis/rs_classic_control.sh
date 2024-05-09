@@ -1,5 +1,5 @@
 #!/bin/bash
-./run_rs.sh dqn cc_acrobot local dqn_cc
+./run_rs.sh cc_acrobot_dqn local
 #./run_rs.sh dqn cc_cartpole local dqn_cc
 #./run_rs.sh dqn cc_mountain_car local dqn_cc
 
