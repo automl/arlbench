@@ -6,6 +6,6 @@ kwargs:
   reward_clip: True
 eval_kwargs:
   episodic_life: False
-  reward_clip: True
+  reward_clip: False
 cnn_policy: True
 n_envs: 8
