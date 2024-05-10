@@ -12,13 +12,13 @@ echo "#!/bin/bash
 #SBATCH --mem-per-cpu=2000M                                      
 #SBATCH --job-name=rs_atari
 ###SBATCH --account=
-#SBATCH -t 128:00:00            
+#SBATCH -t 00:20:00            
 #SBATCH --mail-type fail                                
-#SBATCH --partition Kathleenhigh
+#SBATCH --partition Test
 #SBATCH --mail-user dierkes@aim.rwth-aachen.de
 #SBATCH --output $directory/log/arlb_rs_${1}_${2}_%A_%a.out
 #SBATCH --error $directory/log/arlb_rs_${1}_${2}_%A_%a.err
-#SBATCH --array 6-9%2
+#SBATCH --array 8-9%2
 
 cd ..
 source /rwthfs/rz/cluster/home/oh751555/i14/arlbench/.venv/bin/activate
