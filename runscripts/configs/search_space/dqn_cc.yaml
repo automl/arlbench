@@ -12,7 +12,7 @@ hyperparameters:
       - 64
       - 128
       - 256
-    default: 16
+    default: 128
   hp_config.buffer_beta:
     type: uniform_float
     upper: 1.0
