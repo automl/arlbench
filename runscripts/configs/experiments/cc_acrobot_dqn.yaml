@@ -1,0 +1,5 @@
+# @package _global_
+defaults:
+  - override /environment: cc_acrobot 
+  - override /algorithm: dqn   
+  - override /search_space: dqn_cc

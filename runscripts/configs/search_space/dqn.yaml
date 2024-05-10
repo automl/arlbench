@@ -87,11 +87,11 @@ hyperparameters:
     default: 1.0
     log: false
 conditions:
-- child: target_update_interval
-  parent: use_target_network
+- child: hp_config.target_update_interval
+  parent: hp_config.use_target_network
   value: true
   type: EQ
-- child: tau
-  parent: use_target_network
+- child: hp_config.tau
+  parent: hp_config.use_target_network
   value: true
   type: EQ
