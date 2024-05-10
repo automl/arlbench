@@ -1,0 +1,6 @@
+# @package _global_
+defaults:
+  - override /environment: cc_continuous_mountain_car    
+  - override /algorithm: sac   
+  - override /search_space: sac_cc
+

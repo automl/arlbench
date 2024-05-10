@@ -1,0 +1,9 @@
+# @package _global_
+defaults:
+  - override /environment: atari_battle_zone  
+  - override /algorithm: dqn   
+  - override /search_space: dqn_atari
+
+nas_config:
+  activation: relu
+  hidden_size: 512

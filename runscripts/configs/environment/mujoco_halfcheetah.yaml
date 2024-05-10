@@ -6,4 +6,4 @@ kwargs:
 eval_kwargs:
   frame_skip: 1
 cnn_policy: False
-n_envs: 10
+n_envs: 8
