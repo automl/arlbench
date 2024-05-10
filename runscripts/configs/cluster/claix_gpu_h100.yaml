@@ -6,6 +6,7 @@ hydra:
   launcher:
     gres: "gpu:1"
     timeout_min: 2880
+    partition: c23g
     cpus_per_task: 16
     mem_per_cpu: 1000M
     account: p0021208
