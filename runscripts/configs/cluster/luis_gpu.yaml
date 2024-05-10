@@ -1,10 +1,10 @@
 # @package _global_
 defaults:
-  - override hydra/launcher: submitit_slurm
+  - override /hydra/launcher: submitit_slurm
 
 hydra:
   launcher:
-    partition: ai
+    partition: ai,tnt
     gres: "gpu:1"
     timeout_min: 2880 # 2 days
     cpus_per_task: 16
