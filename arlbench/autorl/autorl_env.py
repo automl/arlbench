@@ -311,7 +311,7 @@ class AutoRLEnv(gymnasium.Env):
         
         self._algorithm = self._make_algorithm()
         if checkpoint_path:
-            _, self._algorithm_state = self._load(checkpoint_path, seed)
+            self._algorithm_state = self._load(checkpoint_path, seed)
         else:
             init_rng = jax.random.key(seed)
             self._algorithm_state = self._algorithm.init(init_rng)
@@ -403,7 +403,7 @@ class AutoRLEnv(gymnasium.Env):
             tag=tag,
         )
 
-    def _load(self, checkpoint_path: str, seed: int) -> tuple[Configuration, AlgorithmState]:
+    def _load(self, checkpoint_path: str, seed: int) -> AlgorithmState:
         """_summary_
 
         Args:
@@ -420,10 +420,10 @@ class AutoRLEnv(gymnasium.Env):
             ),
             algorithm_kw_args,
         ) = Checkpointer.load(checkpoint_path, algorithm_state)
-        hpo_config = Configuration(self._config_space, hpo_config)
+        # hpo_config = Configuration(self._config_space, hpo_config)
         algorithm_state = self._algorithm.init(init_rng, **algorithm_kw_args)
 
-        return hpo_config, algorithm_state
+        return algorithm_state
 
     @property
     def action_space(self) -> gymnasium.spaces.Space:

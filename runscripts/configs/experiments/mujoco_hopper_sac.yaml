@@ -1,0 +1,12 @@
+# @package _global_
+defaults:
+  - override /environment: mujoco_halfcheetah    
+  - override /algorithm: sac   
+  - override /search_space: sac_mujoco    
+
+hp_config:
+  normalize_observations: True
+
+# TODO bigger network?
+
+jax_enable_x64: True
