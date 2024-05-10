@@ -2,6 +2,7 @@ defaults:
   - _self_
   - /cluster: local
   - /algorithm: dqn
+  - /experiments: cc_cartpole_dqn
   - /environment: cc_cartpole
   - search_space: dqn
   - override hydra/sweeper: HyperRS
