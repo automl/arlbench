@@ -1,2 +1,2 @@
 #!/bin/bash
-./run_rs.sh ppo atari_breakout claix_gpu_h100 128 1.0 8
+./run_rs.sh ppo atari_breakout kathleen_gpu 128 1.0 5
