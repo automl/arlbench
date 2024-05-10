@@ -7,7 +7,7 @@ hydra:
     gres: "gpu:1"
     timeout_min: 2880
     cpus_per_task: 16
-    mem_per_cpu: 8000M
+    mem_per_cpu: 1000M
     account: p0021208
     setup:
       - export JAX_PLATFORM_NAME=gpu
