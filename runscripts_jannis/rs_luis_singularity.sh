@@ -7,6 +7,17 @@ directory="sobol"
 
 mkdir -p "$directory/log"
 
+# run in container
+echo "
+. /opt/conda/etc/profile.d/conda.sh
+conda activate environment
+
+cd /tmp/bigwork/git_projects/arlbench
+
+python runscripts/run_arlbench.py -m --config-name=random_runs "autorl.seed=\$SLURM_ARRAY_TASK_ID" "+experiments=$1" "cluster=$2" 
+" > $directory/${1}_in_container.sh
+
+# start script
 echo "#!/bin/bash
 
 
@@ -19,10 +30,15 @@ echo "#!/bin/bash
 #SBATCH -p ai                                           # TODO check for your clusters partition
 #SBATCH --output $directory/log/arlb_rs_${1}_%A_%a.out
 #SBATCH --error $directory/log/arlb_rs_${1}_%A_%a.err
-#SBATCH --array=0-9
+#SBATCH --array=0-0
+
+module purge
+module load system singularity
 
 cd ..
-/bigwork/nhwpbecj/nhwpbecj/.conda/envs/arlb/bin/python runscripts/run_arlbench.py -m --config-name=random_runs "autorl.seed=\$SLURM_ARRAY_TASK_ID" "+experiments=$1" "cluster=$2" 
+singularity exec --bind $BIGWORK:/tmp/bigwork --nv singularity_container.sif bash -c "$directory/${1}_in_container.sh $SLURM_ARRAY_TASK_ID"
+
+/bigwork/nhwpbecj/nhwpbecj/.conda/envs/arlb/bin/
 " > $directory/${1}.sh
 echo "Submitting $directory for $1"
 chmod +x $directory/${1}.sh
