@@ -7,8 +7,8 @@ hydra:
     partition: dgx2
     gres: "gpu:1"
     timeout_min: 2880
-    cpus_per_task: 2
-    mem_per_cpu: 8000M
+    cpus_per_task: 3
+    mem_per_cpu: 6000M
     account: supp0003
     setup:
       - export JAX_PLATFORM_NAME=gpu
