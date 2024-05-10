@@ -9,7 +9,7 @@
 #SBATCH --mail-user dierkes@aim.rwth-aachen.de
 #SBATCH --output sobol/log/arlb_rs_ppo_atari_breakout_%A_%a.out
 #SBATCH --error sobol/log/arlb_rs_ppo_atari_breakout_%A_%a.err
-#SBATCH --array 0-6%2
+#SBATCH --array 0-5%2
 
 cd ..
 source /rwthfs/rz/cluster/home/oh751555/i14/arlbench/.venv/bin/activate

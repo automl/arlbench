@@ -9,9 +9,9 @@
 #SBATCH --mail-user dierkes@aim.rwth-aachen.de
 #SBATCH --output sobol/log/arlb_rs___%A_%a.out
 #SBATCH --error sobol/log/arlb_rs___%A_%a.err
-#SBATCH --array 0-10%2
+#SBATCH --array 0-9%2
 
 cd ..
 source /rwthfs/rz/cluster/home/oh751555/i14/arlbench/.venv/bin/activate
-python runscripts/run_arlbench.py -m --config-name=random_runs autorl.seed=$SLURM_ARRAY_TASK_ID algorithm= search_space=_8env environment= cluster= +experiments=_ 
+python runscripts/run_arlbench.py -m --config-name=random_runs autorl.seed=$SLURM_ARRAY_TASK_ID algorithm= search_space=_ environment=_ cluster= hydra.sweeper.n_trials= hydra.sweeper.sweeper_kwargs.max_parallelization= hydra.sweeper.sweeper_kwargs.job_array_size_limit=256 hydra.launcher.array_parallelism= +sb_zoo=__ 
 
