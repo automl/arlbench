@@ -1,8 +1,8 @@
 # @package _global_
 defaults:
-  - override /environment: mujoco_hopper
-  - override /algorithm: sac
-  - override /search_space: sac_mujoco
+  - override /environment: mujoco_halfcheetah    
+  - override /algorithm: ppo   
+  - override /search_space: ppo    
 
 hp_config:
   normalize_observations: True

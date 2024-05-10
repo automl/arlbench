@@ -9,10 +9,9 @@ hyperparameters:
   hp_config.buffer_batch_size:
     type: categorical
     choices:
-    - 4
-    - 8
-    - 16
-    - 32
+      - 64
+      - 128
+      - 256
     default: 16
   hp_config.buffer_beta:
     type: uniform_float
@@ -29,8 +28,8 @@ hyperparameters:
   hp_config.buffer_prio_sampling:
     type: categorical
     choices:
-    - true
-    - false
+      - true
+      - false
     default: false
   hp_config.buffer_size:
     type: uniform_int
@@ -71,8 +70,8 @@ hyperparameters:
   hp_config.use_target_network:
     type: categorical
     choices:
-    - true
-    - false
+      - true
+      - false
     default: true
   hp_config.target_update_interval:
     type: uniform_int
@@ -87,11 +86,11 @@ hyperparameters:
     default: 1.0
     log: false
 conditions:
-- child: hp_config.target_update_interval
-  parent: hp_config.use_target_network
-  value: true
-  type: EQ
-- child: hp_config.tau
-  parent: hp_config.use_target_network
-  value: true
-  type: EQ
+  - child: hp_config.target_update_interval
+    parent: hp_config.use_target_network
+    value: true
+    type: EQ
+  - child: hp_config.tau
+    parent: hp_config.use_target_network
+    value: true
+    type: EQ
