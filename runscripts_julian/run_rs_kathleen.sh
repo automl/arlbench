@@ -22,7 +22,7 @@ echo "#!/bin/bash
 
 cd ..
 source /rwthfs/rz/cluster/home/oh751555/i14/arlbench/.venv/bin/activate
-python runscripts/run_arlbench.py -m --config-name=random_runs "autorl.seed=\$SLURM_ARRAY_TASK_ID" "algorithm=$1" "search_space=$1_$2" "environment=$2_$3" "cluster=$4" "hydra.sweeper.n_trials=$5" "hydra.sweeper.sweeper_kwargs.max_parallelization=$6" "hydra.sweeper.sweeper_kwargs.job_array_size_limit=256" "hydra.launcher.array_parallelism=$7" "+sb_zoo=$2_$3_$1" 
+python runscripts/run_arlbench.py -m --config-name=random_runs "autorl.seed=\$SLURM_ARRAY_TASK_ID" "algorithm=$1" "search_space=$1_$2" "environment=$2_$3" "cluster=$4" "hydra.sweeper.n_trials=$5" "hydra.sweeper.sweeper_kwargs.max_parallelization=$6" "hydra.sweeper.sweeper_kwargs.job_array_size_limit=128" "hydra.launcher.array_parallelism=$7" "+sb_zoo=$2_$3_$1" 
 " > $directory/${1}_${2}.sh
 echo "Submitting $directory for $1 on $2"
 chmod +x $directory/${1}_${2}.sh
