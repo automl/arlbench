@@ -20,7 +20,7 @@ echo "#!/bin/bash
 #SBATCH -p normal                                       # TODO check for your clusters partition
 #SBATCH --output $directory/log/arlb_rs_${1}_%A_%a.out
 #SBATCH --error $directory/log/arlb_rs_${1}_%A_%a.err
-#SBATCH --array=0-9
+#SBATCH --array=1-4
 
 
 cd ..

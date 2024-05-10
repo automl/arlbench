@@ -11,7 +11,7 @@
 #SBATCH -p normal                                       # TODO check for your clusters partition
 #SBATCH --output sobol/log/arlb_rs_atari_battle_zone_ppo_%A_%a.out
 #SBATCH --error sobol/log/arlb_rs_atari_battle_zone_ppo_%A_%a.err
-#SBATCH --array=1-9
+#SBATCH --array=1-4
 
 
 cd ..
