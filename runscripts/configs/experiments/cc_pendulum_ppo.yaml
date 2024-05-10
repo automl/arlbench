@@ -2,5 +2,12 @@
 defaults:
   - override /environment: cc_pendulum  
   - override /algorithm: ppo   
-  - override /search_space: ppo    
+  - override /search_space: ppo_cc    
 
+environment:
+  n_total_timesteps: 100000
+
+hp_config:
+  update_epochs: 10
+  n_steps: 512
+  normalize_observations: False
