@@ -41,7 +41,7 @@ autorl:
   checkpoint_dir: "/tmp"
   state_features: []
   objectives: ["reward_mean"]
-  optimize_objectives: "upper"
+  optimize_objectives: "lower"
   n_steps: 10
   n_eval_steps: 10
   n_eval_episodes: 128
