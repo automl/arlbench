@@ -10,6 +10,7 @@ import jax
 import logging
 from omegaconf import OmegaConf, DictConfig
 from arlbench.arlbench import run_arlbench
+import csv
 
 
 @hydra.main(version_base=None, config_path="configs", config_name="base")
@@ -45,7 +46,13 @@ def run(cfg: DictConfig, logger: logging.Logger):
     try:
         with open("./done.txt", "r") as f:
             logger.info("Job already done, returning.")
-            return
+
+        with open("./performance.csv", "r") as pf:
+            csvreader = csv.reader(pf)
+            performance = next(csvreader)
+            performance = float(performance[0])
+            logger.info(f"Returning performance {performance}.")
+            return performance
     except FileNotFoundError:
         pass
 
