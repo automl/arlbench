@@ -9,10 +9,9 @@ hyperparameters:
   hp_config.buffer_batch_size:
     type: categorical
     choices:
-      - 4
-      - 8
       - 16
       - 32
+      - 64
     default: 16
   hp_config.buffer_beta:
     type: uniform_float
