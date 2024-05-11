@@ -2,9 +2,9 @@ defaults:
   - _self_
   - /cluster: local
   - /algorithm: dqn
-  - /experiments: cc_cartpole_dqn
   - /environment: cc_cartpole
   - search_space: dqn
+  - /experiments: cc_cartpole_dqn
   - override hydra/sweeper: HyperRS
 
 hydra:
@@ -41,7 +41,7 @@ autorl:
   checkpoint_dir: "/tmp"
   state_features: []
   objectives: ["reward_mean"]
-  optimize_objectives: "upper"
+  optimize_objectives: "lower"
   n_steps: 10
   n_eval_steps: 10
   n_eval_episodes: 128
