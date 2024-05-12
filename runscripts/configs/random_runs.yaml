@@ -34,6 +34,7 @@ autorl:
   n_envs: ${environment.n_envs}
   algorithm: ${algorithm}
   cnn_policy: ${environment.cnn_policy}
+  deterministic_eval: ${environment.deterministic_eval}
   nas_config: ${nas_config}
   n_total_timesteps: ${environment.n_total_timesteps}
   checkpoint: []
