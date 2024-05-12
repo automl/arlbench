@@ -8,4 +8,5 @@ eval_kwargs:
   episodic_life: False
   reward_clip: False
 cnn_policy: True
+deterministic_eval: True
 n_envs: 8
