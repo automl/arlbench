@@ -185,7 +185,7 @@ class SAC(Algorithm):
             sample_batch_size=self.hpo_config["buffer_batch_size"],
             add_sequences=False,
             add_batch_size=self.env.n_envs,
-            priority_exponent=self.hpo_config["buffer_beta"],
+            priority_exponent=self.hpo_config["buffer_alpha"],
             device=jax.default_backend()
         )
 
@@ -218,7 +218,7 @@ class SAC(Algorithm):
                 ),
                 "buffer_alpha": Float("buffer_alpha", (0.01, 1.0), default=0.9),
                 "buffer_beta": Float("buffer_beta", (0.01, 1.0), default=0.9),
-                "buffer_epsilon": Float("buffer_epsilon", (1e-3, 1e-2), default=1e-3),
+                "buffer_epsilon": Float("buffer_epsilon", (1e-7, 1e-2), default=1e-3),
                 "learning_rate": Float("learning_rate", (1e-6, 0.1), default=3e-4, log=True),
                 "gradient_steps": Integer("gradient_steps", (1, int(1e5)), default=1),
                 "gamma": Float("gamma", (0.8, 1.0), default=0.99),
@@ -267,7 +267,7 @@ class SAC(Algorithm):
                 "gradient_steps": Integer("gradient_steps", (1, int(1e5)), default=1),
                 "tau": Float("tau", (0.01, 1.0), default=1.0),
                 "use_target_network": Categorical(
-                    "use_target_network", [True, False], default=True
+                "use_target_network", [True, False], default=True
                 ),
                 "train_freq": Integer("train_freq", (1, 128), default=1),
                 "learning_starts": Integer(
@@ -587,6 +587,7 @@ class SAC(Algorithm):
         critic_train_state: SACTrainState,
         alpha_train_state: SACTrainState,
         batch: Transition,
+        is_weights: jnp.ndarray,
         rng: chex.PRNGKey,
     ) -> tuple[SACTrainState, jnp.ndarray, jnp.ndarray, FrozenDict, chex.PRNGKey]:
         """_summary_
@@ -628,7 +629,7 @@ class SAC(Algorithm):
             """
             q_pred = self.critic_network.apply(params, batch.last_obs, batch.action)
             td_error = target_q_value - q_pred
-            return 0.5 * (td_error**2).mean(axis=1).sum(), jnp.abs(td_error)
+            return 0.5 * (is_weights * td_error**2).mean(axis=1).sum(), jnp.abs(td_error)
 
         (loss_value, td_error), grads = jax.value_and_grad(mse_loss, has_aux=True)(
             critic_train_state.params
@@ -642,6 +643,7 @@ class SAC(Algorithm):
         critic_train_state: SACTrainState,
         alpha_train_state: SACTrainState,
         batch: Transition,
+        is_weights: jnp.ndarray,
         rng: chex.PRNGKey,
     ) -> tuple[SACTrainState, jnp.ndarray, jnp.ndarray, FrozenDict, chex.PRNGKey]:
         """_summary_
@@ -682,7 +684,7 @@ class SAC(Algorithm):
             min_qf_pi = jnp.min(qf_pi, axis=0)
 
             alpha_value = self.alpha.apply(alpha_params)
-            actor_loss = (alpha_value * log_prob - min_qf_pi).mean()
+            actor_loss = (is_weights * (alpha_value * log_prob - min_qf_pi)).mean()
             return actor_loss, -log_prob.mean()
 
         (loss_value, entropy), grads = jax.value_and_grad(actor_loss, has_aux=True)(
@@ -818,12 +820,16 @@ class SAC(Algorithm):
                             ),
                         )
                     )
+
+                is_weights = jnp.power((1.0 / batch.priorities), self.hpo_config["buffer_beta"])
+                is_weights = is_weights / jnp.max(is_weights)
                 critic_train_state, critic_loss, td_error, critic_grads, rng = (
                     self.update_critic(
                         actor_train_state,
                         critic_train_state,
                         alpha_train_state,
                         batch.experience.first,
+                        is_weights,
                         rng,
                     )
                 )
@@ -833,18 +839,16 @@ class SAC(Algorithm):
                         critic_train_state,
                         alpha_train_state,
                         batch.experience.first,
+                        is_weights,
                         rng,
                     )
                 )
                 alpha_train_state, alpha_loss = self.update_alpha(
                     alpha_train_state, entropy
                 )
-                new_prios = jnp.power(
-                    td_error.mean(axis=0) + self.hpo_config["buffer_epsilon"],
-                    self.hpo_config["buffer_alpha"],
-                ).astype(jnp.float64)
+                new_priorities = td_error.mean(axis=0) + self.hpo_config["buffer_epsilon"]
                 buffer_state = self.buffer.set_priorities(
-                    buffer_state, batch.indices, new_prios
+                    buffer_state, batch.indices, new_priorities
                 )
                 metrics = SACMetrics(
                     actor_loss=actor_loss,
