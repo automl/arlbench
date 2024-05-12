@@ -237,6 +237,7 @@ class DQN(Algorithm):
                 ),
                 "buffer_alpha": Float("buffer_alpha", (0.01, 1.0), default=0.9),
                 "buffer_beta": Float("buffer_beta", (0.01, 1.0), default=0.9),
+                "buffer_epsilon": Float("buffer_epsilon", (1e-7, 1e-4), default=1e-6),
                 "learning_rate": Float("learning_rate", (1e-6, 0.1), default=3e-4, log=True),
                 "tau": Float("tau", (0.01, 1.0), default=1.0),
                 "epsilon": Float("epsilon", (0.005, 0.5), default=0.1),
@@ -746,7 +747,7 @@ class DQN(Algorithm):
                     batch.experience.first.reward,
                     batch.experience.first.done,
                 )
-                new_priorities = jnp.abs(td_error) + 1e-6  # add small constant to avoid zero priorities
+                new_priorities = jnp.abs(td_error) + self.hpo_config["buffer_epsilon"]
                 buffer_state = self.buffer.set_priorities(
                     buffer_state, batch.indices, new_priorities
                 )
