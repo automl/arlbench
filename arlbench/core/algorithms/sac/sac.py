@@ -184,6 +184,7 @@ class SAC(Algorithm):
             add_sequences=False,
             add_batch_size=self.env.n_envs,
             priority_exponent=self.hpo_config["buffer_beta"],
+            device=jax.default_backend()
         )
 
         if self.hpo_config["buffer_prio_sampling"] is False:
