@@ -115,6 +115,7 @@ class PPO(Algorithm):
         eval_env: Environment | AutoRLWrapper | None = None,
         cnn_policy: bool = False,
         nas_config: Configuration | None = None,
+        deterministic_eval: bool = True,
         track_trajectories: bool = False,
         track_metrics: bool = False,
     ) -> None:
@@ -137,6 +138,7 @@ class PPO(Algorithm):
             nas_config,
             env,
             eval_env=eval_env,
+            deterministic_eval=deterministic_eval,
             track_metrics=track_metrics,
             track_trajectories=track_trajectories,
         )
