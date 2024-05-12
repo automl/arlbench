@@ -355,7 +355,11 @@ class PPO(Algorithm):
             sampled_action,
         )
 
-        return jnp.clip(action, self.env.action_space.low, self.env.action_space.high)
+        if not self.action_type[1]:  # continuous action space
+            action = jnp.clip(
+                action, self.env.action_space.low, self.env.action_space.high
+            )
+        return action
 
     @functools.partial(jax.jit, static_argnums=(0, 3, 4, 5))
     def train(
