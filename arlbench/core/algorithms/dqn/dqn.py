@@ -120,6 +120,7 @@ class DQN(Algorithm):
         hpo_config: Configuration,
         env: Environment | AutoRLWrapper,
         eval_env: Environment | AutoRLWrapper | None = None,
+        deterministic_eval: bool = True,
         cnn_policy: bool = False,
         nas_config: Configuration | None = None,
         track_trajectories: bool = False,
@@ -144,6 +145,7 @@ class DQN(Algorithm):
             nas_config,
             env,
             eval_env=eval_env,
+            deterministic_eval=deterministic_eval,
             track_trajectories=track_trajectories,
             track_metrics=track_metrics,
         )
@@ -164,7 +166,7 @@ class DQN(Algorithm):
             add_sequences=False,
             add_batch_size=self.env.n_envs,
             priority_exponent=self.hpo_config["buffer_beta"],
-            #device=jax.default_backend()
+            device=jax.default_backend()
         )
         if self.hpo_config["buffer_prio_sampling"] is False:
             sample_fn = functools.partial(
@@ -184,7 +186,7 @@ class DQN(Algorithm):
             space={
                 "buffer_size": Integer("buffer_size", (1024, int(1e7)), default=1000000),
                 "buffer_batch_size": Categorical(
-                    "buffer_batch_size", [4, 8, 16, 32], default=16
+                    "buffer_batch_size", [4, 8, 16, 32, 64], default=16
                 ),
                 "buffer_prio_sampling": Categorical(
                     "buffer_prio_sampling", [True, False], default=False
@@ -403,15 +405,43 @@ class DQN(Algorithm):
             runner_state (DQNRunnerState): Algorithm runner state.
             obs (jnp.ndarray): Observation(s).
             rng (chex.PRNGKey | None, optional): Not used in DQN. Random generator key in other algorithms. Defaults to None.
-            deterministic (bool): Not used in DQN. Return deterministic action in other algorithms. Defaults to True.
+            deterministic (bool): Return deterministic action. Defaults to True.
 
         Returns:
             jnp.ndarray: Action(s).
         """
-        if self.hpo_config["normalize_observations"]:
-            obs = running_statistics.normalize(obs, runner_state.normalizer_state)
-        q_values = self.network.apply(runner_state.train_state.params, obs)
-        return q_values.argmax(axis=-1)
+        def random_action(rng: chex.PRNGKey, _) -> jnp.ndarray:
+            _rngs = jax.random.split(rng, obs.shape[0])
+            return jnp.array(
+                [
+                    self.env.action_space.sample(_rngs[i])
+                    for i in range(obs.shape[0])
+                ]
+            )
+
+        def greedy_action(_: chex.prngkey, obs: jnp.ndarray) -> jnp.ndarray:
+            if self.hpo_config["normalize_observations"]:
+                obs = running_statistics.normalize(obs, runner_state.normalizer_state)
+            q_values = self.network.apply(runner_state.train_state.params, obs)
+            return q_values.argmax(axis=-1)
+
+        def sample_action(rng: chex.PRNGKey, obs: jnp.ndarray) -> jnp.ndarray:
+            action = jax.lax.cond(
+                jax.random.uniform(rng) < 0.5,
+                random_action,
+                greedy_action,
+                rng,
+                obs,
+            )
+            return action
+
+        return jax.lax.cond(
+            deterministic,
+            greedy_action,
+            sample_action,
+            rng,
+            obs,
+        )
 
     @functools.partial(jax.jit, static_argnums=(0, 3, 4, 5), donate_argnums=(2,))
     def train(

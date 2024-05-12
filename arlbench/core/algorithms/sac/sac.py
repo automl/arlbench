@@ -129,6 +129,7 @@ class SAC(Algorithm):
         hpo_config: Configuration,
         env: Environment | AutoRLWrapper,
         eval_env: Environment | AutoRLWrapper | None = None,
+        deterministic_eval: bool = True,
         cnn_policy: bool = False,
         nas_config: Configuration | None = None,
         track_metrics: bool = False,
@@ -152,6 +153,7 @@ class SAC(Algorithm):
             nas_config,
             env,
             eval_env=eval_env,
+            deterministic_eval=deterministic_eval,
             track_trajectories=track_trajectories,
             track_metrics=track_metrics,
         )
@@ -184,6 +186,7 @@ class SAC(Algorithm):
             add_sequences=False,
             add_batch_size=self.env.n_envs,
             priority_exponent=self.hpo_config["buffer_beta"],
+            device=jax.default_backend()
         )
 
         if self.hpo_config["buffer_prio_sampling"] is False:

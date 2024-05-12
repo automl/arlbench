@@ -369,7 +369,7 @@ class PPO(Algorithm):
         runner_state: PPORunnerState,
         _,
         n_total_timesteps: int = 1000000,
-        n_eval_steps: int = 100,
+        n_eval_steps: int = 10,
         n_eval_episodes: int = 10,
     ) -> PPOTrainReturnT:
         """Performs one iteration of training.
