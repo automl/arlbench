@@ -204,7 +204,7 @@ class DQN(Algorithm):
                 "train_freq": Integer("train_freq", (1, 128), default=4),
                 "gradient steps": Integer("gradient_steps", (1, 10), default=1),
                 "learning_starts": Integer(
-                    "learning_starts", (0, 1024), default=128
+                    "learning_starts", (0, 16384), default=128
                 ),
                 "target_update_interval": Integer(
                     "target_update_interval", (1, 1000), default=1000
