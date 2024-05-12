@@ -349,13 +349,13 @@ class PPO(Algorithm):
         def sampled_action() -> jnp.ndarray:
             return pi.sample(seed=rng)
 
-        return jax.lax.cond(
+        action = jax.lax.cond(
             deterministic,
             deterministic_action,
             sampled_action,
         )
 
-        # return jnp.clip(action, self.env.action_space.low, self.env.action_space.high)
+        return jnp.clip(action, self.env.action_space.low, self.env.action_space.high)
 
     @functools.partial(jax.jit, static_argnums=(0, 3, 4, 5))
     def train(
