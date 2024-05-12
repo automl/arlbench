@@ -165,7 +165,7 @@ class DQN(Algorithm):
             sample_batch_size=self.hpo_config["buffer_batch_size"],
             add_sequences=False,
             add_batch_size=self.env.n_envs,
-            priority_exponent=self.hpo_config["buffer_beta"],
+            priority_exponent=self.hpo_config["buffer_alpha"],
             device=jax.default_backend()
         )
         if self.hpo_config["buffer_prio_sampling"] is False:
@@ -237,7 +237,6 @@ class DQN(Algorithm):
                 ),
                 "buffer_alpha": Float("buffer_alpha", (0.01, 1.0), default=0.9),
                 "buffer_beta": Float("buffer_beta", (0.01, 1.0), default=0.9),
-                "buffer_epsilon": Float("buffer_epsilon", (1e-3, 1e-2), default=1e-3),
                 "learning_rate": Float("learning_rate", (1e-6, 0.1), default=3e-4, log=True),
                 "tau": Float("tau", (0.01, 1.0), default=1.0),
                 "epsilon": Float("epsilon", (0.005, 0.5), default=0.1),
@@ -505,6 +504,7 @@ class DQN(Algorithm):
         self,
         train_state: DQNTrainState,
         observations: jnp.ndarray,
+        priorities: jnp.ndarray,
         actions: jnp.ndarray,
         next_observations: jnp.ndarray,
         rewards: jnp.ndarray,
@@ -542,9 +542,12 @@ class DQN(Algorithm):
                 jnp.arange(q_pred.shape[0]), actions.squeeze().astype(int)
             ]  # (batch_size,)
             td_error = q_pred - next_q_value
-            loss = optax.l2_loss(q_pred, next_q_value).mean()
-            # return (td_error ** 2).mean(), td_error
-            return loss.mean(), td_error
+
+            is_weights = jnp.power((1.0 / priorities), self.hpo_config["buffer_beta"])
+            is_weights = is_weights / jnp.max(is_weights)
+
+            loss = jnp.mean(is_weights * optax.l2_loss(q_pred, next_q_value))
+            return loss, td_error
 
         (loss_value, td_error), grads = jax.value_and_grad(mse_loss, has_aux=True)(
             train_state.params
@@ -737,17 +740,15 @@ class DQN(Algorithm):
                 train_state, loss, td_error, grads = self.update(
                     train_state,
                     last_obs,
+                    batch.priorities,
                     batch.experience.first.action,
                     obs,
                     batch.experience.first.reward,
                     batch.experience.first.done,
                 )
-                new_prios = jnp.power(
-                    jnp.abs(td_error) + self.hpo_config["buffer_epsilon"],
-                    self.hpo_config["buffer_alpha"],
-                ).astype(jnp.float64)
+                new_priorities = jnp.abs(td_error) + 1e-6  # add small constant to avoid zero priorities
                 buffer_state = self.buffer.set_priorities(
-                    buffer_state, batch.indices, new_prios
+                    buffer_state, batch.indices, new_priorities
                 )
 
                 if not self.track_metrics:
