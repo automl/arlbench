@@ -7,7 +7,8 @@ hp_config:
   buffer_epsilon: 0.001
   buffer_prio_sampling: false
   buffer_size: 1000000
-  epsilon: 0.1
+  epsilon_initial: 1.0
+  epsilon_target: 0.05
   gamma: 0.99
   gradient_steps: 1
   learning_rate: 0.0003

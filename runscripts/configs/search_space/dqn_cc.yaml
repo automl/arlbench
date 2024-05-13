@@ -21,9 +21,9 @@ hyperparameters:
     log: false
   hp_config.buffer_epsilon:
     type: uniform_float
-    upper: 1e-4
-    lower: 1e-9
-    default: 1e-7
+    upper: 1e-3
+    lower: 1e-7
+    default: 1e-6
     log: true
   hp_config.buffer_prio_sampling:
     type: categorical
@@ -33,9 +33,9 @@ hyperparameters:
     default: false
   hp_config.buffer_size:
     type: uniform_int
-    upper: 100000
+    upper: 120000
     lower: 1024
-    default: 100000
+    default: 120000
     log: false
   hp_config.initial_epsilon:
     type: uniform_float
@@ -57,7 +57,7 @@ hyperparameters:
     log: true
   hp_config.learning_starts:
     type: uniform_int
-    upper: 1024
+    upper: 2048
     lower: 0
     default: 128
     log: false
@@ -69,22 +69,12 @@ hyperparameters:
     default: true
   hp_config.target_update_interval:
     type: uniform_int
-    upper: 1000
+    upper: 100
     lower: 1
-    default: 1000
-    log: false
-  hp_config.tau:
-    type: uniform_float
-    upper: 1.0
-    lower: 0.01
-    default: 1.0
+    default: 10
     log: false
 conditions:
   - child: hp_config.target_update_interval
-    parent: hp_config.use_target_network
-    value: true
-    type: EQ
-  - child: hp_config.tau
     parent: hp_config.use_target_network
     value: true
     type: EQ
