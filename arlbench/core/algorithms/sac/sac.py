@@ -13,6 +13,7 @@ import numpy as np
 import optax
 from ConfigSpace import Categorical, Configuration, ConfigurationSpace, Float, Integer, EqualsCondition
 from flashbax.buffers.flat_buffer import ExperiencePair
+from flashbax.buffers.prioritised_flat_buffer import PrioritisedTransitionSample
 from flax.training.train_state import TrainState
 
 from arlbench.core import running_statistics
@@ -415,7 +416,6 @@ class SAC(Algorithm):
 
         if buffer_state is None:
             _timestep = TimeStep(
-                last_obs=_obs[0],
                 obs=_obs[0],
                 action=_action[0],
                 reward=_reward[0],
@@ -586,7 +586,7 @@ class SAC(Algorithm):
         actor_train_state: SACTrainState,
         critic_train_state: SACTrainState,
         alpha_train_state: SACTrainState,
-        batch: Transition,
+        batch: PrioritisedTransitionSample,
         is_weights: jnp.ndarray,
         rng: chex.PRNGKey,
     ) -> tuple[SACTrainState, jnp.ndarray, jnp.ndarray, FrozenDict, chex.PRNGKey]:
@@ -603,19 +603,19 @@ class SAC(Algorithm):
             tuple[SACTrainState, jnp.ndarray, jnp.ndarray, FrozenDict, chex.PRNGKey]: _description_
         """
         rng, action_rng = jax.random.split(rng, 2)
-        pi = self.actor_network.apply(actor_train_state.params, batch.obs)
+        pi = self.actor_network.apply(actor_train_state.params, batch.experience.second.obs)
         next_state_actions, next_log_prob = pi.sample_and_log_prob(seed=action_rng)
 
         alpha_value = self.alpha.apply(alpha_train_state.params)
 
         qf_next_target = self.critic_network.apply(
-            critic_train_state.target_params, batch.obs, next_state_actions
+            critic_train_state.target_params, batch.experience.second.obs, next_state_actions
         )
 
         qf_next_target = jnp.min(qf_next_target, axis=0)
         qf_next_target = qf_next_target - alpha_value * next_log_prob
         target_q_value = (
-            batch.reward + (1 - batch.done) * self.hpo_config["gamma"] * qf_next_target
+            batch.experience.first.reward + (1 - batch.experience.first.done) * self.hpo_config["gamma"] * qf_next_target
         )
 
         def mse_loss(params: FrozenDict):
@@ -627,7 +627,7 @@ class SAC(Algorithm):
             Returns:
                 _type_: _description_
             """
-            q_pred = self.critic_network.apply(params, batch.last_obs, batch.action)
+            q_pred = self.critic_network.apply(params, batch.experience.first.obs, batch.experience.first.action)
             td_error = target_q_value - q_pred
             return 0.5 * (is_weights * td_error**2).mean(axis=1).sum(), jnp.abs(td_error)
 
@@ -642,7 +642,7 @@ class SAC(Algorithm):
         actor_train_state: SACTrainState,
         critic_train_state: SACTrainState,
         alpha_train_state: SACTrainState,
-        batch: Transition,
+        batch: PrioritisedTransitionSample,
         is_weights: jnp.ndarray,
         rng: chex.PRNGKey,
     ) -> tuple[SACTrainState, jnp.ndarray, jnp.ndarray, FrozenDict, chex.PRNGKey]:
@@ -675,11 +675,11 @@ class SAC(Algorithm):
             Returns:
                 tuple[jnp.ndarray, jnp.ndarray]: _description_
             """
-            pi = self.actor_network.apply(actor_params, batch.last_obs)
+            pi = self.actor_network.apply(actor_params, batch.experience.first.obs)
             actor_actions, log_prob = pi.sample_and_log_prob(seed=action_rng)
 
             qf_pi = self.critic_network.apply(
-                critic_params, batch.last_obs, actor_actions
+                critic_params, batch.experience.first.obs, actor_actions
             )
             min_qf_pi = jnp.min(qf_pi, axis=0)
 
@@ -812,11 +812,9 @@ class SAC(Algorithm):
                         experience=ExperiencePair(
                             first=batch.experience.first.replace(
                                 obs=running_statistics.normalize(batch.experience.first.obs, normalizer_state),
-                                last_obs=running_statistics.normalize(batch.experience.first.last_obs, normalizer_state),
                             ),
                             second=batch.experience.second.replace(
                                 obs=running_statistics.normalize(batch.experience.second.obs, normalizer_state),
-                                last_obs=running_statistics.normalize(batch.experience.second.last_obs, normalizer_state),
                             ),
                         )
                     )
@@ -831,7 +829,7 @@ class SAC(Algorithm):
                         actor_train_state,
                         critic_train_state,
                         alpha_train_state,
-                        batch.experience.first,
+                        batch,
                         is_weights,
                         rng,
                     )
@@ -841,7 +839,7 @@ class SAC(Algorithm):
                         actor_train_state,
                         critic_train_state,
                         alpha_train_state,
-                        batch.experience.first,
+                        batch,
                         is_weights,
                         rng,
                     )
@@ -1091,7 +1089,7 @@ class SAC(Algorithm):
         env_state, (obsv, reward, done, info) = self.env.step(env_state, action, _rng)
 
         timestep = TimeStep(
-            last_obs=last_obs, obs=obsv, action=buffer_action, reward=reward, done=done
+            obs=last_obs, action=buffer_action, reward=reward, done=done
         )
         buffer_state = self.buffer.add(buffer_state, timestep)
 
