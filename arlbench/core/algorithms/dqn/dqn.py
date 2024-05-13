@@ -193,21 +193,22 @@ class DQN(Algorithm):
                 ),
                 "buffer_alpha": Float("buffer_alpha", (0.01, 1.0), default=0.9),
                 "buffer_beta": Float("buffer_beta", (0.01, 1.0), default=0.9),
-                "buffer_epsilon": Float("buffer_epsilon", (1e-3, 1e-2), default=1e-3),
+                "buffer_epsilon": Float("buffer_epsilon", (1e-7, 1e-3), default=1e-6),
                 "learning_rate": Float("learning_rate", (1e-6, 0.1), default=3e-4, log=True),
                 "gamma": Float("gamma", (0.8, 1.0), default=0.99),
                 "tau": Float("tau", (0.01, 1.0), default=1.0),
-                "epsilon": Float("epsilon", (0.005, 0.5), default=0.1),
+                "initial_epsilon": Float("initial_epsilon", (0.5, 1.0), default=1.0),
+                "target_epsilon": Float("target_epsilon", (0.001, 0.2), default=0.05),
                 "use_target_network": Categorical(
                     "use_target_network", [True, False], default=True
                 ),
-                "train_freq": Integer("train_freq", (1, 128), default=4),
-                "gradient steps": Integer("gradient_steps", (1, 10), default=1),
+                "train_freq": Integer("train_freq", (1, 256), default=4),
+                "gradient steps": Integer("gradient_steps", (1, 256), default=1),
                 "learning_starts": Integer(
                     "learning_starts", (0, 16384), default=128
                 ),
                 "target_update_interval": Integer(
-                    "target_update_interval", (1, 1000), default=1000
+                    "target_update_interval", (1, 2000), default=1000
                 ),
                 "normalize_observations": Categorical(
                     "normalize_observations", [True, False], default=False
@@ -230,7 +231,7 @@ class DQN(Algorithm):
             space={
                 "buffer_size": Integer("buffer_size", (1024, int(1e7)), default=1000000),
                 "buffer_batch_size": Categorical(
-                    "buffer_batch_size", [4, 8, 16, 32], default=16
+                    "buffer_batch_size", [4, 8, 16, 32, 64], default=16
                 ),
                 "buffer_prio_sampling": Categorical(
                     "buffer_prio_sampling", [True, False], default=False
@@ -240,17 +241,18 @@ class DQN(Algorithm):
                 "buffer_epsilon": Float("buffer_epsilon", (1e-7, 1e-3), default=1e-6),
                 "learning_rate": Float("learning_rate", (1e-6, 0.1), default=3e-4, log=True),
                 "tau": Float("tau", (0.01, 1.0), default=1.0),
-                "epsilon": Float("epsilon", (0.005, 0.5), default=0.1),
+                "initial_epsilon": Float("initial_epsilon", (0.5, 1.0), default=1.0),
+                "target_epsilon": Float("target_epsilon", (0.001, 0.2), default=0.05),
                 "use_target_network": Categorical(
                     "use_target_network", [True, False], default=True
                 ),
-                "train_freq": Integer("train_freq", (1, 128), default=4),
-                "gradient steps": Integer("gradient_steps", (1, 10), default=1),
+                "train_freq": Integer("train_freq", (1, 256), default=4),
+                "gradient steps": Integer("gradient_steps", (1, 256), default=1),
                 "learning_starts": Integer(
-                    "learning_starts", (0, 1024), default=128
+                "learning_starts", (0, 16384), default=128
                 ),
                 "target_update_interval": Integer(
-                    "target_update_interval", (1, 1000), default=1000
+                    "target_update_interval", (1, 2000), default=1000
                 ),
             },
         )
@@ -419,20 +421,16 @@ class DQN(Algorithm):
                 ]
             )
 
-        def greedy_action(_: chex.prngkey, obs: jnp.ndarray) -> jnp.ndarray:
+        def greedy_action(_: chex.PRNGKey, obs: jnp.ndarray) -> jnp.ndarray:
             if self.hpo_config["normalize_observations"]:
                 obs = running_statistics.normalize(obs, runner_state.normalizer_state)
             q_values = self.network.apply(runner_state.train_state.params, obs)
             return q_values.argmax(axis=-1)
 
         def sample_action(rng: chex.PRNGKey, obs: jnp.ndarray) -> jnp.ndarray:
-            action = jax.lax.cond(
-                jax.random.uniform(rng) < 0.5,
-                random_action,
-                greedy_action,
-                rng,
-                obs,
-            )
+            rnd_action = random_action(rng, obs)
+            grd_action = greedy_action(rng, obs)
+            action = jax.lax.select(jax.random.uniform(rng, obs.shape[:1]) < 0.05, rnd_action, grd_action)
             return action
 
         return jax.lax.cond(
@@ -465,6 +463,7 @@ class DQN(Algorithm):
             DQNTrainReturnT: Tuple of DQN algorithm state and training result.
         """
 
+        n_update_steps = int(np.ceil(n_total_timesteps / self.env.n_envs / self.hpo_config["train_freq"] / n_eval_steps))
         def train_eval_step(
             carry: tuple[DQNRunnerState, PrioritisedTrajectoryBufferState], _: None
         ) -> tuple[
@@ -483,8 +482,8 @@ class DQN(Algorithm):
             (runner_state, buffer_state), (metrics, trajectories) = jax.lax.scan(
                 self._update_step,
                 (runner_state, buffer_state),
-                None,
-                np.ceil(n_total_timesteps / self.env.n_envs / self.hpo_config["train_freq"] / n_eval_steps),
+                jnp.array([n_total_timesteps] * n_update_steps),
+                n_update_steps,
             )
             eval_returns = self.eval(runner_state, n_eval_episodes)
             # jax.debug.print("{eval_returns}", eval_returns=eval_returns)
@@ -505,7 +504,7 @@ class DQN(Algorithm):
         self,
         train_state: DQNTrainState,
         observations: jnp.ndarray,
-        priorities: jnp.ndarray,
+        is_weights: jnp.ndarray,
         actions: jnp.ndarray,
         next_observations: jnp.ndarray,
         rewards: jnp.ndarray,
@@ -544,9 +543,6 @@ class DQN(Algorithm):
             ]  # (batch_size,)
             td_error = q_pred - next_q_value
 
-            is_weights = jnp.power((1.0 / priorities), self.hpo_config["buffer_beta"])
-            is_weights = is_weights / jnp.max(is_weights)
-
             loss = jnp.mean(is_weights * optax.l2_loss(q_pred, next_q_value))
             return loss, td_error
 
@@ -557,7 +553,7 @@ class DQN(Algorithm):
         return train_state, loss_value, td_error, grads
 
     def _update_step(
-        self, carry: tuple[DQNRunnerState, PrioritisedTrajectoryBufferState], _
+        self, carry: tuple[DQNRunnerState, PrioritisedTrajectoryBufferState], n_total_timesteps: int
     ) -> tuple[
         tuple[DQNRunnerState, PrioritisedTrajectoryBufferState],
         tuple[DQNMetrics | None, Transition | None],
@@ -622,19 +618,24 @@ class DQN(Algorithm):
                     jnp.ndarray: _description_
                 """
                 if self.hpo_config["normalize_observations"]:
-                    q_values = self.network.apply(train_state.params, running_statistics.normalize(obs, normalizer_state))
+                    q_values = self.network.apply(
+                        train_state.params, running_statistics.normalize(obs, normalizer_state)
+                    )
                 else:
                     q_values = self.network.apply(train_state.params, obs)
 
                 return q_values.argmax(axis=-1)
 
             rng, sample_rng, action_rng = jax.random.split(rng, 3)
-            action = jax.lax.cond(
-                jax.random.uniform(sample_rng) < self.hpo_config["epsilon"],
-                random_action,
-                greedy_action,
-                action_rng,
-                last_obs,
+            training_fraction = jnp.min(jnp.array([global_step * self.env.n_envs / n_total_timesteps, 0.1]))
+            epsilon = self.hpo_config["initial_epsilon"] - training_fraction * (
+                (self.hpo_config["initial_epsilon"] - self.hpo_config["target_epsilon"]) / 0.1
+            )
+            epsilon = 0.1
+            rand_action = random_action(sample_rng, last_obs)
+            greedy_action = greedy_action(action_rng, last_obs)
+            action = jax.lax.select(
+                jax.random.uniform(sample_rng, shape=last_obs.shape[:1]) < epsilon, rand_action, greedy_action
             )
 
             rng, step_rng = jax.random.split(rng)
@@ -677,7 +678,7 @@ class DQN(Algorithm):
                 """
                 return train_state
 
-            train_state = jax.lax.cond(  # todo: move this into the env_step loop?!
+            train_state = jax.lax.cond(
                 (global_step > self.hpo_config["learning_starts"] // self.env.n_envs)
                 & (global_step % np.ceil(self.hpo_config["target_update_interval"] / self.env.n_envs) == 0),
                 target_update,
@@ -738,10 +739,15 @@ class DQN(Algorithm):
                 else:
                     last_obs = batch.experience.first.last_obs
                     obs = batch.experience.first.obs
+                if self.hpo_config["buffer_prio_sampling"]:
+                    is_weights = jnp.power((1.0 / batch.priorities), self.hpo_config["buffer_beta"])
+                    is_weights = is_weights / jnp.max(is_weights)
+                else:
+                    is_weights = jnp.ones_like(batch.priorities)
                 train_state, loss, td_error, grads = self.update(
                     train_state,
                     last_obs,
-                    batch.priorities,
+                    is_weights,
                     batch.experience.first.action,
                     obs,
                     batch.experience.first.reward,
