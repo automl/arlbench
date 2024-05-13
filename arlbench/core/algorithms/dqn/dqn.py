@@ -355,7 +355,6 @@ class DQN(Algorithm):
 
         if buffer_state is None:
             _timestep = TimeStep(
-                last_obs=_obs[0],
                 obs=_obs[0],
                 action=_action[0],
                 reward=_reward[0],
@@ -643,7 +642,7 @@ class DQN(Algorithm):
             )
 
             timestep = TimeStep(
-                last_obs=last_obs, obs=obsv, action=action, reward=reward, done=done
+                obs=last_obs, action=action, reward=reward, done=done
             )
             buffer_state = self.buffer.add(buffer_state, timestep)
 
@@ -734,11 +733,11 @@ class DQN(Algorithm):
                 rng, batch_sample_rng = jax.random.split(rng)
                 batch = self.buffer.sample(buffer_state, batch_sample_rng)
                 if self.hpo_config["normalize_observations"]:
-                    last_obs = running_statistics.normalize(batch.experience.first.last_obs, normalizer_state)
-                    obs = running_statistics.normalize(batch.experience.first.obs, normalizer_state)
+                    last_obs = running_statistics.normalize(batch.experience.first.obs, normalizer_state)
+                    obs = running_statistics.normalize(batch.experience.second.obs, normalizer_state)
                 else:
-                    last_obs = batch.experience.first.last_obs
-                    obs = batch.experience.first.obs
+                    last_obs = batch.experience.first.obs
+                    obs = batch.experience.second.obs
                 if self.hpo_config["buffer_prio_sampling"]:
                     is_weights = jnp.power((1.0 / batch.priorities), self.hpo_config["buffer_beta"])
                     is_weights = is_weights / jnp.max(is_weights)
