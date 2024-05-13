@@ -11,7 +11,7 @@ from arlbench.core.algorithms import DQN
 from arlbench.core.environments import make_env
 
 
-def test_dqn(
+def dqn(
     dir_name, log, framework, env_name, config, training_kw_args, seed, cnn_policy
 ):
     env = make_env(framework, env_name, n_envs=config["n_envs"], seed=seed)
@@ -22,13 +22,15 @@ def test_dqn(
     hpo_config["learning_starts"] = 1024
     hpo_config["tau"] = 1.0
     hpo_config["learning_rate"] = 2.3e-3
-    hpo_config["buffer_batch_size"] = 128
-    hpo_config["buffer_alpha"] = 0.0
-    hpo_config["buffer_beta"] = 0.0
+    hpo_config["buffer_batch_size"] = 64
+    hpo_config["buffer_prio_sampling"] = True
+    hpo_config["buffer_alpha"] = 0.8
+    hpo_config["buffer_beta"] = 0.8
     hpo_config["buffer_size"] = 100000
     hpo_config["train_freq"] = 256
     hpo_config["gradient_steps"] = 128
     hpo_config["target_update_interval"] = 10
+    hpo_config["normalize_observations"] = False
     nas_config = DQN.get_default_nas_config()
     nas_config["activation"] = "relu"
     nas_config["hidden_size"] = 256
@@ -81,10 +83,10 @@ if __name__ == "__main__":
     parser.add_argument("--dir-name", type=str, default="arlb_gpu_2")
     parser.add_argument("--training-steps", type=int, default=50000)
     parser.add_argument("--n-eval-steps", type=int, default=10)
-    parser.add_argument("--n-eval-episodes", type=int, default=128)
+    parser.add_argument("--n-eval-episodes", type=int,  default=128)
     parser.add_argument("--n-envs", type=int, default=1)
     parser.add_argument("--seed", type=int, default=9)
-    parser.add_argument("--env-framework", type=str, default="envpool")
+    parser.add_argument("--env-framework", type=str, default="gymnax")
     parser.add_argument("--env", type=str, default="CartPole-v1")
     parser.add_argument("--cnn-policy", type=bool, default=False)
     args = parser.parse_args()
@@ -105,7 +107,7 @@ if __name__ == "__main__":
     }
 
     with jax.disable_jit(disable=False):
-        test_dqn(
+        dqn(
             dir_name=args.dir_name,
             log=logger,
             framework=args.env_framework,

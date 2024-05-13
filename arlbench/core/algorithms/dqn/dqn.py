@@ -159,14 +159,15 @@ class DQN(Algorithm):
             hidden_size=self.nas_config["hidden_size"],
         )
 
-        self.buffer = fbx.make_prioritised_flat_buffer(
-            max_length=self.hpo_config["buffer_size"],
-            min_length=self.hpo_config["buffer_batch_size"],
+        self.buffer = fbx.make_prioritised_trajectory_buffer(
+            max_length_time_axis=self.hpo_config["buffer_size"] // self.env.n_envs,
+            min_length_time_axis=self.hpo_config["buffer_batch_size"],
             sample_batch_size=self.hpo_config["buffer_batch_size"],
-            add_sequences=False,
             add_batch_size=self.env.n_envs,
             priority_exponent=self.hpo_config["buffer_alpha"],
-            device=jax.default_backend()
+            sample_sequence_length=1,
+            period=1,
+            device=jax.default_backend(),
         )
         if self.hpo_config["buffer_prio_sampling"] is False:
             sample_fn = functools.partial(
@@ -355,6 +356,7 @@ class DQN(Algorithm):
 
         if buffer_state is None:
             _timestep = TimeStep(
+                last_obs=_obs[0],
                 obs=_obs[0],
                 action=_action[0],
                 reward=_reward[0],
@@ -641,9 +643,12 @@ class DQN(Algorithm):
                 env_state, action, step_rng
             )
 
+            # add another axis to timestep
+            broad_fn = lambda x: jnp.broadcast_to(x, (self.env.n_envs, *x.shape))
             timestep = TimeStep(
-                obs=last_obs, action=action, reward=reward, done=done
+                last_obs=broad_fn(last_obs), obs=broad_fn(obsv), action=broad_fn(action), reward=broad_fn(reward), done=broad_fn(done)
             )
+
             buffer_state = self.buffer.add(buffer_state, timestep)
 
             global_step += 1
@@ -732,12 +737,13 @@ class DQN(Algorithm):
                 rng, train_state, buffer_state = carry
                 rng, batch_sample_rng = jax.random.split(rng)
                 batch = self.buffer.sample(buffer_state, batch_sample_rng)
+                experience = jax.tree_map(lambda x: x.squeeze(axis=1), batch.experience)  # remove sequence axis
                 if self.hpo_config["normalize_observations"]:
-                    last_obs = running_statistics.normalize(batch.experience.first.obs, normalizer_state)
-                    obs = running_statistics.normalize(batch.experience.second.obs, normalizer_state)
+                    last_obs = running_statistics.normalize(experience.last_obs, normalizer_state)
+                    obs = running_statistics.normalize(experience.obs, normalizer_state)
                 else:
-                    last_obs = batch.experience.first.obs
-                    obs = batch.experience.second.obs
+                    last_obs = experience.last_obs
+                    obs = experience.obs
                 if self.hpo_config["buffer_prio_sampling"]:
                     is_weights = jnp.power((1.0 / batch.priorities), self.hpo_config["buffer_beta"])
                     is_weights = is_weights / jnp.max(is_weights)
@@ -747,10 +753,10 @@ class DQN(Algorithm):
                     train_state,
                     last_obs,
                     is_weights,
-                    batch.experience.first.action,
+                    experience.action,
                     obs,
-                    batch.experience.first.reward,
-                    batch.experience.first.done,
+                    experience.reward,
+                    experience.done,
                 )
                 new_priorities = jnp.abs(td_error) + self.hpo_config["buffer_epsilon"]
                 buffer_state = self.buffer.set_priorities(
