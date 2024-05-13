@@ -33,7 +33,7 @@ def uniform_sample(
     batch_size: int,
     sequence_length: int,
     period: int,
-) -> TransitionSample:
+) -> PrioritisedTrajectoryBufferSample:
     """Adapted sample function to support uniform sampling for priorizized buffers.
 
     Args:
@@ -49,6 +49,7 @@ def uniform_sample(
     add_batch_size, max_length_time_axis = utils.get_tree_shape_prefix(
         state.experience, n_axes=2
     )
+
     # Calculate the indices of the items that will be sampled.
     item_indices = calculate_uniform_item_indices(
         state,
@@ -64,6 +65,10 @@ def uniform_sample(
         item_indices, max_length_time_axis, period, sequence_length, state
     )
 
+    # There is an edge case where experience from the sum-tree has probability 0.
+    # To deal with this we overwrite indices with probability zero with
+    # the index that is the most probable within the batch of indices. This slightly biases
+    # the sampling, however as this is an edge case it is unlikely to have a significant effect.
     priorities = sum_tree.get(state.priority_state, item_indices)
     most_probable_in_batch_index = jnp.argmax(priorities)
     item_indices = jnp.where(
@@ -73,6 +78,9 @@ def uniform_sample(
         priorities == 0, priorities[most_probable_in_batch_index], priorities
     )
 
+    # We get the indices of the items that will be invalid when sampling from the buffer state.
+    # If the sampled indices are in the invalid indices, then we replace them with the
+    # most probable index in the batch. As with above this is unlikely to occur.
     invalid_item_indices = get_invalid_indices(
         state, sequence_length, period, add_batch_size, max_length_time_axis
     )
@@ -88,13 +96,6 @@ def uniform_sample(
         priorities,
     )
 
-    sampled_batch = PrioritisedTrajectoryBufferSample(
+    return PrioritisedTrajectoryBufferSample(
         experience=trajectory, indices=item_indices, priorities=priorities
-    )
-    first = jax.tree_util.tree_map(lambda x: x[:, 0], sampled_batch.experience)
-    second = jax.tree_util.tree_map(lambda x: x[:, 1], sampled_batch.experience)
-    return PrioritisedTransitionSample(
-        experience=ExperiencePair(first=first, second=second),
-        indices=sampled_batch.indices,
-        priorities=sampled_batch.priorities,
     )
