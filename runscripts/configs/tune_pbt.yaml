@@ -25,6 +25,7 @@ hydra:
       checkpoint_tf: true
       load_tf: true
       checkpoint_path_typing: ""
+      maximize: true
   run:
     dir: results/pbt/${pbt_seed}/${algorithm}_${autorl.env_name}/${autorl.seed}
   sweep:
@@ -57,7 +58,7 @@ autorl:
   checkpoint_dir: "/tmp"
   state_features: []
   objectives: ["reward_mean"]
-  optimize_objectives: "lower"
+  optimize_objectives: "upper"
   n_steps: 10
   n_eval_steps: 10
   n_eval_episodes: 128
