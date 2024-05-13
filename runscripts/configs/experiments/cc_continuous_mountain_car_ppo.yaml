@@ -11,3 +11,5 @@ hp_config:
   update_epochs: 10
   n_steps: 1   # we have 8 instead of 1 envs => 1 instead of 8 steps
   normalize_observations: True
+
+jax_enable_x64: true
