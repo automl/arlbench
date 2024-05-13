@@ -205,7 +205,7 @@ class DQN(Algorithm):
                 "train_freq": Integer("train_freq", (1, 256), default=4),
                 "gradient steps": Integer("gradient_steps", (1, 256), default=1),
                 "learning_starts": Integer(
-                    "learning_starts", (0, 16384), default=1024
+                    "learning_starts", (0, 32768), default=1024
                 ),
                 "target_update_interval": Integer(
                     "target_update_interval", (1, 2000), default=1000
@@ -249,7 +249,7 @@ class DQN(Algorithm):
                 "train_freq": Integer("train_freq", (1, 256), default=4),
                 "gradient steps": Integer("gradient_steps", (1, 256), default=1),
                 "learning_starts": Integer(
-                "learning_starts", (0, 16384), default=1024
+                    "learning_starts", (0, 32768), default=1024
                 ),
                 "target_update_interval": Integer(
                     "target_update_interval", (1, 2000), default=1000
@@ -485,7 +485,7 @@ class DQN(Algorithm):
                 n_update_steps,
             )
             eval_returns = self.eval(runner_state, n_eval_episodes)
-            # jax.debug.print("{eval_returns}", eval_returns=eval_returns)
+            jax.debug.print("{eval_returns}", eval_returns=eval_returns.mean())
 
             return (runner_state, buffer_state), DQNTrainingResult(
                 eval_rewards=eval_returns, trajectories=trajectories, metrics=metrics
