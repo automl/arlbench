@@ -1,23 +1,17 @@
 seed: 0
 hyperparameters:
+  hp_config.buffer_prio_sampling:
+    type: categorical
+    choices: [True, False]
   hp_config.buffer_alpha:
     type: uniform_float
     upper: 1.0
     lower: 0.01
-    default: 0.9
     log: false
-  hp_config.buffer_batch_size:
-    type: categorical
-    choices:
-      - 16
-      - 32
-      - 64
-    default: 16
   hp_config.buffer_beta:
     type: uniform_float
     upper: 1.0
     lower: 0.01
-    default: 0.9
     log: false
   hp_config.buffer_epsilon:
     type: uniform_float
@@ -27,10 +21,7 @@ hyperparameters:
     log: true
   hp_config.buffer_prio_sampling:
     type: categorical
-    choices:
-      - true
-      - false
-    default: false
+    choices: [16, 32, 64]
   hp_config.buffer_size:
     type: uniform_int
     upper: 100000
@@ -53,31 +44,20 @@ hyperparameters:
     type: uniform_float
     upper: 0.1
     lower: 1.0e-06
-    default: 0.0003
     log: true
   hp_config.learning_starts:
     type: uniform_int
-    upper: 1024
+    upper: 16384
     lower: 0
     default: 128
     log: false
   hp_config.use_target_network:
     type: categorical
-    choices:
-      - true
-      - false
-    default: true
+    choices: [True, False]
   hp_config.target_update_interval:
     type: uniform_int
-    upper: 1000
+    upper: 2000
     lower: 1
-    default: 1000
-    log: false
-  hp_config.tau:
-    type: uniform_float
-    upper: 1.0
-    lower: 0.01
-    default: 1.0
     log: false
 conditions:
   - child: hp_config.target_update_interval
