@@ -412,6 +412,10 @@ class SAC(Algorithm):
         ):
             dummy_rng = jax.random.PRNGKey(0)
             _action = self.env.sample_actions(dummy_rng)
+
+            # for x64 enabled runs we have to explicitly cast the dummy action
+            _action = jnp.array(_action, dtype=jnp.float64)
+
             _, (_obs, _reward, _done, _) = self.env.step(env_state, _action, dummy_rng)
 
         if buffer_state is None:
