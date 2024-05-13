@@ -35,6 +35,7 @@ hyperparameters:
     type: uniform_int
     upper: 16384
     lower: 0
+    default: 128
     log: false
   hp_config.use_target_network:
     type: categorical
