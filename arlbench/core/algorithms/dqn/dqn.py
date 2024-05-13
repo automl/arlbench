@@ -205,7 +205,7 @@ class DQN(Algorithm):
                 "train_freq": Integer("train_freq", (1, 256), default=4),
                 "gradient steps": Integer("gradient_steps", (1, 256), default=1),
                 "learning_starts": Integer(
-                    "learning_starts", (0, 16384), default=128
+                    "learning_starts", (0, 16384), default=1024
                 ),
                 "target_update_interval": Integer(
                     "target_update_interval", (1, 2000), default=1000
@@ -249,7 +249,7 @@ class DQN(Algorithm):
                 "train_freq": Integer("train_freq", (1, 256), default=4),
                 "gradient steps": Integer("gradient_steps", (1, 256), default=1),
                 "learning_starts": Integer(
-                "learning_starts", (0, 16384), default=128
+                "learning_starts", (0, 16384), default=1024
                 ),
                 "target_update_interval": Integer(
                     "target_update_interval", (1, 2000), default=1000
@@ -631,7 +631,6 @@ class DQN(Algorithm):
             epsilon = self.hpo_config["initial_epsilon"] - training_fraction * (
                 (self.hpo_config["initial_epsilon"] - self.hpo_config["target_epsilon"]) / 0.1
             )
-            epsilon = 0.1
             rand_action = random_action(sample_rng, last_obs)
             greedy_action = greedy_action(action_rng, last_obs)
             action = jax.lax.select(
@@ -678,13 +677,14 @@ class DQN(Algorithm):
                 """
                 return train_state
 
-            train_state = jax.lax.cond(
-                (global_step > self.hpo_config["learning_starts"] // self.env.n_envs)
-                & (global_step % np.ceil(self.hpo_config["target_update_interval"] / self.env.n_envs) == 0),
-                target_update,
-                dont_target_update,
-                train_state,
-            )
+            if self.hpo_config["use_target_network"]:
+                train_state = jax.lax.cond(
+                    (global_step > self.hpo_config["learning_starts"] // self.env.n_envs)
+                    & (global_step % np.ceil(self.hpo_config["target_update_interval"] / self.env.n_envs) == 0),
+                    target_update,
+                    dont_target_update,
+                    train_state,
+                )
             return (rng, train_state, normalizer_state, obsv, env_state, global_step, buffer_state), (
                 obsv,
                 action,
