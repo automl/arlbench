@@ -9,7 +9,7 @@ defaults:
 
 hydra:
   sweeper:
-    n_trials: 1000
+    n_trials: 50
     budget_variable: autorl.n_total_timesteps
     search_space: ${search_space}
     sweeper_kwargs:
@@ -23,13 +23,14 @@ hydra:
           eta: 2
           n_seeds: 1
         scenario:
-          n_trials: 1000
+          n_trials: 50
           seed: ${smac_seed}
           min_budget: 1000
           max_budget: ${environment.n_total_timesteps}
           deterministic: false
           n_workers: 1
       seeds: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+      maximize: true
   run:
     dir: results/smac/${algorithm}_${autorl.env_name}/${smac_seed}/${seed}
   sweep:
@@ -58,7 +59,7 @@ autorl:
   checkpoint_dir: "/tmp"
   state_features: []
   objectives: ["reward_mean"]
-  optimize_objectives: "lower"
+  optimize_objectives: "upper"
   n_steps: 10
   n_eval_steps: 10
   n_eval_episodes: 128
