@@ -44,12 +44,6 @@ hyperparameters:
     lower: 0.005
     default: 0.1
     log: false
-  hp_config.gradient_steps:
-    type: uniform_int
-    upper: 10
-    lower: 1
-    default: 1
-    log: false
   hp_config.learning_rate:
     type: uniform_float
     upper: 0.1
@@ -61,12 +55,6 @@ hyperparameters:
     upper: 1024
     lower: 0
     default: 128
-    log: false
-  hp_config.train_freq:
-    type: uniform_int
-    upper: 128
-    lower: 1
-    default: 4
     log: false
   hp_config.use_target_network:
     type: categorical
