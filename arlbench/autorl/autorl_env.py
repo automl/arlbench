@@ -313,7 +313,15 @@ class AutoRLEnv(gymnasium.Env):
         
         self._algorithm = self._make_algorithm()
         if checkpoint_path:
-            self._algorithm_state = self._load(checkpoint_path, seed)
+            print("#### LOADING ####")
+            print("checkpoint_path:", checkpoint_path)
+            try:
+                self._algorithm_state = self._load(checkpoint_path, seed)
+                print("#### LOADING successful ####")
+            except Exception as e:
+                print (e)
+                init_rng = jax.random.key(seed)
+                self._algorithm_state = self._algorithm.init(init_rng)
         else:
             init_rng = jax.random.key(seed)
             self._algorithm_state = self._algorithm.init(init_rng)
