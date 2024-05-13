@@ -180,21 +180,22 @@ class SAC(Algorithm):
         assert alpha_init > 0.0, "The initial value of alpha must be greater than 0"
         self.alpha = AlphaCoef(alpha_init=alpha_init)
 
-        self.buffer = fbx.make_prioritised_flat_buffer(
-            max_length=self.hpo_config["buffer_size"],
-            min_length=self.hpo_config["buffer_batch_size"],
+        self.buffer = fbx.make_prioritised_trajectory_buffer(
+            max_length_time_axis=self.hpo_config["buffer_size"] // self.env.n_envs,
+            min_length_time_axis=self.hpo_config["buffer_batch_size"],
             sample_batch_size=self.hpo_config["buffer_batch_size"],
-            add_sequences=False,
             add_batch_size=self.env.n_envs,
             priority_exponent=self.hpo_config["buffer_alpha"],
-            device=jax.default_backend()
+            sample_sequence_length=1,
+            period=1,
+            device=jax.default_backend(),
         )
 
         if self.hpo_config["buffer_prio_sampling"] is False:
             sample_fn = functools.partial(
                 uniform_sample,
                 batch_size=self.hpo_config["buffer_batch_size"],
-                sequence_length=2,
+                sequence_length=1,
                 period=1,
             )
             self.buffer = self.buffer.replace(sample=sample_fn)
@@ -420,6 +421,7 @@ class SAC(Algorithm):
 
         if buffer_state is None:
             _timestep = TimeStep(
+                last_obs=_obs[0],
                 obs=_obs[0],
                 action=_action[0],
                 reward=_reward[0],
@@ -590,7 +592,7 @@ class SAC(Algorithm):
         actor_train_state: SACTrainState,
         critic_train_state: SACTrainState,
         alpha_train_state: SACTrainState,
-        batch: PrioritisedTransitionSample,
+        experience: TimeStep,
         is_weights: jnp.ndarray,
         rng: chex.PRNGKey,
     ) -> tuple[SACTrainState, jnp.ndarray, jnp.ndarray, FrozenDict, chex.PRNGKey]:
@@ -600,26 +602,26 @@ class SAC(Algorithm):
             actor_train_state (SACTrainState): _description_
             critic_train_state (SACTrainState): _description_
             alpha_train_state (SACTrainState): _description_
-            batch (Transition): _description_
+            experience (Transition): _description_
             rng (chex.PRNGKey): _description_
 
         Returns:
             tuple[SACTrainState, jnp.ndarray, jnp.ndarray, FrozenDict, chex.PRNGKey]: _description_
         """
         rng, action_rng = jax.random.split(rng, 2)
-        pi = self.actor_network.apply(actor_train_state.params, batch.experience.second.obs)
+        pi = self.actor_network.apply(actor_train_state.params, experience.obs)
         next_state_actions, next_log_prob = pi.sample_and_log_prob(seed=action_rng)
 
         alpha_value = self.alpha.apply(alpha_train_state.params)
 
         qf_next_target = self.critic_network.apply(
-            critic_train_state.target_params, batch.experience.second.obs, next_state_actions
+            critic_train_state.target_params, experience.obs, next_state_actions
         )
 
         qf_next_target = jnp.min(qf_next_target, axis=0)
         qf_next_target = qf_next_target - alpha_value * next_log_prob
         target_q_value = (
-            batch.experience.first.reward + (1 - batch.experience.first.done) * self.hpo_config["gamma"] * qf_next_target
+            experience.reward + (1 - experience.done) * self.hpo_config["gamma"] * qf_next_target
         )
 
         def mse_loss(params: FrozenDict):
@@ -631,7 +633,7 @@ class SAC(Algorithm):
             Returns:
                 _type_: _description_
             """
-            q_pred = self.critic_network.apply(params, batch.experience.first.obs, batch.experience.first.action)
+            q_pred = self.critic_network.apply(params, experience.last_obs, experience.action)
             td_error = target_q_value - q_pred
             return 0.5 * (is_weights * td_error**2).mean(axis=1).sum(), jnp.abs(td_error)
 
@@ -646,7 +648,7 @@ class SAC(Algorithm):
         actor_train_state: SACTrainState,
         critic_train_state: SACTrainState,
         alpha_train_state: SACTrainState,
-        batch: PrioritisedTransitionSample,
+        experience: TimeStep,
         is_weights: jnp.ndarray,
         rng: chex.PRNGKey,
     ) -> tuple[SACTrainState, jnp.ndarray, jnp.ndarray, FrozenDict, chex.PRNGKey]:
@@ -679,11 +681,11 @@ class SAC(Algorithm):
             Returns:
                 tuple[jnp.ndarray, jnp.ndarray]: _description_
             """
-            pi = self.actor_network.apply(actor_params, batch.experience.first.obs)
+            pi = self.actor_network.apply(actor_params, experience.last_obs)
             actor_actions, log_prob = pi.sample_and_log_prob(seed=action_rng)
 
             qf_pi = self.critic_network.apply(
-                critic_params, batch.experience.first.obs, actor_actions
+                critic_params, experience.last_obs, actor_actions
             )
             min_qf_pi = jnp.min(qf_pi, axis=0)
 
@@ -811,16 +813,11 @@ class SAC(Algorithm):
                 ) = carry
                 rng, batch_sample_rng = jax.random.split(rng)
                 batch = self.buffer.sample(buffer_state, batch_sample_rng)
+                experience = jax.tree_map(lambda x: x.squeeze(axis=1), batch.experience)  # remove sequence axis
                 if self.hpo_config["normalize_observations"]:
-                    batch = batch.replace(
-                        experience=ExperiencePair(
-                            first=batch.experience.first.replace(
-                                obs=running_statistics.normalize(batch.experience.first.obs, normalizer_state),
-                            ),
-                            second=batch.experience.second.replace(
-                                obs=running_statistics.normalize(batch.experience.second.obs, normalizer_state),
-                            ),
-                        )
+                    experience = experience.replace(
+                        last_obs=running_statistics.normalize(experience.last_obs, normalizer_state),
+                        obs=running_statistics.normalize(experience.obs, normalizer_state),
                     )
 
                 if self.hpo_config["buffer_prio_sampling"]:
@@ -833,7 +830,7 @@ class SAC(Algorithm):
                         actor_train_state,
                         critic_train_state,
                         alpha_train_state,
-                        batch,
+                        experience,
                         is_weights,
                         rng,
                     )
@@ -843,7 +840,7 @@ class SAC(Algorithm):
                         actor_train_state,
                         critic_train_state,
                         alpha_train_state,
-                        batch,
+                        experience,
                         is_weights,
                         rng,
                     )
@@ -1092,9 +1089,8 @@ class SAC(Algorithm):
         rng, _rng = jax.random.split(rng)
         env_state, (obsv, reward, done, info) = self.env.step(env_state, action, _rng)
 
-        timestep = TimeStep(
-            obs=last_obs, action=buffer_action, reward=reward, done=done
-        )
+        timestep = TimeStep(last_obs=last_obs, obs=obsv, action=action, reward=reward, done=done)
+        timestep = jax.tree_map(lambda x: jnp.broadcast_to(x, (self.env.n_envs, *x.shape)), timestep)
         buffer_state = self.buffer.add(buffer_state, timestep)
 
         global_step += 1
