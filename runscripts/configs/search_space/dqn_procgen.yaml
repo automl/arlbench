@@ -22,9 +22,9 @@ hyperparameters:
     log: false
   hp_config.buffer_epsilon:
     type: uniform_float
-    upper: 1e-4
-    lower: 1e-9
-    default: 1e-7
+    upper: 1e-3
+    lower: 1e-7
+    default: 1e-6
     log: true
   hp_config.buffer_prio_sampling:
     type: categorical
