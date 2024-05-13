@@ -21,10 +21,10 @@ hyperparameters:
     log: false
   hp_config.buffer_epsilon:
     type: uniform_float
-    upper: 0.01
-    lower: 0.001
-    default: 0.001
-    log: false
+    upper: 1e-4
+    lower: 1e-9
+    default: 1e-7
+    log: true
   hp_config.buffer_prio_sampling:
     type: categorical
     choices:
@@ -37,11 +37,17 @@ hyperparameters:
     lower: 1024
     default: 100000
     log: false
-  hp_config.epsilon:
+  hp_config.initial_epsilon:
     type: uniform_float
-    upper: 0.5
-    lower: 0.005
-    default: 0.1
+    upper: 1.0
+    lower: 0.5
+    default: 1.0
+    log: false
+  hp_config.target_epsilon:
+    type: uniform_float
+    upper: 0.2
+    lower: 0.001
+    default: 0.05
     log: false
   hp_config.learning_rate:
     type: uniform_float
@@ -80,5 +86,17 @@ conditions:
     type: EQ
   - child: hp_config.tau
     parent: hp_config.use_target_network
+    value: true
+    type: EQ
+  - child: hp_config.buffer_epsilon
+    parent: hp_config.buffer_prio_sampling
+    value: true
+    type: EQ
+  - child: hp_config.buffer_alpha
+    parent: hp_config.buffer_prio_sampling
+    value: true
+    type: EQ
+  - child: hp_config.buffer_beta
+    parent: hp_config.buffer_prio_sampling
     value: true
     type: EQ
