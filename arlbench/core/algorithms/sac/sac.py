@@ -821,8 +821,11 @@ class SAC(Algorithm):
                         )
                     )
 
-                is_weights = jnp.power((1.0 / batch.priorities), self.hpo_config["buffer_beta"])
-                is_weights = is_weights / jnp.max(is_weights)
+                if self.hpo_config["buffer_prio_sampling"]:
+                    is_weights = jnp.power((1.0 / batch.priorities), self.hpo_config["buffer_beta"])
+                    is_weights = is_weights / jnp.max(is_weights)
+                else:
+                    is_weights = jnp.ones_like(batch.priorities)
                 critic_train_state, critic_loss, td_error, critic_grads, rng = (
                     self.update_critic(
                         actor_train_state,
