@@ -203,7 +203,7 @@ pyrightconfig.json
 # MacOS specific
 *.DS_Store
 
-
 **/.hydra
 **/.submitit
 smac3_output/*
+results/*
