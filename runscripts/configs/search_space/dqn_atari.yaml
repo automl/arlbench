@@ -24,7 +24,7 @@ hyperparameters:
     choices: [16, 32, 64]
   hp_config.buffer_size:
     type: uniform_int
-    upper: 1000000
+    upper: 100000
     lower: 1024
     log: false
   hp_config.initial_epsilon:

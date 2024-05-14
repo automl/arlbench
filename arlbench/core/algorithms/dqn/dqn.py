@@ -644,7 +644,7 @@ class DQN(Algorithm):
             )
 
             timestep = TimeStep(last_obs=last_obs, obs=obsv, action=action, reward=reward, done=done)
-            timestep = jax.tree_map(lambda x: jnp.broadcast_to(x, (self.env.n_envs, *x.shape)), timestep)
+            timestep = jax.tree_map(lambda x: jnp.expand_dims(x, 1), timestep)
             buffer_state = self.buffer.add(buffer_state, timestep)
 
             global_step += 1
