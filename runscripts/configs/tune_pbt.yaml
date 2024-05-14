@@ -26,6 +26,7 @@ hydra:
       load_tf: true
       checkpoint_path_typing: ""
       maximize: true
+      max_parallelization: 1
   run:
     dir: results/pbt/${pbt_seed}/${algorithm}_${autorl.env_name}/${autorl.seed}
   sweep:
