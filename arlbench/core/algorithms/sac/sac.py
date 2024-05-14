@@ -21,6 +21,7 @@ from arlbench.core.running_statistics import RunningStatisticsState
 from arlbench.core.algorithms.algorithm import Algorithm
 from arlbench.core.algorithms.buffers import uniform_sample
 from arlbench.core.algorithms.common import TimeStep
+from arlbench.core.algorithms.prioritised_item_buffer import make_prioritised_item_buffer
 
 from .models import (
     AlphaCoef,
@@ -180,14 +181,13 @@ class SAC(Algorithm):
         assert alpha_init > 0.0, "The initial value of alpha must be greater than 0"
         self.alpha = AlphaCoef(alpha_init=alpha_init)
 
-        self.buffer = fbx.make_prioritised_trajectory_buffer(
-            max_length_time_axis=self.hpo_config["buffer_size"] // self.env.n_envs,
-            min_length_time_axis=self.hpo_config["buffer_batch_size"],
+        self.buffer = make_prioritised_item_buffer(
+            max_length=self.hpo_config["buffer_size"],
+            min_length=self.hpo_config["buffer_batch_size"],
             sample_batch_size=self.hpo_config["buffer_batch_size"],
-            add_batch_size=self.env.n_envs,
+            add_batches=True,
+            add_sequences=False,
             priority_exponent=self.hpo_config["buffer_alpha"],
-            sample_sequence_length=1,
-            period=1,
             device=jax.default_backend(),
         )
 
@@ -813,7 +813,7 @@ class SAC(Algorithm):
                 ) = carry
                 rng, batch_sample_rng = jax.random.split(rng)
                 batch = self.buffer.sample(buffer_state, batch_sample_rng)
-                experience = jax.tree_map(lambda x: x.squeeze(axis=1), batch.experience)  # remove sequence axis
+                experience = batch.experience
                 if self.hpo_config["normalize_observations"]:
                     experience = experience.replace(
                         last_obs=running_statistics.normalize(experience.last_obs, normalizer_state),
@@ -1090,7 +1090,6 @@ class SAC(Algorithm):
         env_state, (obsv, reward, done, info) = self.env.step(env_state, action, _rng)
 
         timestep = TimeStep(last_obs=last_obs, obs=obsv, action=action, reward=reward, done=done)
-        timestep = jax.tree_map(lambda x: jnp.expand_dims(x, 1), timestep)
         buffer_state = self.buffer.add(buffer_state, timestep)
 
         global_step += 1
