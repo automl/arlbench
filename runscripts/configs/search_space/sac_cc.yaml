@@ -1,17 +1,5 @@
 seed: 0
 hyperparameters:
-  hp_config.alpha:
-    type: uniform_float
-    upper: 1.0
-    lower: 0.0
-    default: 1.0
-    log: false
-  hp_config.alpha_auto:
-    type: categorical
-    choices:
-      - true
-      - false
-    default: true
   hp_config.buffer_alpha:
     type: uniform_float
     upper: 1.0
@@ -24,7 +12,7 @@ hyperparameters:
       - 256
       - 512
       - 1024
-    default: 256
+    default: 512
   hp_config.buffer_beta:
     type: uniform_float
     upper: 1.0
@@ -33,10 +21,10 @@ hyperparameters:
     log: false
   hp_config.buffer_epsilon:
     type: uniform_float
-    upper: 0.01
-    lower: 0.001
-    default: 0.001
-    log: false
+    upper: 1e-4
+    lower: 1e-9
+    default: 1e-7
+    log: true
   hp_config.buffer_prio_sampling:
     type: categorical
     choices:
@@ -45,15 +33,9 @@ hyperparameters:
     default: false
   hp_config.buffer_size:
     type: uniform_int
-    upper: 100000
-    lower: 1
-    default: 100000
-    log: false
-  hp_config.gradient_steps:
-    type: uniform_int
-    upper: 100000
-    lower: 1
-    default: 1
+    upper: 50000
+    lower: 1024
+    default: 50000
     log: false
   hp_config.learning_rate:
     type: uniform_float
@@ -63,21 +45,9 @@ hyperparameters:
     log: true
   hp_config.learning_starts:
     type: uniform_int
-    upper: 1024
+    upper: 2048
     lower: 0
     default: 128
-    log: false
-  hp_config.target_update_interval:
-    type: uniform_int
-    upper: 1000
-    lower: 1
-    default: 1000
-    log: false
-  hp_config.train_freq:
-    type: uniform_int
-    upper: 128
-    lower: 1
-    default: 1
     log: false
   hp_config.use_target_network:
     type: categorical
@@ -96,7 +66,15 @@ conditions:
     parent: hp_config.use_target_network
     value: true
     type: EQ
-  - child: hp_config.target_update_interval
-    parent: hp_config.use_target_network
+  - child: hp_config.buffer_epsilon
+    parent: hp_config.buffer_prio_sampling
+    value: true
+    type: EQ
+  - child: hp_config.buffer_alpha
+    parent: hp_config.buffer_prio_sampling
+    value: true
+    type: EQ
+  - child: hp_config.buffer_beta
+    parent: hp_config.buffer_prio_sampling
     value: true
     type: EQ
