@@ -6,4 +6,5 @@ kwargs: {
 }
 eval_kwargs: {}
 cnn_policy: True
+deterministic_eval: True
 n_envs: 8

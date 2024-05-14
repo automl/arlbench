@@ -40,6 +40,7 @@ DEFAULT_AUTO_RL_CONFIG = {
     "n_envs": 10,
     "algorithm": "dqn",
     "cnn_policy": False,
+    "deterministic_eval": True,
     "nas_config": {},
     "checkpoint": [],
     "checkpoint_name": "default_checkpoint",
@@ -263,7 +264,8 @@ class AutoRLEnv(gymnasium.Env):
             eval_env=self._eval_env,
             track_metrics=self._track_metrics,
             track_trajectories=self._track_trajectories,
-            cnn_policy=self._config["cnn_policy"]
+            cnn_policy=self._config["cnn_policy"],
+            deterministic_eval=self._config["deterministic_eval"],
         )
 
     def step(
@@ -311,7 +313,15 @@ class AutoRLEnv(gymnasium.Env):
         
         self._algorithm = self._make_algorithm()
         if checkpoint_path:
-            self._algorithm_state = self._load(checkpoint_path, seed)
+            print("#### LOADING ####")
+            print("checkpoint_path:", checkpoint_path)
+            try:
+                self._algorithm_state = self._load(checkpoint_path, seed)
+                print("#### LOADING successful ####")
+            except Exception as e:
+                print (e)
+                init_rng = jax.random.key(seed)
+                self._algorithm_state = self._algorithm.init(init_rng)
         else:
             init_rng = jax.random.key(seed)
             self._algorithm_state = self._algorithm.init(init_rng)

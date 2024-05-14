@@ -30,6 +30,7 @@ class Algorithm(ABC):
             nas_config: Configuration,
             env: Environment | AutoRLWrapper,
             eval_env: Environment | AutoRLWrapper | None = None,
+            deterministic_eval: bool = True,
             track_trajectories: bool = False,
             track_metrics: bool = False
         ) -> None:
@@ -49,6 +50,7 @@ class Algorithm(ABC):
         self.nas_config = nas_config
         self.env = env
         self.eval_env = env if eval_env is None else eval_env
+        self.deterministic_eval = deterministic_eval
         self.track_metrics = track_metrics
         self.track_trajectories = track_trajectories
 
@@ -236,7 +238,7 @@ class Algorithm(ABC):
 
             # Select action
             rng, action_rng = jax.random.split(rng)
-            action = self.predict(runner_state, obs, action_rng, deterministic=True)
+            action = self.predict(runner_state, obs, action_rng, deterministic=self.deterministic_eval)
 
             # Step
             rng, step_rng = jax.random.split(rng)

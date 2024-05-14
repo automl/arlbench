@@ -9,7 +9,7 @@ defaults:
 
 hydra:
   sweeper:
-    n_trials: 128
+    n_trials: 256
     search_space: ${search_space}
     sweeper_kwargs:
       max_parallelization: 0.1 #  hence, only 25 jobs per batch
@@ -34,6 +34,7 @@ autorl:
   n_envs: ${environment.n_envs}
   algorithm: ${algorithm}
   cnn_policy: ${environment.cnn_policy}
+  deterministic_eval: ${environment.deterministic_eval}
   nas_config: ${nas_config}
   n_total_timesteps: ${environment.n_total_timesteps}
   checkpoint: []

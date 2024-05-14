@@ -22,7 +22,7 @@ def ppo_runner(
     rng = jax.random.PRNGKey(seed)
 
     hpo_config = PPO.get_default_hpo_config()
-    hpo_config["update_interval"] = 256
+    hpo_config["n_steps"] = 256
     hpo_config["minibatch_size"] = 256
     hpo_config["lr"] = 1e-3
     hpo_config["update_epochs"] = 20

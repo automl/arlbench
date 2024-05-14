@@ -19,7 +19,7 @@ def plot_compare_trainings(df_1, df_1_name, df_2, df_2_name, plot_name, save_dir
 
 def get_mean_df(path):
     df = pd.DataFrame()
-    for i in range(1, 11):
+    for i in range(1, 4):
         cur_df = pd.read_csv(os.path.join(path, f"{i}_results.csv"))
         mean_return = cur_df.mean(axis=0)
         mean_return = mean_return.transpose()
@@ -31,8 +31,8 @@ def get_mean_df(path):
 
 
 if __name__ == "__main__":
-    df_1 = get_mean_df(os.path.join("./ppo_results", "envpool_CartPole-v1", "arlb"))
-    df_2 = get_mean_df(os.path.join("./ppo_results", "envpool_CartPole-v1", "sbx"))
+    df_1 = get_mean_df(os.path.join("./dqn_results", "envpool_Pong-v5", "8env_gpu"))
+    df_2 = get_mean_df(os.path.join("./dqn_results", "envpool_Pong-v5", "4env_gpu"))
     plot_compare_trainings(
-        df_1, "ARLB", df_2, "SBX", "PPO CartPole tuned", "ppo_results"
+        df_1, "ARLB_8env", df_2, "ARLB_4env", "DQN CartPol", "dqn_results"
     )

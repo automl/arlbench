@@ -132,6 +132,13 @@ class Checkpointer:
         else:
             # only use selected checkpoint options
             for key in checkpoint:
+                if key == "buffer":
+                    if algorithm in ["dqn", "sac"]:
+                        continue
+                    else:
+                        raise ValueError(
+                        f"Invalid checkpoint for algorithm {algorithm}: {key}. Valid keys are {list(algorithm_ckpt.keys())!s}."
+                    )
                 if key in algorithm_ckpt:
                     ckpt[key] = algorithm_ckpt[
                         key

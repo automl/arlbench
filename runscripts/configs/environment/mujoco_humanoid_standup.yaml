@@ -6,4 +6,5 @@ kwargs:
 eval_kwargs:
   frame_skip: 1
 cnn_policy: False
+deterministic_eval: True
 n_envs: 8
