@@ -13,6 +13,8 @@ hydra:
     budget_variable: autorl.n_total_timesteps
     search_space: ${search_space}
     sweeper_kwargs:
+      min_budget: 10000
+      max_budget: ${environment.n_total_timesteps} 
       optimizer_kwargs:
         smac_facade:
           _target_: smac.facade.multi_fidelity_facade.MultiFidelityFacade
@@ -23,9 +25,9 @@ hydra:
           eta: 2
           n_seeds: 1
         scenario:
-          n_trials: 50
           seed: ${smac_seed}
-          min_budget: 1000
+          n_trials: ${hydra.sweeper.n_trials}
+          min_budget: ${hydra.sweeper.sweeper_kwargs.min_budget}
           max_budget: ${environment.n_total_timesteps}
           deterministic: false
           n_workers: 1

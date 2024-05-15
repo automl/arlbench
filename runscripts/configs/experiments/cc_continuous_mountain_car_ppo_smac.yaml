@@ -14,6 +14,8 @@ hp_config:
   n_steps: 1   # we have 8 instead of 1 envs => 1 instead of 8 steps
   normalize_observations: True
 
-hydra.sweeper.n_trials: 35
-hydra.sweeper.sweeper_kwargs.optimizer_kwargs.scenario.n_trials: 35
-hydra.sweeper.sweeper_kwargs.optimizer_kwargs.scenario.min_budget: 2000
+hydra:
+  sweeper:
+    n_trials: 200
+    sweeper_kwargs:
+      min_budget: 2000

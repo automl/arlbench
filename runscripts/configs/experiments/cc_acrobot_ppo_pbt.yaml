@@ -12,6 +12,10 @@ hp_config:
   n_steps: 128
   normalize_observations: False
 
-hydra.sweeper.budget: 32_000_000
-hydra.sweeper.sweeper_kwargs.optimizer_kwargs.population_size: 32
-hydra.sweeper.sweeper_kwargs.optimizer_kwargs.config_interval: 100000
+hydra:
+  sweeper:
+    budget: 32_000_000
+    sweeper_kwargs:
+      optimizer_kwargs:
+        population_size: 32
+        config_interval: 100000
