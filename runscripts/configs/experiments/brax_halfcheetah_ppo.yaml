@@ -5,8 +5,8 @@ defaults:
   - override /search_space: ppo_brax
 
 hp_config:
-  update_epochs: 4
-  n_steps: 80
+  update_epochs: 8
+  n_steps: 320
   normalize_observations: True
 
 nas_config:
