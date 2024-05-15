@@ -1,0 +1,8 @@
+name: "MiniGrid-EmptyRandom-5x5"
+framework: "xland"
+n_total_timesteps: 100000
+kwargs: {}
+eval_kwargs: {}
+cnn_policy: False
+deterministic_eval: True
+n_envs: 8

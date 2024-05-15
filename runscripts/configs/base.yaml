@@ -36,4 +36,4 @@ autorl:
   optimize_objectives: "upper"
   n_steps: 10
   n_eval_steps: 100
-  n_eval_episodes: 128
+  n_eval_episodes: 10
