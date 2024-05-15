@@ -1,0 +1,21 @@
+# @package _global_
+defaults:
+  - override /environment: cc_cartpole    
+  - override /algorithm: ppo   
+  - override /search_space: ppo_cc    
+
+environment:
+  n_total_timesteps: 100000
+
+hp_config:
+  update_epochs: 20
+  n_steps: 32
+  normalize_observations: False
+
+hydra:
+  sweeper:
+    budget: 3_200_000
+    sweeper_kwargs:
+      optimizer_kwargs:
+        population_size: 32
+        config_interval: 10000

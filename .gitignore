@@ -207,3 +207,8 @@ pyrightconfig.json
 **/.submitit
 smac3_output/*
 results/*
+
+# Jannis runscripts + logs
+runscripts_jannis/sobol/*
+runscripts_jannis/smac/*
+runscripts_jannis/pbt/*

@@ -17,7 +17,7 @@ from flashbax.vault import Vault
 from flax.core.frozen_dict import FrozenDict
 
 from optax import ScaleByAdamState, EmptyState
-
+import warnings
 from arlbench.core.algorithms import DQN, PPO, SAC
 from arlbench.core.algorithms.dqn import DQNRunnerState, DQNTrainingResult
 from arlbench.core.algorithms.ppo import PPORunnerState, PPOTrainingResult
@@ -136,16 +136,21 @@ class Checkpointer:
                     if algorithm in ["dqn", "sac"]:
                         continue
                     else:
-                        raise ValueError(
-                        f"Invalid checkpoint for algorithm {algorithm}: {key}. Valid keys are {list(algorithm_ckpt.keys())!s}."
-                    )
-                if key in algorithm_ckpt:
-                    ckpt[key] = algorithm_ckpt[
-                        key
-                    ]()  # get actual checkpoint by calling factory function
-                else:
-                    raise ValueError(
-                        f"Invalid checkpoint for algorithm {algorithm}: {key}. Valid keys are {list(algorithm_ckpt.keys())!s}."
+                        warnings.warn(
+                            f"Invalid checkpoint for algorithm {algorithm}: {key}. Valid keys are {list(algorithm_ckpt.keys())!s}. Skipping key."
+                        )
+
+                # find all algorithm checkpoints that contain the requested key
+                found_key = False
+                for algorithm_key in algorithm_ckpt:
+                    if key in algorithm_key:
+                        found_key = True
+                        ckpt[algorithm_key] = algorithm_ckpt[
+                            algorithm_key
+                        ]()  # get actual checkpoint by calling factory function
+                if not found_key:
+                    warnings.warn(
+                        f"Invalid checkpoint for algorithm {algorithm}: {key}. Valid keys are {list(algorithm_ckpt.keys())!s}. Skipping key."
                     )
 
         Checkpointer._save_orbax_checkpoint(ckpt, checkpoint_dir, checkpoint_name)

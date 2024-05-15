@@ -96,6 +96,7 @@ def uniform_sample(
         priorities,
     )
 
+    trajectory = jax.tree_map(lambda x: x.squeeze(axis=1), trajectory)
     return PrioritisedTrajectoryBufferSample(
         experience=trajectory, indices=item_indices, priorities=priorities
     )
