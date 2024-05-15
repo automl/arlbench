@@ -306,7 +306,10 @@ class AutoRLEnv(gymnasium.Env):
         
         # Apply changes to current hyperparameter configuration and reinstantiate algorithm
         if isinstance(action, dict):
-            action = Configuration(self.config_space, action)
+            try:
+                action = Configuration(self.config_space, action)
+            except Exception as _:
+                warnings.warn("Config does not match configuration space. Using dict config instead.")
         self._hpo_config = action
 
         seed = seed if seed else self._seed
