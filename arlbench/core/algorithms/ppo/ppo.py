@@ -397,7 +397,6 @@ class PPO(Algorithm):
             Returns:
                 tuple[PPORunnerState, PPOTrainingResult]: Tuple of PPO runner state and training result.
             """
-            jax.debug.print("hallo")
             _runner_state, (metrics, trajectories) = jax.lax.scan(
                 self._update_step,
                 _runner_state,
