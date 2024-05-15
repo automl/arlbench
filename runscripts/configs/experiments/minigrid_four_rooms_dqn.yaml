@@ -1,6 +1,6 @@
 # @package _global_
 defaults:
-  - override /environment: xland_minigrid_four_rooms
+  - override /environment: minigrid_four_rooms
   - override /algorithm: dqn
   - override /search_space: dqn_minigrid
 
