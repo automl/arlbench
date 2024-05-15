@@ -20,7 +20,7 @@ if TYPE_CHECKING:
 
 class BraxEnv(Environment):
     def __init__(self, env_name: str, n_envs: int, env_kwargs: dict[str, Any] = {}):
-        env = envs.get_environment(env_name, backend="spring", **env_kwargs)
+        env = envs.get_environment(env_name, **env_kwargs)
         env = envs.training.wrap(env)
         super().__init__(env_name, env, n_envs)
         self.max_steps_in_episode = 1000
