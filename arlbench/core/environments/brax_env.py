@@ -20,24 +20,19 @@ if TYPE_CHECKING:
 
 class BraxEnv(Environment):
     def __init__(self, env_name: str, n_envs: int, env_kwargs: dict[str, Any] = {}):
-        env = envs.get_environment(env_name, **env_kwargs)
-        env = envs.training.wrap(env)
+        env = envs.create(env_name, batch_size=n_envs, **env_kwargs)
         super().__init__(env_name, env, n_envs)
         self.max_steps_in_episode = 1000
 
     @functools.partial(jax.jit, static_argnums=0)
     def __reset(self, rng: chex.PRNGKey) -> tuple[BraxEnvState, chex.Array]:
         """Internal reset in brax environment."""
-        env_state = self._env.reset(rng=jnp.array([rng]))
         return env_state, env_state.obs[0]
 
     @functools.partial(jax.jit, static_argnums=0)
     def reset(self, rng: PRNGKey) -> tuple[BraxEnvState, chex.Array]:
-        reset_rng = jax.random.split(rng, self._n_envs)
-        env_state, obs = jax.vmap(self.__reset, in_axes=(0))(
-            reset_rng
-        )
-        return env_state, obs
+        env_state = self._env.reset(rng)
+        return env_state, env_state.obs
 
     @functools.partial(jax.jit, static_argnums=0)
     def __step(
@@ -56,11 +51,8 @@ class BraxEnv(Environment):
             action: chex.Array,
             rng: PRNGKey
         ) -> tuple[BraxEnvState, tuple[chex.Array, chex.Array, chex.Array, dict]]:
-        env_state, (obs, reward, done, info) = jax.vmap(
-            self.__step, in_axes=(0, 0)
-        )(env_state, action)
-
-        return env_state, (obs, reward, done, info)
+        env_state = self._env.step(env_state, action)
+        return env_state, (env_state.obs, env_state.reward, env_state.done, {})
 
     @property
     def action_space(self):
