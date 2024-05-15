@@ -25,24 +25,9 @@ class BraxEnv(Environment):
         self.max_steps_in_episode = 1000
 
     @functools.partial(jax.jit, static_argnums=0)
-    def __reset(self, rng: chex.PRNGKey) -> tuple[BraxEnvState, chex.Array]:
-        """Internal reset in brax environment."""
-        return env_state, env_state.obs[0]
-
-    @functools.partial(jax.jit, static_argnums=0)
     def reset(self, rng: PRNGKey) -> tuple[BraxEnvState, chex.Array]:
         env_state = self._env.reset(rng)
         return env_state, env_state.obs
-
-    @functools.partial(jax.jit, static_argnums=0)
-    def __step(
-        self,
-        env_state: BraxEnvState,
-        action: chex.Array
-        ) -> tuple[BraxEnvState, tuple[chex.Array, chex.Array, chex.Array, dict]]:
-        """Internal step in brax environment."""
-        env_state = self._env.step(env_state, jnp.array([action]))
-        return env_state, (env_state.obs[0], env_state.reward[0], env_state.done[0], {})
 
     @functools.partial(jax.jit, static_argnums=0)
     def step(
