@@ -55,12 +55,6 @@ hyperparameters:
     lower: 0
     default: 128
     log: false
-  hp_config.use_target_network:
-    type: categorical
-    choices:
-      - true
-      - false
-    default: true
   hp_config.target_update_interval:
     type: uniform_int
     upper: 100
