@@ -14,6 +14,10 @@ hp_config:
   n_steps: 1   # we have 8 instead of 1 envs => 1 instead of 8 steps
   normalize_observations: True
 
-hydra.sweeper.budget: 640_000
-hydra.sweeper.sweeper_kwargs.optimizer_kwargs.population_size: 32
-hydra.sweeper.sweeper_kwargs.optimizer_kwargs.config_interval: 2000
+hydra:
+  sweeper:
+    budget: 640_000
+    sweeper_kwargs:
+      optimizer_kwargs:
+        population_size: 32
+        config_interval: 2000

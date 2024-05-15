@@ -23,7 +23,7 @@ echo "#!/bin/bash
 
 
 cd ..
-python runscripts/run_arlbench.py -m --config-name=tune_smac "experiments=$1" "cluster=local" 
+python runscripts/run_arlbench.py -m --config-name=tune_smac "experiments=${1}_smac" "cluster=local" 
 " > $directory/${1}.sh
 echo "Submitting $directory for $1"
 chmod +x $directory/${1}.sh

@@ -15,6 +15,10 @@ hp_config:
   normalize_observations: False
   buffer_size: ${environment.n_total_timesteps} 
 
-hydra.sweeper.budget: 1_600_000
-hydra.sweeper.sweeper_kwargs.optimizer_kwargs.population_size: 32
-hydra.sweeper.sweeper_kwargs.optimizer_kwargs.config_interval: 5000
+hydra:
+  sweeper:
+    budget: 1_600_000
+    sweeper_kwargs:
+      optimizer_kwargs:
+        population_size: 32
+        config_interval: 5000
