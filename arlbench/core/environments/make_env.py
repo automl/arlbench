@@ -32,6 +32,10 @@ def make_env(
         from .brax_env import BraxEnv
 
         env = BraxEnv(env_name, n_envs, env_kwargs=env_kwargs)
+    elif env_framework == "xland":
+        from .xland_env import XLandEnv
+
+        env = XLandEnv(env_name, n_envs, env_kwargs=env_kwargs, cnn_policy=cnn_policy)
     else:
         raise ValueError(f"Invalid framework: {env_framework}")
 

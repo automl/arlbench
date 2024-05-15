@@ -129,7 +129,10 @@ def numpy_to_jax(x):
 
 class EnvpoolEnv(Environment):
     def __init__(self, env_name: str, n_envs: int, seed: int, env_kwargs: dict[str, Any] = {}):
-        import envpool
+        try:
+            import envpool
+        except ImportError:
+            raise ValueError("Failed to import envpool. Please install the package first.")
         env = envpool.make(
             env_name, env_type="gymnasium", num_envs=n_envs, seed=seed, **env_kwargs
         )
