@@ -1,0 +1,14 @@
+# @package _global_
+defaults:
+  - override /environment: xland_minigrid_unlock
+  - override /algorithm: ppo
+  - override /search_space: ppo_minigrid
+
+environment:
+  n_total_timesteps: 100000
+  n_envs: 8
+
+hp_config:
+  update_epochs: 10
+  n_steps: 128
+  normalize_observations: True
