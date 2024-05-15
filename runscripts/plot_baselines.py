@@ -1,8 +1,10 @@
-import seaborn as sns
+from __future__ import annotations
+
+import os
+
 import matplotlib.pyplot as plt
 import pandas as pd
-import os
-import sys
+import seaborn as sns
 
 proc_gen_envs = [
     "BigfishEasy-v0",
@@ -24,11 +26,13 @@ proc_gen_envs = [
 ]
 
 for env in proc_gen_envs:
-#env = sys.argv[1]
+    # env = sys.argv[1]
     plot_dir = "procgen_baselines"
     df = pd.DataFrame()
     for seed in range(9):
-        path = os.path.join("..", "results", f"ppo_{env}", str(seed), "0", "evaluation.csv")
+        path = os.path.join(
+            "..", "results", f"ppo_{env}", str(seed), "0", "evaluation.csv"
+        )
         data = pd.read_csv(path)
         data["seed"] = seed
         df = pd.concat([df, data])

@@ -5,9 +5,6 @@ from typing import TYPE_CHECKING
 
 import gymnasium
 import jax.numpy as jnp
-import jaxlib
-import jaxlib.xla_client
-import jaxlib.xla_extension
 import numpy as np
 
 from arlbench.core.algorithms import DQNMetrics, PPOMetrics, SACMetrics
@@ -50,9 +47,7 @@ class GradInfo(StateFeature):
                     "Metrics in train_result are None. Can't compute gradient info without gradients."
                 )
 
-            if isinstance(metrics, DQNMetrics):
-                grad_info = metrics.grads["params"]
-            elif isinstance(metrics, PPOMetrics):
+            if isinstance(metrics, DQNMetrics | PPOMetrics):
                 grad_info = metrics.grads["params"]
             elif isinstance(metrics, SACMetrics):
                 grad_info = metrics.actor_grads["params"]

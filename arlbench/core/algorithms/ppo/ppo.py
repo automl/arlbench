@@ -7,25 +7,23 @@ from collections.abc import Callable
 from typing import TYPE_CHECKING, Any, NamedTuple
 
 import jax
-import numpy as np
 import jax.numpy as jnp
+import numpy as np
 import optax
 from ConfigSpace import Categorical, Configuration, ConfigurationSpace, Float, Integer
 from flax.training.train_state import TrainState
 
-from flax.core.frozen_dict import FrozenDict
-
-from arlbench.core.algorithms.algorithm import Algorithm
 from arlbench.core import running_statistics
-from arlbench.core.running_statistics import RunningStatisticsState
-from arlbench.utils import recursive_concat, tuple_concat
+from arlbench.core.algorithms.algorithm import Algorithm
 
 from .models import CNNActorCritic, MLPActorCritic
 
 if TYPE_CHECKING:
     import chex
+    from flax.core.frozen_dict import FrozenDict
 
     from arlbench.core.environments import Environment
+    from arlbench.core.running_statistics import RunningStatisticsState
     from arlbench.core.wrappers import AutoRLWrapper
 
 
@@ -172,36 +170,52 @@ class PPO(Algorithm):
             name="PPOConfigSpace",
             seed=seed,
             space={
-                "minibatch_size": Categorical("minibatch_size", [16, 32, 64, 128, 2048], default=64),
-                "learning_rate": Float("learning_rate", (1e-6, 0.1), default=3e-4, log=True),
-                "n_steps": Categorical("n_steps", [5, 32, 64, 80, 128, 256, 512], default=128),
+                "minibatch_size": Categorical(
+                    "minibatch_size", [16, 32, 64, 128, 2048], default=64
+                ),
+                "learning_rate": Float(
+                    "learning_rate", (1e-6, 0.1), default=3e-4, log=True
+                ),
+                "n_steps": Categorical(
+                    "n_steps", [5, 32, 64, 80, 128, 256, 512], default=128
+                ),
                 "update_epochs": Integer("update_epochs", (1, 20), default=10),
                 "gamma": Float("gamma", (0.8, 1.0), default=0.99),
                 "gae_lambda": Float("gae_lambda", (0.8, 0.9999), default=0.95),
                 "clip_eps": Float("clip_eps", (0.0, 0.5), default=0.2),
                 "vf_clip_eps": Float("vf_clip_eps", (0.0, 0.5), default=0.2),
-                "normalize_advantage": Categorical("normalize_advantage", [True, False], default=True),
+                "normalize_advantage": Categorical(
+                    "normalize_advantage", [True, False], default=True
+                ),
                 "ent_coef": Float("ent_coef", (0.0, 0.5), default=0.0),
                 "vf_coef": Float("vf_coef", (0.0, 1.0), default=0.5),
                 "max_grad_norm": Float("max_grad_norm", (0.0, 1.0), default=0.5),
-                "normalize_observations": Categorical("normalize_observations", [True, False], default=False),
+                "normalize_observations": Categorical(
+                    "normalize_observations", [True, False], default=False
+                ),
             },
         )
-    
+
     @staticmethod
     def get_hpo_search_space(seed: int | None = None) -> ConfigurationSpace:
         return ConfigurationSpace(
             name="PPOConfigSpace",
             seed=seed,
             space={
-                "minibatch_size": Categorical("minibatch_size", [16, 32, 64, 128], default=64),
-                "learning_rate": Float("learning_rate", (1e-6, 0.1), default=3e-4, log=True),
+                "minibatch_size": Categorical(
+                    "minibatch_size", [16, 32, 64, 128], default=64
+                ),
+                "learning_rate": Float(
+                    "learning_rate", (1e-6, 0.1), default=3e-4, log=True
+                ),
                 "n_steps": Categorical("n_steps", [32, 64, 128, 256, 512], default=128),
                 "update_epochs": Integer("update_epochs", (5, 20), default=10),
                 "gae_lambda": Float("gae_lambda", (0.8, 0.9999), default=0.95),
                 "clip_eps": Float("clip_eps", (0.0, 0.5), default=0.2),
                 "vf_clip_eps": Float("vf_clip_eps", (0.0, 0.5), default=0.2),
-                "normalize_advantage": Categorical("normalize_advantage", [True, False], default=True),
+                "normalize_advantage": Categorical(
+                    "normalize_advantage", [True, False], default=True
+                ),
                 "ent_coef": Float("ent_coef", (0.0, 0.5), default=0.0),
                 "vf_coef": Float("vf_coef", (0.0, 1.0), default=0.5),
                 "max_grad_norm": Float("max_grad_norm", (0.0, 1.0), default=0.5),
@@ -295,10 +309,7 @@ class PPO(Algorithm):
 
         tx = optax.chain(
             optax.clip_by_global_norm(self.hpo_config["max_grad_norm"]),
-            optax.adam(
-                self.hpo_config["learning_rate"],
-                eps=1e-5
-            ),
+            optax.adam(self.hpo_config["learning_rate"], eps=1e-5),
         )
 
         train_state = PPOTrainState.create_with_opt_state(
@@ -402,7 +413,12 @@ class PPO(Algorithm):
                 self._update_step,
                 _runner_state,
                 None,
-                np.ceil(n_total_timesteps / self.env.n_envs / self.hpo_config["n_steps"] / n_eval_steps),
+                np.ceil(
+                    n_total_timesteps
+                    / self.env.n_envs
+                    / self.hpo_config["n_steps"]
+                    / n_eval_steps
+                ),
             )
             eval_returns = self.eval(_runner_state, n_eval_episodes)
             jax.debug.print("{ret}", ret=eval_returns.mean())
@@ -435,22 +451,36 @@ class PPO(Algorithm):
         runner_state, traj_batch = jax.lax.scan(
             self._env_step, runner_state, None, self.hpo_config["n_steps"]
         )
-        (rng, train_state, normalizer_state, env_state, last_obs, global_step, return_buffer_idx, return_buffer, cur_rewards) = runner_state
+        (
+            rng,
+            train_state,
+            normalizer_state,
+            env_state,
+            last_obs,
+            global_step,
+            return_buffer_idx,
+            return_buffer,
+            cur_rewards,
+        ) = runner_state
         if self.hpo_config["normalize_observations"]:
-            normalizer_state = running_statistics.update(normalizer_state, traj_batch.obs)
-            traj_batch = Transition(
-                done = traj_batch.done,
-                action = traj_batch.action,
-                value = traj_batch.value,
-                reward = traj_batch.reward,
-                log_prob = traj_batch.log_prob,
-                obs = running_statistics.normalize(traj_batch.obs, normalizer_state),
-                info = traj_batch.info,
+            normalizer_state = running_statistics.update(
+                normalizer_state, traj_batch.obs
             )
-            _, last_val = self.network.apply(train_state.params, running_statistics.normalize(last_obs, normalizer_state))
+            traj_batch = Transition(
+                done=traj_batch.done,
+                action=traj_batch.action,
+                value=traj_batch.value,
+                reward=traj_batch.reward,
+                log_prob=traj_batch.log_prob,
+                obs=running_statistics.normalize(traj_batch.obs, normalizer_state),
+                info=traj_batch.info,
+            )
+            _, last_val = self.network.apply(
+                train_state.params,
+                running_statistics.normalize(last_obs, normalizer_state),
+            )
         else:
             _, last_val = self.network.apply(train_state.params, last_obs)
-
 
         # Calculate advantage
         advantages, targets = self._calculate_gae(traj_batch, last_val)
@@ -472,7 +502,7 @@ class PPO(Algorithm):
             global_step=global_step,
             return_buffer_idx=return_buffer_idx,
             return_buffer=runner_state.return_buffer,
-            cur_rewards=runner_state.cur_rewards
+            cur_rewards=runner_state.cur_rewards,
         )
         metrics, trajectories = None, None
         if self.track_metrics:
@@ -494,12 +524,25 @@ class PPO(Algorithm):
         Returns:
             tuple[PPORunnerState, Transition]: Tuple of PPO runner state and batch of transitions.
         """
-        (rng, train_state, normalizer_state, env_state, last_obs, global_step, return_buffer_idx, return_buffer, cur_rewards) = runner_state
+        (
+            rng,
+            train_state,
+            normalizer_state,
+            env_state,
+            last_obs,
+            global_step,
+            return_buffer_idx,
+            return_buffer,
+            cur_rewards,
+        ) = runner_state
 
         # Select action(s)
         rng, _rng = jax.random.split(rng)
         if self.hpo_config["normalize_observations"]:
-            pi, value = self.network.apply(train_state.params, running_statistics.normalize(last_obs, normalizer_state))
+            pi, value = self.network.apply(
+                train_state.params,
+                running_statistics.normalize(last_obs, normalizer_state),
+            )
         else:
             pi, value = self.network.apply(train_state.params, last_obs)
 
@@ -520,7 +563,7 @@ class PPO(Algorithm):
 
         transition = Transition(done, action, value, reward, log_prob, last_obs, info)
         cur_rewards += reward
-        print_reward = jnp.array([False])   # todo: print_reward!!
+        jnp.array([False])  # todo: print_reward!!
 
         runner_state = PPORunnerState(
             train_state=train_state,
@@ -707,14 +750,12 @@ class PPO(Algorithm):
         log_prob = pi.log_prob(traj_batch.action)
 
         # Calculate value loss
-        value_pred_clipped = traj_batch.value + (
-            value - traj_batch.value
-        ).clip(-self.hpo_config["vf_clip_eps"], self.hpo_config["vf_clip_eps"])
+        value_pred_clipped = traj_batch.value + (value - traj_batch.value).clip(
+            -self.hpo_config["vf_clip_eps"], self.hpo_config["vf_clip_eps"]
+        )
         value_losses = jnp.square(value - targets)
         value_losses_clipped = jnp.square(value_pred_clipped - targets)
-        value_loss = (
-            0.5 * jnp.maximum(value_losses, value_losses_clipped).mean()
-        )
+        value_loss = 0.5 * jnp.maximum(value_losses, value_losses_clipped).mean()
 
         # Calculate actor loss
         ratio = jnp.exp(log_prob - traj_batch.log_prob)

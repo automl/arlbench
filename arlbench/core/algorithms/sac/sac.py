@@ -5,23 +5,28 @@ import functools
 from collections.abc import Callable
 from typing import TYPE_CHECKING, Any, NamedTuple
 
-import flashbax as fbx
 import jax
 import jax.lax
 import jax.numpy as jnp
 import numpy as np
 import optax
-from ConfigSpace import Categorical, Configuration, ConfigurationSpace, Float, Integer, EqualsCondition
-from flashbax.buffers.flat_buffer import ExperiencePair
-from flashbax.buffers.prioritised_flat_buffer import PrioritisedTransitionSample
+from ConfigSpace import (
+    Categorical,
+    Configuration,
+    ConfigurationSpace,
+    EqualsCondition,
+    Float,
+    Integer,
+)
 from flax.training.train_state import TrainState
 
 from arlbench.core import running_statistics
-from arlbench.core.running_statistics import RunningStatisticsState
 from arlbench.core.algorithms.algorithm import Algorithm
 from arlbench.core.algorithms.buffers import uniform_sample
 from arlbench.core.algorithms.common import TimeStep
-from arlbench.core.algorithms.prioritised_item_buffer import make_prioritised_item_buffer
+from arlbench.core.algorithms.prioritised_item_buffer import (
+    make_prioritised_item_buffer,
+)
 
 from .models import (
     AlphaCoef,
@@ -40,6 +45,7 @@ if TYPE_CHECKING:
     from flax.core.frozen_dict import FrozenDict
 
     from arlbench.core.environments import Environment
+    from arlbench.core.running_statistics import RunningStatisticsState
     from arlbench.core.wrappers import AutoRLWrapper
 
 # todo: separate learning rate for critic and actor??
@@ -135,7 +141,7 @@ class SAC(Algorithm):
         cnn_policy: bool = False,
         nas_config: Configuration | None = None,
         track_metrics: bool = False,
-        track_trajectories: bool = False
+        track_trajectories: bool = False,
     ) -> None:
         """Creates a SAC algorithm instance.
 
@@ -207,7 +213,7 @@ class SAC(Algorithm):
 
     @staticmethod
     def get_hpo_config_space(seed: int | None = None) -> ConfigurationSpace:
-        cs =  ConfigurationSpace(
+        cs = ConfigurationSpace(
             name="SACConfigSpace",
             seed=seed,
             space={
@@ -221,7 +227,9 @@ class SAC(Algorithm):
                 "buffer_alpha": Float("buffer_alpha", (0.01, 1.0), default=0.9),
                 "buffer_beta": Float("buffer_beta", (0.01, 1.0), default=0.9),
                 "buffer_epsilon": Float("buffer_epsilon", (1e-7, 1e-2), default=1e-3),
-                "learning_rate": Float("learning_rate", (1e-6, 0.1), default=3e-4, log=True),
+                "learning_rate": Float(
+                    "learning_rate", (1e-6, 0.1), default=3e-4, log=True
+                ),
                 "gradient_steps": Integer("gradient_steps", (1, int(1e5)), default=1),
                 "gamma": Float("gamma", (0.8, 1.0), default=0.99),
                 "tau": Float("tau", (0.01, 1.0), default=1.0),
@@ -229,9 +237,7 @@ class SAC(Algorithm):
                     "use_target_network", [True, False], default=True
                 ),
                 "train_freq": Integer("train_freq", (1, 128), default=1),
-                "learning_starts": Integer(
-                    "learning_starts", (0, 1024), default=128
-                ),
+                "learning_starts": Integer("learning_starts", (0, 1024), default=128),
                 "target_update_interval": Integer(
                     "target_update_interval", (1, 1000), default=1000
                 ),
@@ -242,16 +248,18 @@ class SAC(Algorithm):
                 ),
             },
         )
-        cond = EqualsCondition(cs["target_update_interval"], cs["use_target_network"], True)
+        cond = EqualsCondition(
+            cs["target_update_interval"], cs["use_target_network"], True
+        )
         cond = EqualsCondition(cs["tau"], cs["use_target_network"], True)
 
         cs.add_condition(cond)
 
         return cs
-    
+
     @staticmethod
     def get_hpo_search_space(seed: int | None = None) -> ConfigurationSpace:
-        cs =  ConfigurationSpace(
+        cs = ConfigurationSpace(
             name="SACConfigSpace",
             seed=seed,
             space={
@@ -265,16 +273,16 @@ class SAC(Algorithm):
                 "buffer_alpha": Float("buffer_alpha", (0.01, 1.0), default=0.9),
                 "buffer_beta": Float("buffer_beta", (0.01, 1.0), default=0.9),
                 "buffer_epsilon": Float("buffer_epsilon", (1e-3, 1e-2), default=1e-3),
-                "learning_rate": Float("learning_rate", (1e-6, 0.1), default=3e-4, log=True),
+                "learning_rate": Float(
+                    "learning_rate", (1e-6, 0.1), default=3e-4, log=True
+                ),
                 "gradient_steps": Integer("gradient_steps", (1, int(1e5)), default=1),
                 "tau": Float("tau", (0.01, 1.0), default=1.0),
                 "use_target_network": Categorical(
-                "use_target_network", [True, False], default=True
+                    "use_target_network", [True, False], default=True
                 ),
                 "train_freq": Integer("train_freq", (1, 128), default=1),
-                "learning_starts": Integer(
-                    "learning_starts", (0, 1024), default=128
-                ),
+                "learning_starts": Integer("learning_starts", (0, 1024), default=128),
                 "target_update_interval": Integer(
                     "target_update_interval", (1, 1000), default=1000
                 ),
@@ -285,13 +293,14 @@ class SAC(Algorithm):
                 ),
             },
         )
-        cond = EqualsCondition(cs["target_update_interval"], cs["use_target_network"], True)
+        cond = EqualsCondition(
+            cs["target_update_interval"], cs["use_target_network"], True
+        )
         cond = EqualsCondition(cs["tau"], cs["use_target_network"], True)
 
         cs.add_condition(cond)
 
         return cs
-
 
     @staticmethod
     def get_default_hpo_config() -> Configuration:
@@ -557,7 +566,7 @@ class SAC(Algorithm):
         ) -> tuple[
             tuple[SACRunnerState, PrioritisedTrajectoryBufferState], SACTrainingResult
         ]:
-            """_summary_
+            """_summary_.
 
             Args:
                 carry (tuple[SACRunnerState, PrioritisedTrajectoryBufferState]): _description_
@@ -571,7 +580,12 @@ class SAC(Algorithm):
                 self._update_step,
                 (runner_state, buffer_state),
                 None,
-                np.ceil(n_total_timesteps / self.env.n_envs / self.hpo_config["train_freq"] / n_eval_steps),
+                np.ceil(
+                    n_total_timesteps
+                    / self.env.n_envs
+                    / self.hpo_config["train_freq"]
+                    / n_eval_steps
+                ),
             )
             eval_returns = self.eval(runner_state, n_eval_episodes)
 
@@ -596,7 +610,7 @@ class SAC(Algorithm):
         is_weights: jnp.ndarray,
         rng: chex.PRNGKey,
     ) -> tuple[SACTrainState, jnp.ndarray, jnp.ndarray, FrozenDict, chex.PRNGKey]:
-        """_summary_
+        """_summary_.
 
         Args:
             actor_train_state (SACTrainState): _description_
@@ -621,11 +635,12 @@ class SAC(Algorithm):
         qf_next_target = jnp.min(qf_next_target, axis=0)
         qf_next_target = qf_next_target - alpha_value * next_log_prob
         target_q_value = (
-            experience.reward + (1 - experience.done) * self.hpo_config["gamma"] * qf_next_target
+            experience.reward
+            + (1 - experience.done) * self.hpo_config["gamma"] * qf_next_target
         )
 
         def mse_loss(params: FrozenDict):
-            """_summary_
+            """_summary_.
 
             Args:
                 params (FrozenDict): _description_
@@ -633,9 +648,13 @@ class SAC(Algorithm):
             Returns:
                 _type_: _description_
             """
-            q_pred = self.critic_network.apply(params, experience.last_obs, experience.action)
+            q_pred = self.critic_network.apply(
+                params, experience.last_obs, experience.action
+            )
             td_error = target_q_value - q_pred
-            return 0.5 * (is_weights * td_error**2).mean(axis=1).sum(), jnp.abs(td_error)
+            return 0.5 * (is_weights * td_error**2).mean(axis=1).sum(), jnp.abs(
+                td_error
+            )
 
         (loss_value, td_error), grads = jax.value_and_grad(mse_loss, has_aux=True)(
             critic_train_state.params
@@ -652,7 +671,7 @@ class SAC(Algorithm):
         is_weights: jnp.ndarray,
         rng: chex.PRNGKey,
     ) -> tuple[SACTrainState, jnp.ndarray, jnp.ndarray, FrozenDict, chex.PRNGKey]:
-        """_summary_
+        """_summary_.
 
         Args:
             actor_train_state (SACTrainState): _description_
@@ -671,7 +690,7 @@ class SAC(Algorithm):
             critic_params: FrozenDict,
             alpha_params: FrozenDict,
         ) -> tuple[jnp.ndarray, jnp.ndarray]:
-            """_summary_
+            """_summary_.
 
             Args:
                 actor_params (FrozenDict): _description_
@@ -705,7 +724,7 @@ class SAC(Algorithm):
     def update_alpha(
         self, alpha_train_state: SACTrainState, entropy: jnp.ndarray
     ) -> tuple[SACTrainState, jnp.ndarray]:
-        """_summary_
+        """_summary_.
 
         Args:
             alpha_train_state (SACTrainState): _description_
@@ -716,7 +735,7 @@ class SAC(Algorithm):
         """
 
         def get_alpha_loss(params: FrozenDict) -> jnp.ndarray:
-            """_summary_
+            """_summary_.
 
             Args:
                 params (FrozenDict): _description_
@@ -738,7 +757,7 @@ class SAC(Algorithm):
         tuple[SACRunnerState, PrioritisedTrajectoryBufferState],
         tuple[SACMetrics | None, Transition | None],
     ]:
-        """_summary_
+        """_summary_.
 
         Args:
             carry (tuple[SACRunnerState, PrioritisedTrajectoryBufferState]): _description_
@@ -763,7 +782,7 @@ class SAC(Algorithm):
             PrioritisedTrajectoryBufferState,
             SACMetrics,
         ]:
-            """_summary_
+            """_summary_.
 
             Args:
                 rng (chex.PRNGKey): _description_
@@ -795,7 +814,7 @@ class SAC(Algorithm):
                 ],
                 SACMetrics,
             ]:
-                """_summary_
+                """_summary_.
 
                 Args:
                     carry (tuple[ chex.PRNGKey, SACTrainState, SACTrainState, SACTrainState, PrioritisedTrajectoryBufferState, ]): _description_
@@ -816,12 +835,18 @@ class SAC(Algorithm):
                 experience = batch.experience
                 if self.hpo_config["normalize_observations"]:
                     experience = experience.replace(
-                        last_obs=running_statistics.normalize(experience.last_obs, normalizer_state),
-                        obs=running_statistics.normalize(experience.obs, normalizer_state),
+                        last_obs=running_statistics.normalize(
+                            experience.last_obs, normalizer_state
+                        ),
+                        obs=running_statistics.normalize(
+                            experience.obs, normalizer_state
+                        ),
                     )
 
                 if self.hpo_config["buffer_prio_sampling"]:
-                    is_weights = jnp.power((1.0 / batch.priorities), self.hpo_config["buffer_beta"])
+                    is_weights = jnp.power(
+                        (1.0 / batch.priorities), self.hpo_config["buffer_beta"]
+                    )
                     is_weights = is_weights / jnp.max(is_weights)
                 else:
                     is_weights = jnp.ones_like(batch.priorities)
@@ -848,7 +873,9 @@ class SAC(Algorithm):
                 alpha_train_state, alpha_loss = self.update_alpha(
                     alpha_train_state, entropy
                 )
-                new_priorities = td_error.mean(axis=0) + self.hpo_config["buffer_epsilon"]
+                new_priorities = (
+                    td_error.mean(axis=0) + self.hpo_config["buffer_epsilon"]
+                )
                 buffer_state = self.buffer.set_priorities(
                     buffer_state, batch.indices, new_priorities
                 )
@@ -911,7 +938,7 @@ class SAC(Algorithm):
             PrioritisedTrajectoryBufferState,
             SACMetrics,
         ]:
-            """_summary_
+            """_summary_.
 
             Args:
                 rng (chex.PRNGKey): _description_
@@ -1047,7 +1074,7 @@ class SAC(Algorithm):
     def _env_step(
         self, carry: tuple[SACRunnerState, PrioritisedTrajectoryBufferState], _: None
     ) -> tuple[tuple[SACRunnerState, PrioritisedTrajectoryBufferState], Transition]:
-        """_summary_
+        """_summary_.
 
         Args:
             carry (tuple[SACRunnerState, PrioritisedTrajectoryBufferState]): _description_
@@ -1072,7 +1099,8 @@ class SAC(Algorithm):
         rng, _rng = jax.random.split(rng)
         if self.hpo_config["normalize_observations"]:
             pi = self.actor_network.apply(
-                actor_train_state.params, running_statistics.normalize(last_obs, normalizer_state)
+                actor_train_state.params,
+                running_statistics.normalize(last_obs, normalizer_state),
             )
         else:
             pi = self.actor_network.apply(actor_train_state.params, last_obs)
@@ -1089,13 +1117,15 @@ class SAC(Algorithm):
         rng, _rng = jax.random.split(rng)
         env_state, (obsv, reward, done, info) = self.env.step(env_state, action, _rng)
 
-        timestep = TimeStep(last_obs=last_obs, obs=obsv, action=action, reward=reward, done=done)
+        timestep = TimeStep(
+            last_obs=last_obs, obs=obsv, action=action, reward=reward, done=done
+        )
         buffer_state = self.buffer.add(buffer_state, timestep)
 
         global_step += 1
 
         def target_update(train_state) -> SACTrainState:
-            """_summary_
+            """_summary_.
 
             Args:
                 train_state (_type_): _description_
@@ -1112,7 +1142,7 @@ class SAC(Algorithm):
             )
 
         def dont_target_update(train_state) -> SACTrainState:
-            """_summary_
+            """_summary_.
 
             Args:
                 train_state (_type_): _description_
@@ -1123,8 +1153,15 @@ class SAC(Algorithm):
             return train_state
 
         critic_train_state = jax.lax.cond(  # todo: move this into the env_step loop?!
-            (global_step > np.ceil(self.hpo_config["learning_starts"] / self.env.n_envs))
-            & (global_step % np.ceil(self.hpo_config["target_update_interval"] / self.env.n_envs) == 0),
+            (
+                global_step
+                > np.ceil(self.hpo_config["learning_starts"] / self.env.n_envs)
+            )
+            & (
+                global_step
+                % np.ceil(self.hpo_config["target_update_interval"] / self.env.n_envs)
+                == 0
+            ),
             target_update,
             dont_target_update,
             critic_train_state,

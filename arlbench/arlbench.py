@@ -1,21 +1,26 @@
 from __future__ import annotations
 
-from .autorl import AutoRLEnv
-from omegaconf import DictConfig, OmegaConf
-from logging import Logger
 import os
+from logging import Logger
+
+from omegaconf import DictConfig, OmegaConf
+
+from .autorl import AutoRLEnv
 
 
 def run_arlbench(cfg: DictConfig, logger: Logger | None = None) -> float | tuple | list:
     """Run ARLBench using the given config and return objective(s)."""
-
     if "load" in cfg and cfg.load:
         print(f"### ATTEMPTING TO LOAD {cfg.load} ###")
-        checkpoint_path = os.path.join(cfg.load, cfg.autorl.checkpoint_name, "default_checkpoint_c_episode_1_step_1")
+        checkpoint_path = os.path.join(
+            cfg.load,
+            cfg.autorl.checkpoint_name,
+            "default_checkpoint_c_episode_1_step_1",
+        )
         print(f"### CHECKPOINT PATH = {checkpoint_path} ###")
     else:
         checkpoint_path = None
-    
+
     if "save" in cfg and cfg.save:
         cfg.autorl.checkpoint_dir = str(cfg.save).replace(".pt", "")
         if cfg.algorithm == "PPO":
@@ -40,6 +45,6 @@ def run_arlbench(cfg: DictConfig, logger: Logger | None = None) -> float | tuple
         return list(info["train_info_df"]["returns"])
 
     if len(objectives) == 1:
-        return objectives[list(objectives.keys())[0]]
+        return objectives[next(iter(objectives.keys()))]
     else:
         return tuple(objectives.values())

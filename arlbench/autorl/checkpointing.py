@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import os
+import warnings
 from datetime import datetime
 from typing import TYPE_CHECKING, Any
 
@@ -15,9 +16,8 @@ from flashbax.buffers.prioritised_trajectory_buffer import (
 from flashbax.buffers.sum_tree import SumTreeState
 from flashbax.vault import Vault
 from flax.core.frozen_dict import FrozenDict
+from optax import EmptyState, ScaleByAdamState
 
-from optax import ScaleByAdamState, EmptyState
-import warnings
 from arlbench.core.algorithms import DQN, PPO, SAC
 from arlbench.core.algorithms.dqn import DQNRunnerState, DQNTrainingResult
 from arlbench.core.algorithms.ppo import PPORunnerState, PPOTrainingResult
@@ -189,7 +189,7 @@ class Checkpointer:
     @staticmethod
     def _load_adam_opt_state(ckpt: dict[str, Any], key: str) -> tuple | None:
         def apply(func, t: dict | tuple):
-            if isinstance(t, tuple) or isinstance(t, list):
+            if isinstance(t, list | tuple):
                 return tuple(apply(func, item) for item in t)
             else:
                 return func(t)

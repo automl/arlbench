@@ -22,18 +22,19 @@ if TYPE_CHECKING:
 
 class Algorithm(ABC):
     """Abstract base class for a reinforcement learning algorithm. Contains basic functionality that is shared among different algorithm implementations."""
+
     name: str
 
     def __init__(
-            self,
-            hpo_config: Configuration,
-            nas_config: Configuration,
-            env: Environment | AutoRLWrapper,
-            eval_env: Environment | AutoRLWrapper | None = None,
-            deterministic_eval: bool = True,
-            track_trajectories: bool = False,
-            track_metrics: bool = False
-        ) -> None:
+        self,
+        hpo_config: Configuration,
+        nas_config: Configuration,
+        env: Environment | AutoRLWrapper,
+        eval_env: Environment | AutoRLWrapper | None = None,
+        deterministic_eval: bool = True,
+        track_trajectories: bool = False,
+        track_metrics: bool = False,
+    ) -> None:
         """Algorithm super-class constructor, is only called by sub-classes.
 
         Args:
@@ -63,10 +64,18 @@ class Algorithm(ABC):
         """
         action_space = self.env.action_space
 
-        if isinstance(action_space, gym.spaces.Discrete | gymnasium.spaces.Discrete | gymnax.environments.spaces.Discrete):
+        if isinstance(
+            action_space,
+            gym.spaces.Discrete
+            | gymnasium.spaces.Discrete
+            | gymnax.environments.spaces.Discrete,
+        ):
             action_size = action_space.n
             discrete = True
-        elif isinstance(action_space, gym.spaces.Box | gymnasium.spaces.Box | gymnax.environments.spaces.Box):
+        elif isinstance(
+            action_space,
+            gym.spaces.Box | gymnasium.spaces.Box | gymnax.environments.spaces.Box,
+        ):
             action_size = action_space.shape[0]
             discrete = False
         else:
@@ -174,7 +183,7 @@ class Algorithm(ABC):
         runner_state: Any,
         obs: jnp.ndarray,
         rng: chex.PRNGKey | None = None,
-        deterministic: bool = True
+        deterministic: bool = True,
     ) -> jnp.ndarray:
         """Predict action(s) based on the current observation(s).
 
@@ -189,7 +198,9 @@ class Algorithm(ABC):
         """
 
     @functools.partial(jax.jit, static_argnums=0)
-    def _env_episode(self, state: tuple[chex.PRNGKey, Any], _: None) -> tuple[tuple[chex.PRNGKey, Any], jnp.ndarray]:
+    def _env_episode(
+        self, state: tuple[chex.PRNGKey, Any], _: None
+    ) -> tuple[tuple[chex.PRNGKey, Any], jnp.ndarray]:
         """Evaluate one episode of evaluation in parallel on n_envs.
 
         Args:
@@ -206,10 +217,10 @@ class Algorithm(ABC):
         initial_state = (
             env_state,
             obs,
-            jnp.full((self.eval_env.n_envs,), 0.),
+            jnp.full((self.eval_env.n_envs,), 0.0),
             jnp.full((self.eval_env.n_envs,), False),
             rng,
-            runner_state
+            runner_state,
         )
 
         def cond_fn(state: tuple) -> jnp.bool:
@@ -238,11 +249,15 @@ class Algorithm(ABC):
 
             # Select action
             rng, action_rng = jax.random.split(rng)
-            action = self.predict(runner_state, obs, action_rng, deterministic=self.deterministic_eval)
+            action = self.predict(
+                runner_state, obs, action_rng, deterministic=self.deterministic_eval
+            )
 
             # Step
             rng, step_rng = jax.random.split(rng)
-            env_state, (obs, reward_, done_, info_) = self.eval_env.step(env_state, action, step_rng)
+            env_state, (obs, reward_, done_, info_) = self.eval_env.step(
+                env_state, action, step_rng
+            )
 
             # Count rewards only for envs that are not already done
             reward += reward_ * ~done
@@ -280,4 +295,3 @@ class Algorithm(ABC):
             hpo_config (Configuration): Hyperparameter configuration.
         """
         self.hpo_config = hpo_config
-

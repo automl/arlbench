@@ -6,17 +6,27 @@ from typing import TYPE_CHECKING
 from arlbench.core.wrappers import AutoRLWrapper, FlattenObservationWrapper
 
 if TYPE_CHECKING:
-    from .autorl_env import Environment
     from typing import Any
+
+    from .autorl_env import Environment
 
 
 def make_env(
-    env_framework: str, env_name: str, cnn_policy: bool = False, n_envs: int = 1, seed: int = 0, env_kwargs: dict[str, Any] = {}
+    env_framework: str,
+    env_name: str,
+    cnn_policy: bool = False,
+    n_envs: int = 1,
+    seed: int = 0,
+    env_kwargs: dict[str, Any] | None = None,
 ) -> Environment | AutoRLWrapper:
     # todo: add env_kwargs to all different environments
+    if env_kwargs is None:
+        env_kwargs = {}
     if env_framework == "gymnasium":
         if n_envs > 1:
-            warnings.warn(f"For gymnasium only n_envs must be set to 1 but actual value is {n_envs}. n_envs will be set to 1.")
+            warnings.warn(
+                f"For gymnasium only n_envs must be set to 1 but actual value is {n_envs}. n_envs will be set to 1."
+            )
         from .gymnasium_env import GymnasiumEnv
 
         env = GymnasiumEnv(env_name, seed, env_kwargs=env_kwargs)

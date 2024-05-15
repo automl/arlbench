@@ -39,18 +39,14 @@ class FlattenObservationWrapper(AutoRLWrapper):
         return obs.reshape(obs.shape[0], -1)
 
     @functools.partial(jax.jit, static_argnums=(0,))
-    def reset(
-        self, rng
-    ):  # TODO improve typing
+    def reset(self, rng):  # TODO improve typing
         env_state, obs = self._env.reset(rng)
 
         obs = self.__flatten(obs)
         return env_state, obs
 
     @functools.partial(jax.jit, static_argnums=(0,))
-    def step(
-       self, env_state, action, rng
-    ):  # TODO improve typing
+    def step(self, env_state, action, rng):  # TODO improve typing
         env_state, (obs, reward, done, info) = self._env.step(env_state, action, rng)
 
         obs = self.__flatten(obs)

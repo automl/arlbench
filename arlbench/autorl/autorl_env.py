@@ -56,8 +56,7 @@ DEFAULT_AUTO_RL_CONFIG = {
 
 
 class AutoRLEnv(gymnasium.Env):
-    """
-    Automated Reinforcement Learning (gynmasium-like) Environment.
+    """Automated Reinforcement Learning (gynmasium-like) Environment.
 
     With each reset, the algorithm state is (re-)initialized.
     If a checkpoint path is passed to reset, the agent state is initialized with the checkpointed state.
@@ -74,7 +73,7 @@ class AutoRLEnv(gymnasium.Env):
     _total_training_steps: int
 
     def __init__(self, config: dict | None = None) -> None:
-        """_summary_
+        """_summary_.
 
         Args:
             config (dict | None, optional): _description_. Defaults to None.
@@ -152,7 +151,7 @@ class AutoRLEnv(gymnasium.Env):
         self._observation_space = self._get_obs_space()
 
     def _get_objectives(self) -> list[Objective]:
-        """_summary_
+        """_summary_.
 
         Raises:
             ValueError: _description_
@@ -175,12 +174,10 @@ class AutoRLEnv(gymnasium.Env):
         objectives = sorted(objectives, key=lambda o: o[1])
 
         # Extract online objective classes
-        objectives = [o[0] for o in objectives]
-
-        return objectives
+        return [o[0] for o in objectives]
 
     def _get_state_features(self) -> list[StateFeature]:
-        """_summary_
+        """_summary_.
 
         Raises:
             ValueError: _description_
@@ -197,7 +194,7 @@ class AutoRLEnv(gymnasium.Env):
         return state_features
 
     def _get_obs_space(self) -> gymnasium.spaces.Dict:
-        """_summary_
+        """_summary_.
 
         Returns:
             gymnasium.spaces.Dict: _description_
@@ -211,7 +208,7 @@ class AutoRLEnv(gymnasium.Env):
         return gymnasium.spaces.Dict(obs_space)
 
     def _step(self) -> bool:
-        """_summary_
+        """_summary_.
 
         Returns:
             bool: _description_
@@ -222,7 +219,7 @@ class AutoRLEnv(gymnasium.Env):
         return False
 
     def _train(self, **train_kw_args) -> tuple[TrainReturnT, dict, dict]:
-        """_summary_
+        """_summary_.
 
         Returns:
             tuple[TrainReturnT, dict, dict]: _description_
@@ -277,7 +274,7 @@ class AutoRLEnv(gymnasium.Env):
         n_eval_episodes: int | None = None,
         seed: int | None = None,
     ) -> tuple[ObservationT, ObjectivesT, bool, bool, InfoT]:
-        """_summary_
+        """_summary_.
 
         Args:
             action (Configuration | dict): _description_
@@ -299,18 +296,18 @@ class AutoRLEnv(gymnasium.Env):
 
         if self._done:
             raise ValueError("Called step() before reset().")
-        
+
         # Set done if max. number of steps in DAC is reached or classic (one-step) HPO is performed
         self._done = self._step()
         info = {}
-        
+
         # Apply changes to current hyperparameter configuration and reinstantiate algorithm
         if isinstance(action, dict):
             action = Configuration(self.config_space, action)
         self._hpo_config = action
 
         seed = seed if seed else self._seed
-        
+
         self._algorithm = self._make_algorithm()
         if checkpoint_path:
             print("#### LOADING ####")
@@ -319,7 +316,7 @@ class AutoRLEnv(gymnasium.Env):
                 self._algorithm_state = self._load(checkpoint_path, seed)
                 print("#### LOADING successful ####")
             except Exception as e:
-                print (e)
+                print(e)
                 init_rng = jax.random.key(seed)
                 self._algorithm_state = self._algorithm.init(init_rng)
         else:
@@ -344,7 +341,9 @@ class AutoRLEnv(gymnasium.Env):
         self._algorithm_state, self._train_result = result
 
         steps = (
-            np.arange(1, train_kw_args["n_eval_steps"] + 1) * train_kw_args["n_total_timesteps"] // train_kw_args["n_eval_steps"]
+            np.arange(1, train_kw_args["n_eval_steps"] + 1)
+            * train_kw_args["n_total_timesteps"]
+            // train_kw_args["n_eval_steps"]
         )
         returns = self._train_result.eval_rewards.mean(axis=1)
 
@@ -366,7 +365,7 @@ class AutoRLEnv(gymnasium.Env):
         self,
         seed: int | None = None,
     ) -> tuple[ObservationT, InfoT]:
-        """_summary_
+        """_summary_.
 
         Args:
             seed (int | None, optional): _description_. Defaults to None.
@@ -382,7 +381,7 @@ class AutoRLEnv(gymnasium.Env):
         return {}, {}
 
     def _save(self, tag: str | None = None) -> str:
-        """_summary_
+        """_summary_.
 
         Args:
             tag (str | None, optional): _description_. Defaults to None.
@@ -399,7 +398,9 @@ class AutoRLEnv(gymnasium.Env):
             return ""
 
         if self._train_result is None:
-            warnings.warn("No training performed, so there is nothing to save. Please run step() first.")
+            warnings.warn(
+                "No training performed, so there is nothing to save. Please run step() first."
+            )
 
         return Checkpointer.save(
             self._algorithm.name,
@@ -414,7 +415,7 @@ class AutoRLEnv(gymnasium.Env):
         )
 
     def _load(self, checkpoint_path: str, seed: int) -> AlgorithmState:
-        """_summary_
+        """_summary_.
 
         Args:
             checkpoint_path (str): _description_
@@ -431,13 +432,11 @@ class AutoRLEnv(gymnasium.Env):
             algorithm_kw_args,
         ) = Checkpointer.load(checkpoint_path, algorithm_state)
         # hpo_config = Configuration(self._config_space, hpo_config)
-        algorithm_state = self._algorithm.init(init_rng, **algorithm_kw_args)
-
-        return algorithm_state
+        return self._algorithm.init(init_rng, **algorithm_kw_args)
 
     @property
     def action_space(self) -> gymnasium.spaces.Space:
-        """_summary_
+        """_summary_.
 
         Returns:
             gymnasium.spaces.Space: _description_
@@ -446,7 +445,7 @@ class AutoRLEnv(gymnasium.Env):
 
     @property
     def config_space(self) -> ConfigurationSpace:
-        """_summary_
+        """_summary_.
 
         Returns:
             ConfigurationSpace: _description_
@@ -455,7 +454,7 @@ class AutoRLEnv(gymnasium.Env):
 
     @property
     def observation_space(self) -> gymnasium.spaces.Space:
-        """_summary_
+        """_summary_.
 
         Returns:
             gymnasium.spaces.Space: _description_
@@ -464,7 +463,7 @@ class AutoRLEnv(gymnasium.Env):
 
     @property
     def hpo_config(self) -> Configuration:
-        """_summary_
+        """_summary_.
 
         Returns:
             Configuration: _description_
@@ -473,7 +472,7 @@ class AutoRLEnv(gymnasium.Env):
 
     @property
     def checkpoints(self) -> list[str]:
-        """_summary_
+        """_summary_.
 
         Returns:
             list[str]: _description_
@@ -482,7 +481,7 @@ class AutoRLEnv(gymnasium.Env):
 
     @property
     def objectives(self) -> list[str]:
-        """_summary_
+        """_summary_.
 
         Returns:
             list[str]: _description_
@@ -491,7 +490,7 @@ class AutoRLEnv(gymnasium.Env):
 
     @property
     def config(self) -> dict:
-        """_summary_
+        """_summary_.
 
         Returns:
             dict: _description_
@@ -499,7 +498,7 @@ class AutoRLEnv(gymnasium.Env):
         return self._config.copy()
 
     def eval(self, num_eval_episodes: int) -> np.ndarray:
-        """_summary_
+        """_summary_.
 
         Args:
             num_eval_episodes (int): _description_

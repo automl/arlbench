@@ -1,4 +1,5 @@
 """Main module."""
+
 from __future__ import annotations
 
 import logging
@@ -44,7 +45,7 @@ class HandleTermination:
 
         return False
 
-    def handle_sigterm(self, signum, frame): # noqa: ARG002
+    def handle_sigterm(self, signum, frame):  # noqa: ARG002
         """Save the model and optimizer states before exiting."""
         path = self.env.save(tag="sigterm")
         logger.info(f"Saving checkpoint to {path}")

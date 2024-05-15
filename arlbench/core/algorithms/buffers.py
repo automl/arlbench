@@ -7,11 +7,6 @@ import jax
 import jax.numpy as jnp
 from flashbax import utils
 from flashbax.buffers import sum_tree
-from flashbax.buffers.prioritised_flat_buffer import (
-    ExperiencePair,
-    PrioritisedTransitionSample,
-    TransitionSample,
-)
 from flashbax.buffers.prioritised_trajectory_buffer import (
     Experience,
     PrioritisedTrajectoryBufferSample,

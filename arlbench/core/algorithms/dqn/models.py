@@ -7,6 +7,7 @@ from flax.linen.initializers import constant, orthogonal
 
 class CNNQ(nn.Module):
     """A CNN-based Q-Network for DQN."""
+
     action_dim: int
     activation: str = "tanh"
     hidden_size: int = 512
@@ -54,7 +55,7 @@ class CNNQ(nn.Module):
         )
 
     def __call__(self, x):
-        x = x / 255.
+        x = x / 255.0
         x = jnp.transpose(x, (0, 2, 3, 1))
         q = self.conv1(x)
         q = self.activation_func(q)
@@ -70,6 +71,7 @@ class CNNQ(nn.Module):
 
 class MLPQ(nn.Module):
     """A MLP-based Q-Network for DQN."""
+
     action_dim: int
     activation: str = "tanh"
     hidden_size: int = 64
@@ -103,4 +105,3 @@ class MLPQ(nn.Module):
         q = self.dense1(q)
         q = self.activation_func(q)
         return self.out_layer(q)
-

@@ -2,30 +2,35 @@
 
 from __future__ import annotations
 
-import sys
-
-import hydra
-from codecarbon import track_emissions
-import jax
-from arlbench.core.environments import make_env
-from arlbench.core.algorithms import DQN as ARLBDQN
-from arlbench.core.algorithms import PPO as ARLBPPO
-from arlbench.core.algorithms import SAC as ARLBSAC
-import time
-import pandas as pd
 import logging
+import logging.config
+import os
+import sys
+import time
+from datetime import timedelta
+from typing import TYPE_CHECKING
+
 import gymnax
+import hydra
 import jax
 import jax.numpy as jnp
 import numpy as np
 import pandas as pd
-from datetime import timedelta
+from arlbench.core.algorithms import (
+    DQN as ARLBDQN,
+    PPO as ARLBPPO,
+    SAC as ARLBSAC,
+)
+from arlbench.core.environments import make_env
+from codecarbon import track_emissions
 from omegaconf import DictConfig, OmegaConf
-import logging.config
 
-
-import jax.numpy as jnp
-import os
+if TYPE_CHECKING:
+    from envpool.python.protocol import EnvPool
+    from stable_baselines3.common.vec_env.base_vec_env import (
+        VecEnvObs,
+        VecEnvStepReturn,
+    )
 
 
 def format_time(seconds: float) -> str:
@@ -50,7 +55,11 @@ def train_arlbench(cfg: DictConfig, logger: logging.Logger):
         env_kwargs=cfg.environment.kwargs,
         cnn_policy=cfg.environment.cnn_policy,
     )
-    eval_env_kwargs = cfg.environment.eval_kwargs if "eval_kwargs" in cfg.environment else cfg.environment.kwargs
+    eval_env_kwargs = (
+        cfg.environment.eval_kwargs
+        if "eval_kwargs" in cfg.environment
+        else cfg.environment.kwargs
+    )
     eval_env = make_env(
         cfg.environment.framework,
         cfg.environment.name,
@@ -234,17 +243,12 @@ def train_purejaxrl_dqn(cfg: DictConfig, logger: logging.Logger):
 
 
 def train_sbx(cfg: DictConfig, logger: logging.Logger):
+    import envpool
+    from jax import nn
+    from sbx import DQN, PPO, SAC
     from stable_baselines3.common.callbacks import BaseCallback
     from stable_baselines3.common.evaluation import evaluate_policy
     from stable_baselines3.common.vec_env import VecEnvWrapper, VecMonitor
-    from stable_baselines3.common.vec_env.base_vec_env import (
-        VecEnvObs,
-        VecEnvStepReturn,
-    )
-    from sbx import DQN, PPO, SAC
-    from jax import nn
-    import envpool
-    from envpool.python.protocol import EnvPool
 
     class VecAdapter(VecEnvWrapper):
         """Convert EnvPool object to a Stable-Baselines3 (SB3) VecEnv.
@@ -464,7 +468,7 @@ def train_sbx(cfg: DictConfig, logger: logging.Logger):
     else:
         raise ValueError(f"Invalid algorithm: {cfg.algorithm}.")
 
-    logger.info(f"Training started.")
+    logger.info("Training started.")
 
     start = time.time()
     model.learn(total_timesteps=int(cfg.n_total_timesteps), callback=eval_callback)
@@ -487,20 +491,21 @@ def train_sbx(cfg: DictConfig, logger: logging.Logger):
 @hydra.main(version_base=None, config_path="configs", config_name="runtime_experiments")
 @track_emissions(offline=True, country_iso_code="DEU")
 def main(cfg: DictConfig):
-    logging.basicConfig(filename="job.log", 
-					format="%(asctime)s %(message)s", 
-					filemode="w") 
+    logging.basicConfig(
+        filename="job.log", format="%(asctime)s %(message)s", filemode="w"
+    )
     logging.info("Logging configured")
     logging.info(f"JAX devices: {jax.devices()}")
     logging.info(f"JAX default backend: {jax.default_backend()}")
 
-    logger = logging.getLogger() 
+    logger = logging.getLogger()
 
     try:
         run(cfg, logger)
     except Exception as e:
         logging.exception(e)
         raise
+
 
 def run(cfg: DictConfig, logger: logging.Logger):
     logger.info("Starting run with config:")
@@ -548,7 +553,7 @@ def run(cfg: DictConfig, logger: logging.Logger):
         "info",
         "w",
     ) as f:
-        f.write(f"config: {str(cfg)}\n")
+        f.write(f"config: {cfg!s}\n")
         f.write(f"time: {training_time}\n")
 
 
