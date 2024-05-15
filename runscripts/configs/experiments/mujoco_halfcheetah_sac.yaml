@@ -1,0 +1,12 @@
+# @package _global_
+defaults:
+  - override /environment: mujoco_halfcheetah
+  - override /algorithm: sac
+  - override /search_space: sac_mujoco
+
+hp_config:
+  train_freq: 1
+  gradient_steps: 1
+  normalize_observations: False
+
+jax_enable_x64: True

@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 import logging
 import os
+import sys
 import time
 
 import jax
@@ -11,28 +12,53 @@ from arlbench.core.algorithms import DQN
 from arlbench.core.environments import make_env
 
 
-def test_dqn(
+def dqn(
     dir_name, log, framework, env_name, config, training_kw_args, seed, cnn_policy
 ):
-    env = make_env(framework, env_name, n_envs=config["n_envs"], seed=seed)
+    env = make_env(
+        framework, 
+        env_name, 
+        n_envs=config["n_envs"], 
+        seed=seed, 
+        cnn_policy=cnn_policy,
+        env_kwargs={
+            "episodic_life": True,
+            "reward_clip": True,
+        }
+    )
+    eval_env = make_env(
+        framework, 
+        env_name, 
+        n_envs=training_kw_args["n_eval_episodes"], 
+        seed=seed, 
+        cnn_policy=cnn_policy,
+        env_kwargs={
+            "episodic_life": False,
+            "reward_clip": False,
+        }
+    )
     rng = jax.random.PRNGKey(seed)
+
+    log.info(f"JAX devices: {jax.devices()[0].platform.lower()}")
+    log.info(f"JAX default backend: {jax.default_backend()}")
 
     hpo_config = DQN.get_default_hpo_config()
     hpo_config["learning_starts"] = 1024
     hpo_config["tau"] = 1.0
-    hpo_config["lr"] = 1e-4
-    hpo_config["buffer_batch_size"] = 128
-    hpo_config["buffer_alpha"] = 0.0
-    hpo_config["buffer_beta"] = 0.0
-    hpo_config["buffer_size"] = 50000
-    hpo_config["train_frequency"] = 4
-    hpo_config["gradient_steps"] = 4
-    hpo_config["target_network_update_freq"] = 250
+    hpo_config["learning_rate"] = 1e-4
+    hpo_config["buffer_batch_size"] = 64
+    hpo_config["buffer_prio_sampling"] = False
+    hpo_config["buffer_alpha"] = 0.8
+    hpo_config["buffer_beta"] = 0.8
+    hpo_config["buffer_size"] = 1000000
+    hpo_config["train_freq"] = 1
+    hpo_config["gradient_steps"] = 2
+    hpo_config["target_update_interval"] = 1000
     nas_config = DQN.get_default_nas_config()
     nas_config["activation"] = "relu"
-    nas_config["hidden_size"] = 350
+    nas_config["hidden_size"] = 512
 
-    agent = DQN(hpo_config, env, nas_config=nas_config, cnn_policy=cnn_policy)
+    agent = DQN(hpo_config, env, eval_env=eval_env, nas_config=nas_config, cnn_policy=cnn_policy)
     algorithm_state = agent.init(rng)
 
     start = time.time()
@@ -48,6 +74,7 @@ def test_dqn(
         for mean, std in zip(mean_return, std_return, strict=False)
     ]
     log.info(f"{training_time}, {str_results}")
+    print(f"{training_time}, {str_results}")
 
     train_info_df = pd.DataFrame()
     for i in range(len(mean_return)):
@@ -76,19 +103,23 @@ def test_dqn(
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--dir-name", type=str)
-    parser.add_argument("--training-steps", type=int)
-    parser.add_argument("--n-eval-steps", type=int)
-    parser.add_argument("--n-eval-episodes", type=int)
-    parser.add_argument("--n-envs", type=int)
-    parser.add_argument("--seed", type=int)
-    parser.add_argument("--env-framework", type=str)
-    parser.add_argument("--env", type=str)
-    parser.add_argument("--cnn-policy", type=bool, default=False)
+    parser.add_argument("--dir-name", type=str, default="arlb_gpu_2")
+    parser.add_argument("--training-steps", type=int, default=10000000)
+    parser.add_argument("--n-eval-steps", type=int, default=100)
+    parser.add_argument("--n-eval-episodes", type=int, default=128)
+    parser.add_argument("--n-envs", type=int, default=8)
+    parser.add_argument("--seed", type=int, default=9)
+    parser.add_argument("--env-framework", type=str, default="envpool")
+    parser.add_argument("--env", type=str, default="Qbert-v5")
+    parser.add_argument("--cnn-policy", type=bool, default=True)
     args = parser.parse_args()
 
     logger = logging.getLogger(__name__)
+    formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+    stdout_handler = logging.StreamHandler(sys.stdout)
+    stdout_handler.setFormatter(formatter)
     logger.setLevel(logging.INFO)
+    logger.addHandler(stdout_handler)
 
     training_kw_args = {
         "n_total_timesteps": args.training_steps,
@@ -103,7 +134,7 @@ if __name__ == "__main__":
     }
 
     with jax.disable_jit(disable=False):
-        test_dqn(
+        dqn(
             dir_name=args.dir_name,
             log=logger,
             framework=args.env_framework,

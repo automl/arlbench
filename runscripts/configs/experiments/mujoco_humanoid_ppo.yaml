@@ -1,0 +1,12 @@
+# @package _global_
+defaults:
+  - override /environment: mujoco_humanoid    
+  - override /algorithm: ppo   
+  - override /search_space: ppo_mujoco    
+
+hp_config:
+  update_epochs: 10
+  n_steps: 256
+  normalize_observations: True
+
+jax_enable_x64: True

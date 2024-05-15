@@ -1,0 +1,26 @@
+# @package _global_
+defaults:
+  - override /environment: procgen_bossfight_easy
+  - override /algorithm: ppo
+
+# https://arxiv.org/abs/2102.10330
+environment:
+  n_envs: 64
+  n_total_timesteps: 25e6
+
+hp_config:
+  minibatch_size: 2048
+  update_epochs: 3
+  gamma: 0.999
+  gae_lambda: 0.95
+  ent_coef: 0.01
+  max_grad_norm: 0.5
+  clip_eps: 0.2
+  n_steps: 256
+  vf_coef: 0.5
+  learning_rate: 5e-4
+  normalize_observations: False
+
+nas_config:
+  activation: relu
+  hidden_size: 512

@@ -1,0 +1,19 @@
+# @package _global_
+algorithm: ppo
+hp_config:
+  clip_eps: 0.2
+  ent_coef: 0.0
+  gae_lambda: 0.95
+  gamma: 0.99
+  learning_rate: 0.0003
+  max_grad_norm: 0.5
+  minibatch_size: 64
+  n_steps: 128
+  normalize_advantage: true
+  normalize_observations: false
+  update_epochs: 10
+  vf_clip_eps: 0.2
+  vf_coef: 0.5
+nas_config:
+  activation: tanh
+  hidden_size: 64

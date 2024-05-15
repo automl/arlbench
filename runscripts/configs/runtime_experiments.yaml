@@ -1,0 +1,22 @@
+defaults:
+  - _self_
+  - /cluster: local
+  - /algorithm: dqn
+  - /environment: cc_cartpole
+
+hydra:
+  run:
+    dir: results/runtime_experiments/${hydra.launcher.partition}/${environment.framework}_${environment.name}/${algorithm_framework}_${algorithm}
+  sweep:
+    dir: results/runtime_experiments/${hydra.launcher.partition}/${environment.framework}_${environment.name}/${algorithm_framework}_${algorithm}
+  job:
+    chdir: true
+
+load_checkpoint: ""
+jax_enable_x64: False
+
+algorithm_framework: arlbench
+n_total_timesteps: ${environment.n_total_timesteps}
+n_eval_steps: 100
+n_eval_episodes: 10
+seed: 42

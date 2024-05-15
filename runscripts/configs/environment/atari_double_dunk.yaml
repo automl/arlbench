@@ -1,0 +1,12 @@
+name: "DoubleDunk-v5"
+framework: "envpool"
+n_total_timesteps: 10e6
+kwargs:
+  episodic_life: True
+  reward_clip: True
+eval_kwargs:
+  episodic_life: False
+  reward_clip: False
+cnn_policy: True
+deterministic_eval: False
+n_envs: 8

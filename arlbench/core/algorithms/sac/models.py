@@ -93,6 +93,7 @@ class SACCNNActor(nn.Module):
             features=32,
             kernel_size=(8, 8),
             strides=(4, 4),
+            padding="VALUE",
             kernel_init=orthogonal(jnp.sqrt(2)),
             bias_init=constant(0.0),
         )
@@ -100,6 +101,7 @@ class SACCNNActor(nn.Module):
             features=64,
             kernel_size=(4, 4),
             strides=(2, 2),
+            padding="VALUE",
             kernel_init=orthogonal(jnp.sqrt(2)),
             bias_init=constant(0.0),
         )
@@ -107,6 +109,7 @@ class SACCNNActor(nn.Module):
             features=64,
             kernel_size=(3, 3),
             strides=(1, 1),
+            padding="VALUE",
             kernel_init=orthogonal(jnp.sqrt(2)),
             bias_init=constant(0.0),
         )
@@ -124,6 +127,8 @@ class SACCNNActor(nn.Module):
 
 
     def __call__(self, x):
+        x = x / 255.
+        x = jnp.transpose(x, (0, 2, 3, 1))
         actor_hidden = self.actor_conv0(x)
         actor_hidden = self.activation_func(actor_hidden)
         actor_hidden = self.actor_conv1(actor_hidden)
@@ -180,7 +185,7 @@ class SACCNNCritic(nn.Module):
     """A CNN-based critic network for SAC. Based on NatureCNN https://github.com/DLR-RM/stable-baselines3/blob/master/stable_baselines3/common/torch_layers.py#L48."""
     action_dim: int
     activation: int
-    hidden_size: int = 64
+    hidden_size: int = 512
 
     def setup(self):
         if self.activation == "tanh":
@@ -194,6 +199,7 @@ class SACCNNCritic(nn.Module):
             features=32,
             kernel_size=(8, 8),
             strides=(4, 4),
+            padding="VALUE",
             kernel_init=orthogonal(jnp.sqrt(2)),
             bias_init=constant(0.0),
         )
@@ -201,6 +207,7 @@ class SACCNNCritic(nn.Module):
             features=64,
             kernel_size=(4, 4),
             strides=(2, 2),
+            padding="VALUE",
             kernel_init=orthogonal(jnp.sqrt(2)),
             bias_init=constant(0.0),
         )
@@ -208,6 +215,7 @@ class SACCNNCritic(nn.Module):
             features=64,
             kernel_size=(3, 3),
             strides=(1, 1),
+            padding="VALUE",
             kernel_init=orthogonal(jnp.sqrt(2)),
             bias_init=constant(0.0),
         )
@@ -221,6 +229,8 @@ class SACCNNCritic(nn.Module):
         )
 
     def __call__(self, x, action):
+        x = x / 255.
+        x = jnp.transpose(x (0, 2, 3, 1))
         x = jnp.concatenate([x, action], -1)
         critic = self.conv0(x)
         critic = self.activation_func(critic)

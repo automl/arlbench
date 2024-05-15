@@ -1,0 +1,8 @@
+name: "CartPole-v1"
+framework: "gymnax"
+n_total_timesteps: 1e5
+kwargs: {}
+eval_kwargs: {}
+cnn_policy: False
+deterministic_eval: True
+n_envs: 8

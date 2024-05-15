@@ -1,6 +1,10 @@
 ### Slurm ###
 slurm_scripts
 
+### Run output ###
+*.out
+*.err
+
 ### Python ###
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -198,3 +202,13 @@ pyrightconfig.json
 
 # MacOS specific
 *.DS_Store
+
+**/.hydra
+**/.submitit
+smac3_output/*
+results/*
+
+# Jannis runscripts + logs
+runscripts_jannis/sobol/*
+runscripts_jannis/smac/*
+runscripts_jannis/pbt/*

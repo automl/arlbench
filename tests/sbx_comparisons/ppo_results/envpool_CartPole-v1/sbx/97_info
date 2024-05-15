@@ -1,5 +1,0 @@
-ppo_config: {'n_total_timesteps': 100000, 'n_envs': 8, 'n_env_steps': 500, 'eval_freq': 9984, 'n_eval_episodes': 128, 'track_metrics': False, 'track_traj': False}
-hpo_config: {}
-nas_config: {'net_arch': [256, 256]}
-time: 44.601081132888794
-returns: ['407.95+-151.77', '303.53+-108.70', '365.37+-101.25', '431.99+-85.72', '451.02+-74.92', '457.05+-75.37', '477.13+-47.50', '495.16+-15.88', '489.53+-29.45', '500.00+-0.00']
