@@ -1,12 +1,14 @@
 # @package _global_
 defaults:
-  - override /environment: brax_ant    
-  - override /algorithm: ppo       
-
-# https://huggingface.co/sb3/ppo-Ant-v3
-environment:
-  n_envs: 1
-  n_total_timesteps: 1000000
+  - override /environment: brax_ant
+  - override /algorithm: ppo
+  - override /search_space: ppo_brax
 
 hp_config:
+  update_epochs: 4
+  n_steps: 80
   normalize_observations: True
+
+nas_config:
+  activation: relu
+  hidden_size: 256
