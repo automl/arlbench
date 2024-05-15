@@ -1,6 +1,6 @@
 # @package _global_
 defaults:
-  - override /environment: xland_minigrid_door_key
+  - override /environment: minigrid_door_key
   - override /algorithm: ppo
   - override /search_space: ppo_minigrid
 
