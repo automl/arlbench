@@ -12,6 +12,10 @@ hp_config:
   n_steps: 32
   normalize_observations: False
 
-hydra.sweeper.n_trials: 35
-hydra.sweeper.sweeper_kwargs.optimizer_kwargs.scenario.n_trials: 35
-hydra.sweeper.sweeper_kwargs.optimizer_kwargs.scenario.min_budget: 10000
+hydra:
+  sweeper:
+    budget: 3_200_000
+    sweeper_kwargs:
+      optimizer_kwargs:
+        population_size: 32
+        config_interval: 10000
