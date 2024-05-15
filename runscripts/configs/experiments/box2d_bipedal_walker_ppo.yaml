@@ -1,0 +1,14 @@
+# @package _global_
+defaults:
+  - override /environment: box2d_bipedal_walker
+  - override /algorithm: ppo
+  - override /search_space: ppo_box2d
+
+environment:
+  n_total_timesteps: 5000000
+  n_envs: 32
+
+hp_config:
+  update_epochs: 10
+  n_steps: 2048
+  normalize_observations: True
