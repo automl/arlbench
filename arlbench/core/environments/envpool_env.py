@@ -4,7 +4,6 @@ import functools
 from typing import Any
 
 import jax
-import numpy as np
 import jax.numpy as jnp
 import numpy as np
 
@@ -127,12 +126,23 @@ def numpy_to_jax(x):
     else:
         return x
 
+
 class EnvpoolEnv(Environment):
-    def __init__(self, env_name: str, n_envs: int, seed: int, env_kwargs: dict[str, Any] = {}):
+    def __init__(
+        self,
+        env_name: str,
+        n_envs: int,
+        seed: int,
+        env_kwargs: dict[str, Any] | None = None,
+    ):
+        if env_kwargs is None:
+            env_kwargs = {}
         try:
             import envpool
         except ImportError:
-            raise ValueError("Failed to import envpool. Please install the package first.")
+            raise ValueError(
+                "Failed to import envpool. Please install the package first."
+            )
         env = envpool.make(
             env_name, env_type="gymnasium", num_envs=n_envs, seed=seed, **env_kwargs
         )
@@ -150,21 +160,20 @@ class EnvpoolEnv(Environment):
 
         rng = jax.random.key(42)
         _rngs = jax.random.split(rng, self._n_envs)
-        self.dummy_action = np.array([
-                self.action_space.sample(_rngs[i])
-                for i in range(self._n_envs)
-        ])
+        self.dummy_action = np.array(
+            [self.action_space.sample(_rngs[i]) for i in range(self._n_envs)]
+        )
         if self.is_atari:
             # fire action for reset
             self.dummy_action = np.ones_like(self.dummy_action)
         self.step_shape = self._step(self.dummy_action)
         self.single_step_shape = jax.tree_map(lambda x: x[:1], self.step_shape)
-        
+
         self._handle0, self.recv, self.send, self._xla_step = self._env.xla()
 
     def _reset(self):
         return jax.tree_util.tree_map(numpy_to_jax, self._env.reset())
-    
+
     def _step(self, action, env_id=None):
         result = self._env.step(action=action, env_id=env_id)
         return jax.tree_util.tree_map(numpy_to_jax, result)
@@ -172,10 +181,7 @@ class EnvpoolEnv(Environment):
     @functools.partial(jax.jit, static_argnums=0)
     def reset(self, _):
         obs, info = jax.experimental.io_callback(self._reset, self.reset_shape)
-        if self.is_atari:
-            lives = jnp.array(info["lives"])
-        else:
-            lives = None
+        lives = jnp.array(info["lives"]) if self.is_atari else None
 
         return (self._handle0, lives), obs
 
@@ -190,7 +196,12 @@ class EnvpoolEnv(Environment):
 
         def reset(obs, info):
             def reset_idx(i, obs):
-                new_obs, _, _, _, _ = jax.experimental.io_callback(self._step, self.single_step_shape, action=self.dummy_action[:1], env_id=np.array([i]))
+                new_obs, _, _, _, _ = jax.experimental.io_callback(
+                    self._step,
+                    self.single_step_shape,
+                    action=self.dummy_action[:1],
+                    env_id=np.array([i]),
+                )
                 return obs
 
             for i in range(self._n_envs):
@@ -219,7 +230,7 @@ class EnvpoolEnv(Environment):
             return obs
 
         if self.is_atari:
-            new_lives = jnp.array(info["lives"]) 
+            new_lives = jnp.array(info["lives"])
             lives_gone = new_lives < lives
         else:
             new_lives = None
@@ -228,13 +239,7 @@ class EnvpoolEnv(Environment):
             auto_reset = lives_gone
         else:
             auto_reset = done
-        obs = jax.lax.cond(
-            jnp.any(auto_reset),
-            reset,
-            lambda obs, info: obs,
-            obs,
-            info
-        )
+        obs = jax.lax.cond(jnp.any(auto_reset), reset, lambda obs, info: obs, obs, info)
 
         return (env_state, new_lives), (obs, reward, done, info)
 

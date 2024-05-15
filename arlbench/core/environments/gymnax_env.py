@@ -13,7 +13,11 @@ if TYPE_CHECKING:
 
 
 class GymnaxEnv(Environment):
-    def __init__(self, env_name: str, n_envs: int, env_kwargs: dict[str, Any] = {}):
+    def __init__(
+        self, env_name: str, n_envs: int, env_kwargs: dict[str, Any] | None = None
+    ):
+        if env_kwargs is None:
+            env_kwargs = {}
         env, env_params = gymnax.make(env_name, **env_kwargs)
         super().__init__(env_name, env, n_envs)
 
@@ -47,4 +51,3 @@ class GymnaxEnv(Environment):
     @property
     def observation_space(self):
         return self._env.observation_space(self.env_params)
-

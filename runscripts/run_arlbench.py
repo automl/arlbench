@@ -1,24 +1,25 @@
 """Console script for arlbench."""
 
 from __future__ import annotations
-import traceback
+
+import csv
+import logging
 import sys
+import traceback
 
 import hydra
-from codecarbon import track_emissions
 import jax
-import logging
-from omegaconf import OmegaConf, DictConfig
 from arlbench.arlbench import run_arlbench
-import csv
+from codecarbon import track_emissions
+from omegaconf import DictConfig, OmegaConf
 
 
 @hydra.main(version_base=None, config_path="configs", config_name="base")
 @track_emissions(offline=True, country_iso_code="DEU")
 def main(cfg: DictConfig):
-    logging.basicConfig(filename="job.log", 
-					format="%(asctime)s %(message)s", 
-					filemode="w") 
+    logging.basicConfig(
+        filename="job.log", format="%(asctime)s %(message)s", filemode="w"
+    )
     logger = logging.getLogger()
     logger.setLevel(logging.INFO)
     logger.info("Logging configured")
@@ -38,16 +39,15 @@ def main(cfg: DictConfig):
 
 def run(cfg: DictConfig, logger: logging.Logger):
     """Console script for arlbench."""
-
     logger.info("Starting run with config:")
     logger.info(str(OmegaConf.to_yaml(cfg)))
 
     # check if file done exists and if so, return
     try:
-        with open("./done.txt", "r") as f:
+        with open("./done.txt") as f:
             logger.info("Job already done, returning.")
 
-        with open("./performance.csv", "r") as pf:
+        with open("./performance.csv") as pf:
             csvreader = csv.reader(pf)
             performance = next(csvreader)
             performance = float(performance[0])

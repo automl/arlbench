@@ -11,10 +11,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
 
 import jax
-from chex import PRNGKey
-
 from flashbax import utils
 from flashbax.buffers.item_buffer import validate_item_buffer_args
 from flashbax.buffers.prioritised_flat_buffer import validate_priority_exponent
@@ -25,8 +26,11 @@ from flashbax.buffers.prioritised_trajectory_buffer import (
     make_prioritised_trajectory_buffer,
     validate_device,
 )
-from flashbax.buffers.trajectory_buffer import Experience
 from flashbax.utils import add_dim_to_args
+
+if TYPE_CHECKING:
+    from chex import PRNGKey
+    from flashbax.buffers.trajectory_buffer import Experience
 
 
 def create_prioritised_item_buffer(
@@ -38,7 +42,7 @@ def create_prioritised_item_buffer(
     priority_exponent: float,
     device: str,
 ) -> PrioritisedTrajectoryBuffer:
-    """Creates a prioritised trajectory buffer that acts as an independent item buffer.
+    r"""Creates a prioritised trajectory buffer that acts as an independent item buffer.
 
     Args:
         max_length (int): The maximum length of the buffer.
@@ -55,8 +59,8 @@ def create_prioritised_item_buffer(
             used to perform the buffer operations.
 
     Returns:
-        The buffer."""
-
+    The buffer.
+    """
     validate_item_buffer_args(
         max_length=max_length,
         min_length=min_length,
@@ -124,7 +128,7 @@ def make_prioritised_item_buffer(
     priority_exponent: float = 0.6,
     device: str = "cpu",
 ) -> PrioritisedTrajectoryBuffer:
-    """Makes a prioritised trajectory buffer act as a independent item buffer.
+    r"""Makes a prioritised trajectory buffer act as a independent item buffer.
 
     Args:
         max_length (int): The maximum length of the buffer.
@@ -141,8 +145,8 @@ def make_prioritised_item_buffer(
             used to perform the buffer operations.
 
     Returns:
-        The buffer."""
-
+    The buffer.
+    """
     return create_prioritised_item_buffer(
         max_length=max_length,
         min_length=min_length,

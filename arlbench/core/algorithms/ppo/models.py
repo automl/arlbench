@@ -8,6 +8,7 @@ from flax.linen.initializers import constant, orthogonal
 
 class MLPActorCritic(nn.Module):
     """A MLP-based Actor-Critic network for PPO."""
+
     action_dim: int
     activation: str = "tanh"
     hidden_size: int = 64
@@ -75,6 +76,7 @@ class MLPActorCritic(nn.Module):
 
 class CNNActorCritic(nn.Module):
     """A CNN-based Actor-Critic network for PPO. Based on NatureCNN https://github.com/DLR-RM/stable-baselines3/blob/master/stable_baselines3/common/torch_layers.py#L48."""
+
     action_dim: int
     activation: str = "tanh"
     hidden_size: int = 512
@@ -117,7 +119,7 @@ class CNNActorCritic(nn.Module):
             kernel_init=orthogonal(jnp.sqrt(2)),
             bias_init=constant(0.0),
         )
-        
+
         self.actor_out = nn.Dense(
             self.action_dim, kernel_init=orthogonal(0.01), bias_init=constant(0.0)
         )
@@ -129,7 +131,7 @@ class CNNActorCritic(nn.Module):
         )
 
     def __call__(self, x):
-        x = x / 255.  # todo: make a clean solution for this 
+        x = x / 255.0  # todo: make a clean solution for this
         x = jnp.transpose(x, (0, 2, 3, 1))
         features = self.feature_conv0(x)
         features = self.activation_func(features)
@@ -150,4 +152,3 @@ class CNNActorCritic(nn.Module):
         critic = self.critic_out(features)
 
         return pi, jnp.squeeze(critic, axis=-1)
-

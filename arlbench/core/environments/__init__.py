@@ -11,5 +11,5 @@ __all__ = [
     "EnvpoolEnv",
     "GymnaxEnv",
     "GymnasiumEnv",
-    "BraxEnv"
+    "BraxEnv",
 ]

@@ -2,8 +2,8 @@
 
 import datetime
 
-from .autorl.autorl_env import AutoRLEnv
 from .arlbench import run_arlbench
+from .autorl.autorl_env import AutoRLEnv
 
 __author__ = """AutoML Hannover"""
 __email__ = """automl@ai.uni-hannover.de"""

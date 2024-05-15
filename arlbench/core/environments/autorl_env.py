@@ -19,11 +19,13 @@ class Environment(ABC):
         self._seed = seed
 
     @abstractmethod
-    def reset(self, rng: PRNGKey) -> tuple[Any, Any]:    # TODO improve typing
+    def reset(self, rng: PRNGKey) -> tuple[Any, Any]:  # TODO improve typing
         raise NotImplementedError
 
     @abstractmethod
-    def step(self, env_state: Any, action: Any, rng: PRNGKey) -> tuple[Any, Any]:    # TODO improve typing
+    def step(
+        self, env_state: Any, action: Any, rng: PRNGKey
+    ) -> tuple[Any, Any]:  # TODO improve typing
         raise NotImplementedError
 
     @abstractmethod
@@ -38,10 +40,7 @@ class Environment(ABC):
     def sample_actions(self, rng):
         _rngs = jax.random.split(rng, self._n_envs)
         return jnp.array(
-            [
-                self.action_space.sample(_rngs[i])
-                for i in range(self._n_envs)
-            ]
+            [self.action_space.sample(_rngs[i]) for i in range(self._n_envs)]
         )
 
     @property
