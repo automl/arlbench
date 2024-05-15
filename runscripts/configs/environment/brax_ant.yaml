@@ -1,8 +1,8 @@
 name: "ant"
 framework: "brax"
-n_total_timesteps: 1e6
-kwargs: {}
-eval_kwargs: {}
+n_total_timesteps: 50000000
+kwargs:
+eval_kwargs:
 cnn_policy: False
 deterministic_eval: True
-n_envs: 8
+n_envs: 4096
