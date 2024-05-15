@@ -397,6 +397,7 @@ class PPO(Algorithm):
             Returns:
                 tuple[PPORunnerState, PPOTrainingResult]: Tuple of PPO runner state and training result.
             """
+            jax.debug.print("hallo")
             _runner_state, (metrics, trajectories) = jax.lax.scan(
                 self._update_step,
                 _runner_state,
@@ -519,30 +520,7 @@ class PPO(Algorithm):
 
         transition = Transition(done, action, value, reward, log_prob, last_obs, info)
         cur_rewards += reward
-        print_reward = jnp.array([False])
-        for i in range(self.env.n_envs):
-            def rew_update(i, return_buffer, return_buffer_idx):
-                return_buffer = return_buffer.at[return_buffer_idx%100].set(cur_rewards[i])
-                return_buffer_idx += 1
-                return return_buffer, return_buffer_idx, return_buffer_idx%100==0
-            return_buffer, return_buffer_idx, cur_print_rew = jax.lax.cond(
-                done[i],
-                lambda rew, idx: rew_update(i, rew, idx),
-                lambda rew, idx: (rew, idx, jnp.array([False])),
-                return_buffer, return_buffer_idx
-            )
-            print_reward = jnp.logical_or(print_reward, cur_print_rew)
-        cur_rewards *= (1 - done)
-
-        def print_return(return_buffer):
-            #jax.debug.print("Current Return: {rew}", rew=return_buffer.mean())
-            return return_buffer
-        jax.lax.cond(
-            print_reward[0],
-            print_return,
-            lambda x: x,
-            return_buffer,
-        )
+        print_reward = jnp.array([False])   # todo: print_reward!!
 
         runner_state = PPORunnerState(
             train_state=train_state,
