@@ -9,7 +9,7 @@ class CNNQ(nn.Module):
     """A CNN-based Q-Network for DQN."""
     action_dim: int
     activation: str = "tanh"
-    hidden_size: int = 64
+    hidden_size: int = 512
     discrete: bool = True
 
     def setup(self):
@@ -24,6 +24,7 @@ class CNNQ(nn.Module):
             features=32,
             kernel_size=(8, 8),
             strides=(4, 4),
+            padding="VALID",
             kernel_init=orthogonal(jnp.sqrt(2)),
             bias_init=constant(0.0),
         )
@@ -31,6 +32,7 @@ class CNNQ(nn.Module):
             features=64,
             kernel_size=(4, 4),
             strides=(2, 2),
+            padding="VALID",
             kernel_init=orthogonal(jnp.sqrt(2)),
             bias_init=constant(0.0),
         )
@@ -38,6 +40,7 @@ class CNNQ(nn.Module):
             features=64,
             kernel_size=(3, 3),
             strides=(1, 1),
+            padding="VALID",
             kernel_init=orthogonal(jnp.sqrt(2)),
             bias_init=constant(0.0),
         )
@@ -51,6 +54,8 @@ class CNNQ(nn.Module):
         )
 
     def __call__(self, x):
+        x = x / 255.
+        x = jnp.transpose(x, (0, 2, 3, 1))
         q = self.conv1(x)
         q = self.activation_func(q)
         q = self.conv2(q)

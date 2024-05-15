@@ -1,0 +1,23 @@
+# @package _global_
+algorithm: dqn
+hp_config:
+  buffer_prio_sampling: false
+  buffer_alpha: 0.9
+  buffer_beta: 0.9
+  buffer_epsilon: 0.001
+  buffer_batch_size: 16
+  buffer_size: 1000000
+  initial_epsilon: 1.0
+  target_epsilon: 0.05
+  gamma: 0.99
+  gradient_steps: 1
+  learning_rate: 0.0003
+  learning_starts: 128
+  normalize_observations: false
+  train_freq: 4
+  use_target_network: true
+  target_update_interval: 1000
+  tau: 1.0
+nas_config:
+  activation: tanh
+  hidden_size: 64

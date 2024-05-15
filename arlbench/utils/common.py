@@ -6,6 +6,7 @@ import gymnasium.spaces as gym_spaces
 import gymnax.environments.spaces as gymnax_spaces
 import numpy as np
 import jax.numpy as jnp
+import yaml
 
 
 def to_gymnasium_space(space):
@@ -20,6 +21,101 @@ def to_gymnasium_space(space):
     else:
         raise NotImplementedError
     return new_space
+
+
+def save_defaults_to_yaml(hp_config_space, nas_config_sapce, algorithm: str):
+    yaml_dict = {
+        'algorithm': algorithm,
+        'hp_config': {},
+        'nas_config': {}
+    }
+
+    def add_hps(config_space, config_key):
+        for hp_name, hp in config_space.items():
+            if isinstance(hp, ConfigSpace.UniformIntegerHyperparameter):
+                yaml_dict[config_key][hp_name] = int(hp.default_value)
+            elif isinstance(hp, ConfigSpace.UniformFloatHyperparameter):
+                yaml_dict[config_key][hp_name] = float(hp.default_value)
+            elif isinstance(hp, ConfigSpace.CategoricalHyperparameter):
+                if isinstance(hp.default_value, bool):
+                    yaml_dict[config_key][hp_name] = bool(hp.default_value)
+                elif isinstance(hp.default_value, int):
+                    yaml_dict[config_key][hp_name] = int(hp.default_value)
+                elif isinstance(hp.default_value, float):
+                    yaml_dict[config_key][hp_name] = float(hp.default_value)
+                else:
+                    yaml_dict[config_key][hp_name] = str(hp.default_value)
+
+    add_hps(hp_config_space, "hp_config")
+    add_hps(nas_config_sapce, "nas_config")
+        
+    return yaml.dump(yaml_dict, sort_keys=False)
+
+
+def config_space_to_yaml(config_space: ConfigSpace.ConfigurationSpace, config_key: str = 'hp_config', seed: int = 0):
+    yaml_dict = {
+        'seed': seed,
+        'hyperparameters': {},
+        'conditions': []
+    }
+    for hp_name, hp in config_space.items():
+        if hp_name == "normalize_observations":
+            continue
+
+        hp_key = f"{config_key}.{hp_name}"
+        if isinstance(hp, ConfigSpace.UniformIntegerHyperparameter):
+            yaml_dict['hyperparameters'][hp_key] = {
+                'type': 'uniform_int',
+                'upper': int(hp.upper),
+                'lower': int(hp.lower),
+                'default': int(hp.default_value),
+                'log': bool(hp.log)
+            }
+        elif isinstance(hp, ConfigSpace.UniformFloatHyperparameter):
+            yaml_dict['hyperparameters'][hp_key] = {
+                'type': 'uniform_float',
+                'upper': float(hp.upper),
+                'lower': float(hp.lower),
+                'default': float(hp.default_value),
+                'log': bool(hp.log)
+            }
+        elif isinstance(hp, ConfigSpace.CategoricalHyperparameter):
+            try:
+                if len(hp.choices) == 2:    # assume bool
+                    param = {
+                            'type': 'categorical',
+                            'choices': [bool(c) for c in hp.choices],
+                            'default': bool(hp.default_value)
+                        }
+                else:
+                    param = {
+                        'type': 'categorical',
+                        'choices': [int(c) for c in hp.choices],
+                        'default': int(hp.default_value)
+                    }
+            except:
+                param = {
+                    'type': 'categorical',
+                    'choices': [str(c) for c in hp.choices],
+                    'default': str(hp.default_value)
+                }
+            yaml_dict['hyperparameters'][hp_key] = param
+
+    # This part is experimental
+    for c in config_space.get_conditions():
+        cond = {
+            "child": f"{config_key}.{str(c.child.name)}",
+            "parent": f"{config_key}.{str(c.parent.name)}",
+            "value": bool(c.value)
+        }
+        if isinstance(c, ConfigSpace.EqualsCondition):
+            cond["type"] = "EQ"
+        else:
+            raise ValueError("Only EqualsCondition is supported.")
+        
+        yaml_dict['conditions'].append(cond)
+
+    return yaml.dump(yaml_dict, sort_keys=False, default_flow_style=False)
 
 
 def config_space_to_gymnasium_space(

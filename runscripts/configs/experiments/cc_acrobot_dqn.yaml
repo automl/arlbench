@@ -1,0 +1,14 @@
+# @package _global_
+defaults:
+  - override /environment: cc_acrobot 
+  - override /algorithm: dqn   
+  - override /search_space: dqn_cc
+
+environment:
+  n_total_timesteps: 100000
+  n_envs: 4
+
+hp_config:
+  train_freq: 1
+  gradient_steps: 4
+  normalize_observations: False

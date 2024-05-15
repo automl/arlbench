@@ -1,0 +1,39 @@
+defaults:
+  - _self_
+  - /cluster: local
+  - /algorithm: dqn
+  - /environment: cc_cartpole
+  - search_space: dqn
+  - /experiments: cc_cartpole_dqn
+
+hydra:
+  run:
+    dir: results/${algorithm}_${environment.name}/${autorl.seed}
+  sweep:
+    dir: results/${algorithm}_${environment.name}/${autorl.seed}
+  job:
+    chdir: true
+
+jax_enable_x64: false
+load_checkpoint: ""
+
+autorl:
+  seed: 42
+  env_framework: ${environment.framework}
+  env_name: ${environment.name}
+  env_kwargs: ${environment.kwargs}
+  eval_env_kwargs: ${environment.eval_kwargs}
+  n_envs: ${environment.n_envs}
+  algorithm: ${algorithm}
+  cnn_policy: ${environment.cnn_policy}
+  nas_config: ${nas_config}
+  n_total_timesteps: ${environment.n_total_timesteps}
+  checkpoint: []
+  checkpoint_name: "default_checkpoint"
+  checkpoint_dir: "/tmp"
+  state_features: []
+  objectives: ["reward_mean"]
+  optimize_objectives: "upper"
+  n_steps: 10
+  n_eval_steps: 100
+  n_eval_episodes: 10

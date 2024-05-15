@@ -1,0 +1,15 @@
+# @package _global_
+defaults:
+  - override hydra/launcher: submitit_slurm
+
+hydra:
+  launcher:
+    partition: KathleenG
+    gpus_per_task: 1
+    cpus-per-task: 16
+    gres: "gpu:1"
+    timeout_min: 5
+    mem-per-cpu: 2000
+    time: 24:00:00
+    setup:
+      - export JAX_PLATFORM_NAME=gpu

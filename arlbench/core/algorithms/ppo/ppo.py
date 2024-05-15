@@ -16,6 +16,8 @@ from flax.training.train_state import TrainState
 from flax.core.frozen_dict import FrozenDict
 
 from arlbench.core.algorithms.algorithm import Algorithm
+from arlbench.core import running_statistics
+from arlbench.core.running_statistics import RunningStatisticsState
 from arlbench.utils import recursive_concat, tuple_concat
 
 from .models import CNNActorCritic, MLPActorCritic
@@ -51,9 +53,13 @@ class PPORunnerState(NamedTuple):
 
     rng: chex.PRNGKey
     train_state: PPOTrainState
+    normalizer_state: RunningStatisticsState
     env_state: Any
     obs: chex.Array
     global_step: int
+    return_buffer_idx: chex.Array | None = None
+    return_buffer: chex.Array | None = None
+    cur_rewards: chex.Array | None = None
 
 
 class PPOState(NamedTuple):
@@ -109,6 +115,7 @@ class PPO(Algorithm):
         eval_env: Environment | AutoRLWrapper | None = None,
         cnn_policy: bool = False,
         nas_config: Configuration | None = None,
+        deterministic_eval: bool = True,
         track_trajectories: bool = False,
         track_metrics: bool = False,
     ) -> None:
@@ -131,6 +138,7 @@ class PPO(Algorithm):
             nas_config,
             env,
             eval_env=eval_env,
+            deterministic_eval=deterministic_eval,
             track_metrics=track_metrics,
             track_trajectories=track_trajectories,
         )
@@ -164,16 +172,39 @@ class PPO(Algorithm):
             name="PPOConfigSpace",
             seed=seed,
             space={
-                "minibatch_size": Integer("minibatch_size", (4, 1024), default=64),
-                "lr": Float("lr", (1e-5, 0.1), default=2.5e-4),
-                "n_steps": Integer("n_steps", (1, 10000), default=1024),
-                "update_epochs": Integer("update_epochs", (1, int(1e5)), default=10),
-                "gamma": Float("gamma", (0.0, 1.0), default=0.99),
-                "gae_lambda": Float("gae_lambda", (0.0, 1.0), default=0.95),
-                "clip_eps": Float("clip_eps", (0.0, 1.0), default=0.2),
-                "ent_coef": Float("ent_coef", (0.0, 1.0), default=0.01),
+                "minibatch_size": Categorical("minibatch_size", [16, 32, 64, 128, 2048], default=64),
+                "learning_rate": Float("learning_rate", (1e-6, 0.1), default=3e-4, log=True),
+                "n_steps": Categorical("n_steps", [5, 32, 64, 80, 128, 256, 512], default=128),
+                "update_epochs": Integer("update_epochs", (1, 20), default=10),
+                "gamma": Float("gamma", (0.8, 1.0), default=0.99),
+                "gae_lambda": Float("gae_lambda", (0.8, 0.9999), default=0.95),
+                "clip_eps": Float("clip_eps", (0.0, 0.5), default=0.2),
+                "vf_clip_eps": Float("vf_clip_eps", (0.0, 0.5), default=0.2),
+                "normalize_advantage": Categorical("normalize_advantage", [True, False], default=True),
+                "ent_coef": Float("ent_coef", (0.0, 0.5), default=0.0),
                 "vf_coef": Float("vf_coef", (0.0, 1.0), default=0.5),
-                "max_grad_norm": Float("max_grad_norm", (0.0, 10.0), default=0.5),
+                "max_grad_norm": Float("max_grad_norm", (0.0, 1.0), default=0.5),
+                "normalize_observations": Categorical("normalize_observations", [True, False], default=False),
+            },
+        )
+    
+    @staticmethod
+    def get_hpo_search_space(seed: int | None = None) -> ConfigurationSpace:
+        return ConfigurationSpace(
+            name="PPOConfigSpace",
+            seed=seed,
+            space={
+                "minibatch_size": Categorical("minibatch_size", [16, 32, 64, 128], default=64),
+                "learning_rate": Float("learning_rate", (1e-6, 0.1), default=3e-4, log=True),
+                "n_steps": Categorical("n_steps", [32, 64, 128, 256, 512], default=128),
+                "update_epochs": Integer("update_epochs", (5, 20), default=10),
+                "gae_lambda": Float("gae_lambda", (0.8, 0.9999), default=0.95),
+                "clip_eps": Float("clip_eps", (0.0, 0.5), default=0.2),
+                "vf_clip_eps": Float("vf_clip_eps", (0.0, 0.5), default=0.2),
+                "normalize_advantage": Categorical("normalize_advantage", [True, False], default=True),
+                "ent_coef": Float("ent_coef", (0.0, 0.5), default=0.0),
+                "vf_coef": Float("vf_coef", (0.0, 1.0), default=0.5),
+                "max_grad_norm": Float("max_grad_norm", (0.0, 1.0), default=0.5),
             },
         )
 
@@ -190,7 +221,7 @@ class PPO(Algorithm):
                 "activation": Categorical(
                     "activation", ["tanh", "relu"], default="tanh"
                 ),
-                "hidden_size": Integer("hidden_size", (1, 1024), default=64),
+                "hidden_size": Integer("hidden_size", (1, 2048), default=64),
             },
         )
 
@@ -264,7 +295,10 @@ class PPO(Algorithm):
 
         tx = optax.chain(
             optax.clip_by_global_norm(self.hpo_config["max_grad_norm"]),
-            optax.adam(self.hpo_config["lr"], eps=1e-5),
+            optax.adam(
+                self.hpo_config["learning_rate"],
+                eps=1e-5
+            ),
         )
 
         train_state = PPOTrainState.create_with_opt_state(
@@ -277,9 +311,13 @@ class PPO(Algorithm):
         runner_state = PPORunnerState(
             rng=rng,
             train_state=train_state,
+            normalizer_state=running_statistics.init_state(obs[0]),
             env_state=env_state,
             obs=obs,
             global_step=0,
+            return_buffer_idx=jnp.array([0]),
+            return_buffer=jnp.zeros(100),
+            cur_rewards=jnp.zeros(self.env.n_envs),
         )
 
         return PPOState(runner_state=runner_state, buffer_state=None)
@@ -303,6 +341,8 @@ class PPO(Algorithm):
         Returns:
             jnp.ndarray: Action(s).
         """
+        if self.hpo_config["normalize_observations"]:
+            obs = running_statistics.normalize(obs, runner_state.normalizer_state)
         pi, _ = self.network.apply(runner_state.train_state.params, obs)
 
         def deterministic_action() -> jnp.ndarray:
@@ -311,13 +351,17 @@ class PPO(Algorithm):
         def sampled_action() -> jnp.ndarray:
             return pi.sample(seed=rng)
 
-        return jax.lax.cond(
+        action = jax.lax.cond(
             deterministic,
             deterministic_action,
             sampled_action,
         )
 
-        # return jnp.clip(action, self.env.action_space.low, self.env.action_space.high)
+        if not self.action_type[1]:  # continuous action space
+            action = jnp.clip(
+                action, self.env.action_space.low, self.env.action_space.high
+            )
+        return action
 
     @functools.partial(jax.jit, static_argnums=(0, 3, 4, 5))
     def train(
@@ -325,7 +369,7 @@ class PPO(Algorithm):
         runner_state: PPORunnerState,
         _,
         n_total_timesteps: int = 1000000,
-        n_eval_steps: int = 100,
+        n_eval_steps: int = 10,
         n_eval_episodes: int = 10,
     ) -> PPOTrainReturnT:
         """Performs one iteration of training.
@@ -353,6 +397,7 @@ class PPO(Algorithm):
             Returns:
                 tuple[PPORunnerState, PPOTrainingResult]: Tuple of PPO runner state and training result.
             """
+            jax.debug.print("hallo")
             _runner_state, (metrics, trajectories) = jax.lax.scan(
                 self._update_step,
                 _runner_state,
@@ -390,11 +435,24 @@ class PPO(Algorithm):
         runner_state, traj_batch = jax.lax.scan(
             self._env_step, runner_state, None, self.hpo_config["n_steps"]
         )
+        (rng, train_state, normalizer_state, env_state, last_obs, global_step, return_buffer_idx, return_buffer, cur_rewards) = runner_state
+        if self.hpo_config["normalize_observations"]:
+            normalizer_state = running_statistics.update(normalizer_state, traj_batch.obs)
+            traj_batch = Transition(
+                done = traj_batch.done,
+                action = traj_batch.action,
+                value = traj_batch.value,
+                reward = traj_batch.reward,
+                log_prob = traj_batch.log_prob,
+                obs = running_statistics.normalize(traj_batch.obs, normalizer_state),
+                info = traj_batch.info,
+            )
+            _, last_val = self.network.apply(train_state.params, running_statistics.normalize(last_obs, normalizer_state))
+        else:
+            _, last_val = self.network.apply(train_state.params, last_obs)
+
 
         # Calculate advantage
-        (rng, train_state, env_state, last_obs, global_step) = runner_state
-        _, last_val = self.network.apply(train_state.params, last_obs)
-
         advantages, targets = self._calculate_gae(traj_batch, last_val)
 
         # Update network parameters
@@ -408,16 +466,20 @@ class PPO(Algorithm):
         runner_state = PPORunnerState(
             rng=rng,
             train_state=train_state,
+            normalizer_state=normalizer_state,
             env_state=env_state,
             obs=last_obs,
             global_step=global_step,
+            return_buffer_idx=return_buffer_idx,
+            return_buffer=runner_state.return_buffer,
+            cur_rewards=runner_state.cur_rewards
         )
-        metrics, tracjectories = None, None
+        metrics, trajectories = None, None
         if self.track_metrics:
             metrics = PPOMetrics(loss=loss, grads=grads, advantages=advantages)
         if self.track_trajectories:
-            tracjectories = traj_batch
-        return runner_state, (metrics, tracjectories)
+            trajectories = traj_batch
+        return runner_state, (metrics, trajectories)
 
     @functools.partial(jax.jit, static_argnums=0)
     def _env_step(
@@ -432,11 +494,15 @@ class PPO(Algorithm):
         Returns:
             tuple[PPORunnerState, Transition]: Tuple of PPO runner state and batch of transitions.
         """
-        (rng, train_state, env_state, last_obs, global_step) = runner_state
+        (rng, train_state, normalizer_state, env_state, last_obs, global_step, return_buffer_idx, return_buffer, cur_rewards) = runner_state
 
         # Select action(s)
         rng, _rng = jax.random.split(rng)
-        pi, value = self.network.apply(train_state.params, last_obs)
+        if self.hpo_config["normalize_observations"]:
+            pi, value = self.network.apply(train_state.params, running_statistics.normalize(last_obs, normalizer_state))
+        else:
+            pi, value = self.network.apply(train_state.params, last_obs)
+
         action, log_prob = pi.sample_and_log_prob(seed=_rng)
 
         clipped_action = action
@@ -453,12 +519,19 @@ class PPO(Algorithm):
         global_step += 1
 
         transition = Transition(done, action, value, reward, log_prob, last_obs, info)
+        cur_rewards += reward
+        print_reward = jnp.array([False])   # todo: print_reward!!
+
         runner_state = PPORunnerState(
             train_state=train_state,
+            normalizer_state=normalizer_state,
             env_state=env_state,
             obs=obsv,
             rng=rng,
             global_step=global_step,
+            return_buffer_idx=return_buffer_idx,
+            return_buffer=return_buffer,
+            cur_rewards=cur_rewards,
         )
         return runner_state, transition
 
@@ -636,7 +709,7 @@ class PPO(Algorithm):
         # Calculate value loss
         value_pred_clipped = traj_batch.value + (
             value - traj_batch.value
-        ).clip(-self.hpo_config["clip_eps"], self.hpo_config["clip_eps"])
+        ).clip(-self.hpo_config["vf_clip_eps"], self.hpo_config["vf_clip_eps"])
         value_losses = jnp.square(value - targets)
         value_losses_clipped = jnp.square(value_pred_clipped - targets)
         value_loss = (
@@ -645,7 +718,8 @@ class PPO(Algorithm):
 
         # Calculate actor loss
         ratio = jnp.exp(log_prob - traj_batch.log_prob)
-        gae = (gae - gae.mean()) / (gae.std() + 1e-8)
+        if self.hpo_config["normalize_advantage"]:
+            gae = (gae - gae.mean()) / (gae.std() + 1e-8)
         loss_actor1 = ratio * gae
         loss_actor2 = (
             jnp.clip(
