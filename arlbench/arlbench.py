@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from .autorl import AutoRLEnv
-from omegaconf import DictConfig
+from omegaconf import DictConfig, OmegaConf
 from logging import Logger
 import os
 
@@ -18,12 +18,17 @@ def run_arlbench(cfg: DictConfig, logger: Logger | None = None) -> float | tuple
     
     if "save" in cfg and cfg.save:
         cfg.autorl.checkpoint_dir = str(cfg.save).replace(".pt", "")
-        cfg.autorl.checkpoint = ["opt_state", "params", "buffer"]
-  
+        if cfg.algorithm == "PPO":
+            cfg.autorl.checkpoint = ["opt_state", "params"]
+        else:
+            cfg.autorl.checkpoint = ["opt_state", "params", "buffer"]
+
     env = AutoRLEnv(cfg.autorl)
     _ = env.reset()
 
     if logger:
+        logger.info("Your AutoRL config is:")
+        logger.info(OmegaConf.to_yaml(cfg.autorl))
         logger.info("Training started.")
     _, objectives, _, _, info = env.step(cfg.hp_config, checkpoint_path=checkpoint_path)
     if logger:

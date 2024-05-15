@@ -1,0 +1,19 @@
+# @package _global_
+defaults:
+  - override /environment: cc_cartpole 
+  - override /algorithm: dqn   
+  - override /search_space: dqn_cc_pbt
+
+environment:
+  n_total_timesteps: 50000
+  n_envs: 8
+
+hp_config:
+  train_freq: 32
+  gradient_steps: 128
+  normalize_observations: False
+  buffer_size: ${environment.n_total_timesteps} 
+
+hydra.sweeper.budget: 1_600_000
+hydra.sweeper.sweeper_kwargs.optimizer_kwargs.population_size: 32
+hydra.sweeper.sweeper_kwargs.optimizer_kwargs.config_interval: 5000
