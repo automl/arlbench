@@ -1,6 +1,6 @@
 # @package _global_
 defaults:
-  - override /environment: xland_minigrid_unlock
+  - override /environment: minigrid_unlock
   - override /algorithm: ppo
   - override /search_space: ppo_minigrid
 

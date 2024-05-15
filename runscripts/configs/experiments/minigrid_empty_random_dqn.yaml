@@ -1,6 +1,6 @@
 # @package _global_
 defaults:
-  - override /environment: xland_minigrid_empty_random
+  - override /environment: minigrid_empty_random
   - override /algorithm: dqn
   - override /search_space: dqn_minigrid
 
