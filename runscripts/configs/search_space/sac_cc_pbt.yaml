@@ -43,6 +43,12 @@ hyperparameters:
     lower: 0
     default: 128
     log: false
+  hp_config.use_target_network:
+    type: categorical
+    choices:
+      - true
+      - false
+    default: true
   hp_config.tau:
     type: uniform_float
     upper: 1.0
