@@ -12,6 +12,8 @@ hydra:
     n_trials: 256
     search_space: ${search_space}
     sweeper_kwargs:
+      maximize: true
+      max_budget: ${environment.n_total_timesteps} 
       max_parallelization: 0.1 #  hence, only 25 jobs per batch
       job_array_size_limit: 100
   run:
