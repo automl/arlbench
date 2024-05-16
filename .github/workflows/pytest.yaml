@@ -18,7 +18,7 @@ on:
 env:
   package-name: "ARLBench"
   test-dir: tests
-  extra-requires: "[dev]"  # "" for no extra_requires
+  extra-requires: "[dev,envpool]"  # "" for no extra_requires
 
   # Arguments used for pytest
   pytest-args: >-
