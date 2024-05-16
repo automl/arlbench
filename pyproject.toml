@@ -8,7 +8,6 @@ dependencies = [
   "codecarbon",
   "memray",
   "pathos",
-  "envpool>=0.8.4",
   "jax>=0.4.26",
   "jaxlib>=0.4.26",
   "flashbax>=0.1.2",
@@ -56,6 +55,7 @@ examples = []
 doc = [
   "automl_sphinx_theme",
 ]
+envpool = ["envpool>=0.8.4"]
 
 
 # https://docs.pytest.org/en/7.2.x/reference/reference.html#ini-options-ref
