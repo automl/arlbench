@@ -172,9 +172,9 @@ class PPO(Algorithm):
             name="PPOConfigSpace",
             seed=seed,
             space={
-                "minibatch_size": Categorical("minibatch_size", [16, 32, 64, 128, 2048], default=64),
+                "minibatch_size": Categorical("minibatch_size", [16, 32, 64, 128, 256, 512, 1024, 2048], default=64),
                 "learning_rate": Float("learning_rate", (1e-6, 0.1), default=3e-4, log=True),
-                "n_steps": Categorical("n_steps", [5, 32, 64, 80, 128, 256, 512], default=128),
+                "n_steps": Categorical("n_steps", [5, 32, 64, 80, 128, 256, 160, 320, 512, 1024, 640], default=128),
                 "update_epochs": Integer("update_epochs", (1, 20), default=10),
                 "gamma": Float("gamma", (0.8, 1.0), default=0.99),
                 "gae_lambda": Float("gae_lambda", (0.8, 0.9999), default=0.95),
