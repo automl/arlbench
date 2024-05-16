@@ -33,19 +33,59 @@
 
 **JAX-Based implementations of DQN, PPO, and SAC**
 
-## Setup
+## Installation
 
-1. **Installation**: You can install ARLBench using `pip`:
+There are currently two different ways to install ARLBench:
+
+<details>
+<summary>After acceptance: PyPI</summary>
+You can install ARLBench using `pip`:
 
 ```bash
 pip install arlbench
 ```
 
-TODO insert instructions to use SMAC/PBT2 etc
+If you want to use envpool environments (not currently supported for Mac!), instead choose:
+```bash
+pip install arlbench[envpool]
+```
 
-2. **Usage**:
+</details>
+
+<details>
+<summary>From source: GitHub</summary>
+First, you need to clone the ARLBench reopsitory:
+
+```bash
+git clone git@github.com:automl/arlbench.git
+cd arlbench
+```
+
+We recommend to create a virtual environment for the installation:
+```bash
+conda create -n arlbench python=3.10
+```
+
+Then you can install the benchmark. For the base version, use:
+```bash
+make install
+```
+
+For the envpool functionality (not available on Mac!), instead use:
+```bash
+make install-envpool
+```
+</details>
 
 ## Quickstart
+
+ARLBench functions similarly to a RL environment itself: you create it, initialize it via a 'reset' function and then run it using 'step':
+```python
+from arlbench import AutoRLEnv
+
+env = AutoRLEnv(cfg.autorl)
+TODO
+```
 
 ### Use the CLI
 
