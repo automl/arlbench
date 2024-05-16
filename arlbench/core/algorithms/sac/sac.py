@@ -212,8 +212,8 @@ class SAC(Algorithm):
             seed=seed,
             space={
                 "buffer_size": Integer("buffer_size", (1, int(1e7)), default=1000000),
-                "buffer_batch_size": Categorical(
-                    "buffer_batch_size", [64, 128, 256, 512], default=256
+                "buffer_batch_size": Integer(
+                    "buffer_batch_size", (1, 16384), default=256
                 ),
                 "buffer_prio_sampling": Categorical(
                     "buffer_prio_sampling", [True, False], default=False

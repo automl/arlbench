@@ -186,8 +186,7 @@ class DQN(Algorithm):
             seed=seed,
             space={
                 "buffer_size": Integer("buffer_size", (1024, int(1e7)), default=1000000),
-                "buffer_batch_size": Categorical(
-                    "buffer_batch_size", [4, 8, 16, 32, 64], default=16
+                "buffer_batch_size": Integer("buffer_batch_size", (1, 16384), default=16
                 ),
                 "buffer_prio_sampling": Categorical(
                     "buffer_prio_sampling", [True, False], default=False
