@@ -1,8 +1,0 @@
-name: "MiniGrid-FourRooms"
-framework: "xland"
-n_total_timesteps: 5000000
-kwargs: {}
-eval_kwargs: {}
-cnn_policy: False
-deterministic_eval: True
-n_envs: 8
