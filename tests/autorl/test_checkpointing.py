@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import jax
 import numpy as np
+
 from arlbench.autorl import AutoRLEnv
 from arlbench.autorl.checkpointing import Checkpointer
 from arlbench.core.algorithms import DQN

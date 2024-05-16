@@ -1,4 +1,4 @@
-.PHONY: clean clean-build clean-pyc clean-test coverage dist docs help install check formatbump-version release
+.PHONY: clean clean-build clean-pyc clean-test coverage dist docs help install check bump-version release format
 .DEFAULT_GOAL := help
 
 define BROWSER_PYSCRIPT

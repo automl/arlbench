@@ -4,6 +4,7 @@ import time
 
 import jax
 import numpy as np
+
 from arlbench.core.algorithms import DQN, PPO
 from arlbench.core.environments import make_env
 

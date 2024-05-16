@@ -10,38 +10,24 @@ import jax.lax
 import jax.numpy as jnp
 import numpy as np
 import optax
-from ConfigSpace import (
-    Categorical,
-    Configuration,
-    ConfigurationSpace,
-    EqualsCondition,
-    Float,
-    Integer,
-)
+from ConfigSpace import (Categorical, Configuration, ConfigurationSpace,
+                         EqualsCondition, Float, Integer)
 from flax.training.train_state import TrainState
 
 from arlbench.core import running_statistics
 from arlbench.core.algorithms.algorithm import Algorithm
 from arlbench.core.algorithms.buffers import uniform_sample
 from arlbench.core.algorithms.common import TimeStep
-from arlbench.core.algorithms.prioritised_item_buffer import (
-    make_prioritised_item_buffer,
-)
+from arlbench.core.algorithms.prioritised_item_buffer import \
+    make_prioritised_item_buffer
 
-from .models import (
-    AlphaCoef,
-    SACCNNActor,
-    SACCNNCritic,
-    SACMLPActor,
-    SACMLPCritic,
-    SACVectorCritic,
-)
+from .models import (AlphaCoef, SACCNNActor, SACCNNCritic, SACMLPActor,
+                     SACMLPCritic, SACVectorCritic)
 
 if TYPE_CHECKING:
     import chex
-    from flashbax.buffers.prioritised_trajectory_buffer import (
-        PrioritisedTrajectoryBufferState,
-    )
+    from flashbax.buffers.prioritised_trajectory_buffer import \
+        PrioritisedTrajectoryBufferState
     from flax.core.frozen_dict import FrozenDict
 
     from arlbench.core.environments import Environment
