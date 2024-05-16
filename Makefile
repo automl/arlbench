@@ -1,4 +1,4 @@
-.PHONY: clean clean-build clean-pyc clean-test coverage dist docs help install install-dev install-envpool check bump-version release format
+.PHONY: clean clean-build clean-pyc clean-test coverage dist docs help install install-dev install-envpool install-envpool-dev check bump-version release format
 .DEFAULT_GOAL := help
 
 define BROWSER_PYSCRIPT
@@ -95,13 +95,16 @@ dist: clean ## builds source and wheel package
 	python setup.py bdist_wheel
 	ls -l dist
 install: clean ## install the package to the active Python's site-packages
-	pip install -e ".[dev]"
+	pip install -e .
 
 install-dev: clean ## install with dev tools
-	pip install -e ".[dev]"
+	pip install -e ".[dev,examples]"
 
 install-envpool: clean ## include envpool
 	pip install -e ".[envpool]"
+
+install-envpool-dev: clean ## include envpool and dev
+	pip install -e ".[dev,examples,envpool]"
 
 check:
 	pre-commit run --all-files

@@ -51,7 +51,7 @@ dev = ["ARLBench[doc, tooling, test, examples]"]
 tooling = ["commitizen", "pre-commit", "ruff"]
 
 test = ["pytest", "pytest-coverage", "pytest-cases", "ARLBench[examples]"]
-examples = []
+examples = ["hypersweeper"]
 doc = [
   "automl_sphinx_theme",
 ]
