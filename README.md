@@ -15,11 +15,10 @@
 
 <div align="center">
     <h3>
-      <a href="#overview-">Overview</a> |
+      <a href="#features-">Features</a> |
       <a href="#setup-">Setup</a> |
-      <a href="#quickstart-">Quick Start</a> |
-      <a href="#examples-">Examples</a> |
-      <a href="#citing">Citing</a>
+      <a href="#quickstart-">Quickstart</a> |
+      <a href="#citing">Cite Us</a>
     </h3>
 </div>
 
@@ -27,11 +26,13 @@
 
 # 🦾 Automated Reinforcement Learning Benchmark
 
-## Overview
+The ARLBench is a benchmark for HPO in RL - evaluate your HPO methods fast and on a representative number of environments! For more information, see our [documentation](https://automl.github.io/arlbench/main/).
 
 ## Features
 
-**JAX-Based implementations of DQN, PPO, and SAC**
+- **Lightning-fast JAX-Based implementations of DQN, PPO, and SAC**
+- **Compatible with many different environment domains via Gymnax, XLand and EnvPool**
+- **Representative benchmark set of HPO settings** 
 
 ## Installation
 
@@ -79,11 +80,17 @@ make install-envpool
 
 ## Quickstart
 
+Here are the two ways you can use ARLBench: via the command line or as an environment. To see them in action, take a look at our [examples](https://github.com/automl/arlbench/tree/main/examples).
+
 ### Use the CLI
+
+TODO: where does this even exist?
 
 ### Use the AutoRL environment
 
-Import ARLBench and use the `AutoRLEnv` to run an RL agent:
+If you want to have specific control over the ARLBench loop, want to do dynamic configuration or learn based on the agent state, you should use the environment-like interface of ARLBench in your script.
+
+To do so, import ARLBench and use the `AutoRLEnv` to run an RL agent:
 
 ```python
 from arlbench import AutoRLEnv
@@ -96,6 +103,10 @@ action = env.config_space.sample_configuration()
 obs, objectives, term, trunc, info = env.step(action)
 ```
 
-## Examples
+Just like with RL agents, you can call 'step' multiple times until termination (which you define via the AutoRLEnv's config). For all configuration options, check out our [documentation](https://automl.github.io/arlbench/main/).
 
-## Citing
+## Cite Us
+
+If you use ARLBench in your work, please cite us:
+
+TODO

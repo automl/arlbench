@@ -29,6 +29,7 @@ hydra:
           max_budget: ${environment.n_total_timesteps}
           deterministic: false
           n_workers: 1
+          output_directory: ${hydra.sweep.dir}
       seeds: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
       maximize: true
   run:
