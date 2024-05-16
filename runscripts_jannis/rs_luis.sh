@@ -19,10 +19,10 @@ echo "#!/bin/bash
 #SBATCH -p ai                                           # TODO check for your clusters partition
 #SBATCH --output $directory/log/arlb_rs_${1}_%A_%a.out
 #SBATCH --error $directory/log/arlb_rs_${1}_%A_%a.err
-#SBATCH --array=0-9
+#SBATCH --array=0-4
 
 cd ..
-/bigwork/nhwpbecj/nhwpbecj/.conda/envs/arlb/bin/python runscripts/run_arlbench.py -m --config-name=random_runs "autorl.seed=\$SLURM_ARRAY_TASK_ID" "+experiments=$1" "cluster=$2" 
+/bigwork/nhwpbecj/nhwpbecj/.conda/envs/arlb/bin/python runscripts/run_arlbench.py -m --config-name=random_runs "autorl.seed=\$SLURM_ARRAY_TASK_ID" "experiments=$1" "cluster=$2" 
 " > $directory/${1}.sh
 echo "Submitting $directory for $1"
 chmod +x $directory/${1}.sh

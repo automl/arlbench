@@ -1,0 +1,15 @@
+# @package _global_
+defaults:
+  - override /environment: box2d_bipedal_walker
+  - override /algorithm: sac
+  - override /search_space: sac_box2d
+
+environment:
+  n_total_timesteps: 500000
+  n_envs: 1
+
+hp_config:
+  train_freq: 1
+  gradient_steps: 1
+  normalize_observations: False
+
