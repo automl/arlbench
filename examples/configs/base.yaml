@@ -1,10 +1,8 @@
 defaults:
   - _self_
-  - /cluster: local
   - /algorithm: dqn
   - /environment: cc_cartpole
   - search_space: dqn
-  - /experiments: cc_cartpole_dqn
 
 hydra:
   run:
