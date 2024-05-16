@@ -35,6 +35,9 @@ def run(cfg: DictConfig, logger: logging.Logger):
         grad_norm, _ = statistics["grad_info"]
 
         # If grad norm doesn't change much, spike the learning rate
+        if last_grad_norm is not None:
+            print(i)
+            print(abs(grad_norm - last_grad_norm))
         if last_grad_norm is not None and abs(grad_norm - last_grad_norm) < tolerance:
             last_lr = cfg.hp_config.learning_rate
             cfg.hp_config.learning_rate *= 10
@@ -46,6 +49,7 @@ def run(cfg: DictConfig, logger: logging.Logger):
             cfg.hp_config.learning_rate = last_lr
             spiked = False
             logger.info(f"Resetting learning rate to {cfg.hp_config.learning_rate}")
+        last_grad_norm = grad_norm
     logger.info(f"Training finished with a total reward of {objectives['reward_mean']}")
 
 

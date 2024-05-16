@@ -16,7 +16,7 @@ on:
       - development
 
 env:
-  package-name: "ARLBench"
+  package-name: "arlbench"
   test-dir: tests
   extra-requires: "[dev,envpool]"  # "" for no extra_requires
 

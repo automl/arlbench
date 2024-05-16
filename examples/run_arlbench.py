@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import warnings
+warnings.filterwarnings("ignore")
 import csv
 import logging
 import sys
@@ -10,12 +12,10 @@ import traceback
 import hydra
 import jax
 from arlbench.arlbench import run_arlbench
-from codecarbon import track_emissions
-from omegaconf import DictConfig, OmegaConf
+from omegaconf import DictConfig
 
 
 @hydra.main(version_base=None, config_path="configs", config_name="base")
-@track_emissions(offline=True, country_iso_code="DEU")
 def execute(cfg: DictConfig):
     """Helper function for nice logging and error handling."""
     logging.basicConfig(
@@ -23,10 +23,6 @@ def execute(cfg: DictConfig):
     )
     logger = logging.getLogger()
     logger.setLevel(logging.INFO)
-    logger.info("Logging configured")
-    logger.info(f"JAX devices: {jax.devices()}")
-    logger.info(f"JAX device count: {jax.local_device_count()}")
-    logger.info(f"JAX default backend: {jax.default_backend()}")
 
     if cfg.jax_enable_x64:
         logger.info("Enabling x64 support for JAX.")
@@ -40,8 +36,6 @@ def execute(cfg: DictConfig):
 
 def run(cfg: DictConfig, logger: logging.Logger):
     """Console script for arlbench."""
-    logger.info("Starting run with config:")
-    logger.info(str(OmegaConf.to_yaml(cfg)))
 
     # check if file done exists and if so, return
     try:
@@ -52,7 +46,6 @@ def run(cfg: DictConfig, logger: logging.Logger):
             csvreader = csv.reader(pf)
             performance = next(csvreader)
             performance = float(performance[0])
-            logger.info(f"Returning performance {performance}.")
             return performance
     except FileNotFoundError:
         pass
