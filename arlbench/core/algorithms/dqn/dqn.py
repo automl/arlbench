@@ -513,7 +513,7 @@ class DQN(Algorithm):
                 n_update_steps,
             )
             eval_returns = self.eval(runner_state, n_eval_episodes)
-            jax.debug.print("{eval_returns}", eval_returns=eval_returns.mean())
+            #jax.debug.print("{eval_returns}", eval_returns=eval_returns.mean())
 
             return (runner_state, buffer_state), DQNTrainingResult(
                 eval_rewards=eval_returns, trajectories=trajectories, metrics=metrics
