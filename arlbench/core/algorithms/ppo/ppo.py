@@ -10,7 +10,8 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 import optax
-from ConfigSpace import Categorical, Configuration, ConfigurationSpace, Float, Integer
+from ConfigSpace import (Categorical, Configuration, ConfigurationSpace, Float,
+                         Integer)
 from flax.training.train_state import TrainState
 
 from arlbench.core import running_statistics
