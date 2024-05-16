@@ -79,14 +79,6 @@ make install-envpool
 
 ## Quickstart
 
-ARLBench functions similarly to a RL environment itself: you create it, initialize it via a 'reset' function and then run it using 'step':
-```python
-from arlbench import AutoRLEnv
-
-env = AutoRLEnv(cfg.autorl)
-TODO
-```
-
 ### Use the CLI
 
 ### Use the AutoRL environment
