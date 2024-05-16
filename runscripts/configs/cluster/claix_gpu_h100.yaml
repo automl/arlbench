@@ -8,7 +8,7 @@ hydra:
     timeout_min: 2880
     partition: c23g
     cpus_per_task: 16
-    mem_per_cpu: 1000M
+    mem_per_cpu: 2000M
     account: p0021208
     setup:
       - export JAX_PLATFORM_NAME=gpu

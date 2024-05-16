@@ -1,6 +1,6 @@
 # @package _global_
 defaults:
-  - override /environment: atari_double_dunk
+  - override /environment: this_game
   - override /algorithm: dqn    
 
 # https://huggingface.co/sb3/dqn-PongNoFrameskip-v4
