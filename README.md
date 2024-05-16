@@ -15,10 +15,10 @@
 
 <div align="center">
     <h3>
-      <a href="#features-">Features</a> |
-      <a href="#setup-">Setup</a> |
-      <a href="#quickstart-">Quickstart</a> |
-      <a href="#citing">Cite Us</a>
+      <a href="#features">Features</a> |
+      <a href="#setup">Setup</a> |
+      <a href="#quickstart">Quickstart</a> |
+      <a href="#cite-us">Cite Us</a>
     </h3>
 </div>
 
