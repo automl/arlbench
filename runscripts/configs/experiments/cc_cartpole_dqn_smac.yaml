@@ -14,6 +14,8 @@ hp_config:
   normalize_observations: False
   buffer_size: ${environment.n_total_timesteps} 
 
+initial_design_fn: runscripts/configs/initial_design/cc_cartpole_dqn.csv
+
 hydra:
   sweeper:
     n_trials: 200
