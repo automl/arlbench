@@ -9,28 +9,33 @@ defaults:
 
 hydra:
   sweeper:
-    n_trials: 50
+    n_trials: 30
     budget_variable: autorl.n_total_timesteps
     search_space: ${search_space}
     sweeper_kwargs:
-      min_budget: 10000
-      max_budget: ${environment.n_total_timesteps} 
+      # min_budget: 10000
+      # max_budget: ${environment.n_total_timesteps} 
       optimizer_kwargs:
         smac_facade:
           _target_: smac.facade.multi_fidelity_facade.MultiFidelityFacade
           _partial_: true
-        intensifier:
-          _target_: smac.facade.multi_fidelity_facade.MultiFidelityFacade.get_intensifier
-          _partial_: true
-          eta: 2
-          n_seeds: 1
+        # intensifier:
+        #   _target_: smac.facade.multi_fidelity_facade.MultiFidelityFacade.get_intensifier
+        #   _partial_: true
+        #   eta: 2
+        #   n_seeds: 1
         scenario:
           seed: ${smac_seed}
           n_trials: ${hydra.sweeper.n_trials}
-          min_budget: ${hydra.sweeper.sweeper_kwargs.min_budget}
-          max_budget: ${environment.n_total_timesteps}
-          deterministic: false
+          # min_budget: ${hydra.sweeper.sweeper_kwargs.min_budget}
+          # max_budget: ${environment.n_total_timesteps}
+          deterministic: true
           n_workers: 1
+        initial_design:
+          _target_: smac.initial_design.sobol_design.SobolInitialDesign
+          _partial_: true
+          n_configs: 0
+          additional_configs: ${read_additional_configs:${initial_design_fn},${search_space}}
       seeds: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
       maximize: true
   run:

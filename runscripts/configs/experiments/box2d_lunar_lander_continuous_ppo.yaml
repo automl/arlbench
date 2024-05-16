@@ -1,0 +1,14 @@
+# @package _global_
+defaults:
+  - override /environment: box2d_lunar_lander_continuous
+  - override /algorithm: ppo
+  - override /search_space: ppo_box2d
+
+environment:
+  n_total_timesteps: 1000000
+  n_envs: 16
+
+hp_config:
+  update_epochs: 4
+  n_steps: 1024
+  normalize_observations: False

@@ -8,7 +8,7 @@ mkdir -p "$directory/log"
 
 echo "#!/bin/bash
 
-#SBATCH --cpus-per-task=4 
+#SBATCH --cpus-per-task=4
 #SBATCH --mem-per-cpu=2000M                                      
 #SBATCH --job-name=rs_$3
 ###SBATCH --account=
@@ -17,7 +17,7 @@ echo "#!/bin/bash
 #SBATCH --mail-user dierkes@aim.rwth-aachen.de
 #SBATCH --output $directory/log/arlb_rs_${1}_${2}_%A_%a.out
 #SBATCH --error $directory/log/arlb_rs_${1}_${2}_%A_%a.err
-#SBATCH --array 0-9%3
+#SBATCH --array 3-9%3
 
 cd ..
 source /rwthfs/rz/cluster/home/oh751555/i14/arlbench/.venv/bin/activate

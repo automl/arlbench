@@ -6,7 +6,7 @@ defaults:
 
 hp_config:
   update_epochs: 4
-  n_steps: 80
+  n_steps: 5
   normalize_observations: True
 
 nas_config:

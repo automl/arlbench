@@ -61,7 +61,7 @@ class Checkpointer:
         algorithm: str,
         algorithm_state: AlgorithmState,
         autorl_config: dict,
-        hp_config: Configuration,
+        hp_config: Configuration | dict,
         done: bool,
         c_episode: int,
         c_step: int,
