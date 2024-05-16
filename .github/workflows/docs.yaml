@@ -17,7 +17,7 @@ permissions:
   contents: write
 
 env:
-  name: ARLBench
+  name: arlbench
 
 jobs:
   build-and-deploy:
