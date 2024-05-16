@@ -1,0 +1,1579 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>arlbench.core.algorithms.sac.sac &#8212; arlbench Documentation 0.1.0 documentation</title>
+    
+  <link href="../../../../../_static/css/theme.css" rel="stylesheet">
+  <link href="../../../../../_static/css/index.ac9c05f7c49ca1e1f876c6e36360ea26.css" rel="stylesheet">
+
+    
+  <link rel="stylesheet"
+    href="../../../../../_static/vendor/fontawesome/5.13.0/css/all.min.css">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="../../../../../_static/vendor/fontawesome/5.13.0/webfonts/fa-solid-900.woff2">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="../../../../../_static/vendor/fontawesome/5.13.0/webfonts/fa-brands-400.woff2">
+
+    
+      
+
+    
+    <link rel="stylesheet" type="text/css" href="../../../../../_static/pygments.css?v=a746c00c" />
+    <link rel="stylesheet" type="text/css" href="../../../../../_static/css/custom.css?v=2eb4fb78" />
+    
+  <link rel="preload" as="script" href="../../../../../_static/js/index.9ea38e314b9e6d9dab77.js">
+
+    <script src="../../../../../_static/documentation_options.js?v=38b66d78"></script>
+    <script src="../../../../../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../../search.html" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="docsearch:language" content="en">
+    
+
+    <!-- Google Analytics -->
+    
+  </head>
+  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="80">
+    
+    <div class="container-fluid" id="banner"></div>
+
+    
+    <nav class="navbar navbar-light navbar-expand-lg bg-light fixed-top bd-navbar" id="navbar-main"><div class="container-xl">
+
+  <div id="navbar-start">
+    
+    
+  <a class="navbar-brand" href="../../../../../index.html">
+  <!-- <p class="title">arlbench Documentation</p> -->
+  </a>
+
+    
+  </div>
+
+  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbar-collapsible" aria-controls="navbar-collapsible" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+
+  
+  <div id="navbar-collapsible" class="col-lg-9 collapse navbar-collapse">
+    <div id="navbar-center" class="mr-auto">
+      
+    </div>
+
+    <div id="navbar-end">
+      
+      <div class="navbar-end-item">
+        <ul id="navbar-icon-links" class="navbar-nav" aria-label="">
+        <li class="nav-item">
+          <a class="nav-link" href="https://github.com/automl/ARLBench" rel="noopener" target="_blank" title="GitHub">
+            <span><i class="fab fa-github-square"></i></span>
+            <label class="sr-only">GitHub</label>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="https://twitter.com/automl_org?lang=de" rel="noopener" target="_blank" title="Twitter">
+            <span><i class="fab fa-twitter-square"></i></span>
+            <label class="sr-only">Twitter</label>
+          </a>
+        </li>
+      </ul>
+      </div>
+      
+      <div class="navbar-end-item">
+        <div class="dropdown mt-1">
+    <button type="button" class="btn btn-secondary btn-md navbar-btn dropdown-toggle" id="dLabelMore"
+        data-toggle="dropdown">
+        v0.1.0
+        <span class="caret"></span>
+    </button>
+    <div class="dropdown-menu list-group-flush py-0" aria-labelledby="dLabelMore">
+        <a class="list-group-item list-group-item-action" href="#">v0.1.0</a>
+    </div>
+</div>
+      </div>
+      
+      <div class="navbar-end-item">
+        <form class="bd-search align-items-center" action="../../../../../search.html" method="get" style="width: 100%;">
+  <i class="icon fas fa-search"></i>
+  <input type="search" class="form-control btn btn-md" name="q" id="search-input"
+    placeholder="Search the docs ..." aria-label="Search the docs ..." autocomplete="off">
+</form>
+      </div>
+      
+    </div>
+  </div>
+</div>
+    </nav>
+    
+
+    <div class="container-xl">
+      <div class="row">
+          
+            
+            <!-- Only show if we have sidebars configured, else just a small margin  -->
+            <div class="col-12 col-md-3 bd-sidebar"><h4 class="mt-0 mb-0"><a href="../../../../../index.html">arlbench Documentation</a></h4>
+<div class="mb-3">v0.1.0</div><nav class="bd-links" id="bd-docs-nav" aria-label="Main navigation">
+  <div class="bd-toc-item active">
+    <ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../../../../installation.html">
+   Installation
+  </a>
+ </li>
+ <li class="toctree-l1 has-children">
+  <a class="reference internal" href="../../../../../basic_usage/index.html">
+   Basic Usage
+  </a>
+  <input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" type="checkbox"/>
+  <label for="toctree-checkbox-1">
+   <i class="fas fa-chevron-down">
+   </i>
+  </label>
+  <ul class="simple">
+  </ul>
+ </li>
+ <li class="toctree-l1 has-children">
+  <a class="reference internal" href="../../../../../advanced_usage/index.html">
+   Advanced Usage
+  </a>
+  <input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" type="checkbox"/>
+  <label for="toctree-checkbox-2">
+   <i class="fas fa-chevron-down">
+   </i>
+  </label>
+  <ul class="simple">
+  </ul>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../../../../commands.html">
+   Helpful Commands
+  </a>
+ </li>
+ <li class="toctree-l1 has-children">
+  <a class="reference internal" href="../../../../../api.html">
+   API References
+  </a>
+  <input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" type="checkbox"/>
+  <label for="toctree-checkbox-3">
+   <i class="fas fa-chevron-down">
+   </i>
+  </label>
+  <ul>
+   <li class="toctree-l2 has-children">
+    <a class="reference internal" href="../../../../../api/arlbench.html">
+     arlbench
+    </a>
+    <input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" type="checkbox"/>
+    <label for="toctree-checkbox-4">
+     <i class="fas fa-chevron-down">
+     </i>
+    </label>
+    <ul>
+     <li class="toctree-l3">
+      <a class="reference internal" href="../../../../../api/arlbench.arlbench.html">
+       arlbench.arlbench
+      </a>
+     </li>
+     <li class="toctree-l3 has-children">
+      <a class="reference internal" href="../../../../../api/arlbench.autorl.html">
+       arlbench.autorl
+      </a>
+      <input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" type="checkbox"/>
+      <label for="toctree-checkbox-5">
+       <i class="fas fa-chevron-down">
+       </i>
+      </label>
+      <ul>
+       <li class="toctree-l4">
+        <a class="reference internal" href="../../../../../api/arlbench.autorl.autorl_env.html">
+         arlbench.autorl.autorl_env
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="../../../../../api/arlbench.autorl.checkpointing.html">
+         arlbench.autorl.checkpointing
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="../../../../../api/arlbench.autorl.objectives.html">
+         arlbench.autorl.objectives
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="../../../../../api/arlbench.autorl.state_features.html">
+         arlbench.autorl.state_features
+        </a>
+       </li>
+      </ul>
+     </li>
+     <li class="toctree-l3 has-children">
+      <a class="reference internal" href="../../../../../api/arlbench.core.html">
+       arlbench.core
+      </a>
+      <input class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" type="checkbox"/>
+      <label for="toctree-checkbox-6">
+       <i class="fas fa-chevron-down">
+       </i>
+      </label>
+      <ul>
+       <li class="toctree-l4">
+        <a class="reference internal" href="../../../../../api/arlbench.core.algorithms.html">
+         arlbench.core.algorithms
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="../../../../../api/arlbench.core.environments.html">
+         arlbench.core.environments
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="../../../../../api/arlbench.core.running_statistics.html">
+         arlbench.core.running_statistics
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="../../../../../api/arlbench.core.wrappers.html">
+         arlbench.core.wrappers
+        </a>
+       </li>
+      </ul>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="../../../../../api/arlbench.plotting.html">
+       arlbench.plotting
+      </a>
+     </li>
+     <li class="toctree-l3 has-children">
+      <a class="reference internal" href="../../../../../api/arlbench.utils.html">
+       arlbench.utils
+      </a>
+      <input class="toctree-checkbox" id="toctree-checkbox-7" name="toctree-checkbox-7" type="checkbox"/>
+      <label for="toctree-checkbox-7">
+       <i class="fas fa-chevron-down">
+       </i>
+      </label>
+      <ul>
+       <li class="toctree-l4">
+        <a class="reference internal" href="../../../../../api/arlbench.utils.common.html">
+         arlbench.utils.common
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="../../../../../api/arlbench.utils.handle_termination.html">
+         arlbench.utils.handle_termination
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="../../../../../api/arlbench.utils.hydra_utils.html">
+         arlbench.utils.hydra_utils
+        </a>
+       </li>
+      </ul>
+     </li>
+    </ul>
+   </li>
+  </ul>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../../../../glossary.html">
+   Glossary
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../../../../faq.html">
+   Frequently Asked Questions
+  </a>
+ </li>
+</ul>
+
+  </div>
+</nav>
+            </div>
+            
+          
+
+          
+          <div class="d-none d-xl-block col-xl-2 bd-toc">
+            
+          </div>
+          
+
+          
+          
+            
+          
+          <main class="col-12 col-md-9 col-xl-7 py-md-5 pl-md-5 pr-md-4 bd-content" role="main">
+              
+              <div>
+                
+  <h1>Source code for arlbench.core.algorithms.sac.sac</h1><div class="highlight"><pre>
+<span></span><span class="c1"># The SAC Code is heavily based on stable-baselines JAX</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">import</span> <span class="nn">functools</span>
+<span class="kn">from</span> <span class="nn">collections.abc</span> <span class="kn">import</span> <span class="n">Callable</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">TYPE_CHECKING</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">NamedTuple</span>
+
+<span class="kn">import</span> <span class="nn">jax</span>
+<span class="kn">import</span> <span class="nn">jax.lax</span>
+<span class="kn">import</span> <span class="nn">jax.numpy</span> <span class="k">as</span> <span class="nn">jnp</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">optax</span>
+<span class="kn">from</span> <span class="nn">ConfigSpace</span> <span class="kn">import</span> <span class="p">(</span><span class="n">Categorical</span><span class="p">,</span> <span class="n">Configuration</span><span class="p">,</span> <span class="n">ConfigurationSpace</span><span class="p">,</span>
+                         <span class="n">EqualsCondition</span><span class="p">,</span> <span class="n">Float</span><span class="p">,</span> <span class="n">Integer</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">flax.training.train_state</span> <span class="kn">import</span> <span class="n">TrainState</span>
+
+<span class="kn">from</span> <span class="nn">arlbench.core</span> <span class="kn">import</span> <span class="n">running_statistics</span>
+<span class="kn">from</span> <span class="nn">arlbench.core.algorithms.algorithm</span> <span class="kn">import</span> <span class="n">Algorithm</span>
+<span class="kn">from</span> <span class="nn">arlbench.core.algorithms.buffers</span> <span class="kn">import</span> <span class="n">uniform_sample</span>
+<span class="kn">from</span> <span class="nn">arlbench.core.algorithms.common</span> <span class="kn">import</span> <span class="n">TimeStep</span>
+<span class="kn">from</span> <span class="nn">arlbench.core.algorithms.prioritised_item_buffer</span> <span class="kn">import</span> \
+    <span class="n">make_prioritised_item_buffer</span>
+
+<span class="kn">from</span> <span class="nn">.models</span> <span class="kn">import</span> <span class="p">(</span><span class="n">AlphaCoef</span><span class="p">,</span> <span class="n">SACCNNActor</span><span class="p">,</span> <span class="n">SACCNNCritic</span><span class="p">,</span> <span class="n">SACMLPActor</span><span class="p">,</span>
+                     <span class="n">SACMLPCritic</span><span class="p">,</span> <span class="n">SACVectorCritic</span><span class="p">)</span>
+
+<span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">chex</span>
+    <span class="kn">from</span> <span class="nn">flashbax.buffers.prioritised_trajectory_buffer</span> <span class="kn">import</span> \
+        <span class="n">PrioritisedTrajectoryBufferState</span>
+    <span class="kn">from</span> <span class="nn">flax.core.frozen_dict</span> <span class="kn">import</span> <span class="n">FrozenDict</span>
+
+    <span class="kn">from</span> <span class="nn">arlbench.core.environments</span> <span class="kn">import</span> <span class="n">Environment</span>
+    <span class="kn">from</span> <span class="nn">arlbench.core.running_statistics</span> <span class="kn">import</span> <span class="n">RunningStatisticsState</span>
+    <span class="kn">from</span> <span class="nn">arlbench.core.wrappers</span> <span class="kn">import</span> <span class="n">AutoRLWrapper</span>
+
+<span class="c1"># todo: separate learning rate for critic and actor??</span>
+
+
+<div class="viewcode-block" id="SACTrainState">
+<a class="viewcode-back" href="../../../../../arlbench.core.algorithms.sac.html#arlbench.core.algorithms.SACTrainState">[docs]</a>
+<span class="k">class</span> <span class="nc">SACTrainState</span><span class="p">(</span><span class="n">TrainState</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;SAC training state.&quot;&quot;&quot;</span>
+
+    <span class="n">target_params</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="n">chex</span><span class="o">.</span><span class="n">Array</span> <span class="o">|</span> <span class="nb">dict</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">network_state</span> <span class="o">=</span> <span class="kc">None</span>
+
+<div class="viewcode-block" id="SACTrainState.create_with_opt_state">
+<a class="viewcode-back" href="../../../../../arlbench.core.algorithms.sac.html#arlbench.core.algorithms.SACTrainState.create_with_opt_state">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">create_with_opt_state</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">apply_fn</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">target_params</span><span class="p">,</span> <span class="n">tx</span><span class="p">,</span> <span class="n">opt_state</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+    <span class="p">):</span>
+        <span class="k">if</span> <span class="n">opt_state</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">opt_state</span> <span class="o">=</span> <span class="n">tx</span><span class="o">.</span><span class="n">init</span><span class="p">(</span><span class="n">params</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span>
+            <span class="n">step</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+            <span class="n">apply_fn</span><span class="o">=</span><span class="n">apply_fn</span><span class="p">,</span>
+            <span class="n">params</span><span class="o">=</span><span class="n">params</span><span class="p">,</span>
+            <span class="n">target_params</span><span class="o">=</span><span class="n">target_params</span><span class="p">,</span>
+            <span class="n">tx</span><span class="o">=</span><span class="n">tx</span><span class="p">,</span>
+            <span class="n">opt_state</span><span class="o">=</span><span class="n">opt_state</span><span class="p">,</span>
+            <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+        <span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="SACRunnerState">
+<a class="viewcode-back" href="../../../../../arlbench.core.algorithms.sac.html#arlbench.core.algorithms.SACRunnerState">[docs]</a>
+<span class="k">class</span> <span class="nc">SACRunnerState</span><span class="p">(</span><span class="n">NamedTuple</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;SAC runner state. Consists of (rng, actor_train_state, critic_train_state, alpha_train_state, env_state, obs, global_step).&quot;&quot;&quot;</span>
+
+    <span class="n">rng</span><span class="p">:</span> <span class="n">chex</span><span class="o">.</span><span class="n">PRNGKey</span>
+    <span class="n">actor_train_state</span><span class="p">:</span> <span class="n">SACTrainState</span>
+    <span class="n">critic_train_state</span><span class="p">:</span> <span class="n">SACTrainState</span>
+    <span class="n">alpha_train_state</span><span class="p">:</span> <span class="n">SACTrainState</span>
+    <span class="n">normalizer_state</span><span class="p">:</span> <span class="n">RunningStatisticsState</span>
+    <span class="n">env_state</span><span class="p">:</span> <span class="n">Any</span>
+    <span class="n">obs</span><span class="p">:</span> <span class="n">chex</span><span class="o">.</span><span class="n">Array</span>
+    <span class="n">global_step</span><span class="p">:</span> <span class="nb">int</span></div>
+
+
+
+<div class="viewcode-block" id="SACState">
+<a class="viewcode-back" href="../../../../../arlbench.core.algorithms.sac.html#arlbench.core.algorithms.SACState">[docs]</a>
+<span class="k">class</span> <span class="nc">SACState</span><span class="p">(</span><span class="n">NamedTuple</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;SAC algorithm state. Consists of (runner_state, buffer_state).&quot;&quot;&quot;</span>
+
+    <span class="n">runner_state</span><span class="p">:</span> <span class="n">SACRunnerState</span>
+    <span class="n">buffer_state</span><span class="p">:</span> <span class="n">PrioritisedTrajectoryBufferState</span></div>
+
+
+
+<div class="viewcode-block" id="SACTrainingResult">
+<a class="viewcode-back" href="../../../../../arlbench.core.algorithms.sac.html#arlbench.core.algorithms.SACTrainingResult">[docs]</a>
+<span class="k">class</span> <span class="nc">SACTrainingResult</span><span class="p">(</span><span class="n">NamedTuple</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;SAC training result. Consists of (eval_rewards, trajectories, metrics).&quot;&quot;&quot;</span>
+
+    <span class="n">eval_rewards</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span>
+    <span class="n">trajectories</span><span class="p">:</span> <span class="n">Transition</span> <span class="o">|</span> <span class="kc">None</span>
+    <span class="n">metrics</span><span class="p">:</span> <span class="n">SACMetrics</span> <span class="o">|</span> <span class="kc">None</span></div>
+
+
+
+<div class="viewcode-block" id="SACMetrics">
+<a class="viewcode-back" href="../../../../../arlbench.core.algorithms.sac.html#arlbench.core.algorithms.SACMetrics">[docs]</a>
+<span class="k">class</span> <span class="nc">SACMetrics</span><span class="p">(</span><span class="n">NamedTuple</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;SAC metrics returned by train function. Consists of (actor_loss, critic_loss, alpha_loss, td_error, actor_grads, critic_grads).&quot;&quot;&quot;</span>
+
+    <span class="n">actor_loss</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span>
+    <span class="n">critic_loss</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span>
+    <span class="n">alpha_loss</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span>
+    <span class="n">td_error</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span>
+    <span class="n">actor_grads</span><span class="p">:</span> <span class="n">FrozenDict</span>
+    <span class="n">critic_grads</span><span class="p">:</span> <span class="n">FrozenDict</span></div>
+
+
+
+<div class="viewcode-block" id="Transition">
+<a class="viewcode-back" href="../../../../../arlbench.core.algorithms.sac.html#arlbench.core.algorithms.Transition">[docs]</a>
+<span class="k">class</span> <span class="nc">Transition</span><span class="p">(</span><span class="n">NamedTuple</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;SAC Transition. Consists of (done, action, value, reward, obs, info).&quot;&quot;&quot;</span>
+
+    <span class="n">done</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span>
+    <span class="n">action</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span>
+    <span class="n">value</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span>
+    <span class="n">reward</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span>
+    <span class="n">obs</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span>
+    <span class="n">info</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span></div>
+
+
+
+<span class="n">SACTrainReturnT</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">SACState</span><span class="p">,</span> <span class="n">SACTrainingResult</span><span class="p">]</span>
+
+
+<div class="viewcode-block" id="SAC">
+<a class="viewcode-back" href="../../../../../arlbench.core.algorithms.sac.html#arlbench.core.algorithms.SAC">[docs]</a>
+<span class="k">class</span> <span class="nc">SAC</span><span class="p">(</span><span class="n">Algorithm</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;JAX-based implementation of Soft-Actor-Critic (SAC).&quot;&quot;&quot;</span>
+
+    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;sac&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">hpo_config</span><span class="p">:</span> <span class="n">Configuration</span><span class="p">,</span>
+        <span class="n">env</span><span class="p">:</span> <span class="n">Environment</span> <span class="o">|</span> <span class="n">AutoRLWrapper</span><span class="p">,</span>
+        <span class="n">eval_env</span><span class="p">:</span> <span class="n">Environment</span> <span class="o">|</span> <span class="n">AutoRLWrapper</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">deterministic_eval</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">cnn_policy</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">nas_config</span><span class="p">:</span> <span class="n">Configuration</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">track_metrics</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">track_trajectories</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Creates a SAC algorithm instance.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            hpo_config (Configuration): Hyperparameter configuration.</span>
+<span class="sd">            env (Environment | AutoRLWrapper): Training environment.</span>
+<span class="sd">            eval_env (Environment | AutoRLWrapper | None, optional): Evaluation environent (otherwise training environment is used for evaluation). Defaults to None.</span>
+<span class="sd">            cnn_policy (bool, optional): Use CNN network architecture. Defaults to False.</span>
+<span class="sd">            nas_config (Configuration | None, optional): Neural architecture configuration. Defaults to None.</span>
+<span class="sd">            track_trajectories (bool, optional):  Track metrics such as loss and gradients during training. Defaults to False.</span>
+<span class="sd">            track_metrics (bool, optional): Track trajectories during training. Defaults to False.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">nas_config</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">nas_config</span> <span class="o">=</span> <span class="n">SAC</span><span class="o">.</span><span class="n">get_default_nas_config</span><span class="p">()</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="n">hpo_config</span><span class="p">,</span>
+            <span class="n">nas_config</span><span class="p">,</span>
+            <span class="n">env</span><span class="p">,</span>
+            <span class="n">eval_env</span><span class="o">=</span><span class="n">eval_env</span><span class="p">,</span>
+            <span class="n">deterministic_eval</span><span class="o">=</span><span class="n">deterministic_eval</span><span class="p">,</span>
+            <span class="n">track_trajectories</span><span class="o">=</span><span class="n">track_trajectories</span><span class="p">,</span>
+            <span class="n">track_metrics</span><span class="o">=</span><span class="n">track_metrics</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="n">action_size</span><span class="p">,</span> <span class="n">discrete</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">action_type</span>
+        <span class="k">if</span> <span class="n">discrete</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;SAC does not support discrete action spaces.&quot;</span><span class="p">)</span>
+
+        <span class="n">actor_cls</span> <span class="o">=</span> <span class="n">SACCNNActor</span> <span class="k">if</span> <span class="n">cnn_policy</span> <span class="k">else</span> <span class="n">SACMLPActor</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">actor_network</span> <span class="o">=</span> <span class="n">actor_cls</span><span class="p">(</span>
+            <span class="n">action_size</span><span class="p">,</span>
+            <span class="n">activation</span><span class="o">=</span><span class="n">nas_config</span><span class="p">[</span><span class="s2">&quot;activation&quot;</span><span class="p">],</span>
+            <span class="n">hidden_size</span><span class="o">=</span><span class="n">nas_config</span><span class="p">[</span><span class="s2">&quot;hidden_size&quot;</span><span class="p">],</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">critic_network</span> <span class="o">=</span> <span class="n">SACVectorCritic</span><span class="p">(</span>
+            <span class="n">critic</span><span class="o">=</span><span class="n">SACCNNCritic</span> <span class="k">if</span> <span class="n">cnn_policy</span> <span class="k">else</span> <span class="n">SACMLPCritic</span><span class="p">,</span>
+            <span class="n">action_dim</span><span class="o">=</span><span class="n">action_size</span><span class="p">,</span>
+            <span class="n">activation</span><span class="o">=</span><span class="n">nas_config</span><span class="p">[</span><span class="s2">&quot;activation&quot;</span><span class="p">],</span>
+            <span class="n">hidden_size</span><span class="o">=</span><span class="n">nas_config</span><span class="p">[</span><span class="s2">&quot;hidden_size&quot;</span><span class="p">],</span>
+            <span class="n">n_critics</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">alpha_init</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">hpo_config</span><span class="p">[</span><span class="s2">&quot;alpha&quot;</span><span class="p">])</span>
+        <span class="k">assert</span> <span class="n">alpha_init</span> <span class="o">&gt;</span> <span class="mf">0.0</span><span class="p">,</span> <span class="s2">&quot;The initial value of alpha must be greater than 0&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">alpha</span> <span class="o">=</span> <span class="n">AlphaCoef</span><span class="p">(</span><span class="n">alpha_init</span><span class="o">=</span><span class="n">alpha_init</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">buffer</span> <span class="o">=</span> <span class="n">make_prioritised_item_buffer</span><span class="p">(</span>
+            <span class="n">max_length</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">hpo_config</span><span class="p">[</span><span class="s2">&quot;buffer_size&quot;</span><span class="p">],</span>
+            <span class="n">min_length</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">hpo_config</span><span class="p">[</span><span class="s2">&quot;buffer_batch_size&quot;</span><span class="p">],</span>
+            <span class="n">sample_batch_size</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">hpo_config</span><span class="p">[</span><span class="s2">&quot;buffer_batch_size&quot;</span><span class="p">],</span>
+            <span class="n">add_batches</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="n">add_sequences</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="n">priority_exponent</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">hpo_config</span><span class="p">[</span><span class="s2">&quot;buffer_alpha&quot;</span><span class="p">],</span>
+            <span class="n">device</span><span class="o">=</span><span class="n">jax</span><span class="o">.</span><span class="n">default_backend</span><span class="p">(),</span>
+        <span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">hpo_config</span><span class="p">[</span><span class="s2">&quot;buffer_prio_sampling&quot;</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">:</span>
+            <span class="n">sample_fn</span> <span class="o">=</span> <span class="n">functools</span><span class="o">.</span><span class="n">partial</span><span class="p">(</span>
+                <span class="n">uniform_sample</span><span class="p">,</span>
+                <span class="n">batch_size</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">hpo_config</span><span class="p">[</span><span class="s2">&quot;buffer_batch_size&quot;</span><span class="p">],</span>
+                <span class="n">sequence_length</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                <span class="n">period</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">buffer</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">buffer</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">sample</span><span class="o">=</span><span class="n">sample_fn</span><span class="p">)</span>
+
+        <span class="c1"># target for automatic entropy tuning</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">target_entropy</span> <span class="o">=</span> <span class="o">-</span><span class="n">jnp</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="n">jnp</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">env</span><span class="o">.</span><span class="n">action_space</span><span class="o">.</span><span class="n">shape</span><span class="p">))</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span>
+            <span class="n">jnp</span><span class="o">.</span><span class="n">float32</span>
+        <span class="p">)</span>
+
+<div class="viewcode-block" id="SAC.get_hpo_config_space">
+<a class="viewcode-back" href="../../../../../arlbench.core.algorithms.sac.html#arlbench.core.algorithms.SAC.get_hpo_config_space">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">get_hpo_config_space</span><span class="p">(</span><span class="n">seed</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ConfigurationSpace</span><span class="p">:</span>
+        <span class="n">cs</span> <span class="o">=</span> <span class="n">ConfigurationSpace</span><span class="p">(</span>
+            <span class="n">name</span><span class="o">=</span><span class="s2">&quot;SACConfigSpace&quot;</span><span class="p">,</span>
+            <span class="n">seed</span><span class="o">=</span><span class="n">seed</span><span class="p">,</span>
+            <span class="n">space</span><span class="o">=</span><span class="p">{</span>
+                <span class="s2">&quot;buffer_size&quot;</span><span class="p">:</span> <span class="n">Integer</span><span class="p">(</span><span class="s2">&quot;buffer_size&quot;</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="mf">1e7</span><span class="p">)),</span> <span class="n">default</span><span class="o">=</span><span class="mi">1000000</span><span class="p">),</span>
+                <span class="s2">&quot;buffer_batch_size&quot;</span><span class="p">:</span> <span class="n">Categorical</span><span class="p">(</span>
+                    <span class="s2">&quot;buffer_batch_size&quot;</span><span class="p">,</span> <span class="p">[</span><span class="mi">64</span><span class="p">,</span> <span class="mi">128</span><span class="p">,</span> <span class="mi">256</span><span class="p">,</span> <span class="mi">512</span><span class="p">],</span> <span class="n">default</span><span class="o">=</span><span class="mi">256</span>
+                <span class="p">),</span>
+                <span class="s2">&quot;buffer_prio_sampling&quot;</span><span class="p">:</span> <span class="n">Categorical</span><span class="p">(</span>
+                    <span class="s2">&quot;buffer_prio_sampling&quot;</span><span class="p">,</span> <span class="p">[</span><span class="kc">True</span><span class="p">,</span> <span class="kc">False</span><span class="p">],</span> <span class="n">default</span><span class="o">=</span><span class="kc">False</span>
+                <span class="p">),</span>
+                <span class="s2">&quot;buffer_alpha&quot;</span><span class="p">:</span> <span class="n">Float</span><span class="p">(</span><span class="s2">&quot;buffer_alpha&quot;</span><span class="p">,</span> <span class="p">(</span><span class="mf">0.01</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">),</span> <span class="n">default</span><span class="o">=</span><span class="mf">0.9</span><span class="p">),</span>
+                <span class="s2">&quot;buffer_beta&quot;</span><span class="p">:</span> <span class="n">Float</span><span class="p">(</span><span class="s2">&quot;buffer_beta&quot;</span><span class="p">,</span> <span class="p">(</span><span class="mf">0.01</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">),</span> <span class="n">default</span><span class="o">=</span><span class="mf">0.9</span><span class="p">),</span>
+                <span class="s2">&quot;buffer_epsilon&quot;</span><span class="p">:</span> <span class="n">Float</span><span class="p">(</span><span class="s2">&quot;buffer_epsilon&quot;</span><span class="p">,</span> <span class="p">(</span><span class="mf">1e-7</span><span class="p">,</span> <span class="mf">1e-2</span><span class="p">),</span> <span class="n">default</span><span class="o">=</span><span class="mf">1e-3</span><span class="p">),</span>
+                <span class="s2">&quot;learning_rate&quot;</span><span class="p">:</span> <span class="n">Float</span><span class="p">(</span>
+                    <span class="s2">&quot;learning_rate&quot;</span><span class="p">,</span> <span class="p">(</span><span class="mf">1e-6</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">),</span> <span class="n">default</span><span class="o">=</span><span class="mf">3e-4</span><span class="p">,</span> <span class="n">log</span><span class="o">=</span><span class="kc">True</span>
+                <span class="p">),</span>
+                <span class="s2">&quot;gradient_steps&quot;</span><span class="p">:</span> <span class="n">Integer</span><span class="p">(</span><span class="s2">&quot;gradient_steps&quot;</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="mf">1e5</span><span class="p">)),</span> <span class="n">default</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
+                <span class="s2">&quot;gamma&quot;</span><span class="p">:</span> <span class="n">Float</span><span class="p">(</span><span class="s2">&quot;gamma&quot;</span><span class="p">,</span> <span class="p">(</span><span class="mf">0.8</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">),</span> <span class="n">default</span><span class="o">=</span><span class="mf">0.99</span><span class="p">),</span>
+                <span class="s2">&quot;tau&quot;</span><span class="p">:</span> <span class="n">Float</span><span class="p">(</span><span class="s2">&quot;tau&quot;</span><span class="p">,</span> <span class="p">(</span><span class="mf">0.01</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">),</span> <span class="n">default</span><span class="o">=</span><span class="mf">1.0</span><span class="p">),</span>
+                <span class="s2">&quot;use_target_network&quot;</span><span class="p">:</span> <span class="n">Categorical</span><span class="p">(</span>
+                    <span class="s2">&quot;use_target_network&quot;</span><span class="p">,</span> <span class="p">[</span><span class="kc">True</span><span class="p">,</span> <span class="kc">False</span><span class="p">],</span> <span class="n">default</span><span class="o">=</span><span class="kc">True</span>
+                <span class="p">),</span>
+                <span class="s2">&quot;train_freq&quot;</span><span class="p">:</span> <span class="n">Integer</span><span class="p">(</span><span class="s2">&quot;train_freq&quot;</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">128</span><span class="p">),</span> <span class="n">default</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
+                <span class="s2">&quot;learning_starts&quot;</span><span class="p">:</span> <span class="n">Integer</span><span class="p">(</span><span class="s2">&quot;learning_starts&quot;</span><span class="p">,</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1024</span><span class="p">),</span> <span class="n">default</span><span class="o">=</span><span class="mi">128</span><span class="p">),</span>
+                <span class="s2">&quot;target_update_interval&quot;</span><span class="p">:</span> <span class="n">Integer</span><span class="p">(</span>
+                    <span class="s2">&quot;target_update_interval&quot;</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1000</span><span class="p">),</span> <span class="n">default</span><span class="o">=</span><span class="mi">1000</span>
+                <span class="p">),</span>
+                <span class="s2">&quot;alpha_auto&quot;</span><span class="p">:</span> <span class="n">Categorical</span><span class="p">(</span><span class="s2">&quot;alpha_auto&quot;</span><span class="p">,</span> <span class="p">[</span><span class="kc">True</span><span class="p">,</span> <span class="kc">False</span><span class="p">],</span> <span class="n">default</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+                <span class="s2">&quot;alpha&quot;</span><span class="p">:</span> <span class="n">Float</span><span class="p">(</span><span class="s2">&quot;alpha&quot;</span><span class="p">,</span> <span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">),</span> <span class="n">default</span><span class="o">=</span><span class="mf">1.0</span><span class="p">),</span>
+                <span class="s2">&quot;normalize_observations&quot;</span><span class="p">:</span> <span class="n">Categorical</span><span class="p">(</span>
+                    <span class="s2">&quot;normalize_observations&quot;</span><span class="p">,</span> <span class="p">[</span><span class="kc">True</span><span class="p">,</span> <span class="kc">False</span><span class="p">],</span> <span class="n">default</span><span class="o">=</span><span class="kc">False</span>
+                <span class="p">),</span>
+            <span class="p">},</span>
+        <span class="p">)</span>
+        <span class="n">cond</span> <span class="o">=</span> <span class="n">EqualsCondition</span><span class="p">(</span>
+            <span class="n">cs</span><span class="p">[</span><span class="s2">&quot;target_update_interval&quot;</span><span class="p">],</span> <span class="n">cs</span><span class="p">[</span><span class="s2">&quot;use_target_network&quot;</span><span class="p">],</span> <span class="kc">True</span>
+        <span class="p">)</span>
+        <span class="n">cond</span> <span class="o">=</span> <span class="n">EqualsCondition</span><span class="p">(</span><span class="n">cs</span><span class="p">[</span><span class="s2">&quot;tau&quot;</span><span class="p">],</span> <span class="n">cs</span><span class="p">[</span><span class="s2">&quot;use_target_network&quot;</span><span class="p">],</span> <span class="kc">True</span><span class="p">)</span>
+
+        <span class="n">cs</span><span class="o">.</span><span class="n">add_condition</span><span class="p">(</span><span class="n">cond</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">cs</span></div>
+
+
+<div class="viewcode-block" id="SAC.get_hpo_search_space">
+<a class="viewcode-back" href="../../../../../arlbench.core.algorithms.sac.html#arlbench.core.algorithms.SAC.get_hpo_search_space">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">get_hpo_search_space</span><span class="p">(</span><span class="n">seed</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ConfigurationSpace</span><span class="p">:</span>
+        <span class="n">cs</span> <span class="o">=</span> <span class="n">ConfigurationSpace</span><span class="p">(</span>
+            <span class="n">name</span><span class="o">=</span><span class="s2">&quot;SACConfigSpace&quot;</span><span class="p">,</span>
+            <span class="n">seed</span><span class="o">=</span><span class="n">seed</span><span class="p">,</span>
+            <span class="n">space</span><span class="o">=</span><span class="p">{</span>
+                <span class="s2">&quot;buffer_size&quot;</span><span class="p">:</span> <span class="n">Integer</span><span class="p">(</span><span class="s2">&quot;buffer_size&quot;</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="mf">1e7</span><span class="p">)),</span> <span class="n">default</span><span class="o">=</span><span class="mi">1000000</span><span class="p">),</span>
+                <span class="s2">&quot;buffer_batch_size&quot;</span><span class="p">:</span> <span class="n">Categorical</span><span class="p">(</span>
+                    <span class="s2">&quot;buffer_batch_size&quot;</span><span class="p">,</span> <span class="p">[</span><span class="mi">64</span><span class="p">,</span> <span class="mi">128</span><span class="p">,</span> <span class="mi">256</span><span class="p">,</span> <span class="mi">512</span><span class="p">],</span> <span class="n">default</span><span class="o">=</span><span class="mi">256</span>
+                <span class="p">),</span>
+                <span class="s2">&quot;buffer_prio_sampling&quot;</span><span class="p">:</span> <span class="n">Categorical</span><span class="p">(</span>
+                    <span class="s2">&quot;buffer_prio_sampling&quot;</span><span class="p">,</span> <span class="p">[</span><span class="kc">True</span><span class="p">,</span> <span class="kc">False</span><span class="p">],</span> <span class="n">default</span><span class="o">=</span><span class="kc">False</span>
+                <span class="p">),</span>
+                <span class="s2">&quot;buffer_alpha&quot;</span><span class="p">:</span> <span class="n">Float</span><span class="p">(</span><span class="s2">&quot;buffer_alpha&quot;</span><span class="p">,</span> <span class="p">(</span><span class="mf">0.01</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">),</span> <span class="n">default</span><span class="o">=</span><span class="mf">0.9</span><span class="p">),</span>
+                <span class="s2">&quot;buffer_beta&quot;</span><span class="p">:</span> <span class="n">Float</span><span class="p">(</span><span class="s2">&quot;buffer_beta&quot;</span><span class="p">,</span> <span class="p">(</span><span class="mf">0.01</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">),</span> <span class="n">default</span><span class="o">=</span><span class="mf">0.9</span><span class="p">),</span>
+                <span class="s2">&quot;buffer_epsilon&quot;</span><span class="p">:</span> <span class="n">Float</span><span class="p">(</span><span class="s2">&quot;buffer_epsilon&quot;</span><span class="p">,</span> <span class="p">(</span><span class="mf">1e-3</span><span class="p">,</span> <span class="mf">1e-2</span><span class="p">),</span> <span class="n">default</span><span class="o">=</span><span class="mf">1e-3</span><span class="p">),</span>
+                <span class="s2">&quot;learning_rate&quot;</span><span class="p">:</span> <span class="n">Float</span><span class="p">(</span>
+                    <span class="s2">&quot;learning_rate&quot;</span><span class="p">,</span> <span class="p">(</span><span class="mf">1e-6</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">),</span> <span class="n">default</span><span class="o">=</span><span class="mf">3e-4</span><span class="p">,</span> <span class="n">log</span><span class="o">=</span><span class="kc">True</span>
+                <span class="p">),</span>
+                <span class="s2">&quot;gradient_steps&quot;</span><span class="p">:</span> <span class="n">Integer</span><span class="p">(</span><span class="s2">&quot;gradient_steps&quot;</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="mf">1e5</span><span class="p">)),</span> <span class="n">default</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
+                <span class="s2">&quot;tau&quot;</span><span class="p">:</span> <span class="n">Float</span><span class="p">(</span><span class="s2">&quot;tau&quot;</span><span class="p">,</span> <span class="p">(</span><span class="mf">0.01</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">),</span> <span class="n">default</span><span class="o">=</span><span class="mf">1.0</span><span class="p">),</span>
+                <span class="s2">&quot;use_target_network&quot;</span><span class="p">:</span> <span class="n">Categorical</span><span class="p">(</span>
+                    <span class="s2">&quot;use_target_network&quot;</span><span class="p">,</span> <span class="p">[</span><span class="kc">True</span><span class="p">,</span> <span class="kc">False</span><span class="p">],</span> <span class="n">default</span><span class="o">=</span><span class="kc">True</span>
+                <span class="p">),</span>
+                <span class="s2">&quot;train_freq&quot;</span><span class="p">:</span> <span class="n">Integer</span><span class="p">(</span><span class="s2">&quot;train_freq&quot;</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">128</span><span class="p">),</span> <span class="n">default</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
+                <span class="s2">&quot;learning_starts&quot;</span><span class="p">:</span> <span class="n">Integer</span><span class="p">(</span><span class="s2">&quot;learning_starts&quot;</span><span class="p">,</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1024</span><span class="p">),</span> <span class="n">default</span><span class="o">=</span><span class="mi">128</span><span class="p">),</span>
+                <span class="s2">&quot;target_update_interval&quot;</span><span class="p">:</span> <span class="n">Integer</span><span class="p">(</span>
+                    <span class="s2">&quot;target_update_interval&quot;</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1000</span><span class="p">),</span> <span class="n">default</span><span class="o">=</span><span class="mi">1000</span>
+                <span class="p">),</span>
+                <span class="s2">&quot;alpha_auto&quot;</span><span class="p">:</span> <span class="n">Categorical</span><span class="p">(</span><span class="s2">&quot;alpha_auto&quot;</span><span class="p">,</span> <span class="p">[</span><span class="kc">True</span><span class="p">,</span> <span class="kc">False</span><span class="p">],</span> <span class="n">default</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+                <span class="s2">&quot;alpha&quot;</span><span class="p">:</span> <span class="n">Float</span><span class="p">(</span><span class="s2">&quot;alpha&quot;</span><span class="p">,</span> <span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">),</span> <span class="n">default</span><span class="o">=</span><span class="mf">1.0</span><span class="p">),</span>
+                <span class="s2">&quot;normalize_observations&quot;</span><span class="p">:</span> <span class="n">Categorical</span><span class="p">(</span>
+                    <span class="s2">&quot;normalize_observations&quot;</span><span class="p">,</span> <span class="p">[</span><span class="kc">True</span><span class="p">,</span> <span class="kc">False</span><span class="p">],</span> <span class="n">default</span><span class="o">=</span><span class="kc">False</span>
+                <span class="p">),</span>
+            <span class="p">},</span>
+        <span class="p">)</span>
+        <span class="n">cond</span> <span class="o">=</span> <span class="n">EqualsCondition</span><span class="p">(</span>
+            <span class="n">cs</span><span class="p">[</span><span class="s2">&quot;target_update_interval&quot;</span><span class="p">],</span> <span class="n">cs</span><span class="p">[</span><span class="s2">&quot;use_target_network&quot;</span><span class="p">],</span> <span class="kc">True</span>
+        <span class="p">)</span>
+        <span class="n">cond</span> <span class="o">=</span> <span class="n">EqualsCondition</span><span class="p">(</span><span class="n">cs</span><span class="p">[</span><span class="s2">&quot;tau&quot;</span><span class="p">],</span> <span class="n">cs</span><span class="p">[</span><span class="s2">&quot;use_target_network&quot;</span><span class="p">],</span> <span class="kc">True</span><span class="p">)</span>
+
+        <span class="n">cs</span><span class="o">.</span><span class="n">add_condition</span><span class="p">(</span><span class="n">cond</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">cs</span></div>
+
+
+<div class="viewcode-block" id="SAC.get_default_hpo_config">
+<a class="viewcode-back" href="../../../../../arlbench.core.algorithms.sac.html#arlbench.core.algorithms.SAC.get_default_hpo_config">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">get_default_hpo_config</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">Configuration</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">SAC</span><span class="o">.</span><span class="n">get_hpo_config_space</span><span class="p">()</span><span class="o">.</span><span class="n">get_default_configuration</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="SAC.get_nas_config_space">
+<a class="viewcode-back" href="../../../../../arlbench.core.algorithms.sac.html#arlbench.core.algorithms.SAC.get_nas_config_space">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">get_nas_config_space</span><span class="p">(</span><span class="n">seed</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ConfigurationSpace</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">ConfigurationSpace</span><span class="p">(</span>
+            <span class="n">name</span><span class="o">=</span><span class="s2">&quot;SACNASConfigSpace&quot;</span><span class="p">,</span>
+            <span class="n">seed</span><span class="o">=</span><span class="n">seed</span><span class="p">,</span>
+            <span class="n">space</span><span class="o">=</span><span class="p">{</span>
+                <span class="s2">&quot;activation&quot;</span><span class="p">:</span> <span class="n">Categorical</span><span class="p">(</span>
+                    <span class="s2">&quot;activation&quot;</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;tanh&quot;</span><span class="p">,</span> <span class="s2">&quot;relu&quot;</span><span class="p">],</span> <span class="n">default</span><span class="o">=</span><span class="s2">&quot;tanh&quot;</span>
+                <span class="p">),</span>
+                <span class="s2">&quot;hidden_size&quot;</span><span class="p">:</span> <span class="n">Integer</span><span class="p">(</span><span class="s2">&quot;hidden_size&quot;</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1024</span><span class="p">),</span> <span class="n">default</span><span class="o">=</span><span class="mi">256</span><span class="p">),</span>
+            <span class="p">},</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="SAC.get_default_nas_config">
+<a class="viewcode-back" href="../../../../../arlbench.core.algorithms.sac.html#arlbench.core.algorithms.SAC.get_default_nas_config">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">get_default_nas_config</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">Configuration</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">SAC</span><span class="o">.</span><span class="n">get_nas_config_space</span><span class="p">()</span><span class="o">.</span><span class="n">get_default_configuration</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="SAC.get_checkpoint_factory">
+<a class="viewcode-back" href="../../../../../arlbench.core.algorithms.sac.html#arlbench.core.algorithms.SAC.get_checkpoint_factory">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">get_checkpoint_factory</span><span class="p">(</span>
+        <span class="n">runner_state</span><span class="p">:</span> <span class="n">SACRunnerState</span><span class="p">,</span>
+        <span class="n">train_result</span><span class="p">:</span> <span class="n">SACTrainingResult</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Callable</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Creates a factory dictionary of all posssible checkpointing options for SAC.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            runner_state (SACRunnerState): Algorithm runner state.</span>
+<span class="sd">            train_result (SACTrainingResult | None): Training result.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            dict[str, Callable]: Dictionary of factory functions containing:</span>
+<span class="sd">             - actor_opt_state</span>
+<span class="sd">             - critic_opt_state</span>
+<span class="sd">             - alpha_opt_state</span>
+<span class="sd">             - actor_network_params</span>
+<span class="sd">             - critic_network_params</span>
+<span class="sd">             - critic_target_params</span>
+<span class="sd">             - alpha_network_params</span>
+<span class="sd">             - actor_loss</span>
+<span class="sd">             - critic_loss</span>
+<span class="sd">             - alpha_loss</span>
+<span class="sd">             - trajectories</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">actor_train_state</span> <span class="o">=</span> <span class="n">runner_state</span><span class="o">.</span><span class="n">actor_train_state</span>
+        <span class="n">critic_train_state</span> <span class="o">=</span> <span class="n">runner_state</span><span class="o">.</span><span class="n">critic_train_state</span>
+        <span class="n">alpha_train_state</span> <span class="o">=</span> <span class="n">runner_state</span><span class="o">.</span><span class="n">alpha_train_state</span>
+
+        <span class="k">def</span> <span class="nf">get_trajectories</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">train_result</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">train_result</span><span class="o">.</span><span class="n">trajectories</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">return</span> <span class="kc">None</span>
+
+            <span class="n">traj</span> <span class="o">=</span> <span class="n">train_result</span><span class="o">.</span><span class="n">trajectories</span>
+
+            <span class="n">trajectories</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="n">trajectories</span><span class="p">[</span><span class="s2">&quot;states&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">traj</span><span class="o">.</span><span class="n">obs</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+            <span class="n">trajectories</span><span class="p">[</span><span class="s2">&quot;action&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">traj</span><span class="o">.</span><span class="n">action</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+            <span class="n">trajectories</span><span class="p">[</span><span class="s2">&quot;reward&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">traj</span><span class="o">.</span><span class="n">reward</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+            <span class="n">trajectories</span><span class="p">[</span><span class="s2">&quot;dones&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">traj</span><span class="o">.</span><span class="n">done</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+            <span class="k">return</span> <span class="n">trajectories</span>
+
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s2">&quot;actor_opt_state&quot;</span><span class="p">:</span> <span class="k">lambda</span><span class="p">:</span> <span class="n">actor_train_state</span><span class="o">.</span><span class="n">opt_state</span><span class="p">,</span>
+            <span class="s2">&quot;critic_opt_state&quot;</span><span class="p">:</span> <span class="k">lambda</span><span class="p">:</span> <span class="n">critic_train_state</span><span class="o">.</span><span class="n">opt_state</span><span class="p">,</span>
+            <span class="s2">&quot;alpha_opt_state&quot;</span><span class="p">:</span> <span class="k">lambda</span><span class="p">:</span> <span class="n">alpha_train_state</span><span class="o">.</span><span class="n">opt_state</span><span class="p">,</span>
+            <span class="s2">&quot;actor_network_params&quot;</span><span class="p">:</span> <span class="k">lambda</span><span class="p">:</span> <span class="n">actor_train_state</span><span class="o">.</span><span class="n">params</span><span class="p">,</span>
+            <span class="s2">&quot;critic_network_params&quot;</span><span class="p">:</span> <span class="k">lambda</span><span class="p">:</span> <span class="n">critic_train_state</span><span class="o">.</span><span class="n">params</span><span class="p">,</span>
+            <span class="s2">&quot;critic_target_params&quot;</span><span class="p">:</span> <span class="k">lambda</span><span class="p">:</span> <span class="n">critic_train_state</span><span class="o">.</span><span class="n">target_params</span><span class="p">,</span>
+            <span class="s2">&quot;alpha_network_params&quot;</span><span class="p">:</span> <span class="k">lambda</span><span class="p">:</span> <span class="n">alpha_train_state</span><span class="o">.</span><span class="n">params</span><span class="p">,</span>
+            <span class="s2">&quot;actor_loss&quot;</span><span class="p">:</span> <span class="k">lambda</span><span class="p">:</span> <span class="n">train_result</span><span class="o">.</span><span class="n">metrics</span><span class="o">.</span><span class="n">actor_loss</span>
+            <span class="k">if</span> <span class="n">train_result</span> <span class="ow">and</span> <span class="n">train_result</span><span class="o">.</span><span class="n">metrics</span>
+            <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="s2">&quot;critic_loss&quot;</span><span class="p">:</span> <span class="k">lambda</span><span class="p">:</span> <span class="n">train_result</span><span class="o">.</span><span class="n">metrics</span><span class="o">.</span><span class="n">critic_loss</span>
+            <span class="k">if</span> <span class="n">train_result</span> <span class="ow">and</span> <span class="n">train_result</span><span class="o">.</span><span class="n">metrics</span>
+            <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="s2">&quot;alpha_loss&quot;</span><span class="p">:</span> <span class="k">lambda</span><span class="p">:</span> <span class="n">train_result</span><span class="o">.</span><span class="n">metrics</span><span class="o">.</span><span class="n">alpha_loss</span>
+            <span class="k">if</span> <span class="n">train_result</span> <span class="ow">and</span> <span class="n">train_result</span><span class="o">.</span><span class="n">metrics</span>
+            <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="s2">&quot;trajectories&quot;</span><span class="p">:</span> <span class="n">get_trajectories</span><span class="p">,</span>
+        <span class="p">}</span></div>
+
+
+<div class="viewcode-block" id="SAC.init">
+<a class="viewcode-back" href="../../../../../arlbench.core.algorithms.sac.html#arlbench.core.algorithms.SAC.init">[docs]</a>
+    <span class="k">def</span> <span class="nf">init</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">rng</span><span class="p">:</span> <span class="n">chex</span><span class="o">.</span><span class="n">PRNGKey</span><span class="p">,</span>
+        <span class="n">buffer_state</span><span class="p">:</span> <span class="n">PrioritisedTrajectoryBufferState</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">actor_network_params</span><span class="p">:</span> <span class="n">FrozenDict</span> <span class="o">|</span> <span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">critic_network_params</span><span class="p">:</span> <span class="n">FrozenDict</span> <span class="o">|</span> <span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">critic_target_params</span><span class="p">:</span> <span class="n">FrozenDict</span> <span class="o">|</span> <span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">alpha_network_params</span><span class="p">:</span> <span class="n">FrozenDict</span> <span class="o">|</span> <span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">actor_opt_state</span><span class="p">:</span> <span class="n">optax</span><span class="o">.</span><span class="n">OptState</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">critic_opt_state</span><span class="p">:</span> <span class="n">optax</span><span class="o">.</span><span class="n">OptState</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">alpha_opt_state</span><span class="p">:</span> <span class="n">optax</span><span class="o">.</span><span class="n">OptState</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SACState</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initializes SAC state. Passed parameters are not initialized and included in the final state.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            actor_network_params (FrozenDict | dict | None, optional): Actor network parameters. Defaults to None.</span>
+<span class="sd">            critic_network_params (FrozenDict | dict | None, optional): Critic network parameters. Defaults to None.</span>
+<span class="sd">            critic_target_params (FrozenDict | dict | None, optional): Critic target network parameters. Defaults to None.</span>
+<span class="sd">            alpha_network_params (FrozenDict | dict | None, optional): Alpha network parameters. Defaults to None.</span>
+<span class="sd">            actor_opt_state (optax.OptState | None, optional): Actor optimizer state. Defaults to None.</span>
+<span class="sd">            critic_opt_state (optax.OptState | None, optional): Critic optimizer state. Defaults to None.</span>
+<span class="sd">            alpha_opt_state (optax.OptState | None, optional): Alpha optimizer state. Defaults to None.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            SACState: SAC state.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">rng</span><span class="p">,</span> <span class="n">env_rng</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">rng</span><span class="p">)</span>
+        <span class="n">env_state</span><span class="p">,</span> <span class="n">obs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">env</span><span class="o">.</span><span class="n">reset</span><span class="p">(</span><span class="n">env_rng</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="p">(</span>
+            <span class="n">buffer_state</span> <span class="ow">is</span> <span class="kc">None</span>
+            <span class="ow">or</span> <span class="n">actor_network_params</span> <span class="ow">is</span> <span class="kc">None</span>
+            <span class="ow">or</span> <span class="n">critic_network_params</span> <span class="ow">is</span> <span class="kc">None</span>
+        <span class="p">):</span>
+            <span class="n">dummy_rng</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">PRNGKey</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+            <span class="n">_action</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">env</span><span class="o">.</span><span class="n">sample_actions</span><span class="p">(</span><span class="n">dummy_rng</span><span class="p">)</span>
+
+            <span class="c1"># for x64 enabled runs we have to explicitly cast the dummy action</span>
+            <span class="n">_action</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">_action</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">jnp</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+
+            <span class="n">_</span><span class="p">,</span> <span class="p">(</span><span class="n">_obs</span><span class="p">,</span> <span class="n">_reward</span><span class="p">,</span> <span class="n">_done</span><span class="p">,</span> <span class="n">_</span><span class="p">)</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">env</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">env_state</span><span class="p">,</span> <span class="n">_action</span><span class="p">,</span> <span class="n">dummy_rng</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">buffer_state</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">_timestep</span> <span class="o">=</span> <span class="n">TimeStep</span><span class="p">(</span>
+                <span class="n">last_obs</span><span class="o">=</span><span class="n">_obs</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                <span class="n">obs</span><span class="o">=</span><span class="n">_obs</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                <span class="n">action</span><span class="o">=</span><span class="n">_action</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                <span class="n">reward</span><span class="o">=</span><span class="n">_reward</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                <span class="n">done</span><span class="o">=</span><span class="n">_done</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+            <span class="p">)</span>
+            <span class="n">buffer_state</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">buffer</span><span class="o">.</span><span class="n">init</span><span class="p">(</span><span class="n">_timestep</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">actor_network_params</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">rng</span><span class="p">,</span> <span class="n">actor_rng</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">rng</span><span class="p">)</span>
+            <span class="n">actor_network_params</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">actor_network</span><span class="o">.</span><span class="n">init</span><span class="p">(</span><span class="n">actor_rng</span><span class="p">,</span> <span class="n">_obs</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">critic_network_params</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">rng</span><span class="p">,</span> <span class="n">critic_rng</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">rng</span><span class="p">)</span>
+            <span class="n">critic_network_params</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">critic_network</span><span class="o">.</span><span class="n">init</span><span class="p">(</span><span class="n">critic_rng</span><span class="p">,</span> <span class="n">_obs</span><span class="p">,</span> <span class="n">_action</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">critic_target_params</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">critic_target_params</span> <span class="o">=</span> <span class="n">critic_network_params</span>
+
+        <span class="n">actor_train_state</span> <span class="o">=</span> <span class="n">SACTrainState</span><span class="o">.</span><span class="n">create_with_opt_state</span><span class="p">(</span>
+            <span class="n">apply_fn</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">actor_network</span><span class="o">.</span><span class="n">apply</span><span class="p">,</span>
+            <span class="n">params</span><span class="o">=</span><span class="n">actor_network_params</span><span class="p">,</span>
+            <span class="n">target_params</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">tx</span><span class="o">=</span><span class="n">optax</span><span class="o">.</span><span class="n">adam</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">hpo_config</span><span class="p">[</span><span class="s2">&quot;learning_rate&quot;</span><span class="p">],</span> <span class="n">eps</span><span class="o">=</span><span class="mf">1e-5</span>
+            <span class="p">),</span>  <span class="c1"># todo: change to actor specific learning_rate</span>
+            <span class="n">opt_state</span><span class="o">=</span><span class="n">actor_opt_state</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">critic_train_state</span> <span class="o">=</span> <span class="n">SACTrainState</span><span class="o">.</span><span class="n">create_with_opt_state</span><span class="p">(</span>
+            <span class="n">apply_fn</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">critic_network</span><span class="o">.</span><span class="n">apply</span><span class="p">,</span>
+            <span class="n">params</span><span class="o">=</span><span class="n">critic_network_params</span><span class="p">,</span>
+            <span class="n">target_params</span><span class="o">=</span><span class="n">critic_target_params</span><span class="p">,</span>
+            <span class="n">tx</span><span class="o">=</span><span class="n">optax</span><span class="o">.</span><span class="n">adam</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">hpo_config</span><span class="p">[</span><span class="s2">&quot;learning_rate&quot;</span><span class="p">],</span> <span class="n">eps</span><span class="o">=</span><span class="mf">1e-5</span>
+            <span class="p">),</span>  <span class="c1"># todo: change to critic specific learning_rate</span>
+            <span class="n">opt_state</span><span class="o">=</span><span class="n">critic_opt_state</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="n">alpha_network_params</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">rng</span><span class="p">,</span> <span class="n">init_rng</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">rng</span><span class="p">)</span>
+            <span class="n">alpha_network_params</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">alpha</span><span class="o">.</span><span class="n">init</span><span class="p">(</span><span class="n">init_rng</span><span class="p">)</span>
+        <span class="n">alpha_train_state</span> <span class="o">=</span> <span class="n">SACTrainState</span><span class="o">.</span><span class="n">create_with_opt_state</span><span class="p">(</span>
+            <span class="n">apply_fn</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">alpha</span><span class="o">.</span><span class="n">apply</span><span class="p">,</span>
+            <span class="n">params</span><span class="o">=</span><span class="n">alpha_network_params</span><span class="p">,</span>
+            <span class="n">target_params</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">tx</span><span class="o">=</span><span class="n">optax</span><span class="o">.</span><span class="n">adam</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">hpo_config</span><span class="p">[</span><span class="s2">&quot;learning_rate&quot;</span><span class="p">],</span> <span class="n">eps</span><span class="o">=</span><span class="mf">1e-5</span>
+            <span class="p">),</span>  <span class="c1"># todo: how to set learning_rate, check with stable-baselines</span>
+            <span class="n">opt_state</span><span class="o">=</span><span class="n">alpha_opt_state</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="n">global_step</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="n">runner_state</span> <span class="o">=</span> <span class="n">SACRunnerState</span><span class="p">(</span>
+            <span class="n">rng</span><span class="o">=</span><span class="n">rng</span><span class="p">,</span>
+            <span class="n">actor_train_state</span><span class="o">=</span><span class="n">actor_train_state</span><span class="p">,</span>
+            <span class="n">critic_train_state</span><span class="o">=</span><span class="n">critic_train_state</span><span class="p">,</span>
+            <span class="n">alpha_train_state</span><span class="o">=</span><span class="n">alpha_train_state</span><span class="p">,</span>
+            <span class="n">normalizer_state</span><span class="o">=</span><span class="n">running_statistics</span><span class="o">.</span><span class="n">init_state</span><span class="p">(</span><span class="n">obs</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span>
+            <span class="n">env_state</span><span class="o">=</span><span class="n">env_state</span><span class="p">,</span>
+            <span class="n">obs</span><span class="o">=</span><span class="n">obs</span><span class="p">,</span>
+            <span class="n">global_step</span><span class="o">=</span><span class="n">global_step</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="k">assert</span> <span class="n">buffer_state</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+
+        <span class="k">return</span> <span class="n">SACState</span><span class="p">(</span><span class="n">runner_state</span><span class="o">=</span><span class="n">runner_state</span><span class="p">,</span> <span class="n">buffer_state</span><span class="o">=</span><span class="n">buffer_state</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="SAC.predict">
+<a class="viewcode-back" href="../../../../../arlbench.core.algorithms.sac.html#arlbench.core.algorithms.SAC.predict">[docs]</a>
+    <span class="nd">@functools</span><span class="o">.</span><span class="n">partial</span><span class="p">(</span><span class="n">jax</span><span class="o">.</span><span class="n">jit</span><span class="p">,</span> <span class="n">static_argnums</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">predict</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">runner_state</span><span class="p">:</span> <span class="n">SACRunnerState</span><span class="p">,</span>
+        <span class="n">obs</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">rng</span><span class="p">:</span> <span class="n">chex</span><span class="o">.</span><span class="n">PRNGKey</span><span class="p">,</span>
+        <span class="n">deterministic</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Predict action(s) based on the current observation(s).</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            runner_state (SACRunnerState): Algorithm runner state.</span>
+<span class="sd">            obs (jnp.ndarray): Observation(s).</span>
+<span class="sd">            rng (chex.PRNGKey | None, optional): Not used in DQN. Random generator key in other algorithms. Defaults to None.</span>
+<span class="sd">            deterministic (bool): Not used in DQN. Return deterministic action in other algorithms. Defaults to True.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            jnp.ndarray: Action(s).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">hpo_config</span><span class="p">[</span><span class="s2">&quot;normalize_observations&quot;</span><span class="p">]:</span>
+            <span class="n">obs</span> <span class="o">=</span> <span class="n">running_statistics</span><span class="o">.</span><span class="n">normalize</span><span class="p">(</span><span class="n">obs</span><span class="p">,</span> <span class="n">runner_state</span><span class="o">.</span><span class="n">normalizer_state</span><span class="p">)</span>
+        <span class="n">pi</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">actor_network</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">runner_state</span><span class="o">.</span><span class="n">actor_train_state</span><span class="o">.</span><span class="n">params</span><span class="p">,</span> <span class="n">obs</span><span class="p">)</span>
+
+        <span class="k">def</span> <span class="nf">deterministic_action</span><span class="p">():</span>
+            <span class="k">return</span> <span class="n">pi</span><span class="o">.</span><span class="n">mode</span><span class="p">()</span>
+
+        <span class="k">def</span> <span class="nf">sampled_action</span><span class="p">():</span>
+            <span class="k">return</span> <span class="n">pi</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">seed</span><span class="o">=</span><span class="n">rng</span><span class="p">)</span>
+
+        <span class="n">action</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">lax</span><span class="o">.</span><span class="n">cond</span><span class="p">(</span>
+            <span class="n">deterministic</span><span class="p">,</span>
+            <span class="n">deterministic_action</span><span class="p">,</span>
+            <span class="n">sampled_action</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="c1"># todo: we need to check that the action spaces are finite</span>
+        <span class="n">low</span><span class="p">,</span> <span class="n">high</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">env</span><span class="o">.</span><span class="n">action_space</span><span class="o">.</span><span class="n">low</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">env</span><span class="o">.</span><span class="n">action_space</span><span class="o">.</span><span class="n">high</span>
+        <span class="c1"># check if low or high are none, nan or inf and set to 1</span>
+        <span class="k">if</span> <span class="n">low</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">low</span><span class="p">)</span><span class="o">.</span><span class="n">any</span><span class="p">()</span> <span class="ow">or</span> <span class="n">np</span><span class="o">.</span><span class="n">isinf</span><span class="p">(</span><span class="n">low</span><span class="p">)</span><span class="o">.</span><span class="n">any</span><span class="p">():</span>
+            <span class="n">low</span> <span class="o">=</span> <span class="o">-</span><span class="n">jnp</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="n">action</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">high</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">high</span><span class="p">)</span><span class="o">.</span><span class="n">any</span><span class="p">()</span> <span class="ow">or</span> <span class="n">np</span><span class="o">.</span><span class="n">isinf</span><span class="p">(</span><span class="n">high</span><span class="p">)</span><span class="o">.</span><span class="n">any</span><span class="p">():</span>
+            <span class="n">high</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="n">action</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">low</span> <span class="o">+</span> <span class="p">(</span><span class="n">action</span> <span class="o">+</span> <span class="mf">1.0</span><span class="p">)</span> <span class="o">*</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">high</span> <span class="o">-</span> <span class="n">low</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="SAC.train">
+<a class="viewcode-back" href="../../../../../arlbench.core.algorithms.sac.html#arlbench.core.algorithms.SAC.train">[docs]</a>
+    <span class="nd">@functools</span><span class="o">.</span><span class="n">partial</span><span class="p">(</span><span class="n">jax</span><span class="o">.</span><span class="n">jit</span><span class="p">,</span> <span class="n">static_argnums</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">),</span> <span class="n">donate_argnums</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span><span class="p">,))</span>
+    <span class="k">def</span> <span class="nf">train</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">runner_state</span><span class="p">:</span> <span class="n">SACRunnerState</span><span class="p">,</span>
+        <span class="n">buffer_state</span><span class="p">:</span> <span class="n">PrioritisedTrajectoryBufferState</span><span class="p">,</span>
+        <span class="n">n_total_timesteps</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1000000</span><span class="p">,</span>
+        <span class="n">n_eval_steps</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">100</span><span class="p">,</span>
+        <span class="n">n_eval_episodes</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SACTrainReturnT</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Performs one iteration of training.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            runner_state (SACTrainReturnT): SAC runner state.</span>
+<span class="sd">            _ (None): Unused parameter (buffer_state in other algorithms).</span>
+<span class="sd">            n_total_timesteps (int, optional): Total number of training timesteps. Update steps = n_total_timesteps // n_envs. Defaults to 1000000.</span>
+<span class="sd">            n_eval_steps (int, optional): Number of evaluation steps during training.</span>
+<span class="sd">            n_eval_episodes (int, optional): Number of evaluation episodes per evaluation during training.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            SACTrainReturnT: Tuple of PPO algorithm state and training result.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">def</span> <span class="nf">train_eval_step</span><span class="p">(</span>
+            <span class="n">carry</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">SACRunnerState</span><span class="p">,</span> <span class="n">PrioritisedTrajectoryBufferState</span><span class="p">],</span> <span class="n">_</span><span class="p">:</span> <span class="kc">None</span>
+        <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span>
+            <span class="nb">tuple</span><span class="p">[</span><span class="n">SACRunnerState</span><span class="p">,</span> <span class="n">PrioritisedTrajectoryBufferState</span><span class="p">],</span> <span class="n">SACTrainingResult</span>
+        <span class="p">]:</span>
+<span class="w">            </span><span class="sd">&quot;&quot;&quot;_summary_.</span>
+
+<span class="sd">            Args:</span>
+<span class="sd">                carry (tuple[SACRunnerState, PrioritisedTrajectoryBufferState]): _description_</span>
+<span class="sd">                _ (None): _description_</span>
+
+<span class="sd">            Returns:</span>
+<span class="sd">                tuple[ tuple[SACRunnerState, PrioritisedTrajectoryBufferState], SACTrainingResult ]: _description_</span>
+<span class="sd">            &quot;&quot;&quot;</span>
+            <span class="n">runner_state</span><span class="p">,</span> <span class="n">buffer_state</span> <span class="o">=</span> <span class="n">carry</span>
+            <span class="p">(</span><span class="n">runner_state</span><span class="p">,</span> <span class="n">buffer_state</span><span class="p">),</span> <span class="p">(</span><span class="n">metrics</span><span class="p">,</span> <span class="n">trajectories</span><span class="p">)</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">lax</span><span class="o">.</span><span class="n">scan</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_update_step</span><span class="p">,</span>
+                <span class="p">(</span><span class="n">runner_state</span><span class="p">,</span> <span class="n">buffer_state</span><span class="p">),</span>
+                <span class="kc">None</span><span class="p">,</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span>
+                    <span class="n">n_total_timesteps</span>
+                    <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">env</span><span class="o">.</span><span class="n">n_envs</span>
+                    <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">hpo_config</span><span class="p">[</span><span class="s2">&quot;train_freq&quot;</span><span class="p">]</span>
+                    <span class="o">/</span> <span class="n">n_eval_steps</span>
+                <span class="p">),</span>
+            <span class="p">)</span>
+            <span class="n">eval_returns</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">eval</span><span class="p">(</span><span class="n">runner_state</span><span class="p">,</span> <span class="n">n_eval_episodes</span><span class="p">)</span>
+
+            <span class="k">return</span> <span class="p">(</span><span class="n">runner_state</span><span class="p">,</span> <span class="n">buffer_state</span><span class="p">),</span> <span class="n">SACTrainingResult</span><span class="p">(</span>
+                <span class="n">metrics</span><span class="o">=</span><span class="n">metrics</span><span class="p">,</span> <span class="n">trajectories</span><span class="o">=</span><span class="n">trajectories</span><span class="p">,</span> <span class="n">eval_rewards</span><span class="o">=</span><span class="n">eval_returns</span>
+            <span class="p">)</span>
+
+        <span class="p">(</span><span class="n">runner_state</span><span class="p">,</span> <span class="n">buffer_state</span><span class="p">),</span> <span class="n">result</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">lax</span><span class="o">.</span><span class="n">scan</span><span class="p">(</span>
+            <span class="n">train_eval_step</span><span class="p">,</span>
+            <span class="p">(</span><span class="n">runner_state</span><span class="p">,</span> <span class="n">buffer_state</span><span class="p">),</span>
+            <span class="kc">None</span><span class="p">,</span>
+            <span class="n">n_eval_steps</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">SACState</span><span class="p">(</span><span class="n">runner_state</span><span class="o">=</span><span class="n">runner_state</span><span class="p">,</span> <span class="n">buffer_state</span><span class="o">=</span><span class="n">buffer_state</span><span class="p">),</span> <span class="n">result</span></div>
+
+
+<div class="viewcode-block" id="SAC.update_critic">
+<a class="viewcode-back" href="../../../../../arlbench.core.algorithms.sac.html#arlbench.core.algorithms.SAC.update_critic">[docs]</a>
+    <span class="k">def</span> <span class="nf">update_critic</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">actor_train_state</span><span class="p">:</span> <span class="n">SACTrainState</span><span class="p">,</span>
+        <span class="n">critic_train_state</span><span class="p">:</span> <span class="n">SACTrainState</span><span class="p">,</span>
+        <span class="n">alpha_train_state</span><span class="p">:</span> <span class="n">SACTrainState</span><span class="p">,</span>
+        <span class="n">experience</span><span class="p">:</span> <span class="n">TimeStep</span><span class="p">,</span>
+        <span class="n">is_weights</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">rng</span><span class="p">:</span> <span class="n">chex</span><span class="o">.</span><span class="n">PRNGKey</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">SACTrainState</span><span class="p">,</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">FrozenDict</span><span class="p">,</span> <span class="n">chex</span><span class="o">.</span><span class="n">PRNGKey</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;_summary_.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            actor_train_state (SACTrainState): _description_</span>
+<span class="sd">            critic_train_state (SACTrainState): _description_</span>
+<span class="sd">            alpha_train_state (SACTrainState): _description_</span>
+<span class="sd">            experience (Transition): _description_</span>
+<span class="sd">            rng (chex.PRNGKey): _description_</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            tuple[SACTrainState, jnp.ndarray, jnp.ndarray, FrozenDict, chex.PRNGKey]: _description_</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">rng</span><span class="p">,</span> <span class="n">action_rng</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">rng</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="n">pi</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">actor_network</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">actor_train_state</span><span class="o">.</span><span class="n">params</span><span class="p">,</span> <span class="n">experience</span><span class="o">.</span><span class="n">obs</span><span class="p">)</span>
+        <span class="n">next_state_actions</span><span class="p">,</span> <span class="n">next_log_prob</span> <span class="o">=</span> <span class="n">pi</span><span class="o">.</span><span class="n">sample_and_log_prob</span><span class="p">(</span><span class="n">seed</span><span class="o">=</span><span class="n">action_rng</span><span class="p">)</span>
+
+        <span class="n">alpha_value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">alpha</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">alpha_train_state</span><span class="o">.</span><span class="n">params</span><span class="p">)</span>
+
+        <span class="n">qf_next_target</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">critic_network</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span>
+            <span class="n">critic_train_state</span><span class="o">.</span><span class="n">target_params</span><span class="p">,</span> <span class="n">experience</span><span class="o">.</span><span class="n">obs</span><span class="p">,</span> <span class="n">next_state_actions</span>
+        <span class="p">)</span>
+
+        <span class="n">qf_next_target</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">qf_next_target</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">qf_next_target</span> <span class="o">=</span> <span class="n">qf_next_target</span> <span class="o">-</span> <span class="n">alpha_value</span> <span class="o">*</span> <span class="n">next_log_prob</span>
+        <span class="n">target_q_value</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">experience</span><span class="o">.</span><span class="n">reward</span>
+            <span class="o">+</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">experience</span><span class="o">.</span><span class="n">done</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">hpo_config</span><span class="p">[</span><span class="s2">&quot;gamma&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="n">qf_next_target</span>
+        <span class="p">)</span>
+
+        <span class="k">def</span> <span class="nf">mse_loss</span><span class="p">(</span><span class="n">params</span><span class="p">:</span> <span class="n">FrozenDict</span><span class="p">):</span>
+<span class="w">            </span><span class="sd">&quot;&quot;&quot;_summary_.</span>
+
+<span class="sd">            Args:</span>
+<span class="sd">                params (FrozenDict): _description_</span>
+
+<span class="sd">            Returns:</span>
+<span class="sd">                _type_: _description_</span>
+<span class="sd">            &quot;&quot;&quot;</span>
+            <span class="n">q_pred</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">critic_network</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span>
+                <span class="n">params</span><span class="p">,</span> <span class="n">experience</span><span class="o">.</span><span class="n">last_obs</span><span class="p">,</span> <span class="n">experience</span><span class="o">.</span><span class="n">action</span>
+            <span class="p">)</span>
+            <span class="n">td_error</span> <span class="o">=</span> <span class="n">target_q_value</span> <span class="o">-</span> <span class="n">q_pred</span>
+            <span class="k">return</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">is_weights</span> <span class="o">*</span> <span class="n">td_error</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(),</span> <span class="n">jnp</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span>
+                <span class="n">td_error</span>
+            <span class="p">)</span>
+
+        <span class="p">(</span><span class="n">loss_value</span><span class="p">,</span> <span class="n">td_error</span><span class="p">),</span> <span class="n">grads</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">value_and_grad</span><span class="p">(</span><span class="n">mse_loss</span><span class="p">,</span> <span class="n">has_aux</span><span class="o">=</span><span class="kc">True</span><span class="p">)(</span>
+            <span class="n">critic_train_state</span><span class="o">.</span><span class="n">params</span>
+        <span class="p">)</span>
+        <span class="n">critic_train_state</span> <span class="o">=</span> <span class="n">critic_train_state</span><span class="o">.</span><span class="n">apply_gradients</span><span class="p">(</span><span class="n">grads</span><span class="o">=</span><span class="n">grads</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">critic_train_state</span><span class="p">,</span> <span class="n">loss_value</span><span class="p">,</span> <span class="n">td_error</span><span class="p">,</span> <span class="n">grads</span><span class="p">,</span> <span class="n">rng</span></div>
+
+
+<div class="viewcode-block" id="SAC.update_actor">
+<a class="viewcode-back" href="../../../../../arlbench.core.algorithms.sac.html#arlbench.core.algorithms.SAC.update_actor">[docs]</a>
+    <span class="k">def</span> <span class="nf">update_actor</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">actor_train_state</span><span class="p">:</span> <span class="n">SACTrainState</span><span class="p">,</span>
+        <span class="n">critic_train_state</span><span class="p">:</span> <span class="n">SACTrainState</span><span class="p">,</span>
+        <span class="n">alpha_train_state</span><span class="p">:</span> <span class="n">SACTrainState</span><span class="p">,</span>
+        <span class="n">experience</span><span class="p">:</span> <span class="n">TimeStep</span><span class="p">,</span>
+        <span class="n">is_weights</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">rng</span><span class="p">:</span> <span class="n">chex</span><span class="o">.</span><span class="n">PRNGKey</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">SACTrainState</span><span class="p">,</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">FrozenDict</span><span class="p">,</span> <span class="n">chex</span><span class="o">.</span><span class="n">PRNGKey</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;_summary_.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            actor_train_state (SACTrainState): _description_</span>
+<span class="sd">            critic_train_state (SACTrainState): _description_</span>
+<span class="sd">            alpha_train_state (SACTrainState): _description_</span>
+<span class="sd">            batch (Transition): _description_</span>
+<span class="sd">            rng (chex.PRNGKey): _description_</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            tuple[SACTrainState, jnp.ndarray, jnp.ndarray, FrozenDict, chex.PRNGKey]: _description_</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">rng</span><span class="p">,</span> <span class="n">action_rng</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">rng</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+
+        <span class="k">def</span> <span class="nf">actor_loss</span><span class="p">(</span>
+            <span class="n">actor_params</span><span class="p">:</span> <span class="n">FrozenDict</span><span class="p">,</span>
+            <span class="n">critic_params</span><span class="p">:</span> <span class="n">FrozenDict</span><span class="p">,</span>
+            <span class="n">alpha_params</span><span class="p">:</span> <span class="n">FrozenDict</span><span class="p">,</span>
+        <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
+<span class="w">            </span><span class="sd">&quot;&quot;&quot;_summary_.</span>
+
+<span class="sd">            Args:</span>
+<span class="sd">                actor_params (FrozenDict): _description_</span>
+<span class="sd">                critic_params (FrozenDict): _description_</span>
+<span class="sd">                alpha_params (FrozenDict): _description_</span>
+
+<span class="sd">            Returns:</span>
+<span class="sd">                tuple[jnp.ndarray, jnp.ndarray]: _description_</span>
+<span class="sd">            &quot;&quot;&quot;</span>
+            <span class="n">pi</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">actor_network</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">actor_params</span><span class="p">,</span> <span class="n">experience</span><span class="o">.</span><span class="n">last_obs</span><span class="p">)</span>
+            <span class="n">actor_actions</span><span class="p">,</span> <span class="n">log_prob</span> <span class="o">=</span> <span class="n">pi</span><span class="o">.</span><span class="n">sample_and_log_prob</span><span class="p">(</span><span class="n">seed</span><span class="o">=</span><span class="n">action_rng</span><span class="p">)</span>
+
+            <span class="n">qf_pi</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">critic_network</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span>
+                <span class="n">critic_params</span><span class="p">,</span> <span class="n">experience</span><span class="o">.</span><span class="n">last_obs</span><span class="p">,</span> <span class="n">actor_actions</span>
+            <span class="p">)</span>
+            <span class="n">min_qf_pi</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">qf_pi</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+            <span class="n">alpha_value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">alpha</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">alpha_params</span><span class="p">)</span>
+            <span class="n">actor_loss</span> <span class="o">=</span> <span class="p">(</span><span class="n">is_weights</span> <span class="o">*</span> <span class="p">(</span><span class="n">alpha_value</span> <span class="o">*</span> <span class="n">log_prob</span> <span class="o">-</span> <span class="n">min_qf_pi</span><span class="p">))</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+            <span class="k">return</span> <span class="n">actor_loss</span><span class="p">,</span> <span class="o">-</span><span class="n">log_prob</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+
+        <span class="p">(</span><span class="n">loss_value</span><span class="p">,</span> <span class="n">entropy</span><span class="p">),</span> <span class="n">grads</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">value_and_grad</span><span class="p">(</span><span class="n">actor_loss</span><span class="p">,</span> <span class="n">has_aux</span><span class="o">=</span><span class="kc">True</span><span class="p">)(</span>
+            <span class="n">actor_train_state</span><span class="o">.</span><span class="n">params</span><span class="p">,</span>
+            <span class="n">critic_train_state</span><span class="o">.</span><span class="n">params</span><span class="p">,</span>
+            <span class="n">alpha_train_state</span><span class="o">.</span><span class="n">params</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">actor_train_state</span> <span class="o">=</span> <span class="n">actor_train_state</span><span class="o">.</span><span class="n">apply_gradients</span><span class="p">(</span><span class="n">grads</span><span class="o">=</span><span class="n">grads</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">actor_train_state</span><span class="p">,</span> <span class="n">loss_value</span><span class="p">,</span> <span class="n">entropy</span><span class="p">,</span> <span class="n">grads</span><span class="p">,</span> <span class="n">rng</span></div>
+
+
+<div class="viewcode-block" id="SAC.update_alpha">
+<a class="viewcode-back" href="../../../../../arlbench.core.algorithms.sac.html#arlbench.core.algorithms.SAC.update_alpha">[docs]</a>
+    <span class="k">def</span> <span class="nf">update_alpha</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">alpha_train_state</span><span class="p">:</span> <span class="n">SACTrainState</span><span class="p">,</span> <span class="n">entropy</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">SACTrainState</span><span class="p">,</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;_summary_.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            alpha_train_state (SACTrainState): _description_</span>
+<span class="sd">            entropy (jnp.ndarray): _description_</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            tuple[SACTrainState, jnp.ndarray]: _description_</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">def</span> <span class="nf">get_alpha_loss</span><span class="p">(</span><span class="n">params</span><span class="p">:</span> <span class="n">FrozenDict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">            </span><span class="sd">&quot;&quot;&quot;_summary_.</span>
+
+<span class="sd">            Args:</span>
+<span class="sd">                params (FrozenDict): _description_</span>
+
+<span class="sd">            Returns:</span>
+<span class="sd">                jnp.ndarray: _description_</span>
+<span class="sd">            &quot;&quot;&quot;</span>
+            <span class="n">alpha_value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">alpha</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">params</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">alpha_value</span> <span class="o">*</span> <span class="p">(</span><span class="n">entropy</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">target_entropy</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>  <span class="c1"># type: ignore[union-attr]</span>
+
+        <span class="n">alpha_loss</span><span class="p">,</span> <span class="n">grads</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">value_and_grad</span><span class="p">(</span><span class="n">get_alpha_loss</span><span class="p">)(</span><span class="n">alpha_train_state</span><span class="o">.</span><span class="n">params</span><span class="p">)</span>
+        <span class="n">alpha_train_state</span> <span class="o">=</span> <span class="n">alpha_train_state</span><span class="o">.</span><span class="n">apply_gradients</span><span class="p">(</span><span class="n">grads</span><span class="o">=</span><span class="n">grads</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">alpha_train_state</span><span class="p">,</span> <span class="n">alpha_loss</span></div>
+
+
+    <span class="k">def</span> <span class="nf">_update_step</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">carry</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">SACRunnerState</span><span class="p">,</span> <span class="n">PrioritisedTrajectoryBufferState</span><span class="p">],</span> <span class="n">_</span><span class="p">:</span> <span class="kc">None</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span>
+        <span class="nb">tuple</span><span class="p">[</span><span class="n">SACRunnerState</span><span class="p">,</span> <span class="n">PrioritisedTrajectoryBufferState</span><span class="p">],</span>
+        <span class="nb">tuple</span><span class="p">[</span><span class="n">SACMetrics</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="n">Transition</span> <span class="o">|</span> <span class="kc">None</span><span class="p">],</span>
+    <span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;_summary_.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            carry (tuple[SACRunnerState, PrioritisedTrajectoryBufferState]): _description_</span>
+<span class="sd">            _ (None): _description_</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            tuple[ tuple[SACRunnerState, PrioritisedTrajectoryBufferState], tuple[SACMetrics | None, Transition | None], ]: _description_</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">def</span> <span class="nf">do_update</span><span class="p">(</span>
+            <span class="n">rng</span><span class="p">:</span> <span class="n">chex</span><span class="o">.</span><span class="n">PRNGKey</span><span class="p">,</span>
+            <span class="n">actor_train_state</span><span class="p">:</span> <span class="n">SACTrainState</span><span class="p">,</span>
+            <span class="n">critic_train_state</span><span class="p">:</span> <span class="n">SACTrainState</span><span class="p">,</span>
+            <span class="n">alpha_train_state</span><span class="p">:</span> <span class="n">SACTrainState</span><span class="p">,</span>
+            <span class="n">normalizer_state</span><span class="p">:</span> <span class="n">RunningStatisticsState</span><span class="p">,</span>
+            <span class="n">buffer_state</span><span class="p">:</span> <span class="n">PrioritisedTrajectoryBufferState</span><span class="p">,</span>
+        <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span>
+            <span class="n">chex</span><span class="o">.</span><span class="n">PRNGKey</span><span class="p">,</span>
+            <span class="n">SACTrainState</span><span class="p">,</span>
+            <span class="n">SACTrainState</span><span class="p">,</span>
+            <span class="n">SACTrainState</span><span class="p">,</span>
+            <span class="n">PrioritisedTrajectoryBufferState</span><span class="p">,</span>
+            <span class="n">SACMetrics</span><span class="p">,</span>
+        <span class="p">]:</span>
+<span class="w">            </span><span class="sd">&quot;&quot;&quot;_summary_.</span>
+
+<span class="sd">            Args:</span>
+<span class="sd">                rng (chex.PRNGKey): _description_</span>
+<span class="sd">                actor_train_state (SACTrainState): _description_</span>
+<span class="sd">                critic_train_state (SACTrainState): _description_</span>
+<span class="sd">                alpha_train_state (SACTrainState): _description_</span>
+<span class="sd">                buffer_state (PrioritisedTrajectoryBufferState): _description_</span>
+
+<span class="sd">            Returns:</span>
+<span class="sd">                tuple[ chex.PRNGKey, SACTrainState, SACTrainState, SACTrainState, PrioritisedTrajectoryBufferState, SACMetrics, ]: _description_</span>
+<span class="sd">            &quot;&quot;&quot;</span>
+
+            <span class="k">def</span> <span class="nf">gradient_step</span><span class="p">(</span>
+                <span class="n">carry</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span>
+                    <span class="n">chex</span><span class="o">.</span><span class="n">PRNGKey</span><span class="p">,</span>
+                    <span class="n">SACTrainState</span><span class="p">,</span>
+                    <span class="n">SACTrainState</span><span class="p">,</span>
+                    <span class="n">SACTrainState</span><span class="p">,</span>
+                    <span class="n">PrioritisedTrajectoryBufferState</span><span class="p">,</span>
+                <span class="p">],</span>
+                <span class="n">_</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span>
+                <span class="nb">tuple</span><span class="p">[</span>
+                    <span class="n">chex</span><span class="o">.</span><span class="n">PRNGKey</span><span class="p">,</span>
+                    <span class="n">SACTrainState</span><span class="p">,</span>
+                    <span class="n">SACTrainState</span><span class="p">,</span>
+                    <span class="n">SACTrainState</span><span class="p">,</span>
+                    <span class="n">PrioritisedTrajectoryBufferState</span><span class="p">,</span>
+                <span class="p">],</span>
+                <span class="n">SACMetrics</span><span class="p">,</span>
+            <span class="p">]:</span>
+<span class="w">                </span><span class="sd">&quot;&quot;&quot;_summary_.</span>
+
+<span class="sd">                Args:</span>
+<span class="sd">                    carry (tuple[ chex.PRNGKey, SACTrainState, SACTrainState, SACTrainState, PrioritisedTrajectoryBufferState, ]): _description_</span>
+<span class="sd">                    _ (None): _description_</span>
+
+<span class="sd">                Returns:</span>
+<span class="sd">                    tuple[ tuple[ chex.PRNGKey, SACTrainState, SACTrainState, SACTrainState, PrioritisedTrajectoryBufferState, ], SACMetrics, ]: _description_</span>
+<span class="sd">                &quot;&quot;&quot;</span>
+                <span class="p">(</span>
+                    <span class="n">rng</span><span class="p">,</span>
+                    <span class="n">actor_train_state</span><span class="p">,</span>
+                    <span class="n">critic_train_state</span><span class="p">,</span>
+                    <span class="n">alpha_train_state</span><span class="p">,</span>
+                    <span class="n">buffer_state</span><span class="p">,</span>
+                <span class="p">)</span> <span class="o">=</span> <span class="n">carry</span>
+                <span class="n">rng</span><span class="p">,</span> <span class="n">batch_sample_rng</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">rng</span><span class="p">)</span>
+                <span class="n">batch</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">buffer</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">buffer_state</span><span class="p">,</span> <span class="n">batch_sample_rng</span><span class="p">)</span>
+                <span class="n">experience</span> <span class="o">=</span> <span class="n">batch</span><span class="o">.</span><span class="n">experience</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">hpo_config</span><span class="p">[</span><span class="s2">&quot;normalize_observations&quot;</span><span class="p">]:</span>
+                    <span class="n">experience</span> <span class="o">=</span> <span class="n">experience</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span>
+                        <span class="n">last_obs</span><span class="o">=</span><span class="n">running_statistics</span><span class="o">.</span><span class="n">normalize</span><span class="p">(</span>
+                            <span class="n">experience</span><span class="o">.</span><span class="n">last_obs</span><span class="p">,</span> <span class="n">normalizer_state</span>
+                        <span class="p">),</span>
+                        <span class="n">obs</span><span class="o">=</span><span class="n">running_statistics</span><span class="o">.</span><span class="n">normalize</span><span class="p">(</span>
+                            <span class="n">experience</span><span class="o">.</span><span class="n">obs</span><span class="p">,</span> <span class="n">normalizer_state</span>
+                        <span class="p">),</span>
+                    <span class="p">)</span>
+
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">hpo_config</span><span class="p">[</span><span class="s2">&quot;buffer_prio_sampling&quot;</span><span class="p">]:</span>
+                    <span class="n">is_weights</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">power</span><span class="p">(</span>
+                        <span class="p">(</span><span class="mf">1.0</span> <span class="o">/</span> <span class="n">batch</span><span class="o">.</span><span class="n">priorities</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">hpo_config</span><span class="p">[</span><span class="s2">&quot;buffer_beta&quot;</span><span class="p">]</span>
+                    <span class="p">)</span>
+                    <span class="n">is_weights</span> <span class="o">=</span> <span class="n">is_weights</span> <span class="o">/</span> <span class="n">jnp</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">is_weights</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">is_weights</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="n">batch</span><span class="o">.</span><span class="n">priorities</span><span class="p">)</span>
+                <span class="n">critic_train_state</span><span class="p">,</span> <span class="n">critic_loss</span><span class="p">,</span> <span class="n">td_error</span><span class="p">,</span> <span class="n">critic_grads</span><span class="p">,</span> <span class="n">rng</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">update_critic</span><span class="p">(</span>
+                        <span class="n">actor_train_state</span><span class="p">,</span>
+                        <span class="n">critic_train_state</span><span class="p">,</span>
+                        <span class="n">alpha_train_state</span><span class="p">,</span>
+                        <span class="n">experience</span><span class="p">,</span>
+                        <span class="n">is_weights</span><span class="p">,</span>
+                        <span class="n">rng</span><span class="p">,</span>
+                    <span class="p">)</span>
+                <span class="p">)</span>
+                <span class="n">actor_train_state</span><span class="p">,</span> <span class="n">actor_loss</span><span class="p">,</span> <span class="n">entropy</span><span class="p">,</span> <span class="n">actor_grads</span><span class="p">,</span> <span class="n">rng</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">update_actor</span><span class="p">(</span>
+                        <span class="n">actor_train_state</span><span class="p">,</span>
+                        <span class="n">critic_train_state</span><span class="p">,</span>
+                        <span class="n">alpha_train_state</span><span class="p">,</span>
+                        <span class="n">experience</span><span class="p">,</span>
+                        <span class="n">is_weights</span><span class="p">,</span>
+                        <span class="n">rng</span><span class="p">,</span>
+                    <span class="p">)</span>
+                <span class="p">)</span>
+                <span class="n">alpha_train_state</span><span class="p">,</span> <span class="n">alpha_loss</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">update_alpha</span><span class="p">(</span>
+                    <span class="n">alpha_train_state</span><span class="p">,</span> <span class="n">entropy</span>
+                <span class="p">)</span>
+                <span class="n">new_priorities</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="n">td_error</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">hpo_config</span><span class="p">[</span><span class="s2">&quot;buffer_epsilon&quot;</span><span class="p">]</span>
+                <span class="p">)</span>
+                <span class="n">buffer_state</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">buffer</span><span class="o">.</span><span class="n">set_priorities</span><span class="p">(</span>
+                    <span class="n">buffer_state</span><span class="p">,</span> <span class="n">batch</span><span class="o">.</span><span class="n">indices</span><span class="p">,</span> <span class="n">new_priorities</span>
+                <span class="p">)</span>
+                <span class="n">metrics</span> <span class="o">=</span> <span class="n">SACMetrics</span><span class="p">(</span>
+                    <span class="n">actor_loss</span><span class="o">=</span><span class="n">actor_loss</span><span class="p">,</span>
+                    <span class="n">critic_loss</span><span class="o">=</span><span class="n">critic_loss</span><span class="p">,</span>
+                    <span class="n">alpha_loss</span><span class="o">=</span><span class="n">alpha_loss</span><span class="p">,</span>
+                    <span class="n">td_error</span><span class="o">=</span><span class="n">td_error</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">),</span>
+                    <span class="n">actor_grads</span><span class="o">=</span><span class="n">actor_grads</span><span class="p">,</span>
+                    <span class="n">critic_grads</span><span class="o">=</span><span class="n">critic_grads</span><span class="p">,</span>
+                <span class="p">)</span>
+                <span class="k">return</span> <span class="p">(</span>
+                    <span class="n">rng</span><span class="p">,</span>
+                    <span class="n">actor_train_state</span><span class="p">,</span>
+                    <span class="n">critic_train_state</span><span class="p">,</span>
+                    <span class="n">alpha_train_state</span><span class="p">,</span>
+                    <span class="n">buffer_state</span><span class="p">,</span>
+                <span class="p">),</span> <span class="n">metrics</span>
+
+            <span class="n">carry</span><span class="p">,</span> <span class="n">metrics</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">lax</span><span class="o">.</span><span class="n">scan</span><span class="p">(</span>
+                <span class="n">gradient_step</span><span class="p">,</span>
+                <span class="p">(</span>
+                    <span class="n">rng</span><span class="p">,</span>
+                    <span class="n">actor_train_state</span><span class="p">,</span>
+                    <span class="n">critic_train_state</span><span class="p">,</span>
+                    <span class="n">alpha_train_state</span><span class="p">,</span>
+                    <span class="n">buffer_state</span><span class="p">,</span>
+                <span class="p">),</span>
+                <span class="kc">None</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">hpo_config</span><span class="p">[</span><span class="s2">&quot;gradient_steps&quot;</span><span class="p">],</span>
+            <span class="p">)</span>
+            <span class="p">(</span>
+                <span class="n">rng</span><span class="p">,</span>
+                <span class="n">actor_train_state</span><span class="p">,</span>
+                <span class="n">critic_train_state</span><span class="p">,</span>
+                <span class="n">alpha_train_state</span><span class="p">,</span>
+                <span class="n">buffer_state</span><span class="p">,</span>
+            <span class="p">)</span> <span class="o">=</span> <span class="n">carry</span>
+            <span class="k">return</span> <span class="p">(</span>
+                <span class="n">rng</span><span class="p">,</span>
+                <span class="n">actor_train_state</span><span class="p">,</span>
+                <span class="n">critic_train_state</span><span class="p">,</span>
+                <span class="n">alpha_train_state</span><span class="p">,</span>
+                <span class="n">buffer_state</span><span class="p">,</span>
+                <span class="n">metrics</span><span class="p">,</span>
+            <span class="p">)</span>
+
+        <span class="k">def</span> <span class="nf">dont_update</span><span class="p">(</span>
+            <span class="n">rng</span><span class="p">:</span> <span class="n">chex</span><span class="o">.</span><span class="n">PRNGKey</span><span class="p">,</span>
+            <span class="n">actor_train_state</span><span class="p">:</span> <span class="n">SACTrainState</span><span class="p">,</span>
+            <span class="n">critic_train_state</span><span class="p">:</span> <span class="n">SACTrainState</span><span class="p">,</span>
+            <span class="n">alpha_train_state</span><span class="p">:</span> <span class="n">SACTrainState</span><span class="p">,</span>
+            <span class="n">normalizer_state</span><span class="p">:</span> <span class="n">RunningStatisticsState</span><span class="p">,</span>
+            <span class="n">buffer_state</span><span class="p">:</span> <span class="n">PrioritisedTrajectoryBufferState</span><span class="p">,</span>
+        <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span>
+            <span class="n">chex</span><span class="o">.</span><span class="n">PRNGKey</span><span class="p">,</span>
+            <span class="n">SACTrainState</span><span class="p">,</span>
+            <span class="n">SACTrainState</span><span class="p">,</span>
+            <span class="n">SACTrainState</span><span class="p">,</span>
+            <span class="n">PrioritisedTrajectoryBufferState</span><span class="p">,</span>
+            <span class="n">SACMetrics</span><span class="p">,</span>
+        <span class="p">]:</span>
+<span class="w">            </span><span class="sd">&quot;&quot;&quot;_summary_.</span>
+
+<span class="sd">            Args:</span>
+<span class="sd">                rng (chex.PRNGKey): _description_</span>
+<span class="sd">                actor_train_state (SACTrainState): _description_</span>
+<span class="sd">                critic_train_state (SACTrainState): _description_</span>
+<span class="sd">                alpha_train_state (SACTrainState): _description_</span>
+<span class="sd">                buffer_state (PrioritisedTrajectoryBufferState): _description_</span>
+
+<span class="sd">            Returns:</span>
+<span class="sd">                tuple[ chex.PRNGKey, SACTrainState, SACTrainState, SACTrainState, PrioritisedTrajectoryBufferState, SACMetrics, ]: _description_</span>
+<span class="sd">            &quot;&quot;&quot;</span>
+            <span class="n">single_loss</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+                <span class="p">[((</span><span class="n">jnp</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">0</span><span class="p">])</span> <span class="o">-</span> <span class="n">jnp</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">0</span><span class="p">]))</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()]</span>
+                <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">hpo_config</span><span class="p">[</span><span class="s2">&quot;gradient_steps&quot;</span><span class="p">]</span>
+            <span class="p">)</span>
+            <span class="n">td_error</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+                <span class="p">[</span>
+                    <span class="p">[[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">hpo_config</span><span class="p">[</span><span class="s2">&quot;buffer_batch_size&quot;</span><span class="p">]]</span>
+                    <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">hpo_config</span><span class="p">[</span><span class="s2">&quot;gradient_steps&quot;</span><span class="p">]</span>
+                <span class="p">]</span>
+            <span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+            <span class="n">actor_grads</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">tree_map</span><span class="p">(</span>
+                <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">stack</span><span class="p">([</span><span class="n">x</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">hpo_config</span><span class="p">[</span><span class="s2">&quot;gradient_steps&quot;</span><span class="p">]),</span>
+                <span class="n">actor_train_state</span><span class="o">.</span><span class="n">params</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="n">critic_grads</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">tree_map</span><span class="p">(</span>
+                <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">stack</span><span class="p">([</span><span class="n">x</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">hpo_config</span><span class="p">[</span><span class="s2">&quot;gradient_steps&quot;</span><span class="p">]),</span>
+                <span class="n">critic_train_state</span><span class="o">.</span><span class="n">params</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="n">metrics</span> <span class="o">=</span> <span class="n">SACMetrics</span><span class="p">(</span>
+                <span class="n">actor_loss</span><span class="o">=</span><span class="n">single_loss</span><span class="p">,</span>
+                <span class="n">critic_loss</span><span class="o">=</span><span class="n">single_loss</span><span class="p">,</span>
+                <span class="n">alpha_loss</span><span class="o">=</span><span class="n">single_loss</span><span class="p">,</span>
+                <span class="n">td_error</span><span class="o">=</span><span class="n">td_error</span><span class="p">,</span>
+                <span class="n">actor_grads</span><span class="o">=</span><span class="n">actor_grads</span><span class="p">,</span>
+                <span class="n">critic_grads</span><span class="o">=</span><span class="n">critic_grads</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="k">return</span> <span class="p">(</span>
+                <span class="n">rng</span><span class="p">,</span>
+                <span class="n">actor_train_state</span><span class="p">,</span>
+                <span class="n">critic_train_state</span><span class="p">,</span>
+                <span class="n">alpha_train_state</span><span class="p">,</span>
+                <span class="n">buffer_state</span><span class="p">,</span>
+                <span class="n">metrics</span><span class="p">,</span>
+            <span class="p">)</span>
+
+        <span class="n">runner_state</span><span class="p">,</span> <span class="n">buffer_state</span> <span class="o">=</span> <span class="n">carry</span>
+        <span class="p">(</span>
+            <span class="p">(</span><span class="n">runner_state</span><span class="p">,</span> <span class="n">buffer_state</span><span class="p">),</span>
+            <span class="p">(</span>
+                <span class="n">done</span><span class="p">,</span>
+                <span class="n">action</span><span class="p">,</span>
+                <span class="n">value</span><span class="p">,</span>
+                <span class="n">reward</span><span class="p">,</span>
+                <span class="n">last_obs</span><span class="p">,</span>
+                <span class="n">info</span><span class="p">,</span>
+            <span class="p">),</span>
+        <span class="p">)</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">lax</span><span class="o">.</span><span class="n">scan</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_env_step</span><span class="p">,</span>
+            <span class="p">(</span><span class="n">runner_state</span><span class="p">,</span> <span class="n">buffer_state</span><span class="p">),</span>
+            <span class="kc">None</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">hpo_config</span><span class="p">[</span><span class="s2">&quot;train_freq&quot;</span><span class="p">],</span>
+        <span class="p">)</span>
+        <span class="p">(</span>
+            <span class="n">rng</span><span class="p">,</span>
+            <span class="n">actor_train_state</span><span class="p">,</span>
+            <span class="n">critic_train_state</span><span class="p">,</span>
+            <span class="n">alpha_train_state</span><span class="p">,</span>
+            <span class="n">normalizer_state</span><span class="p">,</span>
+            <span class="n">_</span><span class="p">,</span>
+            <span class="n">_</span><span class="p">,</span>
+            <span class="n">global_step</span><span class="p">,</span>
+        <span class="p">)</span> <span class="o">=</span> <span class="n">runner_state</span>
+        <span class="n">rng</span><span class="p">,</span> <span class="n">_rng</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">rng</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">hpo_config</span><span class="p">[</span><span class="s2">&quot;normalize_observations&quot;</span><span class="p">]:</span>
+            <span class="n">normalizer_state</span> <span class="o">=</span> <span class="n">running_statistics</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">normalizer_state</span><span class="p">,</span> <span class="n">last_obs</span><span class="p">)</span>
+
+        <span class="p">(</span>
+            <span class="n">rng</span><span class="p">,</span>
+            <span class="n">actor_train_state</span><span class="p">,</span>
+            <span class="n">critic_train_state</span><span class="p">,</span>
+            <span class="n">alpha_train_state</span><span class="p">,</span>
+            <span class="n">buffer_state</span><span class="p">,</span>
+            <span class="n">step_metrics</span><span class="p">,</span>
+        <span class="p">)</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">lax</span><span class="o">.</span><span class="n">cond</span><span class="p">(</span>
+            <span class="p">(</span><span class="n">global_step</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">hpo_config</span><span class="p">[</span><span class="s2">&quot;learning_starts&quot;</span><span class="p">])</span>
+            <span class="o">&amp;</span> <span class="p">(</span><span class="n">global_step</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">hpo_config</span><span class="p">[</span><span class="s2">&quot;train_freq&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">),</span>
+            <span class="n">do_update</span><span class="p">,</span>
+            <span class="n">dont_update</span><span class="p">,</span>
+            <span class="n">rng</span><span class="p">,</span>
+            <span class="n">actor_train_state</span><span class="p">,</span>
+            <span class="n">critic_train_state</span><span class="p">,</span>
+            <span class="n">alpha_train_state</span><span class="p">,</span>
+            <span class="n">normalizer_state</span><span class="p">,</span>
+            <span class="n">buffer_state</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">runner_state</span> <span class="o">=</span> <span class="n">SACRunnerState</span><span class="p">(</span>
+            <span class="n">rng</span><span class="o">=</span><span class="n">rng</span><span class="p">,</span>
+            <span class="n">actor_train_state</span><span class="o">=</span><span class="n">actor_train_state</span><span class="p">,</span>
+            <span class="n">critic_train_state</span><span class="o">=</span><span class="n">critic_train_state</span><span class="p">,</span>
+            <span class="n">alpha_train_state</span><span class="o">=</span><span class="n">alpha_train_state</span><span class="p">,</span>
+            <span class="n">normalizer_state</span><span class="o">=</span><span class="n">normalizer_state</span><span class="p">,</span>
+            <span class="n">env_state</span><span class="o">=</span><span class="n">runner_state</span><span class="o">.</span><span class="n">env_state</span><span class="p">,</span>
+            <span class="n">obs</span><span class="o">=</span><span class="n">runner_state</span><span class="o">.</span><span class="n">obs</span><span class="p">,</span>
+            <span class="n">global_step</span><span class="o">=</span><span class="n">runner_state</span><span class="o">.</span><span class="n">global_step</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">actor_loss</span><span class="p">,</span> <span class="n">critic_loss</span><span class="p">,</span> <span class="n">alpha_loss</span><span class="p">,</span> <span class="n">td_error</span><span class="p">,</span> <span class="n">actor_grads</span><span class="p">,</span> <span class="n">critic_grads</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">step_metrics</span>
+        <span class="p">)</span>
+        <span class="n">metrics</span><span class="p">,</span> <span class="n">tracjectories</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">track_metrics</span><span class="p">:</span>
+            <span class="n">metrics</span> <span class="o">=</span> <span class="n">SACMetrics</span><span class="p">(</span>
+                <span class="n">actor_loss</span><span class="o">=</span><span class="n">actor_loss</span><span class="p">,</span>
+                <span class="n">critic_loss</span><span class="o">=</span><span class="n">critic_loss</span><span class="p">,</span>
+                <span class="n">alpha_loss</span><span class="o">=</span><span class="n">alpha_loss</span><span class="p">,</span>
+                <span class="n">actor_grads</span><span class="o">=</span><span class="n">actor_grads</span><span class="p">,</span>
+                <span class="n">critic_grads</span><span class="o">=</span><span class="n">critic_grads</span><span class="p">,</span>
+                <span class="n">td_error</span><span class="o">=</span><span class="n">td_error</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">track_trajectories</span><span class="p">:</span>
+            <span class="n">tracjectories</span> <span class="o">=</span> <span class="n">Transition</span><span class="p">(</span>
+                <span class="n">obs</span><span class="o">=</span><span class="n">last_obs</span><span class="p">,</span>
+                <span class="n">action</span><span class="o">=</span><span class="n">action</span><span class="p">,</span>
+                <span class="n">reward</span><span class="o">=</span><span class="n">reward</span><span class="p">,</span>
+                <span class="n">done</span><span class="o">=</span><span class="n">done</span><span class="p">,</span>
+                <span class="n">value</span><span class="o">=</span><span class="n">value</span><span class="p">,</span>
+                <span class="n">info</span><span class="o">=</span><span class="n">info</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">runner_state</span><span class="p">,</span> <span class="n">buffer_state</span><span class="p">),</span> <span class="p">(</span><span class="n">metrics</span><span class="p">,</span> <span class="n">tracjectories</span><span class="p">)</span>
+
+    <span class="nd">@functools</span><span class="o">.</span><span class="n">partial</span><span class="p">(</span><span class="n">jax</span><span class="o">.</span><span class="n">jit</span><span class="p">,</span> <span class="n">static_argnums</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">_env_step</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">carry</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">SACRunnerState</span><span class="p">,</span> <span class="n">PrioritisedTrajectoryBufferState</span><span class="p">],</span> <span class="n">_</span><span class="p">:</span> <span class="kc">None</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="n">SACRunnerState</span><span class="p">,</span> <span class="n">PrioritisedTrajectoryBufferState</span><span class="p">],</span> <span class="n">Transition</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;_summary_.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            carry (tuple[SACRunnerState, PrioritisedTrajectoryBufferState]): _description_</span>
+<span class="sd">            _ (None): _description_</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            tuple[tuple[SACRunnerState, PrioritisedTrajectoryBufferState], Transition]: _description_</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">runner_state</span><span class="p">,</span> <span class="n">buffer_state</span> <span class="o">=</span> <span class="n">carry</span>
+        <span class="p">(</span>
+            <span class="n">rng</span><span class="p">,</span>
+            <span class="n">actor_train_state</span><span class="p">,</span>
+            <span class="n">critic_train_state</span><span class="p">,</span>
+            <span class="n">alpha_train_state</span><span class="p">,</span>
+            <span class="n">normalizer_state</span><span class="p">,</span>
+            <span class="n">env_state</span><span class="p">,</span>
+            <span class="n">last_obs</span><span class="p">,</span>
+            <span class="n">global_step</span><span class="p">,</span>
+        <span class="p">)</span> <span class="o">=</span> <span class="n">runner_state</span>
+
+        <span class="c1"># Select action(s)</span>
+        <span class="n">rng</span><span class="p">,</span> <span class="n">_rng</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">rng</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">hpo_config</span><span class="p">[</span><span class="s2">&quot;normalize_observations&quot;</span><span class="p">]:</span>
+            <span class="n">pi</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">actor_network</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span>
+                <span class="n">actor_train_state</span><span class="o">.</span><span class="n">params</span><span class="p">,</span>
+                <span class="n">running_statistics</span><span class="o">.</span><span class="n">normalize</span><span class="p">(</span><span class="n">last_obs</span><span class="p">,</span> <span class="n">normalizer_state</span><span class="p">),</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">pi</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">actor_network</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">actor_train_state</span><span class="o">.</span><span class="n">params</span><span class="p">,</span> <span class="n">last_obs</span><span class="p">)</span>
+
+        <span class="n">buffer_action</span> <span class="o">=</span> <span class="n">pi</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">seed</span><span class="o">=</span><span class="n">_rng</span><span class="p">)</span>
+        <span class="n">low</span><span class="p">,</span> <span class="n">high</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">env</span><span class="o">.</span><span class="n">action_space</span><span class="o">.</span><span class="n">low</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">env</span><span class="o">.</span><span class="n">action_space</span><span class="o">.</span><span class="n">high</span>
+        <span class="k">if</span> <span class="n">low</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">low</span><span class="p">)</span><span class="o">.</span><span class="n">any</span><span class="p">()</span> <span class="ow">or</span> <span class="n">np</span><span class="o">.</span><span class="n">isinf</span><span class="p">(</span><span class="n">low</span><span class="p">)</span><span class="o">.</span><span class="n">any</span><span class="p">():</span>
+            <span class="n">low</span> <span class="o">=</span> <span class="o">-</span><span class="n">jnp</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="n">buffer_action</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">high</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">high</span><span class="p">)</span><span class="o">.</span><span class="n">any</span><span class="p">()</span> <span class="ow">or</span> <span class="n">np</span><span class="o">.</span><span class="n">isinf</span><span class="p">(</span><span class="n">high</span><span class="p">)</span><span class="o">.</span><span class="n">any</span><span class="p">():</span>
+            <span class="n">high</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="n">buffer_action</span><span class="p">)</span>
+        <span class="n">action</span> <span class="o">=</span> <span class="n">low</span> <span class="o">+</span> <span class="p">(</span><span class="n">buffer_action</span> <span class="o">+</span> <span class="mf">1.0</span><span class="p">)</span> <span class="o">*</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">high</span> <span class="o">-</span> <span class="n">low</span><span class="p">)</span>
+
+        <span class="c1"># Perform environment step</span>
+        <span class="n">rng</span><span class="p">,</span> <span class="n">_rng</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">rng</span><span class="p">)</span>
+        <span class="n">env_state</span><span class="p">,</span> <span class="p">(</span><span class="n">obsv</span><span class="p">,</span> <span class="n">reward</span><span class="p">,</span> <span class="n">done</span><span class="p">,</span> <span class="n">info</span><span class="p">)</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">env</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">env_state</span><span class="p">,</span> <span class="n">action</span><span class="p">,</span> <span class="n">_rng</span><span class="p">)</span>
+
+        <span class="n">timestep</span> <span class="o">=</span> <span class="n">TimeStep</span><span class="p">(</span>
+            <span class="n">last_obs</span><span class="o">=</span><span class="n">last_obs</span><span class="p">,</span> <span class="n">obs</span><span class="o">=</span><span class="n">obsv</span><span class="p">,</span> <span class="n">action</span><span class="o">=</span><span class="n">action</span><span class="p">,</span> <span class="n">reward</span><span class="o">=</span><span class="n">reward</span><span class="p">,</span> <span class="n">done</span><span class="o">=</span><span class="n">done</span>
+        <span class="p">)</span>
+        <span class="n">buffer_state</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">buffer</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">buffer_state</span><span class="p">,</span> <span class="n">timestep</span><span class="p">)</span>
+
+        <span class="n">global_step</span> <span class="o">+=</span> <span class="mi">1</span>
+
+        <span class="k">def</span> <span class="nf">target_update</span><span class="p">(</span><span class="n">train_state</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SACTrainState</span><span class="p">:</span>
+<span class="w">            </span><span class="sd">&quot;&quot;&quot;_summary_.</span>
+
+<span class="sd">            Args:</span>
+<span class="sd">                train_state (_type_): _description_</span>
+
+<span class="sd">            Returns:</span>
+<span class="sd">                SACTrainState: _description_</span>
+<span class="sd">            &quot;&quot;&quot;</span>
+            <span class="k">return</span> <span class="n">train_state</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span>
+                <span class="n">target_params</span><span class="o">=</span><span class="n">optax</span><span class="o">.</span><span class="n">incremental_update</span><span class="p">(</span>
+                    <span class="n">train_state</span><span class="o">.</span><span class="n">params</span><span class="p">,</span>
+                    <span class="n">train_state</span><span class="o">.</span><span class="n">target_params</span><span class="p">,</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">hpo_config</span><span class="p">[</span><span class="s2">&quot;tau&quot;</span><span class="p">],</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
+
+        <span class="k">def</span> <span class="nf">dont_target_update</span><span class="p">(</span><span class="n">train_state</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SACTrainState</span><span class="p">:</span>
+<span class="w">            </span><span class="sd">&quot;&quot;&quot;_summary_.</span>
+
+<span class="sd">            Args:</span>
+<span class="sd">                train_state (_type_): _description_</span>
+
+<span class="sd">            Returns:</span>
+<span class="sd">                SACTrainState: _description_</span>
+<span class="sd">            &quot;&quot;&quot;</span>
+            <span class="k">return</span> <span class="n">train_state</span>
+
+        <span class="n">critic_train_state</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">lax</span><span class="o">.</span><span class="n">cond</span><span class="p">(</span>  <span class="c1"># todo: move this into the env_step loop?!</span>
+            <span class="p">(</span>
+                <span class="n">global_step</span>
+                <span class="o">&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">hpo_config</span><span class="p">[</span><span class="s2">&quot;learning_starts&quot;</span><span class="p">]</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">env</span><span class="o">.</span><span class="n">n_envs</span><span class="p">)</span>
+            <span class="p">)</span>
+            <span class="o">&amp;</span> <span class="p">(</span>
+                <span class="n">global_step</span>
+                <span class="o">%</span> <span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">hpo_config</span><span class="p">[</span><span class="s2">&quot;target_update_interval&quot;</span><span class="p">]</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">env</span><span class="o">.</span><span class="n">n_envs</span><span class="p">)</span>
+                <span class="o">==</span> <span class="mi">0</span>
+            <span class="p">),</span>
+            <span class="n">target_update</span><span class="p">,</span>
+            <span class="n">dont_target_update</span><span class="p">,</span>
+            <span class="n">critic_train_state</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="n">value</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">reward</span><span class="p">)</span>
+        <span class="n">transition</span> <span class="o">=</span> <span class="n">Transition</span><span class="p">(</span><span class="n">done</span><span class="p">,</span> <span class="n">action</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">reward</span><span class="p">,</span> <span class="n">last_obs</span><span class="p">,</span> <span class="n">info</span><span class="p">)</span>
+        <span class="n">runner_state</span> <span class="o">=</span> <span class="n">SACRunnerState</span><span class="p">(</span>
+            <span class="n">actor_train_state</span><span class="o">=</span><span class="n">actor_train_state</span><span class="p">,</span>
+            <span class="n">critic_train_state</span><span class="o">=</span><span class="n">critic_train_state</span><span class="p">,</span>
+            <span class="n">alpha_train_state</span><span class="o">=</span><span class="n">alpha_train_state</span><span class="p">,</span>
+            <span class="n">normalizer_state</span><span class="o">=</span><span class="n">normalizer_state</span><span class="p">,</span>
+            <span class="n">env_state</span><span class="o">=</span><span class="n">env_state</span><span class="p">,</span>
+            <span class="n">obs</span><span class="o">=</span><span class="n">obsv</span><span class="p">,</span>
+            <span class="n">rng</span><span class="o">=</span><span class="n">rng</span><span class="p">,</span>
+            <span class="n">global_step</span><span class="o">=</span><span class="n">global_step</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">runner_state</span><span class="p">,</span> <span class="n">buffer_state</span><span class="p">),</span> <span class="n">transition</span></div>
+
+</pre></div>
+
+              </div>
+              
+              
+              <!-- Previous / next buttons -->
+<div class='prev-next-area'>
+</div>
+              
+          </main>
+          
+
+      </div>
+    </div>
+  
+  <script src="../../../../../_static/js/index.9ea38e314b9e6d9dab77.js"></script>
+<footer class="footer mt-5 mt-md-0">
+  <div class="container">
+    
+    <div class="footer-item">
+      <p class="copyright">
+    &copy; Copyright Copyright 2024, AutoML Hannover.<br>
+</p>
+    </div>
+    
+    <div class="footer-item">
+      <p class="sphinx-version">
+Created using <a href="http://sphinx-doc.org/">Sphinx</a>
+7.3.7. Template is modified version of <a
+href="https://pydata-sphinx-theme.readthedocs.io">PyData Sphinx Theme</a>. <br>
+</p>
+    </div>
+    
+  </div>
+</footer>
+  </body>
+</html>

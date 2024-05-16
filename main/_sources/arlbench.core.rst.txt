@@ -1,0 +1,31 @@
+arlbench.core package
+=====================
+
+Subpackages
+-----------
+
+.. toctree::
+   :maxdepth: 4
+
+   arlbench.core.algorithms
+   arlbench.core.environments
+   arlbench.core.wrappers
+
+Submodules
+----------
+
+arlbench.core.running\_statistics module
+----------------------------------------
+
+.. automodule:: arlbench.core.running_statistics
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Module contents
+---------------
+
+.. automodule:: arlbench.core
+   :members:
+   :undoc-members:
+   :show-inheritance:

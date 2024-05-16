@@ -1,0 +1,981 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>arlbench.core.algorithms.ppo &#8212; arlbench Documentation 0.1.0 documentation</title>
+    
+  <link href="../_static/css/theme.css" rel="stylesheet">
+  <link href="../_static/css/index.ac9c05f7c49ca1e1f876c6e36360ea26.css" rel="stylesheet">
+
+    
+  <link rel="stylesheet"
+    href="../_static/vendor/fontawesome/5.13.0/css/all.min.css">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="../_static/vendor/fontawesome/5.13.0/webfonts/fa-solid-900.woff2">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="../_static/vendor/fontawesome/5.13.0/webfonts/fa-brands-400.woff2">
+
+    
+      
+
+    
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=a746c00c" />
+    <link rel="stylesheet" type="text/css" href="../_static/css/custom.css?v=2eb4fb78" />
+    
+  <link rel="preload" as="script" href="../_static/js/index.9ea38e314b9e6d9dab77.js">
+
+    <script src="../_static/documentation_options.js?v=38b66d78"></script>
+    <script src="../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="arlbench.core.algorithms.ppo.models" href="arlbench.core.algorithms.ppo.models.html" />
+    <link rel="prev" title="arlbench.core.algorithms.dqn.models" href="arlbench.core.algorithms.dqn.models.html" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="docsearch:language" content="en">
+    
+
+    <!-- Google Analytics -->
+    
+  </head>
+  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="80">
+    
+    <div class="container-fluid" id="banner"></div>
+
+    
+    <nav class="navbar navbar-light navbar-expand-lg bg-light fixed-top bd-navbar" id="navbar-main"><div class="container-xl">
+
+  <div id="navbar-start">
+    
+    
+  <a class="navbar-brand" href="../index.html">
+  <!-- <p class="title">arlbench Documentation</p> -->
+  </a>
+
+    
+  </div>
+
+  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbar-collapsible" aria-controls="navbar-collapsible" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+
+  
+  <div id="navbar-collapsible" class="col-lg-9 collapse navbar-collapse">
+    <div id="navbar-center" class="mr-auto">
+      
+    </div>
+
+    <div id="navbar-end">
+      
+      <div class="navbar-end-item">
+        <ul id="navbar-icon-links" class="navbar-nav" aria-label="">
+        <li class="nav-item">
+          <a class="nav-link" href="https://github.com/automl/ARLBench" rel="noopener" target="_blank" title="GitHub">
+            <span><i class="fab fa-github-square"></i></span>
+            <label class="sr-only">GitHub</label>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="https://twitter.com/automl_org?lang=de" rel="noopener" target="_blank" title="Twitter">
+            <span><i class="fab fa-twitter-square"></i></span>
+            <label class="sr-only">Twitter</label>
+          </a>
+        </li>
+      </ul>
+      </div>
+      
+      <div class="navbar-end-item">
+        <div class="dropdown mt-1">
+    <button type="button" class="btn btn-secondary btn-md navbar-btn dropdown-toggle" id="dLabelMore"
+        data-toggle="dropdown">
+        v0.1.0
+        <span class="caret"></span>
+    </button>
+    <div class="dropdown-menu list-group-flush py-0" aria-labelledby="dLabelMore">
+        <a class="list-group-item list-group-item-action" href="#">v0.1.0</a>
+    </div>
+</div>
+      </div>
+      
+      <div class="navbar-end-item">
+        <form class="bd-search align-items-center" action="../search.html" method="get" style="width: 100%;">
+  <i class="icon fas fa-search"></i>
+  <input type="search" class="form-control btn btn-md" name="q" id="search-input"
+    placeholder="Search the docs ..." aria-label="Search the docs ..." autocomplete="off">
+</form>
+      </div>
+      
+    </div>
+  </div>
+</div>
+    </nav>
+    
+
+    <div class="container-xl">
+      <div class="row">
+          
+            
+            <!-- Only show if we have sidebars configured, else just a small margin  -->
+            <div class="col-12 col-md-3 bd-sidebar"><h4 class="mt-0 mb-0"><a href="../index.html">arlbench Documentation</a></h4>
+<div class="mb-3">v0.1.0</div><nav class="bd-links" id="bd-docs-nav" aria-label="Main navigation">
+  <div class="bd-toc-item active">
+    <ul class="current nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="../installation.html">
+   Installation
+  </a>
+ </li>
+ <li class="toctree-l1 has-children">
+  <a class="reference internal" href="../basic_usage/index.html">
+   Basic Usage
+  </a>
+  <input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" type="checkbox"/>
+  <label for="toctree-checkbox-1">
+   <i class="fas fa-chevron-down">
+   </i>
+  </label>
+  <ul class="simple">
+  </ul>
+ </li>
+ <li class="toctree-l1 has-children">
+  <a class="reference internal" href="../advanced_usage/index.html">
+   Advanced Usage
+  </a>
+  <input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" type="checkbox"/>
+  <label for="toctree-checkbox-2">
+   <i class="fas fa-chevron-down">
+   </i>
+  </label>
+  <ul class="simple">
+  </ul>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../commands.html">
+   Helpful Commands
+  </a>
+ </li>
+ <li class="toctree-l1 current active has-children">
+  <a class="reference internal" href="../api.html">
+   API References
+  </a>
+  <input checked="" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" type="checkbox"/>
+  <label for="toctree-checkbox-3">
+   <i class="fas fa-chevron-down">
+   </i>
+  </label>
+  <ul class="current">
+   <li class="toctree-l2 current active has-children">
+    <a class="reference internal" href="arlbench.html">
+     arlbench
+    </a>
+    <input checked="" class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" type="checkbox"/>
+    <label for="toctree-checkbox-4">
+     <i class="fas fa-chevron-down">
+     </i>
+    </label>
+    <ul class="current">
+     <li class="toctree-l3">
+      <a class="reference internal" href="arlbench.arlbench.html">
+       arlbench.arlbench
+      </a>
+     </li>
+     <li class="toctree-l3 has-children">
+      <a class="reference internal" href="arlbench.autorl.html">
+       arlbench.autorl
+      </a>
+      <input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" type="checkbox"/>
+      <label for="toctree-checkbox-5">
+       <i class="fas fa-chevron-down">
+       </i>
+      </label>
+      <ul>
+       <li class="toctree-l4">
+        <a class="reference internal" href="arlbench.autorl.autorl_env.html">
+         arlbench.autorl.autorl_env
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="arlbench.autorl.checkpointing.html">
+         arlbench.autorl.checkpointing
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="arlbench.autorl.objectives.html">
+         arlbench.autorl.objectives
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="arlbench.autorl.state_features.html">
+         arlbench.autorl.state_features
+        </a>
+       </li>
+      </ul>
+     </li>
+     <li class="toctree-l3 current active has-children">
+      <a class="reference internal" href="arlbench.core.html">
+       arlbench.core
+      </a>
+      <input checked="" class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" type="checkbox"/>
+      <label for="toctree-checkbox-6">
+       <i class="fas fa-chevron-down">
+       </i>
+      </label>
+      <ul class="current">
+       <li class="toctree-l4 current active">
+        <a class="reference internal" href="arlbench.core.algorithms.html">
+         arlbench.core.algorithms
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="arlbench.core.environments.html">
+         arlbench.core.environments
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="arlbench.core.running_statistics.html">
+         arlbench.core.running_statistics
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="arlbench.core.wrappers.html">
+         arlbench.core.wrappers
+        </a>
+       </li>
+      </ul>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="arlbench.plotting.html">
+       arlbench.plotting
+      </a>
+     </li>
+     <li class="toctree-l3 has-children">
+      <a class="reference internal" href="arlbench.utils.html">
+       arlbench.utils
+      </a>
+      <input class="toctree-checkbox" id="toctree-checkbox-7" name="toctree-checkbox-7" type="checkbox"/>
+      <label for="toctree-checkbox-7">
+       <i class="fas fa-chevron-down">
+       </i>
+      </label>
+      <ul>
+       <li class="toctree-l4">
+        <a class="reference internal" href="arlbench.utils.common.html">
+         arlbench.utils.common
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="arlbench.utils.handle_termination.html">
+         arlbench.utils.handle_termination
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="arlbench.utils.hydra_utils.html">
+         arlbench.utils.hydra_utils
+        </a>
+       </li>
+      </ul>
+     </li>
+    </ul>
+   </li>
+  </ul>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../glossary.html">
+   Glossary
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../faq.html">
+   Frequently Asked Questions
+  </a>
+ </li>
+</ul>
+
+  </div>
+</nav>
+            </div>
+            
+          
+
+          
+          <div class="d-none d-xl-block col-xl-2 bd-toc">
+            
+              
+              <div class="toc-item">
+                
+<div class="tocsection onthispage pt-5 pb-3">
+    <i class="fas fa-list"></i> On this page
+</div>
+
+<nav id="bd-toc-nav">
+    <ul class="visible nav section-nav flex-column">
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#arlbench.core.algorithms.ppo.PPO">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     PPO
+    </span>
+   </code>
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#arlbench.core.algorithms.ppo.PPO.get_checkpoint_factory">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       PPO.get_checkpoint_factory()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#arlbench.core.algorithms.ppo.PPO.get_default_hpo_config">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       PPO.get_default_hpo_config()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#arlbench.core.algorithms.ppo.PPO.get_default_nas_config">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       PPO.get_default_nas_config()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#arlbench.core.algorithms.ppo.PPO.get_hpo_config_space">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       PPO.get_hpo_config_space()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#arlbench.core.algorithms.ppo.PPO.get_nas_config_space">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       PPO.get_nas_config_space()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#arlbench.core.algorithms.ppo.PPO.init">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       PPO.init()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#arlbench.core.algorithms.ppo.PPO.predict">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       PPO.predict()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#arlbench.core.algorithms.ppo.PPO.train">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       PPO.train()
+      </span>
+     </code>
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#arlbench.core.algorithms.ppo.PPOMetrics">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     PPOMetrics
+    </span>
+   </code>
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#arlbench.core.algorithms.ppo.PPOMetrics.advantages">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       PPOMetrics.advantages
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#arlbench.core.algorithms.ppo.PPOMetrics.grads">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       PPOMetrics.grads
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#arlbench.core.algorithms.ppo.PPOMetrics.loss">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       PPOMetrics.loss
+      </span>
+     </code>
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#arlbench.core.algorithms.ppo.PPORunnerState">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     PPORunnerState
+    </span>
+   </code>
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#arlbench.core.algorithms.ppo.PPORunnerState.cur_rewards">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       PPORunnerState.cur_rewards
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#arlbench.core.algorithms.ppo.PPORunnerState.env_state">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       PPORunnerState.env_state
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#arlbench.core.algorithms.ppo.PPORunnerState.global_step">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       PPORunnerState.global_step
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#arlbench.core.algorithms.ppo.PPORunnerState.normalizer_state">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       PPORunnerState.normalizer_state
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#arlbench.core.algorithms.ppo.PPORunnerState.obs">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       PPORunnerState.obs
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#arlbench.core.algorithms.ppo.PPORunnerState.return_buffer">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       PPORunnerState.return_buffer
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#arlbench.core.algorithms.ppo.PPORunnerState.return_buffer_idx">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       PPORunnerState.return_buffer_idx
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#arlbench.core.algorithms.ppo.PPORunnerState.rng">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       PPORunnerState.rng
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#arlbench.core.algorithms.ppo.PPORunnerState.train_state">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       PPORunnerState.train_state
+      </span>
+     </code>
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#arlbench.core.algorithms.ppo.PPOState">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     PPOState
+    </span>
+   </code>
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#arlbench.core.algorithms.ppo.PPOState.buffer_state">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       PPOState.buffer_state
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#arlbench.core.algorithms.ppo.PPOState.runner_state">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       PPOState.runner_state
+      </span>
+     </code>
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#arlbench.core.algorithms.ppo.PPOTrainReturnT">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     PPOTrainReturnT
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#arlbench.core.algorithms.ppo.PPOTrainingResult">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     PPOTrainingResult
+    </span>
+   </code>
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#arlbench.core.algorithms.ppo.PPOTrainingResult.eval_rewards">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       PPOTrainingResult.eval_rewards
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#arlbench.core.algorithms.ppo.PPOTrainingResult.metrics">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       PPOTrainingResult.metrics
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#arlbench.core.algorithms.ppo.PPOTrainingResult.trajectories">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       PPOTrainingResult.trajectories
+      </span>
+     </code>
+    </a>
+   </li>
+  </ul>
+ </li>
+</ul>
+
+</nav>
+              </div>
+              
+              <div class="toc-item">
+                
+              </div>
+              
+            
+          </div>
+          
+
+          
+          
+            
+          
+          <main class="col-12 col-md-9 col-xl-7 py-md-5 pl-md-5 pr-md-4 bd-content" role="main">
+              
+              <div>
+                
+  <section id="module-arlbench.core.algorithms.ppo">
+<span id="arlbench-core-algorithms-ppo"></span><h1>arlbench.core.algorithms.ppo<a class="headerlink" href="#module-arlbench.core.algorithms.ppo" title="Link to this heading">¶</a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="arlbench.core.algorithms.ppo.PPO">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">arlbench.core.algorithms.ppo.</span></span><span class="sig-name descname"><span class="pre">PPO</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">hpo_config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">env</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eval_env</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cnn_policy</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nas_config</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">deterministic_eval</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">track_trajectories</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">track_metrics</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arlbench/core/algorithms/ppo/ppo.html#PPO"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.core.algorithms.ppo.PPO" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="../arlbench.core.algorithms.html#arlbench.core.algorithms.algorithm.Algorithm" title="arlbench.core.algorithms.algorithm.Algorithm"><code class="xref py py-class docutils literal notranslate"><span class="pre">Algorithm</span></code></a></p>
+<p>JAX-based implementation of Proximal Policy Optimization (PPO).</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="arlbench.core.algorithms.ppo.PPO.get_checkpoint_factory">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_checkpoint_factory</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">runner_state</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">train_result</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arlbench/core/algorithms/ppo/ppo.html#PPO.get_checkpoint_factory"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.core.algorithms.ppo.PPO.get_checkpoint_factory" title="Link to this definition">¶</a></dt>
+<dd><p>Creates a factory dictionary of all posssible checkpointing options for PPO.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>runner_state</strong> (<a class="reference internal" href="../arlbench.core.algorithms.ppo.html#arlbench.core.algorithms.ppo.PPORunnerState" title="arlbench.core.algorithms.ppo.PPORunnerState"><em>PPORunnerState</em></a>) – Algorithm runner state.</p></li>
+<li><p><strong>train_result</strong> (<a class="reference internal" href="../arlbench.core.algorithms.ppo.html#arlbench.core.algorithms.ppo.PPOTrainingResult" title="arlbench.core.algorithms.ppo.PPOTrainingResult"><em>PPOTrainingResult</em></a><em> | </em><em>None</em>) – Training result.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Dictionary of factory functions containing [opt_state, params, loss, trajectories].</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict[str, Callable]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="arlbench.core.algorithms.ppo.PPO.get_default_hpo_config">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_default_hpo_config</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arlbench/core/algorithms/ppo/ppo.html#PPO.get_default_hpo_config"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.core.algorithms.ppo.PPO.get_default_hpo_config" title="Link to this definition">¶</a></dt>
+<dd><p>Returns the default hyperparameter configuration of the agent.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Default hyperparameter configuration.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>Configuration</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="arlbench.core.algorithms.ppo.PPO.get_default_nas_config">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_default_nas_config</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arlbench/core/algorithms/ppo/ppo.html#PPO.get_default_nas_config"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.core.algorithms.ppo.PPO.get_default_nas_config" title="Link to this definition">¶</a></dt>
+<dd><p>Returns the default neural architecture configuration of the agent.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Default neural architecture configuration.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>Configuration</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="arlbench.core.algorithms.ppo.PPO.get_hpo_config_space">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_hpo_config_space</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arlbench/core/algorithms/ppo/ppo.html#PPO.get_hpo_config_space"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.core.algorithms.ppo.PPO.get_hpo_config_space" title="Link to this definition">¶</a></dt>
+<dd><p>Returns the hyperparameter configuration space of the algorithm.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>seed</strong> (<em>int</em><em> | </em><em>None</em><em>, </em><em>optional</em>) – Random generator seed that is used to sample configurations. Defaults to None.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Hyperparameter configuration space of the algorithm.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>ConfigurationSpace</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="arlbench.core.algorithms.ppo.PPO.get_nas_config_space">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_nas_config_space</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arlbench/core/algorithms/ppo/ppo.html#PPO.get_nas_config_space"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.core.algorithms.ppo.PPO.get_nas_config_space" title="Link to this definition">¶</a></dt>
+<dd><p>Returns the neural architecture configuration space of the algorithm.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>seed</strong> (<em>int</em><em> | </em><em>None</em><em>, </em><em>optional</em>) – Random generator seed that is used to sample configurations. Defaults to None.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Neural architecture configuration space of the algorithm.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>ConfigurationSpace</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="arlbench.core.algorithms.ppo.PPO.init">
+<span class="sig-name descname"><span class="pre">init</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rng</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">network_params</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">opt_state</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arlbench/core/algorithms/ppo/ppo.html#PPO.init"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.core.algorithms.ppo.PPO.init" title="Link to this definition">¶</a></dt>
+<dd><p>Initializes PPO state. Passed parameters are not initialized and included in the final state.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>rng</strong> (<em>chex.PRNGKey</em>) – Random generator key.</p></li>
+<li><p><strong>network_params</strong> (<em>FrozenDict</em><em> | </em><em>dict</em><em> | </em><em>None</em><em>, </em><em>optional</em>) – Network parameters. Defaults to None.</p></li>
+<li><p><strong>opt_state</strong> (<em>optax.OptState</em><em> | </em><em>None</em><em>, </em><em>optional</em>) – Optimizer state. Defaults to None.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>PPO state.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="../arlbench.core.algorithms.ppo.html#arlbench.core.algorithms.ppo.PPOState" title="arlbench.core.algorithms.ppo.PPOState">PPOState</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="arlbench.core.algorithms.ppo.PPO.predict">
+<span class="sig-name descname"><span class="pre">predict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">runner_state</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">obs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rng</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">deterministic</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arlbench/core/algorithms/ppo/ppo.html#PPO.predict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.core.algorithms.ppo.PPO.predict" title="Link to this definition">¶</a></dt>
+<dd><p>Predict action(s) based on the current observation(s).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>runner_state</strong> (<a class="reference internal" href="../arlbench.core.algorithms.ppo.html#arlbench.core.algorithms.ppo.PPORunnerState" title="arlbench.core.algorithms.ppo.PPORunnerState"><em>PPORunnerState</em></a>) – Algorithm runner state.</p></li>
+<li><p><strong>obs</strong> (<em>jnp.ndarray</em>) – Observation(s).</p></li>
+<li><p><strong>rng</strong> (<em>chex.PRNGKey</em><em> | </em><em>None</em><em>, </em><em>optional</em>) – Random generator key. Defaults to None.</p></li>
+<li><p><strong>deterministic</strong> (<em>bool</em>) – Return deterministic action. Defaults to True.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Action(s).</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>jnp.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="arlbench.core.algorithms.ppo.PPO.train">
+<span class="sig-name descname"><span class="pre">train</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">runner_state</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_total_timesteps</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1000000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_eval_steps</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_eval_episodes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arlbench/core/algorithms/ppo/ppo.html#PPO.train"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.core.algorithms.ppo.PPO.train" title="Link to this definition">¶</a></dt>
+<dd><p>Performs one iteration of training.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>runner_state</strong> (<a class="reference internal" href="../arlbench.core.algorithms.ppo.html#arlbench.core.algorithms.ppo.PPORunnerState" title="arlbench.core.algorithms.ppo.PPORunnerState"><em>PPORunnerState</em></a>) – PPO runner state.</p></li>
+<li><p><strong>_</strong> (<em>None</em>) – Unused parameter (buffer_state in other algorithms).</p></li>
+<li><p><strong>n_total_timesteps</strong> (<em>int</em><em>, </em><em>optional</em>) – Total number of training timesteps. Update steps = n_total_timesteps // n_envs. Defaults to 1000000.</p></li>
+<li><p><strong>n_eval_steps</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of evaluation steps during training. Defaults to 100.</p></li>
+<li><p><strong>n_eval_episodes</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of evaluation episodes per evaluation during training. Defaults to 10.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Tuple of PPO algorithm state and training result.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>PPOTrainReturnT</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="arlbench.core.algorithms.ppo.PPOMetrics">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">arlbench.core.algorithms.ppo.</span></span><span class="sig-name descname"><span class="pre">PPOMetrics</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">loss</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">jnp.ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grads</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">jnp.ndarray</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">advantages</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">jnp.ndarray</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arlbench/core/algorithms/ppo/ppo.html#PPOMetrics"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.core.algorithms.ppo.PPOMetrics" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">NamedTuple</span></code></p>
+<p>PPO metrics returned by train function. Consists of (loss, grads, advantages).</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="arlbench.core.algorithms.ppo.PPOMetrics.advantages">
+<span class="sig-name descname"><span class="pre">advantages</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref py py-class docutils literal notranslate"><span class="pre">Array</span></code></em><a class="headerlink" href="#arlbench.core.algorithms.ppo.PPOMetrics.advantages" title="Link to this definition">¶</a></dt>
+<dd><p>Alias for field number 2</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="arlbench.core.algorithms.ppo.PPOMetrics.grads">
+<span class="sig-name descname"><span class="pre">grads</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref py py-class docutils literal notranslate"><span class="pre">Array</span></code> <span class="pre">|</span> <code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></em><a class="headerlink" href="#arlbench.core.algorithms.ppo.PPOMetrics.grads" title="Link to this definition">¶</a></dt>
+<dd><p>Alias for field number 1</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="arlbench.core.algorithms.ppo.PPOMetrics.loss">
+<span class="sig-name descname"><span class="pre">loss</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref py py-class docutils literal notranslate"><span class="pre">Array</span></code></em><a class="headerlink" href="#arlbench.core.algorithms.ppo.PPOMetrics.loss" title="Link to this definition">¶</a></dt>
+<dd><p>Alias for field number 0</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="arlbench.core.algorithms.ppo.PPORunnerState">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">arlbench.core.algorithms.ppo.</span></span><span class="sig-name descname"><span class="pre">PPORunnerState</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rng</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">chex.PRNGKey</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">train_state</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../arlbench.core.algorithms.ppo.html#arlbench.core.algorithms.ppo.ppo.PPOTrainState" title="arlbench.core.algorithms.ppo.ppo.PPOTrainState"><span class="pre">PPOTrainState</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">normalizer_state</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../arlbench.core.html#arlbench.core.running_statistics.RunningStatisticsState" title="arlbench.core.running_statistics.RunningStatisticsState"><span class="pre">RunningStatisticsState</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">env_state</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">obs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">chex.Array</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">global_step</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_buffer_idx</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">chex.Array</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_buffer</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">chex.Array</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cur_rewards</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">chex.Array</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arlbench/core/algorithms/ppo/ppo.html#PPORunnerState"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.core.algorithms.ppo.PPORunnerState" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">NamedTuple</span></code></p>
+<p>PPO runner state. Consists of (rng, train_state, env_state, obs, global_step).</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="arlbench.core.algorithms.ppo.PPORunnerState.cur_rewards">
+<span class="sig-name descname"><span class="pre">cur_rewards</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code><span class="pre">[</span><code class="xref py py-class docutils literal notranslate"><span class="pre">Array</span></code><span class="pre">,</span> <code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code><span class="pre">,</span> <code class="xref py py-class docutils literal notranslate"><span class="pre">bool_</span></code><span class="pre">,</span> <code class="xref py py-class docutils literal notranslate"><span class="pre">number</span></code><span class="pre">,</span> <code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code><span class="pre">]</span></em><a class="headerlink" href="#arlbench.core.algorithms.ppo.PPORunnerState.cur_rewards" title="Link to this definition">¶</a></dt>
+<dd><p>Alias for field number 8</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="arlbench.core.algorithms.ppo.PPORunnerState.env_state">
+<span class="sig-name descname"><span class="pre">env_state</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code></em><a class="headerlink" href="#arlbench.core.algorithms.ppo.PPORunnerState.env_state" title="Link to this definition">¶</a></dt>
+<dd><p>Alias for field number 3</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="arlbench.core.algorithms.ppo.PPORunnerState.global_step">
+<span class="sig-name descname"><span class="pre">global_step</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></em><a class="headerlink" href="#arlbench.core.algorithms.ppo.PPORunnerState.global_step" title="Link to this definition">¶</a></dt>
+<dd><p>Alias for field number 5</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="arlbench.core.algorithms.ppo.PPORunnerState.normalizer_state">
+<span class="sig-name descname"><span class="pre">normalizer_state</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="../arlbench.core.html#arlbench.core.running_statistics.RunningStatisticsState" title="arlbench.core.running_statistics.RunningStatisticsState"><code class="xref py py-class docutils literal notranslate"><span class="pre">RunningStatisticsState</span></code></a></em><a class="headerlink" href="#arlbench.core.algorithms.ppo.PPORunnerState.normalizer_state" title="Link to this definition">¶</a></dt>
+<dd><p>Alias for field number 2</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="arlbench.core.algorithms.ppo.PPORunnerState.obs">
+<span class="sig-name descname"><span class="pre">obs</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code><span class="pre">[</span><code class="xref py py-class docutils literal notranslate"><span class="pre">Array</span></code><span class="pre">,</span> <code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code><span class="pre">,</span> <code class="xref py py-class docutils literal notranslate"><span class="pre">bool_</span></code><span class="pre">,</span> <code class="xref py py-class docutils literal notranslate"><span class="pre">number</span></code><span class="pre">]</span></em><a class="headerlink" href="#arlbench.core.algorithms.ppo.PPORunnerState.obs" title="Link to this definition">¶</a></dt>
+<dd><p>Alias for field number 4</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="arlbench.core.algorithms.ppo.PPORunnerState.return_buffer">
+<span class="sig-name descname"><span class="pre">return_buffer</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code><span class="pre">[</span><code class="xref py py-class docutils literal notranslate"><span class="pre">Array</span></code><span class="pre">,</span> <code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code><span class="pre">,</span> <code class="xref py py-class docutils literal notranslate"><span class="pre">bool_</span></code><span class="pre">,</span> <code class="xref py py-class docutils literal notranslate"><span class="pre">number</span></code><span class="pre">,</span> <code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code><span class="pre">]</span></em><a class="headerlink" href="#arlbench.core.algorithms.ppo.PPORunnerState.return_buffer" title="Link to this definition">¶</a></dt>
+<dd><p>Alias for field number 7</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="arlbench.core.algorithms.ppo.PPORunnerState.return_buffer_idx">
+<span class="sig-name descname"><span class="pre">return_buffer_idx</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code><span class="pre">[</span><code class="xref py py-class docutils literal notranslate"><span class="pre">Array</span></code><span class="pre">,</span> <code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code><span class="pre">,</span> <code class="xref py py-class docutils literal notranslate"><span class="pre">bool_</span></code><span class="pre">,</span> <code class="xref py py-class docutils literal notranslate"><span class="pre">number</span></code><span class="pre">,</span> <code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code><span class="pre">]</span></em><a class="headerlink" href="#arlbench.core.algorithms.ppo.PPORunnerState.return_buffer_idx" title="Link to this definition">¶</a></dt>
+<dd><p>Alias for field number 6</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="arlbench.core.algorithms.ppo.PPORunnerState.rng">
+<span class="sig-name descname"><span class="pre">rng</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref py py-class docutils literal notranslate"><span class="pre">Array</span></code></em><a class="headerlink" href="#arlbench.core.algorithms.ppo.PPORunnerState.rng" title="Link to this definition">¶</a></dt>
+<dd><p>Alias for field number 0</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="arlbench.core.algorithms.ppo.PPORunnerState.train_state">
+<span class="sig-name descname"><span class="pre">train_state</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="../arlbench.core.algorithms.ppo.html#arlbench.core.algorithms.ppo.ppo.PPOTrainState" title="arlbench.core.algorithms.ppo.ppo.PPOTrainState"><code class="xref py py-class docutils literal notranslate"><span class="pre">PPOTrainState</span></code></a></em><a class="headerlink" href="#arlbench.core.algorithms.ppo.PPORunnerState.train_state" title="Link to this definition">¶</a></dt>
+<dd><p>Alias for field number 1</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="arlbench.core.algorithms.ppo.PPOState">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">arlbench.core.algorithms.ppo.</span></span><span class="sig-name descname"><span class="pre">PPOState</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">runner_state</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../arlbench.core.algorithms.ppo.html#arlbench.core.algorithms.ppo.PPORunnerState" title="arlbench.core.algorithms.ppo.PPORunnerState"><span class="pre">PPORunnerState</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">buffer_state</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arlbench/core/algorithms/ppo/ppo.html#PPOState"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.core.algorithms.ppo.PPOState" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">NamedTuple</span></code></p>
+<p>PPO algorithm state. Consists of (runner_state, buffer_state).</p>
+<p>Note: As PPO does not use a buffer buffer_state is always None and only kept for consistency across algorithms.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="arlbench.core.algorithms.ppo.PPOState.buffer_state">
+<span class="sig-name descname"><span class="pre">buffer_state</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></em><a class="headerlink" href="#arlbench.core.algorithms.ppo.PPOState.buffer_state" title="Link to this definition">¶</a></dt>
+<dd><p>Alias for field number 1</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="arlbench.core.algorithms.ppo.PPOState.runner_state">
+<span class="sig-name descname"><span class="pre">runner_state</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="../arlbench.core.algorithms.ppo.html#arlbench.core.algorithms.ppo.ppo.PPORunnerState" title="arlbench.core.algorithms.ppo.ppo.PPORunnerState"><code class="xref py py-class docutils literal notranslate"><span class="pre">PPORunnerState</span></code></a></em><a class="headerlink" href="#arlbench.core.algorithms.ppo.PPOState.runner_state" title="Link to this definition">¶</a></dt>
+<dd><p>Alias for field number 0</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="arlbench.core.algorithms.ppo.PPOTrainReturnT">
+<span class="sig-prename descclassname"><span class="pre">arlbench.core.algorithms.ppo.</span></span><span class="sig-name descname"><span class="pre">PPOTrainReturnT</span></span><a class="headerlink" href="#arlbench.core.algorithms.ppo.PPOTrainReturnT" title="Link to this definition">¶</a></dt>
+<dd><p>alias of <code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code>[<a class="reference internal" href="../arlbench.core.algorithms.ppo.html#arlbench.core.algorithms.ppo.ppo.PPOState" title="arlbench.core.algorithms.ppo.ppo.PPOState"><code class="xref py py-class docutils literal notranslate"><span class="pre">PPOState</span></code></a>, <a class="reference internal" href="../arlbench.core.algorithms.ppo.html#arlbench.core.algorithms.ppo.ppo.PPOTrainingResult" title="arlbench.core.algorithms.ppo.ppo.PPOTrainingResult"><code class="xref py py-class docutils literal notranslate"><span class="pre">PPOTrainingResult</span></code></a>]</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="arlbench.core.algorithms.ppo.PPOTrainingResult">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">arlbench.core.algorithms.ppo.</span></span><span class="sig-name descname"><span class="pre">PPOTrainingResult</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">eval_rewards</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">jnp.ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">trajectories</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../arlbench.core.algorithms.dqn.html#arlbench.core.algorithms.dqn.dqn.Transition" title="arlbench.core.algorithms.dqn.dqn.Transition"><span class="pre">Transition</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metrics</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../arlbench.core.algorithms.ppo.html#arlbench.core.algorithms.ppo.PPOMetrics" title="arlbench.core.algorithms.ppo.PPOMetrics"><span class="pre">PPOMetrics</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arlbench/core/algorithms/ppo/ppo.html#PPOTrainingResult"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.core.algorithms.ppo.PPOTrainingResult" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">NamedTuple</span></code></p>
+<p>PPO training result. Consists of (eval_rewards, trajectories, metrics).</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="arlbench.core.algorithms.ppo.PPOTrainingResult.eval_rewards">
+<span class="sig-name descname"><span class="pre">eval_rewards</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref py py-class docutils literal notranslate"><span class="pre">Array</span></code></em><a class="headerlink" href="#arlbench.core.algorithms.ppo.PPOTrainingResult.eval_rewards" title="Link to this definition">¶</a></dt>
+<dd><p>Alias for field number 0</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="arlbench.core.algorithms.ppo.PPOTrainingResult.metrics">
+<span class="sig-name descname"><span class="pre">metrics</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="../arlbench.core.algorithms.ppo.html#arlbench.core.algorithms.ppo.ppo.PPOMetrics" title="arlbench.core.algorithms.ppo.ppo.PPOMetrics"><code class="xref py py-class docutils literal notranslate"><span class="pre">PPOMetrics</span></code></a> <span class="pre">|</span> <code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></em><a class="headerlink" href="#arlbench.core.algorithms.ppo.PPOTrainingResult.metrics" title="Link to this definition">¶</a></dt>
+<dd><p>Alias for field number 2</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="arlbench.core.algorithms.ppo.PPOTrainingResult.trajectories">
+<span class="sig-name descname"><span class="pre">trajectories</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="../arlbench.core.algorithms.ppo.html#arlbench.core.algorithms.ppo.ppo.Transition" title="arlbench.core.algorithms.ppo.ppo.Transition"><code class="xref py py-class docutils literal notranslate"><span class="pre">Transition</span></code></a> <span class="pre">|</span> <code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></em><a class="headerlink" href="#arlbench.core.algorithms.ppo.PPOTrainingResult.trajectories" title="Link to this definition">¶</a></dt>
+<dd><p>Alias for field number 1</p>
+</dd></dl>
+
+</dd></dl>
+
+<p class="rubric">Modules</p>
+<table class="autosummary longtable table autosummary">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="../arlbench.core.algorithms.ppo.html#module-arlbench.core.algorithms.ppo.models" title="arlbench.core.algorithms.ppo.models"><code class="xref py py-obj docutils literal notranslate"><span class="pre">arlbench.core.algorithms.ppo.models</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="../arlbench.core.algorithms.ppo.html#module-arlbench.core.algorithms.ppo.ppo" title="arlbench.core.algorithms.ppo.ppo"><code class="xref py py-obj docutils literal notranslate"><span class="pre">arlbench.core.algorithms.ppo.ppo</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+</section>
+
+
+              </div>
+              
+              
+              <!-- Previous / next buttons -->
+<div class='prev-next-area'> 
+    <a class='left-prev' id="prev-link" href="arlbench.core.algorithms.dqn.models.html" title="previous page">
+        <i class="fas fa-angle-left"></i>
+        <div class="prev-next-info">
+            <p class="prev-next-subtitle">previous</p>
+            <p class="prev-next-title">arlbench.core.algorithms.dqn.models</p>
+        </div>
+    </a>
+    <a class='right-next' id="next-link" href="arlbench.core.algorithms.ppo.models.html" title="next page">
+    <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">arlbench.core.algorithms.ppo.models</p>
+    </div>
+    <i class="fas fa-angle-right"></i>
+    </a>
+</div>
+              
+          </main>
+          
+
+      </div>
+    </div>
+  
+  <script src="../_static/js/index.9ea38e314b9e6d9dab77.js"></script>
+<footer class="footer mt-5 mt-md-0">
+  <div class="container">
+    
+    <div class="footer-item">
+      <p class="copyright">
+    &copy; Copyright Copyright 2024, AutoML Hannover.<br>
+</p>
+    </div>
+    
+    <div class="footer-item">
+      <p class="sphinx-version">
+Created using <a href="http://sphinx-doc.org/">Sphinx</a>
+7.3.7. Template is modified version of <a
+href="https://pydata-sphinx-theme.readthedocs.io">PyData Sphinx Theme</a>. <br>
+</p>
+    </div>
+    
+  </div>
+</footer>
+  </body>
+</html>

@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>arlbench.autorl.checkpointing &#8212; arlbench Documentation 0.1.0 documentation</title>
+    
+  <link href="../../../_static/css/theme.css" rel="stylesheet">
+  <link href="../../../_static/css/index.ac9c05f7c49ca1e1f876c6e36360ea26.css" rel="stylesheet">
+
+    
+  <link rel="stylesheet"
+    href="../../../_static/vendor/fontawesome/5.13.0/css/all.min.css">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="../../../_static/vendor/fontawesome/5.13.0/webfonts/fa-solid-900.woff2">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="../../../_static/vendor/fontawesome/5.13.0/webfonts/fa-brands-400.woff2">
+
+    
+      
+
+    
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=a746c00c" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/css/custom.css?v=2eb4fb78" />
+    
+  <link rel="preload" as="script" href="../../../_static/js/index.9ea38e314b9e6d9dab77.js">
+
+    <script src="../../../_static/documentation_options.js?v=38b66d78"></script>
+    <script src="../../../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="docsearch:language" content="en">
+    
+
+    <!-- Google Analytics -->
+    
+  </head>
+  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="80">
+    
+    <div class="container-fluid" id="banner"></div>
+
+    
+    <nav class="navbar navbar-light navbar-expand-lg bg-light fixed-top bd-navbar" id="navbar-main"><div class="container-xl">
+
+  <div id="navbar-start">
+    
+    
+  <a class="navbar-brand" href="../../../index.html">
+  <!-- <p class="title">arlbench Documentation</p> -->
+  </a>
+
+    
+  </div>
+
+  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbar-collapsible" aria-controls="navbar-collapsible" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+
+  
+  <div id="navbar-collapsible" class="col-lg-9 collapse navbar-collapse">
+    <div id="navbar-center" class="mr-auto">
+      
+    </div>
+
+    <div id="navbar-end">
+      
+      <div class="navbar-end-item">
+        <ul id="navbar-icon-links" class="navbar-nav" aria-label="">
+        <li class="nav-item">
+          <a class="nav-link" href="https://github.com/automl/ARLBench" rel="noopener" target="_blank" title="GitHub">
+            <span><i class="fab fa-github-square"></i></span>
+            <label class="sr-only">GitHub</label>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="https://twitter.com/automl_org?lang=de" rel="noopener" target="_blank" title="Twitter">
+            <span><i class="fab fa-twitter-square"></i></span>
+            <label class="sr-only">Twitter</label>
+          </a>
+        </li>
+      </ul>
+      </div>
+      
+      <div class="navbar-end-item">
+        <div class="dropdown mt-1">
+    <button type="button" class="btn btn-secondary btn-md navbar-btn dropdown-toggle" id="dLabelMore"
+        data-toggle="dropdown">
+        v0.1.0
+        <span class="caret"></span>
+    </button>
+    <div class="dropdown-menu list-group-flush py-0" aria-labelledby="dLabelMore">
+        <a class="list-group-item list-group-item-action" href="#">v0.1.0</a>
+    </div>
+</div>
+      </div>
+      
+      <div class="navbar-end-item">
+        <form class="bd-search align-items-center" action="../../../search.html" method="get" style="width: 100%;">
+  <i class="icon fas fa-search"></i>
+  <input type="search" class="form-control btn btn-md" name="q" id="search-input"
+    placeholder="Search the docs ..." aria-label="Search the docs ..." autocomplete="off">
+</form>
+      </div>
+      
+    </div>
+  </div>
+</div>
+    </nav>
+    
+
+    <div class="container-xl">
+      <div class="row">
+          
+            
+            <!-- Only show if we have sidebars configured, else just a small margin  -->
+            <div class="col-12 col-md-3 bd-sidebar"><h4 class="mt-0 mb-0"><a href="../../../index.html">arlbench Documentation</a></h4>
+<div class="mb-3">v0.1.0</div><nav class="bd-links" id="bd-docs-nav" aria-label="Main navigation">
+  <div class="bd-toc-item active">
+    <ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../../installation.html">
+   Installation
+  </a>
+ </li>
+ <li class="toctree-l1 has-children">
+  <a class="reference internal" href="../../../basic_usage/index.html">
+   Basic Usage
+  </a>
+  <input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" type="checkbox"/>
+  <label for="toctree-checkbox-1">
+   <i class="fas fa-chevron-down">
+   </i>
+  </label>
+  <ul class="simple">
+  </ul>
+ </li>
+ <li class="toctree-l1 has-children">
+  <a class="reference internal" href="../../../advanced_usage/index.html">
+   Advanced Usage
+  </a>
+  <input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" type="checkbox"/>
+  <label for="toctree-checkbox-2">
+   <i class="fas fa-chevron-down">
+   </i>
+  </label>
+  <ul class="simple">
+  </ul>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../../commands.html">
+   Helpful Commands
+  </a>
+ </li>
+ <li class="toctree-l1 has-children">
+  <a class="reference internal" href="../../../api.html">
+   API References
+  </a>
+  <input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" type="checkbox"/>
+  <label for="toctree-checkbox-3">
+   <i class="fas fa-chevron-down">
+   </i>
+  </label>
+  <ul>
+   <li class="toctree-l2 has-children">
+    <a class="reference internal" href="../../../api/arlbench.html">
+     arlbench
+    </a>
+    <input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" type="checkbox"/>
+    <label for="toctree-checkbox-4">
+     <i class="fas fa-chevron-down">
+     </i>
+    </label>
+    <ul>
+     <li class="toctree-l3">
+      <a class="reference internal" href="../../../api/arlbench.arlbench.html">
+       arlbench.arlbench
+      </a>
+     </li>
+     <li class="toctree-l3 has-children">
+      <a class="reference internal" href="../../../api/arlbench.autorl.html">
+       arlbench.autorl
+      </a>
+      <input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" type="checkbox"/>
+      <label for="toctree-checkbox-5">
+       <i class="fas fa-chevron-down">
+       </i>
+      </label>
+      <ul>
+       <li class="toctree-l4">
+        <a class="reference internal" href="../../../api/arlbench.autorl.autorl_env.html">
+         arlbench.autorl.autorl_env
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="../../../api/arlbench.autorl.checkpointing.html">
+         arlbench.autorl.checkpointing
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="../../../api/arlbench.autorl.objectives.html">
+         arlbench.autorl.objectives
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="../../../api/arlbench.autorl.state_features.html">
+         arlbench.autorl.state_features
+        </a>
+       </li>
+      </ul>
+     </li>
+     <li class="toctree-l3 has-children">
+      <a class="reference internal" href="../../../api/arlbench.core.html">
+       arlbench.core
+      </a>
+      <input class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" type="checkbox"/>
+      <label for="toctree-checkbox-6">
+       <i class="fas fa-chevron-down">
+       </i>
+      </label>
+      <ul>
+       <li class="toctree-l4">
+        <a class="reference internal" href="../../../api/arlbench.core.algorithms.html">
+         arlbench.core.algorithms
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="../../../api/arlbench.core.environments.html">
+         arlbench.core.environments
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="../../../api/arlbench.core.running_statistics.html">
+         arlbench.core.running_statistics
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="../../../api/arlbench.core.wrappers.html">
+         arlbench.core.wrappers
+        </a>
+       </li>
+      </ul>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="../../../api/arlbench.plotting.html">
+       arlbench.plotting
+      </a>
+     </li>
+     <li class="toctree-l3 has-children">
+      <a class="reference internal" href="../../../api/arlbench.utils.html">
+       arlbench.utils
+      </a>
+      <input class="toctree-checkbox" id="toctree-checkbox-7" name="toctree-checkbox-7" type="checkbox"/>
+      <label for="toctree-checkbox-7">
+       <i class="fas fa-chevron-down">
+       </i>
+      </label>
+      <ul>
+       <li class="toctree-l4">
+        <a class="reference internal" href="../../../api/arlbench.utils.common.html">
+         arlbench.utils.common
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="../../../api/arlbench.utils.handle_termination.html">
+         arlbench.utils.handle_termination
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="../../../api/arlbench.utils.hydra_utils.html">
+         arlbench.utils.hydra_utils
+        </a>
+       </li>
+      </ul>
+     </li>
+    </ul>
+   </li>
+  </ul>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../../glossary.html">
+   Glossary
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../../faq.html">
+   Frequently Asked Questions
+  </a>
+ </li>
+</ul>
+
+  </div>
+</nav>
+            </div>
+            
+          
+
+          
+          <div class="d-none d-xl-block col-xl-2 bd-toc">
+            
+          </div>
+          
+
+          
+          
+            
+          
+          <main class="col-12 col-md-9 col-xl-7 py-md-5 pl-md-5 pr-md-4 bd-content" role="main">
+              
+              <div>
+                
+  <h1>Source code for arlbench.autorl.checkpointing</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">warnings</span>
+<span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">TYPE_CHECKING</span><span class="p">,</span> <span class="n">Any</span>
+
+<span class="kn">import</span> <span class="nn">jax</span>
+<span class="kn">import</span> <span class="nn">jax.numpy</span> <span class="k">as</span> <span class="nn">jnp</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">orbax.checkpoint</span> <span class="k">as</span> <span class="nn">ocp</span>
+<span class="kn">from</span> <span class="nn">flashbax.buffers.prioritised_trajectory_buffer</span> <span class="kn">import</span> \
+    <span class="n">PrioritisedTrajectoryBufferState</span>
+<span class="kn">from</span> <span class="nn">flashbax.buffers.sum_tree</span> <span class="kn">import</span> <span class="n">SumTreeState</span>
+<span class="kn">from</span> <span class="nn">flashbax.vault</span> <span class="kn">import</span> <span class="n">Vault</span>
+<span class="kn">from</span> <span class="nn">flax.core.frozen_dict</span> <span class="kn">import</span> <span class="n">FrozenDict</span>
+<span class="kn">from</span> <span class="nn">optax</span> <span class="kn">import</span> <span class="n">EmptyState</span><span class="p">,</span> <span class="n">ScaleByAdamState</span>
+
+<span class="kn">from</span> <span class="nn">arlbench.core.algorithms</span> <span class="kn">import</span> <span class="n">DQN</span><span class="p">,</span> <span class="n">PPO</span><span class="p">,</span> <span class="n">SAC</span>
+<span class="kn">from</span> <span class="nn">arlbench.core.algorithms.dqn</span> <span class="kn">import</span> <span class="n">DQNRunnerState</span><span class="p">,</span> <span class="n">DQNTrainingResult</span>
+<span class="kn">from</span> <span class="nn">arlbench.core.algorithms.ppo</span> <span class="kn">import</span> <span class="n">PPORunnerState</span><span class="p">,</span> <span class="n">PPOTrainingResult</span>
+<span class="kn">from</span> <span class="nn">arlbench.core.algorithms.sac</span> <span class="kn">import</span> <span class="n">SACRunnerState</span><span class="p">,</span> <span class="n">SACTrainingResult</span>
+
+<span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">ConfigSpace</span> <span class="kn">import</span> <span class="n">Configuration</span>
+    <span class="kn">from</span> <span class="nn">flashbax.buffers.trajectory_buffer</span> <span class="kn">import</span> <span class="n">TrajectoryBufferState</span>
+
+    <span class="kn">from</span> <span class="nn">arlbench.core.algorithms</span> <span class="kn">import</span> <span class="n">AlgorithmState</span><span class="p">,</span> <span class="n">TrainResult</span>
+
+
+<span class="n">VALID_CHECKPOINTS</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;opt_state&quot;</span><span class="p">,</span> <span class="s2">&quot;params&quot;</span><span class="p">,</span> <span class="s2">&quot;loss&quot;</span><span class="p">,</span> <span class="s2">&quot;buffer&quot;</span><span class="p">]</span>
+
+
+<div class="viewcode-block" id="Checkpointer">
+<a class="viewcode-back" href="../../../arlbench.autorl.html#arlbench.autorl.checkpointing.Checkpointer">[docs]</a>
+<span class="k">class</span> <span class="nc">Checkpointer</span><span class="p">:</span>
+    <span class="n">NODES_FILE</span> <span class="o">=</span> <span class="s2">&quot;nodes.npy&quot;</span>
+    <span class="n">SCALARS_FILE</span> <span class="o">=</span> <span class="s2">&quot;scalars.json&quot;</span>
+    <span class="n">MRP_FILE</span> <span class="o">=</span> <span class="s2">&quot;max_recorded_priority.npy&quot;</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_save_orbax_checkpoint</span><span class="p">(</span>
+        <span class="n">checkpoint</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">checkpoint_dir</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">checkpoint_name</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">checkpointer</span> <span class="o">=</span> <span class="n">ocp</span><span class="o">.</span><span class="n">PyTreeCheckpointer</span><span class="p">()</span>
+        <span class="n">checkpointer</span><span class="o">.</span><span class="n">save</span><span class="p">(</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">checkpoint_dir</span><span class="p">,</span> <span class="n">checkpoint_name</span><span class="p">),</span>
+            <span class="n">checkpoint</span><span class="p">,</span>
+            <span class="n">force</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_load_orbax_checkpoint</span><span class="p">(</span>
+        <span class="n">checkpoint_dir</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">checkpoint_name</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+        <span class="n">checkpointer</span> <span class="o">=</span> <span class="n">ocp</span><span class="o">.</span><span class="n">PyTreeCheckpointer</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">checkpointer</span><span class="o">.</span><span class="n">restore</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">checkpoint_dir</span><span class="p">,</span> <span class="n">checkpoint_name</span><span class="p">))</span>
+
+<div class="viewcode-block" id="Checkpointer.save">
+<a class="viewcode-back" href="../../../arlbench.autorl.html#arlbench.autorl.checkpointing.Checkpointer.save">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">save</span><span class="p">(</span>
+        <span class="n">algorithm</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">algorithm_state</span><span class="p">:</span> <span class="n">AlgorithmState</span><span class="p">,</span>
+        <span class="n">autorl_config</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span>
+        <span class="n">hp_config</span><span class="p">:</span> <span class="n">Configuration</span><span class="p">,</span>
+        <span class="n">done</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
+        <span class="n">c_episode</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">c_step</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">train_result</span><span class="p">:</span> <span class="n">TrainResult</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">tag</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="c1"># Checkpoint setup</span>
+        <span class="n">checkpoint</span> <span class="o">=</span> <span class="n">autorl_config</span><span class="p">[</span><span class="s2">&quot;checkpoint&quot;</span><span class="p">]</span>  <span class="c1"># list of strings</span>
+        <span class="k">if</span> <span class="s2">&quot;all&quot;</span> <span class="ow">in</span> <span class="n">checkpoint</span><span class="p">:</span>
+            <span class="n">checkpoint</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;all&quot;</span><span class="p">]</span>
+
+        <span class="n">checkpoint_name</span> <span class="o">=</span> <span class="n">autorl_config</span><span class="p">[</span><span class="s2">&quot;checkpoint_name&quot;</span><span class="p">]</span>
+        <span class="n">checkpoint_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">autorl_config</span><span class="p">[</span><span class="s2">&quot;checkpoint_dir&quot;</span><span class="p">],</span> <span class="n">checkpoint_name</span><span class="p">)</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">checkpoint_dir</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="c1"># Structure:</span>
+        <span class="c1"># /.../checkpoint_name/checkpoint_name_c_episode_0_step_0</span>
+        <span class="c1"># /.../checkpoint_name/checkpoint_name_c_episode_0_step_1</span>
+        <span class="c1"># ...</span>
+        <span class="c1"># /.../checkpoint_name/checkpoint_name_final</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">done</span><span class="p">:</span>
+            <span class="n">checkpoint_name</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;_c_episode_</span><span class="si">{</span><span class="n">c_episode</span><span class="si">}</span><span class="s2">_step_</span><span class="si">{</span><span class="n">c_step</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">checkpoint_name</span> <span class="o">+=</span> <span class="s2">&quot;_final&quot;</span>
+
+        <span class="c1"># append tag for error/sigterm</span>
+        <span class="k">if</span> <span class="n">tag</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">checkpoint_name</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;_</span><span class="si">{</span><span class="n">tag</span><span class="si">}</span><span class="s2">&quot;</span>
+
+        <span class="n">runner_state</span> <span class="o">=</span> <span class="n">algorithm_state</span><span class="o">.</span><span class="n">runner_state</span>
+
+        <span class="k">if</span> <span class="p">(</span>
+            <span class="n">algorithm</span> <span class="o">==</span> <span class="s2">&quot;dqn&quot;</span>
+            <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">runner_state</span><span class="p">,</span> <span class="n">DQNRunnerState</span><span class="p">)</span>
+            <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">train_result</span><span class="p">,</span> <span class="n">DQNTrainingResult</span><span class="p">)</span>
+        <span class="p">):</span>
+            <span class="n">algorithm_ckpt</span> <span class="o">=</span> <span class="n">DQN</span><span class="o">.</span><span class="n">get_checkpoint_factory</span><span class="p">(</span><span class="n">runner_state</span><span class="p">,</span> <span class="n">train_result</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="p">(</span>
+            <span class="n">algorithm</span> <span class="o">==</span> <span class="s2">&quot;ppo&quot;</span>
+            <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">runner_state</span><span class="p">,</span> <span class="n">PPORunnerState</span><span class="p">)</span>
+            <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">train_result</span><span class="p">,</span> <span class="n">PPOTrainingResult</span><span class="p">)</span>
+        <span class="p">):</span>
+            <span class="n">algorithm_ckpt</span> <span class="o">=</span> <span class="n">PPO</span><span class="o">.</span><span class="n">get_checkpoint_factory</span><span class="p">(</span><span class="n">runner_state</span><span class="p">,</span> <span class="n">train_result</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="p">(</span>
+            <span class="n">algorithm</span> <span class="o">==</span> <span class="s2">&quot;sac&quot;</span>
+            <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">runner_state</span><span class="p">,</span> <span class="n">SACRunnerState</span><span class="p">)</span>
+            <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">train_result</span><span class="p">,</span> <span class="n">SACTrainingResult</span><span class="p">)</span>
+        <span class="p">):</span>
+            <span class="n">algorithm_ckpt</span> <span class="o">=</span> <span class="n">SAC</span><span class="o">.</span><span class="n">get_checkpoint_factory</span><span class="p">(</span><span class="n">runner_state</span><span class="p">,</span> <span class="n">train_result</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Invalid type of runner state or training result for </span><span class="si">{</span><span class="n">algorithm</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">runner_state</span><span class="p">)</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">train_result</span><span class="p">)</span><span class="si">}</span><span class="s2">.&quot;</span>
+            <span class="p">)</span>
+
+        <span class="n">ckpt</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;autorl_config&quot;</span><span class="p">:</span> <span class="n">autorl_config</span><span class="p">,</span>
+            <span class="s2">&quot;hp_config&quot;</span><span class="p">:</span> <span class="nb">dict</span><span class="p">(</span><span class="n">hp_config</span><span class="p">),</span>
+            <span class="s2">&quot;c_step&quot;</span><span class="p">:</span> <span class="n">c_step</span><span class="p">,</span>
+            <span class="s2">&quot;c_episode&quot;</span><span class="p">:</span> <span class="n">c_episode</span><span class="p">,</span>
+        <span class="p">}</span>
+
+        <span class="k">if</span> <span class="n">checkpoint</span> <span class="o">==</span> <span class="p">[</span><span class="s2">&quot;all&quot;</span><span class="p">]:</span>
+            <span class="c1"># use all available checkpoint options</span>
+            <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">algorithm_ckpt</span><span class="p">:</span>
+                <span class="n">ckpt</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">algorithm_ckpt</span><span class="p">[</span>
+                    <span class="n">key</span>
+                <span class="p">]()</span>  <span class="c1"># get actual checkpoint by calling factory function</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># only use selected checkpoint options</span>
+            <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">checkpoint</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">key</span> <span class="o">==</span> <span class="s2">&quot;buffer&quot;</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">algorithm</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;dqn&quot;</span><span class="p">,</span> <span class="s2">&quot;sac&quot;</span><span class="p">]:</span>
+                        <span class="k">continue</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+                            <span class="sa">f</span><span class="s2">&quot;Invalid checkpoint for algorithm </span><span class="si">{</span><span class="n">algorithm</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">. Valid keys are </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">algorithm_ckpt</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span><span class="si">!s}</span><span class="s2">. Skipping key.&quot;</span>
+                        <span class="p">)</span>
+
+                <span class="c1"># find all algorithm checkpoints that contain the requested key</span>
+                <span class="n">found_key</span> <span class="o">=</span> <span class="kc">False</span>
+                <span class="k">for</span> <span class="n">algorithm_key</span> <span class="ow">in</span> <span class="n">algorithm_ckpt</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">algorithm_key</span><span class="p">:</span>
+                        <span class="n">found_key</span> <span class="o">=</span> <span class="kc">True</span>
+                        <span class="n">ckpt</span><span class="p">[</span><span class="n">algorithm_key</span><span class="p">]</span> <span class="o">=</span> <span class="n">algorithm_ckpt</span><span class="p">[</span>
+                            <span class="n">algorithm_key</span>
+                        <span class="p">]()</span>  <span class="c1"># get actual checkpoint by calling factory function</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">found_key</span><span class="p">:</span>
+                    <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+                        <span class="sa">f</span><span class="s2">&quot;Invalid checkpoint for algorithm </span><span class="si">{</span><span class="n">algorithm</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">. Valid keys are </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">algorithm_ckpt</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span><span class="si">!s}</span><span class="s2">. Skipping key.&quot;</span>
+                    <span class="p">)</span>
+
+        <span class="n">Checkpointer</span><span class="o">.</span><span class="n">_save_orbax_checkpoint</span><span class="p">(</span><span class="n">ckpt</span><span class="p">,</span> <span class="n">checkpoint_dir</span><span class="p">,</span> <span class="n">checkpoint_name</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="s2">&quot;buffer&quot;</span> <span class="ow">in</span> <span class="n">checkpoint</span> <span class="ow">and</span> <span class="n">algorithm_state</span><span class="o">.</span><span class="n">buffer_state</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">ckpt</span><span class="p">[</span><span class="s2">&quot;buffer&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">Checkpointer</span><span class="o">.</span><span class="n">save_buffer</span><span class="p">(</span>
+                <span class="n">algorithm_state</span><span class="o">.</span><span class="n">buffer_state</span><span class="p">,</span> <span class="n">checkpoint_dir</span><span class="p">,</span> <span class="n">checkpoint_name</span>
+            <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">checkpoint_dir</span><span class="p">,</span> <span class="n">checkpoint_name</span><span class="p">)</span></div>
+
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_load_buffer</span><span class="p">(</span>
+        <span class="n">ckpt</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">dummy_buffer_state</span><span class="p">:</span> <span class="n">PrioritisedTrajectoryBufferState</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PrioritisedTrajectoryBufferState</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="s2">&quot;buffer&quot;</span> <span class="ow">in</span> <span class="n">ckpt</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">Checkpointer</span><span class="o">.</span><span class="n">load_buffer</span><span class="p">(</span>
+                <span class="n">dummy_buffer_state</span><span class="p">,</span>
+                <span class="n">ckpt</span><span class="p">[</span><span class="s2">&quot;buffer&quot;</span><span class="p">][</span><span class="s2">&quot;priority_state_path&quot;</span><span class="p">],</span>
+                <span class="n">ckpt</span><span class="p">[</span><span class="s2">&quot;buffer&quot;</span><span class="p">][</span><span class="s2">&quot;buffer_dir&quot;</span><span class="p">],</span>
+                <span class="n">ckpt</span><span class="p">[</span><span class="s2">&quot;buffer&quot;</span><span class="p">][</span><span class="s2">&quot;vault_uuid&quot;</span><span class="p">],</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_load_params</span><span class="p">(</span><span class="n">ckpt</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">key</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FrozenDict</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">ckpt</span> <span class="ow">or</span> <span class="n">ckpt</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">params</span> <span class="o">=</span> <span class="n">ckpt</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+                <span class="n">params</span> <span class="o">=</span> <span class="n">params</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">return</span> <span class="n">FrozenDict</span><span class="p">(</span><span class="n">params</span><span class="p">)</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_load_adam_opt_state</span><span class="p">(</span><span class="n">ckpt</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">key</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">def</span> <span class="nf">apply</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">):</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="nb">list</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">):</span>
+                <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">apply</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="n">item</span><span class="p">)</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">t</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">func</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
+
+        <span class="k">def</span> <span class="nf">make_opt_state</span><span class="p">(</span><span class="n">opt_state</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ScaleByAdamState</span> <span class="o">|</span> <span class="n">EmptyState</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">opt_state</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">EmptyState</span><span class="p">()</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">ScaleByAdamState</span><span class="p">(</span>
+                    <span class="n">count</span><span class="o">=</span><span class="n">opt_state</span><span class="p">[</span><span class="s2">&quot;count&quot;</span><span class="p">],</span>
+                    <span class="n">mu</span><span class="o">=</span><span class="n">FrozenDict</span><span class="p">(</span><span class="n">opt_state</span><span class="p">[</span><span class="s2">&quot;mu&quot;</span><span class="p">]),</span>
+                    <span class="n">nu</span><span class="o">=</span><span class="n">FrozenDict</span><span class="p">(</span><span class="n">opt_state</span><span class="p">[</span><span class="s2">&quot;nu&quot;</span><span class="p">]),</span>
+                <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">ckpt</span> <span class="ow">or</span> <span class="n">ckpt</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">opt_state</span> <span class="o">=</span> <span class="n">ckpt</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+
+            <span class="k">return</span> <span class="n">apply</span><span class="p">(</span><span class="n">make_opt_state</span><span class="p">,</span> <span class="n">opt_state</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Checkpointer.load">
+<a class="viewcode-back" href="../../../arlbench.autorl.html#arlbench.autorl.checkpointing.Checkpointer.load">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">load</span><span class="p">(</span>
+        <span class="n">checkpoint_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">algorithm_state</span><span class="p">:</span> <span class="n">AlgorithmState</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span> <span class="nb">dict</span><span class="p">]:</span>
+        <span class="n">checkpointer</span> <span class="o">=</span> <span class="n">ocp</span><span class="o">.</span><span class="n">PyTreeCheckpointer</span><span class="p">()</span>
+        <span class="n">restored</span> <span class="o">=</span> <span class="n">checkpointer</span><span class="o">.</span><span class="n">restore</span><span class="p">(</span><span class="n">checkpoint_path</span><span class="p">)</span>
+
+        <span class="n">c_step</span> <span class="o">=</span> <span class="n">restored</span><span class="p">[</span><span class="s2">&quot;c_step&quot;</span><span class="p">]</span>
+        <span class="n">c_episode</span> <span class="o">=</span> <span class="n">restored</span><span class="p">[</span><span class="s2">&quot;c_episode&quot;</span><span class="p">]</span>
+        <span class="n">autorl_config</span> <span class="o">=</span> <span class="n">restored</span><span class="p">[</span><span class="s2">&quot;autorl_config&quot;</span><span class="p">]</span>
+        <span class="n">hp_config</span> <span class="o">=</span> <span class="n">restored</span><span class="p">[</span><span class="s2">&quot;hp_config&quot;</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="n">algorithm_state</span><span class="o">.</span><span class="n">buffer_state</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">buffer_state</span> <span class="o">=</span> <span class="n">Checkpointer</span><span class="o">.</span><span class="n">_load_buffer</span><span class="p">(</span>
+                <span class="n">restored</span><span class="p">,</span> <span class="n">algorithm_state</span><span class="o">.</span><span class="n">buffer_state</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">buffer_state</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="n">common</span> <span class="o">=</span> <span class="p">(</span><span class="n">hp_config</span><span class="p">,</span> <span class="n">c_step</span><span class="p">,</span> <span class="n">c_episode</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">autorl_config</span><span class="p">[</span><span class="s2">&quot;algorithm&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;ppo&quot;</span><span class="p">:</span>
+            <span class="n">algorithm_kw_args</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="s2">&quot;network_params&quot;</span><span class="p">:</span> <span class="n">Checkpointer</span><span class="o">.</span><span class="n">_load_params</span><span class="p">(</span><span class="n">restored</span><span class="p">,</span> <span class="s2">&quot;params&quot;</span><span class="p">),</span>
+                <span class="s2">&quot;opt_state&quot;</span><span class="p">:</span> <span class="n">Checkpointer</span><span class="o">.</span><span class="n">_load_adam_opt_state</span><span class="p">(</span><span class="n">restored</span><span class="p">,</span> <span class="s2">&quot;opt_state&quot;</span><span class="p">),</span>
+            <span class="p">}</span>
+        <span class="k">elif</span> <span class="n">autorl_config</span><span class="p">[</span><span class="s2">&quot;algorithm&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;dqn&quot;</span><span class="p">:</span>
+            <span class="n">algorithm_kw_args</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="s2">&quot;buffer_state&quot;</span><span class="p">:</span> <span class="n">buffer_state</span><span class="p">,</span>
+                <span class="s2">&quot;network_params&quot;</span><span class="p">:</span> <span class="n">Checkpointer</span><span class="o">.</span><span class="n">_load_params</span><span class="p">(</span><span class="n">restored</span><span class="p">,</span> <span class="s2">&quot;params&quot;</span><span class="p">),</span>
+                <span class="s2">&quot;target_params&quot;</span><span class="p">:</span> <span class="n">Checkpointer</span><span class="o">.</span><span class="n">_load_params</span><span class="p">(</span><span class="n">restored</span><span class="p">,</span> <span class="s2">&quot;target_params&quot;</span><span class="p">),</span>
+                <span class="s2">&quot;opt_state&quot;</span><span class="p">:</span> <span class="n">Checkpointer</span><span class="o">.</span><span class="n">_load_adam_opt_state</span><span class="p">(</span><span class="n">restored</span><span class="p">,</span> <span class="s2">&quot;opt_state&quot;</span><span class="p">),</span>
+            <span class="p">}</span>
+        <span class="k">elif</span> <span class="n">autorl_config</span><span class="p">[</span><span class="s2">&quot;algorithm&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;sac&quot;</span><span class="p">:</span>
+            <span class="n">algorithm_kw_args</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="s2">&quot;buffer_state&quot;</span><span class="p">:</span> <span class="n">buffer_state</span><span class="p">,</span>
+                <span class="s2">&quot;actor_network_params&quot;</span><span class="p">:</span> <span class="n">Checkpointer</span><span class="o">.</span><span class="n">_load_params</span><span class="p">(</span>
+                    <span class="n">restored</span><span class="p">,</span> <span class="s2">&quot;actor_network_params&quot;</span>
+                <span class="p">),</span>
+                <span class="s2">&quot;critic_network_params&quot;</span><span class="p">:</span> <span class="n">Checkpointer</span><span class="o">.</span><span class="n">_load_params</span><span class="p">(</span>
+                    <span class="n">restored</span><span class="p">,</span> <span class="s2">&quot;critic_network_params&quot;</span>
+                <span class="p">),</span>
+                <span class="s2">&quot;critic_target_params&quot;</span><span class="p">:</span> <span class="n">Checkpointer</span><span class="o">.</span><span class="n">_load_params</span><span class="p">(</span>
+                    <span class="n">restored</span><span class="p">,</span> <span class="s2">&quot;critic_target_params&quot;</span>
+                <span class="p">),</span>
+                <span class="s2">&quot;alpha_network_params&quot;</span><span class="p">:</span> <span class="n">Checkpointer</span><span class="o">.</span><span class="n">_load_params</span><span class="p">(</span>
+                    <span class="n">restored</span><span class="p">,</span> <span class="s2">&quot;alpha_network_params&quot;</span>
+                <span class="p">),</span>
+                <span class="s2">&quot;actor_opt_state&quot;</span><span class="p">:</span> <span class="n">Checkpointer</span><span class="o">.</span><span class="n">_load_adam_opt_state</span><span class="p">(</span>
+                    <span class="n">restored</span><span class="p">,</span> <span class="s2">&quot;actor_opt_state&quot;</span>
+                <span class="p">),</span>
+                <span class="s2">&quot;critic_opt_state&quot;</span><span class="p">:</span> <span class="n">Checkpointer</span><span class="o">.</span><span class="n">_load_adam_opt_state</span><span class="p">(</span>
+                    <span class="n">restored</span><span class="p">,</span> <span class="s2">&quot;critic_opt_state&quot;</span>
+                <span class="p">),</span>
+                <span class="s2">&quot;alpha_opt_state&quot;</span><span class="p">:</span> <span class="n">Checkpointer</span><span class="o">.</span><span class="n">_load_adam_opt_state</span><span class="p">(</span>
+                    <span class="n">restored</span><span class="p">,</span> <span class="s2">&quot;alpha_opt_state&quot;</span>
+                <span class="p">),</span>
+            <span class="p">}</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Invalid algorithm in checkpoint: </span><span class="si">{</span><span class="n">autorl_config</span><span class="p">[</span><span class="s1">&#39;algorithm&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="n">common</span><span class="p">,</span> <span class="n">algorithm_kw_args</span></div>
+
+
+<div class="viewcode-block" id="Checkpointer.save_buffer">
+<a class="viewcode-back" href="../../../arlbench.autorl.html#arlbench.autorl.checkpointing.Checkpointer.save_buffer">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">save_buffer</span><span class="p">(</span>
+        <span class="n">buffer_state</span><span class="p">:</span> <span class="n">TrajectoryBufferState</span> <span class="o">|</span> <span class="n">PrioritisedTrajectoryBufferState</span><span class="p">,</span>
+        <span class="n">checkpoint_dir</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">checkpoint_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+        <span class="n">buffer_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">checkpoint_dir</span><span class="p">,</span> <span class="n">checkpoint_name</span> <span class="o">+</span> <span class="s2">&quot;_buffer_state&quot;</span><span class="p">)</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">buffer_dir</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">buffer_state</span><span class="p">,</span> <span class="n">PrioritisedTrajectoryBufferState</span><span class="p">):</span>
+            <span class="n">priority_state_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">buffer_dir</span><span class="p">,</span> <span class="s2">&quot;buffer_priority_state&quot;</span><span class="p">)</span>
+            <span class="n">Checkpointer</span><span class="o">.</span><span class="n">_save_sum_tree_state</span><span class="p">(</span>
+                <span class="n">buffer_state</span><span class="o">.</span><span class="n">priority_state</span><span class="p">,</span> <span class="n">priority_state_path</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">priority_state_path</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+
+        <span class="n">vault_uuid</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%Y%m</span><span class="si">%d</span><span class="s2">%H%M%S&quot;</span><span class="p">)</span>
+        <span class="n">v</span> <span class="o">=</span> <span class="n">Vault</span><span class="p">(</span>
+            <span class="n">vault_name</span><span class="o">=</span><span class="s2">&quot;buffer_state_vault&quot;</span><span class="p">,</span>
+            <span class="n">experience_structure</span><span class="o">=</span><span class="n">buffer_state</span><span class="o">.</span><span class="n">experience</span><span class="p">,</span>
+            <span class="n">rel_dir</span><span class="o">=</span><span class="n">buffer_dir</span><span class="p">,</span>
+            <span class="n">vault_uid</span><span class="o">=</span><span class="n">vault_uuid</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="c1"># write buffer</span>
+        <span class="n">_fbx_shape</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">tree_util</span><span class="o">.</span><span class="n">tree_leaves</span><span class="p">(</span><span class="n">buffer_state</span><span class="o">.</span><span class="n">experience</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span>
+        <span class="n">buffer_size</span> <span class="o">=</span> <span class="n">_fbx_shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">source_interval</span> <span class="o">=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">buffer_size</span><span class="p">)</span>
+        <span class="n">v</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">buffer_state</span><span class="p">,</span> <span class="n">source_interval</span><span class="o">=</span><span class="n">source_interval</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s2">&quot;vault_uuid&quot;</span><span class="p">:</span> <span class="n">vault_uuid</span><span class="p">,</span>
+            <span class="s2">&quot;buffer_dir&quot;</span><span class="p">:</span> <span class="n">buffer_dir</span><span class="p">,</span>
+            <span class="s2">&quot;priority_state_path&quot;</span><span class="p">:</span> <span class="n">priority_state_path</span><span class="p">,</span>
+        <span class="p">}</span></div>
+
+
+<div class="viewcode-block" id="Checkpointer.load_buffer">
+<a class="viewcode-back" href="../../../arlbench.autorl.html#arlbench.autorl.checkpointing.Checkpointer.load_buffer">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">load_buffer</span><span class="p">(</span>
+        <span class="n">dummy_buffer_state</span><span class="p">:</span> <span class="n">PrioritisedTrajectoryBufferState</span><span class="p">,</span>
+        <span class="n">priority_state_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">buffer_dir</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">vault_uuid</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PrioritisedTrajectoryBufferState</span><span class="p">:</span>
+        <span class="n">v</span> <span class="o">=</span> <span class="n">Vault</span><span class="p">(</span>
+            <span class="n">vault_name</span><span class="o">=</span><span class="s2">&quot;buffer_state_vault&quot;</span><span class="p">,</span>
+            <span class="n">experience_structure</span><span class="o">=</span><span class="n">dummy_buffer_state</span><span class="o">.</span><span class="n">experience</span><span class="p">,</span>
+            <span class="n">rel_dir</span><span class="o">=</span><span class="n">buffer_dir</span><span class="p">,</span>
+            <span class="n">vault_uid</span><span class="o">=</span><span class="n">vault_uuid</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">buffer_state</span> <span class="o">=</span> <span class="n">v</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+        <span class="n">priority_state</span> <span class="o">=</span> <span class="n">Checkpointer</span><span class="o">.</span><span class="n">_load_sum_tree_state</span><span class="p">(</span><span class="n">priority_state_path</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">PrioritisedTrajectoryBufferState</span><span class="p">(</span>
+            <span class="n">experience</span><span class="o">=</span><span class="n">buffer_state</span><span class="o">.</span><span class="n">experience</span><span class="p">,</span>
+            <span class="n">current_index</span><span class="o">=</span><span class="n">buffer_state</span><span class="o">.</span><span class="n">current_index</span><span class="p">,</span>
+            <span class="n">is_full</span><span class="o">=</span><span class="n">buffer_state</span><span class="o">.</span><span class="n">is_full</span><span class="p">,</span>
+            <span class="n">priority_state</span><span class="o">=</span><span class="n">priority_state</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_save_sum_tree_state</span><span class="p">(</span><span class="n">sum_tree_state</span><span class="p">:</span> <span class="n">SumTreeState</span><span class="p">,</span> <span class="n">directory</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="c1"># Ensure the directory exists</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">directory</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="c1"># Serialize and save the JAX arrays as .npy files</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">save</span><span class="p">(</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">directory</span><span class="p">,</span> <span class="n">Checkpointer</span><span class="o">.</span><span class="n">NODES_FILE</span><span class="p">),</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">sum_tree_state</span><span class="o">.</span><span class="n">nodes</span><span class="p">),</span>
+        <span class="p">)</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">save</span><span class="p">(</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">directory</span><span class="p">,</span> <span class="n">Checkpointer</span><span class="o">.</span><span class="n">MRP_FILE</span><span class="p">),</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">sum_tree_state</span><span class="o">.</span><span class="n">max_recorded_priority</span><span class="p">),</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Serialize scalar values to JSON</span>
+        <span class="n">scalar_values</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;tree_depth&quot;</span><span class="p">:</span> <span class="n">sum_tree_state</span><span class="o">.</span><span class="n">tree_depth</span><span class="p">,</span>
+            <span class="s2">&quot;capacity&quot;</span><span class="p">:</span> <span class="n">sum_tree_state</span><span class="o">.</span><span class="n">capacity</span><span class="p">,</span>
+        <span class="p">}</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">directory</span><span class="p">,</span> <span class="n">Checkpointer</span><span class="o">.</span><span class="n">SCALARS_FILE</span><span class="p">),</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">json_file</span><span class="p">:</span>
+            <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">scalar_values</span><span class="p">,</span> <span class="n">json_file</span><span class="p">)</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_load_sum_tree_state</span><span class="p">(</span><span class="n">directory</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SumTreeState</span><span class="p">:</span>
+        <span class="c1"># Load the JAX arrays from .npy files</span>
+        <span class="n">nodes</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">directory</span><span class="p">,</span> <span class="n">Checkpointer</span><span class="o">.</span><span class="n">NODES_FILE</span><span class="p">)))</span>
+        <span class="n">max_recorded_priority</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">directory</span><span class="p">,</span> <span class="n">Checkpointer</span><span class="o">.</span><span class="n">MRP_FILE</span><span class="p">))</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Load scalar values from JSON</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">directory</span><span class="p">,</span> <span class="n">Checkpointer</span><span class="o">.</span><span class="n">SCALARS_FILE</span><span class="p">))</span> <span class="k">as</span> <span class="n">json_file</span><span class="p">:</span>
+            <span class="n">scalar_values</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">json_file</span><span class="p">)</span>
+
+        <span class="c1"># Reconstruct the SumTreeState object</span>
+        <span class="k">return</span> <span class="n">SumTreeState</span><span class="p">(</span>
+            <span class="n">nodes</span><span class="o">=</span><span class="n">nodes</span><span class="p">,</span>
+            <span class="n">max_recorded_priority</span><span class="o">=</span><span class="n">max_recorded_priority</span><span class="p">,</span>
+            <span class="n">tree_depth</span><span class="o">=</span><span class="n">scalar_values</span><span class="p">[</span><span class="s2">&quot;tree_depth&quot;</span><span class="p">],</span>
+            <span class="n">capacity</span><span class="o">=</span><span class="n">scalar_values</span><span class="p">[</span><span class="s2">&quot;capacity&quot;</span><span class="p">],</span>
+        <span class="p">)</span></div>
+
+</pre></div>
+
+              </div>
+              
+              
+              <!-- Previous / next buttons -->
+<div class='prev-next-area'>
+</div>
+              
+          </main>
+          
+
+      </div>
+    </div>
+  
+  <script src="../../../_static/js/index.9ea38e314b9e6d9dab77.js"></script>
+<footer class="footer mt-5 mt-md-0">
+  <div class="container">
+    
+    <div class="footer-item">
+      <p class="copyright">
+    &copy; Copyright Copyright 2024, AutoML Hannover.<br>
+</p>
+    </div>
+    
+    <div class="footer-item">
+      <p class="sphinx-version">
+Created using <a href="http://sphinx-doc.org/">Sphinx</a>
+7.3.7. Template is modified version of <a
+href="https://pydata-sphinx-theme.readthedocs.io">PyData Sphinx Theme</a>. <br>
+</p>
+    </div>
+    
+  </div>
+</footer>
+  </body>
+</html>

@@ -1,0 +1,1185 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>arlbench.core.algorithms.ppo.ppo &#8212; arlbench Documentation 0.1.0 documentation</title>
+    
+  <link href="../../../../../_static/css/theme.css" rel="stylesheet">
+  <link href="../../../../../_static/css/index.ac9c05f7c49ca1e1f876c6e36360ea26.css" rel="stylesheet">
+
+    
+  <link rel="stylesheet"
+    href="../../../../../_static/vendor/fontawesome/5.13.0/css/all.min.css">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="../../../../../_static/vendor/fontawesome/5.13.0/webfonts/fa-solid-900.woff2">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="../../../../../_static/vendor/fontawesome/5.13.0/webfonts/fa-brands-400.woff2">
+
+    
+      
+
+    
+    <link rel="stylesheet" type="text/css" href="../../../../../_static/pygments.css?v=a746c00c" />
+    <link rel="stylesheet" type="text/css" href="../../../../../_static/css/custom.css?v=2eb4fb78" />
+    
+  <link rel="preload" as="script" href="../../../../../_static/js/index.9ea38e314b9e6d9dab77.js">
+
+    <script src="../../../../../_static/documentation_options.js?v=38b66d78"></script>
+    <script src="../../../../../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../../search.html" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="docsearch:language" content="en">
+    
+
+    <!-- Google Analytics -->
+    
+  </head>
+  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="80">
+    
+    <div class="container-fluid" id="banner"></div>
+
+    
+    <nav class="navbar navbar-light navbar-expand-lg bg-light fixed-top bd-navbar" id="navbar-main"><div class="container-xl">
+
+  <div id="navbar-start">
+    
+    
+  <a class="navbar-brand" href="../../../../../index.html">
+  <!-- <p class="title">arlbench Documentation</p> -->
+  </a>
+
+    
+  </div>
+
+  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbar-collapsible" aria-controls="navbar-collapsible" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+
+  
+  <div id="navbar-collapsible" class="col-lg-9 collapse navbar-collapse">
+    <div id="navbar-center" class="mr-auto">
+      
+    </div>
+
+    <div id="navbar-end">
+      
+      <div class="navbar-end-item">
+        <ul id="navbar-icon-links" class="navbar-nav" aria-label="">
+        <li class="nav-item">
+          <a class="nav-link" href="https://github.com/automl/ARLBench" rel="noopener" target="_blank" title="GitHub">
+            <span><i class="fab fa-github-square"></i></span>
+            <label class="sr-only">GitHub</label>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="https://twitter.com/automl_org?lang=de" rel="noopener" target="_blank" title="Twitter">
+            <span><i class="fab fa-twitter-square"></i></span>
+            <label class="sr-only">Twitter</label>
+          </a>
+        </li>
+      </ul>
+      </div>
+      
+      <div class="navbar-end-item">
+        <div class="dropdown mt-1">
+    <button type="button" class="btn btn-secondary btn-md navbar-btn dropdown-toggle" id="dLabelMore"
+        data-toggle="dropdown">
+        v0.1.0
+        <span class="caret"></span>
+    </button>
+    <div class="dropdown-menu list-group-flush py-0" aria-labelledby="dLabelMore">
+        <a class="list-group-item list-group-item-action" href="#">v0.1.0</a>
+    </div>
+</div>
+      </div>
+      
+      <div class="navbar-end-item">
+        <form class="bd-search align-items-center" action="../../../../../search.html" method="get" style="width: 100%;">
+  <i class="icon fas fa-search"></i>
+  <input type="search" class="form-control btn btn-md" name="q" id="search-input"
+    placeholder="Search the docs ..." aria-label="Search the docs ..." autocomplete="off">
+</form>
+      </div>
+      
+    </div>
+  </div>
+</div>
+    </nav>
+    
+
+    <div class="container-xl">
+      <div class="row">
+          
+            
+            <!-- Only show if we have sidebars configured, else just a small margin  -->
+            <div class="col-12 col-md-3 bd-sidebar"><h4 class="mt-0 mb-0"><a href="../../../../../index.html">arlbench Documentation</a></h4>
+<div class="mb-3">v0.1.0</div><nav class="bd-links" id="bd-docs-nav" aria-label="Main navigation">
+  <div class="bd-toc-item active">
+    <ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../../../../installation.html">
+   Installation
+  </a>
+ </li>
+ <li class="toctree-l1 has-children">
+  <a class="reference internal" href="../../../../../basic_usage/index.html">
+   Basic Usage
+  </a>
+  <input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" type="checkbox"/>
+  <label for="toctree-checkbox-1">
+   <i class="fas fa-chevron-down">
+   </i>
+  </label>
+  <ul class="simple">
+  </ul>
+ </li>
+ <li class="toctree-l1 has-children">
+  <a class="reference internal" href="../../../../../advanced_usage/index.html">
+   Advanced Usage
+  </a>
+  <input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" type="checkbox"/>
+  <label for="toctree-checkbox-2">
+   <i class="fas fa-chevron-down">
+   </i>
+  </label>
+  <ul class="simple">
+  </ul>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../../../../commands.html">
+   Helpful Commands
+  </a>
+ </li>
+ <li class="toctree-l1 has-children">
+  <a class="reference internal" href="../../../../../api.html">
+   API References
+  </a>
+  <input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" type="checkbox"/>
+  <label for="toctree-checkbox-3">
+   <i class="fas fa-chevron-down">
+   </i>
+  </label>
+  <ul>
+   <li class="toctree-l2 has-children">
+    <a class="reference internal" href="../../../../../api/arlbench.html">
+     arlbench
+    </a>
+    <input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" type="checkbox"/>
+    <label for="toctree-checkbox-4">
+     <i class="fas fa-chevron-down">
+     </i>
+    </label>
+    <ul>
+     <li class="toctree-l3">
+      <a class="reference internal" href="../../../../../api/arlbench.arlbench.html">
+       arlbench.arlbench
+      </a>
+     </li>
+     <li class="toctree-l3 has-children">
+      <a class="reference internal" href="../../../../../api/arlbench.autorl.html">
+       arlbench.autorl
+      </a>
+      <input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" type="checkbox"/>
+      <label for="toctree-checkbox-5">
+       <i class="fas fa-chevron-down">
+       </i>
+      </label>
+      <ul>
+       <li class="toctree-l4">
+        <a class="reference internal" href="../../../../../api/arlbench.autorl.autorl_env.html">
+         arlbench.autorl.autorl_env
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="../../../../../api/arlbench.autorl.checkpointing.html">
+         arlbench.autorl.checkpointing
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="../../../../../api/arlbench.autorl.objectives.html">
+         arlbench.autorl.objectives
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="../../../../../api/arlbench.autorl.state_features.html">
+         arlbench.autorl.state_features
+        </a>
+       </li>
+      </ul>
+     </li>
+     <li class="toctree-l3 has-children">
+      <a class="reference internal" href="../../../../../api/arlbench.core.html">
+       arlbench.core
+      </a>
+      <input class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" type="checkbox"/>
+      <label for="toctree-checkbox-6">
+       <i class="fas fa-chevron-down">
+       </i>
+      </label>
+      <ul>
+       <li class="toctree-l4">
+        <a class="reference internal" href="../../../../../api/arlbench.core.algorithms.html">
+         arlbench.core.algorithms
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="../../../../../api/arlbench.core.environments.html">
+         arlbench.core.environments
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="../../../../../api/arlbench.core.running_statistics.html">
+         arlbench.core.running_statistics
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="../../../../../api/arlbench.core.wrappers.html">
+         arlbench.core.wrappers
+        </a>
+       </li>
+      </ul>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="../../../../../api/arlbench.plotting.html">
+       arlbench.plotting
+      </a>
+     </li>
+     <li class="toctree-l3 has-children">
+      <a class="reference internal" href="../../../../../api/arlbench.utils.html">
+       arlbench.utils
+      </a>
+      <input class="toctree-checkbox" id="toctree-checkbox-7" name="toctree-checkbox-7" type="checkbox"/>
+      <label for="toctree-checkbox-7">
+       <i class="fas fa-chevron-down">
+       </i>
+      </label>
+      <ul>
+       <li class="toctree-l4">
+        <a class="reference internal" href="../../../../../api/arlbench.utils.common.html">
+         arlbench.utils.common
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="../../../../../api/arlbench.utils.handle_termination.html">
+         arlbench.utils.handle_termination
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="../../../../../api/arlbench.utils.hydra_utils.html">
+         arlbench.utils.hydra_utils
+        </a>
+       </li>
+      </ul>
+     </li>
+    </ul>
+   </li>
+  </ul>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../../../../glossary.html">
+   Glossary
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../../../../faq.html">
+   Frequently Asked Questions
+  </a>
+ </li>
+</ul>
+
+  </div>
+</nav>
+            </div>
+            
+          
+
+          
+          <div class="d-none d-xl-block col-xl-2 bd-toc">
+            
+          </div>
+          
+
+          
+          
+            
+          
+          <main class="col-12 col-md-9 col-xl-7 py-md-5 pl-md-5 pr-md-4 bd-content" role="main">
+              
+              <div>
+                
+  <h1>Source code for arlbench.core.algorithms.ppo.ppo</h1><div class="highlight"><pre>
+<span></span><span class="c1"># The PPO Code is heavily based on PureJax: https://github.com/luchris429/purejaxrl</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">import</span> <span class="nn">functools</span>
+<span class="kn">import</span> <span class="nn">warnings</span>
+<span class="kn">from</span> <span class="nn">collections.abc</span> <span class="kn">import</span> <span class="n">Callable</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">TYPE_CHECKING</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">NamedTuple</span>
+
+<span class="kn">import</span> <span class="nn">jax</span>
+<span class="kn">import</span> <span class="nn">jax.numpy</span> <span class="k">as</span> <span class="nn">jnp</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">optax</span>
+<span class="kn">from</span> <span class="nn">ConfigSpace</span> <span class="kn">import</span> <span class="p">(</span><span class="n">Categorical</span><span class="p">,</span> <span class="n">Configuration</span><span class="p">,</span> <span class="n">ConfigurationSpace</span><span class="p">,</span> <span class="n">Float</span><span class="p">,</span>
+                         <span class="n">Integer</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">flax.training.train_state</span> <span class="kn">import</span> <span class="n">TrainState</span>
+
+<span class="kn">from</span> <span class="nn">arlbench.core</span> <span class="kn">import</span> <span class="n">running_statistics</span>
+<span class="kn">from</span> <span class="nn">arlbench.core.algorithms.algorithm</span> <span class="kn">import</span> <span class="n">Algorithm</span>
+
+<span class="kn">from</span> <span class="nn">.models</span> <span class="kn">import</span> <span class="n">CNNActorCritic</span><span class="p">,</span> <span class="n">MLPActorCritic</span>
+
+<span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">chex</span>
+    <span class="kn">from</span> <span class="nn">flax.core.frozen_dict</span> <span class="kn">import</span> <span class="n">FrozenDict</span>
+
+    <span class="kn">from</span> <span class="nn">arlbench.core.environments</span> <span class="kn">import</span> <span class="n">Environment</span>
+    <span class="kn">from</span> <span class="nn">arlbench.core.running_statistics</span> <span class="kn">import</span> <span class="n">RunningStatisticsState</span>
+    <span class="kn">from</span> <span class="nn">arlbench.core.wrappers</span> <span class="kn">import</span> <span class="n">AutoRLWrapper</span>
+
+
+<div class="viewcode-block" id="PPOTrainState">
+<a class="viewcode-back" href="../../../../../arlbench.core.algorithms.ppo.html#arlbench.core.algorithms.PPOTrainState">[docs]</a>
+<span class="k">class</span> <span class="nc">PPOTrainState</span><span class="p">(</span><span class="n">TrainState</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;PPO training state.&quot;&quot;&quot;</span>
+
+    <span class="n">opt_state</span> <span class="o">=</span> <span class="kc">None</span>
+
+<div class="viewcode-block" id="PPOTrainState.create_with_opt_state">
+<a class="viewcode-back" href="../../../../../arlbench.core.algorithms.ppo.html#arlbench.core.algorithms.PPOTrainState.create_with_opt_state">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">create_with_opt_state</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">apply_fn</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">tx</span><span class="p">,</span> <span class="n">opt_state</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">opt_state</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">opt_state</span> <span class="o">=</span> <span class="n">tx</span><span class="o">.</span><span class="n">init</span><span class="p">(</span><span class="n">params</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span>
+            <span class="n">step</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+            <span class="n">apply_fn</span><span class="o">=</span><span class="n">apply_fn</span><span class="p">,</span>
+            <span class="n">params</span><span class="o">=</span><span class="n">params</span><span class="p">,</span>
+            <span class="n">tx</span><span class="o">=</span><span class="n">tx</span><span class="p">,</span>
+            <span class="n">opt_state</span><span class="o">=</span><span class="n">opt_state</span><span class="p">,</span>
+            <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+        <span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="PPORunnerState">
+<a class="viewcode-back" href="../../../../../arlbench.core.algorithms.ppo.html#arlbench.core.algorithms.PPORunnerState">[docs]</a>
+<span class="k">class</span> <span class="nc">PPORunnerState</span><span class="p">(</span><span class="n">NamedTuple</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;PPO runner state. Consists of (rng, train_state, env_state, obs, global_step).&quot;&quot;&quot;</span>
+
+    <span class="n">rng</span><span class="p">:</span> <span class="n">chex</span><span class="o">.</span><span class="n">PRNGKey</span>
+    <span class="n">train_state</span><span class="p">:</span> <span class="n">PPOTrainState</span>
+    <span class="n">normalizer_state</span><span class="p">:</span> <span class="n">RunningStatisticsState</span>
+    <span class="n">env_state</span><span class="p">:</span> <span class="n">Any</span>
+    <span class="n">obs</span><span class="p">:</span> <span class="n">chex</span><span class="o">.</span><span class="n">Array</span>
+    <span class="n">global_step</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">return_buffer_idx</span><span class="p">:</span> <span class="n">chex</span><span class="o">.</span><span class="n">Array</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">return_buffer</span><span class="p">:</span> <span class="n">chex</span><span class="o">.</span><span class="n">Array</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">cur_rewards</span><span class="p">:</span> <span class="n">chex</span><span class="o">.</span><span class="n">Array</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span></div>
+
+
+
+<div class="viewcode-block" id="PPOState">
+<a class="viewcode-back" href="../../../../../arlbench.core.algorithms.ppo.html#arlbench.core.algorithms.PPOState">[docs]</a>
+<span class="k">class</span> <span class="nc">PPOState</span><span class="p">(</span><span class="n">NamedTuple</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;PPO algorithm state. Consists of (runner_state, buffer_state).</span>
+
+<span class="sd">    Note: As PPO does not use a buffer buffer_state is always None and only kept for consistency across algorithms.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">runner_state</span><span class="p">:</span> <span class="n">PPORunnerState</span>
+    <span class="n">buffer_state</span><span class="p">:</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span></div>
+
+
+
+<div class="viewcode-block" id="PPOTrainingResult">
+<a class="viewcode-back" href="../../../../../arlbench.core.algorithms.ppo.html#arlbench.core.algorithms.PPOTrainingResult">[docs]</a>
+<span class="k">class</span> <span class="nc">PPOTrainingResult</span><span class="p">(</span><span class="n">NamedTuple</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;PPO training result. Consists of (eval_rewards, trajectories, metrics).&quot;&quot;&quot;</span>
+
+    <span class="n">eval_rewards</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span>
+    <span class="n">trajectories</span><span class="p">:</span> <span class="n">Transition</span> <span class="o">|</span> <span class="kc">None</span>
+    <span class="n">metrics</span><span class="p">:</span> <span class="n">PPOMetrics</span> <span class="o">|</span> <span class="kc">None</span></div>
+
+
+
+<div class="viewcode-block" id="PPOMetrics">
+<a class="viewcode-back" href="../../../../../arlbench.core.algorithms.ppo.html#arlbench.core.algorithms.PPOMetrics">[docs]</a>
+<span class="k">class</span> <span class="nc">PPOMetrics</span><span class="p">(</span><span class="n">NamedTuple</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;PPO metrics returned by train function. Consists of (loss, grads, advantages).&quot;&quot;&quot;</span>
+
+    <span class="n">loss</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span>
+    <span class="n">grads</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">|</span> <span class="nb">dict</span>
+    <span class="n">advantages</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span></div>
+
+
+
+<div class="viewcode-block" id="Transition">
+<a class="viewcode-back" href="../../../../../arlbench.core.algorithms.ppo.html#arlbench.core.algorithms.Transition">[docs]</a>
+<span class="k">class</span> <span class="nc">Transition</span><span class="p">(</span><span class="n">NamedTuple</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;PPO Transition. Consists of (done, action, value, reward, log_prob, obs, info).&quot;&quot;&quot;</span>
+
+    <span class="n">done</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span>
+    <span class="n">action</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span>
+    <span class="n">value</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span>
+    <span class="n">reward</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span>
+    <span class="n">log_prob</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span>
+    <span class="n">obs</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span>
+    <span class="n">info</span><span class="p">:</span> <span class="nb">dict</span></div>
+
+
+
+<span class="n">PPOTrainReturnT</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">PPOState</span><span class="p">,</span> <span class="n">PPOTrainingResult</span><span class="p">]</span>
+
+
+<div class="viewcode-block" id="PPO">
+<a class="viewcode-back" href="../../../../../arlbench.core.algorithms.ppo.html#arlbench.core.algorithms.PPO">[docs]</a>
+<span class="k">class</span> <span class="nc">PPO</span><span class="p">(</span><span class="n">Algorithm</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;JAX-based implementation of Proximal Policy Optimization (PPO).&quot;&quot;&quot;</span>
+
+    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;ppo&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">hpo_config</span><span class="p">:</span> <span class="n">Configuration</span><span class="p">,</span>
+        <span class="n">env</span><span class="p">:</span> <span class="n">Environment</span> <span class="o">|</span> <span class="n">AutoRLWrapper</span><span class="p">,</span>
+        <span class="n">eval_env</span><span class="p">:</span> <span class="n">Environment</span> <span class="o">|</span> <span class="n">AutoRLWrapper</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">cnn_policy</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">nas_config</span><span class="p">:</span> <span class="n">Configuration</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">deterministic_eval</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">track_trajectories</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">track_metrics</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Creates a PPO algorithm instance.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            hpo_config (Configuration): Hyperparameter configuration.</span>
+<span class="sd">            env (Environment | AutoRLWrapper): Training environment.</span>
+<span class="sd">            eval_env (Environment | AutoRLWrapper | None, optional): Evaluation environent (otherwise training environment is used for evaluation). Defaults to None.</span>
+<span class="sd">            cnn_policy (bool, optional): Use CNN network architecture. Defaults to False.</span>
+<span class="sd">            nas_config (Configuration | None, optional): Neural architecture configuration. Defaults to None.</span>
+<span class="sd">            track_trajectories (bool, optional):  Track metrics such as loss and gradients during training. Defaults to False.</span>
+<span class="sd">            track_metrics (bool, optional): Track trajectories during training. Defaults to False.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">nas_config</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">nas_config</span> <span class="o">=</span> <span class="n">PPO</span><span class="o">.</span><span class="n">get_default_nas_config</span><span class="p">()</span>
+
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="n">hpo_config</span><span class="p">,</span>
+            <span class="n">nas_config</span><span class="p">,</span>
+            <span class="n">env</span><span class="p">,</span>
+            <span class="n">eval_env</span><span class="o">=</span><span class="n">eval_env</span><span class="p">,</span>
+            <span class="n">deterministic_eval</span><span class="o">=</span><span class="n">deterministic_eval</span><span class="p">,</span>
+            <span class="n">track_metrics</span><span class="o">=</span><span class="n">track_metrics</span><span class="p">,</span>
+            <span class="n">track_trajectories</span><span class="o">=</span><span class="n">track_trajectories</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Update interval = rollout size</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rollout_size</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">hpo_config</span><span class="p">[</span><span class="s2">&quot;n_steps&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">env</span><span class="o">.</span><span class="n">n_envs</span><span class="p">)</span>
+
+        <span class="c1"># Ensure that at least one minibatch is available after each rollout</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">hpo_config</span><span class="p">[</span><span class="s2">&quot;minibatch_size&quot;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">rollout_size</span><span class="p">:</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;minibatch_size &gt; update_interval. Setting minibatch size to rollout_size = </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">rollout_size</span><span class="si">}</span><span class="s2">.&quot;</span>
+            <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">minibatch_size</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rollout_size</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">minibatch_size</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">hpo_config</span><span class="p">[</span><span class="s2">&quot;minibatch_size&quot;</span><span class="p">])</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_minibatches</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rollout_size</span> <span class="o">//</span> <span class="bp">self</span><span class="o">.</span><span class="n">minibatch_size</span><span class="p">)</span>
+
+        <span class="n">action_size</span><span class="p">,</span> <span class="n">discrete</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">action_type</span>
+        <span class="n">network_cls</span> <span class="o">=</span> <span class="n">CNNActorCritic</span> <span class="k">if</span> <span class="n">cnn_policy</span> <span class="k">else</span> <span class="n">MLPActorCritic</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">network</span> <span class="o">=</span> <span class="n">network_cls</span><span class="p">(</span>
+            <span class="n">action_size</span><span class="p">,</span>
+            <span class="n">discrete</span><span class="o">=</span><span class="n">discrete</span><span class="p">,</span>
+            <span class="n">activation</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">nas_config</span><span class="p">[</span><span class="s2">&quot;activation&quot;</span><span class="p">],</span>
+            <span class="n">hidden_size</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">nas_config</span><span class="p">[</span><span class="s2">&quot;hidden_size&quot;</span><span class="p">],</span>
+        <span class="p">)</span>
+
+<div class="viewcode-block" id="PPO.get_hpo_config_space">
+<a class="viewcode-back" href="../../../../../arlbench.core.algorithms.ppo.html#arlbench.core.algorithms.PPO.get_hpo_config_space">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">get_hpo_config_space</span><span class="p">(</span><span class="n">seed</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ConfigurationSpace</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">ConfigurationSpace</span><span class="p">(</span>
+            <span class="n">name</span><span class="o">=</span><span class="s2">&quot;PPOConfigSpace&quot;</span><span class="p">,</span>
+            <span class="n">seed</span><span class="o">=</span><span class="n">seed</span><span class="p">,</span>
+            <span class="n">space</span><span class="o">=</span><span class="p">{</span>
+                <span class="s2">&quot;minibatch_size&quot;</span><span class="p">:</span> <span class="n">Categorical</span><span class="p">(</span>
+                    <span class="s2">&quot;minibatch_size&quot;</span><span class="p">,</span> <span class="p">[</span><span class="mi">16</span><span class="p">,</span> <span class="mi">32</span><span class="p">,</span> <span class="mi">64</span><span class="p">,</span> <span class="mi">128</span><span class="p">,</span> <span class="mi">2048</span><span class="p">],</span> <span class="n">default</span><span class="o">=</span><span class="mi">64</span>
+                <span class="p">),</span>
+                <span class="s2">&quot;learning_rate&quot;</span><span class="p">:</span> <span class="n">Float</span><span class="p">(</span>
+                    <span class="s2">&quot;learning_rate&quot;</span><span class="p">,</span> <span class="p">(</span><span class="mf">1e-6</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">),</span> <span class="n">default</span><span class="o">=</span><span class="mf">3e-4</span><span class="p">,</span> <span class="n">log</span><span class="o">=</span><span class="kc">True</span>
+                <span class="p">),</span>
+                <span class="s2">&quot;n_steps&quot;</span><span class="p">:</span> <span class="n">Categorical</span><span class="p">(</span>
+                    <span class="s2">&quot;n_steps&quot;</span><span class="p">,</span> <span class="p">[</span><span class="mi">5</span><span class="p">,</span> <span class="mi">32</span><span class="p">,</span> <span class="mi">64</span><span class="p">,</span> <span class="mi">80</span><span class="p">,</span> <span class="mi">128</span><span class="p">,</span> <span class="mi">256</span><span class="p">,</span> <span class="mi">512</span><span class="p">],</span> <span class="n">default</span><span class="o">=</span><span class="mi">128</span>
+                <span class="p">),</span>
+                <span class="s2">&quot;update_epochs&quot;</span><span class="p">:</span> <span class="n">Integer</span><span class="p">(</span><span class="s2">&quot;update_epochs&quot;</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">20</span><span class="p">),</span> <span class="n">default</span><span class="o">=</span><span class="mi">10</span><span class="p">),</span>
+                <span class="s2">&quot;gamma&quot;</span><span class="p">:</span> <span class="n">Float</span><span class="p">(</span><span class="s2">&quot;gamma&quot;</span><span class="p">,</span> <span class="p">(</span><span class="mf">0.8</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">),</span> <span class="n">default</span><span class="o">=</span><span class="mf">0.99</span><span class="p">),</span>
+                <span class="s2">&quot;gae_lambda&quot;</span><span class="p">:</span> <span class="n">Float</span><span class="p">(</span><span class="s2">&quot;gae_lambda&quot;</span><span class="p">,</span> <span class="p">(</span><span class="mf">0.8</span><span class="p">,</span> <span class="mf">0.9999</span><span class="p">),</span> <span class="n">default</span><span class="o">=</span><span class="mf">0.95</span><span class="p">),</span>
+                <span class="s2">&quot;clip_eps&quot;</span><span class="p">:</span> <span class="n">Float</span><span class="p">(</span><span class="s2">&quot;clip_eps&quot;</span><span class="p">,</span> <span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">),</span> <span class="n">default</span><span class="o">=</span><span class="mf">0.2</span><span class="p">),</span>
+                <span class="s2">&quot;vf_clip_eps&quot;</span><span class="p">:</span> <span class="n">Float</span><span class="p">(</span><span class="s2">&quot;vf_clip_eps&quot;</span><span class="p">,</span> <span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">),</span> <span class="n">default</span><span class="o">=</span><span class="mf">0.2</span><span class="p">),</span>
+                <span class="s2">&quot;normalize_advantage&quot;</span><span class="p">:</span> <span class="n">Categorical</span><span class="p">(</span>
+                    <span class="s2">&quot;normalize_advantage&quot;</span><span class="p">,</span> <span class="p">[</span><span class="kc">True</span><span class="p">,</span> <span class="kc">False</span><span class="p">],</span> <span class="n">default</span><span class="o">=</span><span class="kc">True</span>
+                <span class="p">),</span>
+                <span class="s2">&quot;ent_coef&quot;</span><span class="p">:</span> <span class="n">Float</span><span class="p">(</span><span class="s2">&quot;ent_coef&quot;</span><span class="p">,</span> <span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">),</span> <span class="n">default</span><span class="o">=</span><span class="mf">0.0</span><span class="p">),</span>
+                <span class="s2">&quot;vf_coef&quot;</span><span class="p">:</span> <span class="n">Float</span><span class="p">(</span><span class="s2">&quot;vf_coef&quot;</span><span class="p">,</span> <span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">),</span> <span class="n">default</span><span class="o">=</span><span class="mf">0.5</span><span class="p">),</span>
+                <span class="s2">&quot;max_grad_norm&quot;</span><span class="p">:</span> <span class="n">Float</span><span class="p">(</span><span class="s2">&quot;max_grad_norm&quot;</span><span class="p">,</span> <span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">),</span> <span class="n">default</span><span class="o">=</span><span class="mf">0.5</span><span class="p">),</span>
+                <span class="s2">&quot;normalize_observations&quot;</span><span class="p">:</span> <span class="n">Categorical</span><span class="p">(</span>
+                    <span class="s2">&quot;normalize_observations&quot;</span><span class="p">,</span> <span class="p">[</span><span class="kc">True</span><span class="p">,</span> <span class="kc">False</span><span class="p">],</span> <span class="n">default</span><span class="o">=</span><span class="kc">False</span>
+                <span class="p">),</span>
+            <span class="p">},</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="PPO.get_hpo_search_space">
+<a class="viewcode-back" href="../../../../../arlbench.core.algorithms.ppo.html#arlbench.core.algorithms.PPO.get_hpo_search_space">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">get_hpo_search_space</span><span class="p">(</span><span class="n">seed</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ConfigurationSpace</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">ConfigurationSpace</span><span class="p">(</span>
+            <span class="n">name</span><span class="o">=</span><span class="s2">&quot;PPOConfigSpace&quot;</span><span class="p">,</span>
+            <span class="n">seed</span><span class="o">=</span><span class="n">seed</span><span class="p">,</span>
+            <span class="n">space</span><span class="o">=</span><span class="p">{</span>
+                <span class="s2">&quot;minibatch_size&quot;</span><span class="p">:</span> <span class="n">Categorical</span><span class="p">(</span>
+                    <span class="s2">&quot;minibatch_size&quot;</span><span class="p">,</span> <span class="p">[</span><span class="mi">16</span><span class="p">,</span> <span class="mi">32</span><span class="p">,</span> <span class="mi">64</span><span class="p">,</span> <span class="mi">128</span><span class="p">],</span> <span class="n">default</span><span class="o">=</span><span class="mi">64</span>
+                <span class="p">),</span>
+                <span class="s2">&quot;learning_rate&quot;</span><span class="p">:</span> <span class="n">Float</span><span class="p">(</span>
+                    <span class="s2">&quot;learning_rate&quot;</span><span class="p">,</span> <span class="p">(</span><span class="mf">1e-6</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">),</span> <span class="n">default</span><span class="o">=</span><span class="mf">3e-4</span><span class="p">,</span> <span class="n">log</span><span class="o">=</span><span class="kc">True</span>
+                <span class="p">),</span>
+                <span class="s2">&quot;n_steps&quot;</span><span class="p">:</span> <span class="n">Categorical</span><span class="p">(</span><span class="s2">&quot;n_steps&quot;</span><span class="p">,</span> <span class="p">[</span><span class="mi">32</span><span class="p">,</span> <span class="mi">64</span><span class="p">,</span> <span class="mi">128</span><span class="p">,</span> <span class="mi">256</span><span class="p">,</span> <span class="mi">512</span><span class="p">],</span> <span class="n">default</span><span class="o">=</span><span class="mi">128</span><span class="p">),</span>
+                <span class="s2">&quot;update_epochs&quot;</span><span class="p">:</span> <span class="n">Integer</span><span class="p">(</span><span class="s2">&quot;update_epochs&quot;</span><span class="p">,</span> <span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">20</span><span class="p">),</span> <span class="n">default</span><span class="o">=</span><span class="mi">10</span><span class="p">),</span>
+                <span class="s2">&quot;gae_lambda&quot;</span><span class="p">:</span> <span class="n">Float</span><span class="p">(</span><span class="s2">&quot;gae_lambda&quot;</span><span class="p">,</span> <span class="p">(</span><span class="mf">0.8</span><span class="p">,</span> <span class="mf">0.9999</span><span class="p">),</span> <span class="n">default</span><span class="o">=</span><span class="mf">0.95</span><span class="p">),</span>
+                <span class="s2">&quot;clip_eps&quot;</span><span class="p">:</span> <span class="n">Float</span><span class="p">(</span><span class="s2">&quot;clip_eps&quot;</span><span class="p">,</span> <span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">),</span> <span class="n">default</span><span class="o">=</span><span class="mf">0.2</span><span class="p">),</span>
+                <span class="s2">&quot;vf_clip_eps&quot;</span><span class="p">:</span> <span class="n">Float</span><span class="p">(</span><span class="s2">&quot;vf_clip_eps&quot;</span><span class="p">,</span> <span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">),</span> <span class="n">default</span><span class="o">=</span><span class="mf">0.2</span><span class="p">),</span>
+                <span class="s2">&quot;normalize_advantage&quot;</span><span class="p">:</span> <span class="n">Categorical</span><span class="p">(</span>
+                    <span class="s2">&quot;normalize_advantage&quot;</span><span class="p">,</span> <span class="p">[</span><span class="kc">True</span><span class="p">,</span> <span class="kc">False</span><span class="p">],</span> <span class="n">default</span><span class="o">=</span><span class="kc">True</span>
+                <span class="p">),</span>
+                <span class="s2">&quot;ent_coef&quot;</span><span class="p">:</span> <span class="n">Float</span><span class="p">(</span><span class="s2">&quot;ent_coef&quot;</span><span class="p">,</span> <span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">),</span> <span class="n">default</span><span class="o">=</span><span class="mf">0.0</span><span class="p">),</span>
+                <span class="s2">&quot;vf_coef&quot;</span><span class="p">:</span> <span class="n">Float</span><span class="p">(</span><span class="s2">&quot;vf_coef&quot;</span><span class="p">,</span> <span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">),</span> <span class="n">default</span><span class="o">=</span><span class="mf">0.5</span><span class="p">),</span>
+                <span class="s2">&quot;max_grad_norm&quot;</span><span class="p">:</span> <span class="n">Float</span><span class="p">(</span><span class="s2">&quot;max_grad_norm&quot;</span><span class="p">,</span> <span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">),</span> <span class="n">default</span><span class="o">=</span><span class="mf">0.5</span><span class="p">),</span>
+            <span class="p">},</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="PPO.get_default_hpo_config">
+<a class="viewcode-back" href="../../../../../arlbench.core.algorithms.ppo.html#arlbench.core.algorithms.PPO.get_default_hpo_config">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">get_default_hpo_config</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">Configuration</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">PPO</span><span class="o">.</span><span class="n">get_hpo_config_space</span><span class="p">()</span><span class="o">.</span><span class="n">get_default_configuration</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="PPO.get_nas_config_space">
+<a class="viewcode-back" href="../../../../../arlbench.core.algorithms.ppo.html#arlbench.core.algorithms.PPO.get_nas_config_space">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">get_nas_config_space</span><span class="p">(</span><span class="n">seed</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ConfigurationSpace</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">ConfigurationSpace</span><span class="p">(</span>
+            <span class="n">name</span><span class="o">=</span><span class="s2">&quot;PPONASConfigSpace&quot;</span><span class="p">,</span>
+            <span class="n">seed</span><span class="o">=</span><span class="n">seed</span><span class="p">,</span>
+            <span class="n">space</span><span class="o">=</span><span class="p">{</span>
+                <span class="s2">&quot;activation&quot;</span><span class="p">:</span> <span class="n">Categorical</span><span class="p">(</span>
+                    <span class="s2">&quot;activation&quot;</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;tanh&quot;</span><span class="p">,</span> <span class="s2">&quot;relu&quot;</span><span class="p">],</span> <span class="n">default</span><span class="o">=</span><span class="s2">&quot;tanh&quot;</span>
+                <span class="p">),</span>
+                <span class="s2">&quot;hidden_size&quot;</span><span class="p">:</span> <span class="n">Integer</span><span class="p">(</span><span class="s2">&quot;hidden_size&quot;</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2048</span><span class="p">),</span> <span class="n">default</span><span class="o">=</span><span class="mi">64</span><span class="p">),</span>
+            <span class="p">},</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="PPO.get_default_nas_config">
+<a class="viewcode-back" href="../../../../../arlbench.core.algorithms.ppo.html#arlbench.core.algorithms.PPO.get_default_nas_config">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">get_default_nas_config</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">Configuration</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">PPO</span><span class="o">.</span><span class="n">get_nas_config_space</span><span class="p">()</span><span class="o">.</span><span class="n">get_default_configuration</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="PPO.get_checkpoint_factory">
+<a class="viewcode-back" href="../../../../../arlbench.core.algorithms.ppo.html#arlbench.core.algorithms.PPO.get_checkpoint_factory">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">get_checkpoint_factory</span><span class="p">(</span>
+        <span class="n">runner_state</span><span class="p">:</span> <span class="n">PPORunnerState</span><span class="p">,</span>
+        <span class="n">train_result</span><span class="p">:</span> <span class="n">PPOTrainingResult</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Callable</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Creates a factory dictionary of all posssible checkpointing options for PPO.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            runner_state (PPORunnerState): Algorithm runner state.</span>
+<span class="sd">            train_result (PPOTrainingResult | None): Training result.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            dict[str, Callable]: Dictionary of factory functions containing [opt_state, params, loss, trajectories].</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">train_state</span> <span class="o">=</span> <span class="n">runner_state</span><span class="o">.</span><span class="n">train_state</span>
+
+        <span class="k">def</span> <span class="nf">get_trajectories</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">train_result</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">train_result</span><span class="o">.</span><span class="n">trajectories</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">return</span> <span class="kc">None</span>
+
+            <span class="n">traj</span> <span class="o">=</span> <span class="n">train_result</span><span class="o">.</span><span class="n">trajectories</span>
+
+            <span class="n">trajectories</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="n">trajectories</span><span class="p">[</span><span class="s2">&quot;states&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">traj</span><span class="o">.</span><span class="n">obs</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+            <span class="n">trajectories</span><span class="p">[</span><span class="s2">&quot;action&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">traj</span><span class="o">.</span><span class="n">action</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+            <span class="n">trajectories</span><span class="p">[</span><span class="s2">&quot;reward&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">traj</span><span class="o">.</span><span class="n">reward</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+            <span class="n">trajectories</span><span class="p">[</span><span class="s2">&quot;dones&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">traj</span><span class="o">.</span><span class="n">done</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+            <span class="n">trajectories</span><span class="p">[</span><span class="s2">&quot;value&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">traj</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+            <span class="n">trajectories</span><span class="p">[</span><span class="s2">&quot;log_prob&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">traj</span><span class="o">.</span><span class="n">log_prob</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+            <span class="k">return</span> <span class="n">trajectories</span>
+
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s2">&quot;opt_state&quot;</span><span class="p">:</span> <span class="k">lambda</span><span class="p">:</span> <span class="n">train_state</span><span class="o">.</span><span class="n">opt_state</span><span class="p">,</span>
+            <span class="s2">&quot;params&quot;</span><span class="p">:</span> <span class="k">lambda</span><span class="p">:</span> <span class="n">train_state</span><span class="o">.</span><span class="n">params</span><span class="p">,</span>
+            <span class="s2">&quot;loss&quot;</span><span class="p">:</span> <span class="k">lambda</span><span class="p">:</span> <span class="n">train_result</span><span class="o">.</span><span class="n">metrics</span><span class="o">.</span><span class="n">loss</span>
+            <span class="k">if</span> <span class="n">train_result</span> <span class="ow">and</span> <span class="n">train_result</span><span class="o">.</span><span class="n">metrics</span>
+            <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="s2">&quot;trajectories&quot;</span><span class="p">:</span> <span class="n">get_trajectories</span><span class="p">,</span>
+        <span class="p">}</span></div>
+
+
+<div class="viewcode-block" id="PPO.init">
+<a class="viewcode-back" href="../../../../../arlbench.core.algorithms.ppo.html#arlbench.core.algorithms.PPO.init">[docs]</a>
+    <span class="k">def</span> <span class="nf">init</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">rng</span><span class="p">:</span> <span class="n">chex</span><span class="o">.</span><span class="n">PRNGKey</span><span class="p">,</span>
+        <span class="n">network_params</span><span class="p">:</span> <span class="n">FrozenDict</span> <span class="o">|</span> <span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">opt_state</span><span class="p">:</span> <span class="n">optax</span><span class="o">.</span><span class="n">OptState</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PPOState</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initializes PPO state. Passed parameters are not initialized and included in the final state.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            rng (chex.PRNGKey): Random generator key.</span>
+<span class="sd">            network_params (FrozenDict | dict | None, optional): Network parameters. Defaults to None.</span>
+<span class="sd">            opt_state (optax.OptState | None, optional): Optimizer state. Defaults to None.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            PPOState: PPO state.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">rng</span><span class="p">,</span> <span class="n">reset_rng</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">rng</span><span class="p">)</span>
+        <span class="n">env_state</span><span class="p">,</span> <span class="n">obs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">env</span><span class="o">.</span><span class="n">reset</span><span class="p">(</span><span class="n">reset_rng</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">network_params</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">rng</span><span class="p">,</span> <span class="n">init_rng</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">rng</span><span class="p">)</span>
+            <span class="n">network_params</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">network</span><span class="o">.</span><span class="n">init</span><span class="p">(</span><span class="n">init_rng</span><span class="p">,</span> <span class="n">obs</span><span class="p">)</span>
+
+        <span class="n">tx</span> <span class="o">=</span> <span class="n">optax</span><span class="o">.</span><span class="n">chain</span><span class="p">(</span>
+            <span class="n">optax</span><span class="o">.</span><span class="n">clip_by_global_norm</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">hpo_config</span><span class="p">[</span><span class="s2">&quot;max_grad_norm&quot;</span><span class="p">]),</span>
+            <span class="n">optax</span><span class="o">.</span><span class="n">adam</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">hpo_config</span><span class="p">[</span><span class="s2">&quot;learning_rate&quot;</span><span class="p">],</span> <span class="n">eps</span><span class="o">=</span><span class="mf">1e-5</span><span class="p">),</span>
+        <span class="p">)</span>
+
+        <span class="n">train_state</span> <span class="o">=</span> <span class="n">PPOTrainState</span><span class="o">.</span><span class="n">create_with_opt_state</span><span class="p">(</span>
+            <span class="n">apply_fn</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">network</span><span class="o">.</span><span class="n">apply</span><span class="p">,</span>
+            <span class="n">params</span><span class="o">=</span><span class="n">network_params</span><span class="p">,</span>
+            <span class="n">tx</span><span class="o">=</span><span class="n">tx</span><span class="p">,</span>
+            <span class="n">opt_state</span><span class="o">=</span><span class="n">opt_state</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="n">runner_state</span> <span class="o">=</span> <span class="n">PPORunnerState</span><span class="p">(</span>
+            <span class="n">rng</span><span class="o">=</span><span class="n">rng</span><span class="p">,</span>
+            <span class="n">train_state</span><span class="o">=</span><span class="n">train_state</span><span class="p">,</span>
+            <span class="n">normalizer_state</span><span class="o">=</span><span class="n">running_statistics</span><span class="o">.</span><span class="n">init_state</span><span class="p">(</span><span class="n">obs</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span>
+            <span class="n">env_state</span><span class="o">=</span><span class="n">env_state</span><span class="p">,</span>
+            <span class="n">obs</span><span class="o">=</span><span class="n">obs</span><span class="p">,</span>
+            <span class="n">global_step</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+            <span class="n">return_buffer_idx</span><span class="o">=</span><span class="n">jnp</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">0</span><span class="p">]),</span>
+            <span class="n">return_buffer</span><span class="o">=</span><span class="n">jnp</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">100</span><span class="p">),</span>
+            <span class="n">cur_rewards</span><span class="o">=</span><span class="n">jnp</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">env</span><span class="o">.</span><span class="n">n_envs</span><span class="p">),</span>
+        <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">PPOState</span><span class="p">(</span><span class="n">runner_state</span><span class="o">=</span><span class="n">runner_state</span><span class="p">,</span> <span class="n">buffer_state</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="PPO.predict">
+<a class="viewcode-back" href="../../../../../arlbench.core.algorithms.ppo.html#arlbench.core.algorithms.PPO.predict">[docs]</a>
+    <span class="nd">@functools</span><span class="o">.</span><span class="n">partial</span><span class="p">(</span><span class="n">jax</span><span class="o">.</span><span class="n">jit</span><span class="p">,</span> <span class="n">static_argnums</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">predict</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">runner_state</span><span class="p">:</span> <span class="n">PPORunnerState</span><span class="p">,</span>
+        <span class="n">obs</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">rng</span><span class="p">:</span> <span class="n">chex</span><span class="o">.</span><span class="n">PRNGKey</span><span class="p">,</span>
+        <span class="n">deterministic</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Predict action(s) based on the current observation(s).</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            runner_state (PPORunnerState): Algorithm runner state.</span>
+<span class="sd">            obs (jnp.ndarray): Observation(s).</span>
+<span class="sd">            rng (chex.PRNGKey | None, optional): Random generator key. Defaults to None.</span>
+<span class="sd">            deterministic (bool): Return deterministic action. Defaults to True.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            jnp.ndarray: Action(s).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">hpo_config</span><span class="p">[</span><span class="s2">&quot;normalize_observations&quot;</span><span class="p">]:</span>
+            <span class="n">obs</span> <span class="o">=</span> <span class="n">running_statistics</span><span class="o">.</span><span class="n">normalize</span><span class="p">(</span><span class="n">obs</span><span class="p">,</span> <span class="n">runner_state</span><span class="o">.</span><span class="n">normalizer_state</span><span class="p">)</span>
+        <span class="n">pi</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">network</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">runner_state</span><span class="o">.</span><span class="n">train_state</span><span class="o">.</span><span class="n">params</span><span class="p">,</span> <span class="n">obs</span><span class="p">)</span>
+
+        <span class="k">def</span> <span class="nf">deterministic_action</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">pi</span><span class="o">.</span><span class="n">mode</span><span class="p">()</span>
+
+        <span class="k">def</span> <span class="nf">sampled_action</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">pi</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">seed</span><span class="o">=</span><span class="n">rng</span><span class="p">)</span>
+
+        <span class="n">action</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">lax</span><span class="o">.</span><span class="n">cond</span><span class="p">(</span>
+            <span class="n">deterministic</span><span class="p">,</span>
+            <span class="n">deterministic_action</span><span class="p">,</span>
+            <span class="n">sampled_action</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">action_type</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>  <span class="c1"># continuous action space</span>
+            <span class="n">action</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span>
+                <span class="n">action</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">env</span><span class="o">.</span><span class="n">action_space</span><span class="o">.</span><span class="n">low</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">env</span><span class="o">.</span><span class="n">action_space</span><span class="o">.</span><span class="n">high</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="n">action</span></div>
+
+
+<div class="viewcode-block" id="PPO.train">
+<a class="viewcode-back" href="../../../../../arlbench.core.algorithms.ppo.html#arlbench.core.algorithms.PPO.train">[docs]</a>
+    <span class="nd">@functools</span><span class="o">.</span><span class="n">partial</span><span class="p">(</span><span class="n">jax</span><span class="o">.</span><span class="n">jit</span><span class="p">,</span> <span class="n">static_argnums</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">))</span>
+    <span class="k">def</span> <span class="nf">train</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">runner_state</span><span class="p">:</span> <span class="n">PPORunnerState</span><span class="p">,</span>
+        <span class="n">_</span><span class="p">,</span>
+        <span class="n">n_total_timesteps</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1000000</span><span class="p">,</span>
+        <span class="n">n_eval_steps</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span>
+        <span class="n">n_eval_episodes</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PPOTrainReturnT</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Performs one iteration of training.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            runner_state (PPORunnerState): PPO runner state.</span>
+<span class="sd">            _ (None): Unused parameter (buffer_state in other algorithms).</span>
+<span class="sd">            n_total_timesteps (int, optional): Total number of training timesteps. Update steps = n_total_timesteps // n_envs. Defaults to 1000000.</span>
+<span class="sd">            n_eval_steps (int, optional): Number of evaluation steps during training. Defaults to 100.</span>
+<span class="sd">            n_eval_episodes (int, optional): Number of evaluation episodes per evaluation during training. Defaults to 10.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            PPOTrainReturnT: Tuple of PPO algorithm state and training result.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">def</span> <span class="nf">train_eval_step</span><span class="p">(</span>
+            <span class="n">_runner_state</span><span class="p">:</span> <span class="n">PPORunnerState</span><span class="p">,</span> <span class="n">_</span><span class="p">:</span> <span class="kc">None</span>
+        <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">PPORunnerState</span><span class="p">,</span> <span class="n">PPOTrainingResult</span><span class="p">]:</span>
+<span class="w">            </span><span class="sd">&quot;&quot;&quot;Performs one iteration of training and evaluation.</span>
+
+<span class="sd">            Args:</span>
+<span class="sd">                _runner_state (PPORunnerState): PPO runner state.</span>
+<span class="sd">                _ (None): Unused parameter (required for jax.lax.scan).</span>
+
+<span class="sd">            Returns:</span>
+<span class="sd">                tuple[PPORunnerState, PPOTrainingResult]: Tuple of PPO runner state and training result.</span>
+<span class="sd">            &quot;&quot;&quot;</span>
+            <span class="c1">#jax.debug.print(&quot;hallo&quot;)</span>
+            <span class="n">_runner_state</span><span class="p">,</span> <span class="p">(</span><span class="n">metrics</span><span class="p">,</span> <span class="n">trajectories</span><span class="p">)</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">lax</span><span class="o">.</span><span class="n">scan</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_update_step</span><span class="p">,</span>
+                <span class="n">_runner_state</span><span class="p">,</span>
+                <span class="kc">None</span><span class="p">,</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span>
+                    <span class="n">n_total_timesteps</span>
+                    <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">env</span><span class="o">.</span><span class="n">n_envs</span>
+                    <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">hpo_config</span><span class="p">[</span><span class="s2">&quot;n_steps&quot;</span><span class="p">]</span>
+                    <span class="o">/</span> <span class="n">n_eval_steps</span>
+                <span class="p">),</span>
+            <span class="p">)</span>
+            <span class="n">eval_returns</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">eval</span><span class="p">(</span><span class="n">_runner_state</span><span class="p">,</span> <span class="n">n_eval_episodes</span><span class="p">)</span>
+            <span class="c1">#jax.debug.print(&quot;{ret}&quot;, ret=eval_returns.mean())</span>
+
+            <span class="k">return</span> <span class="n">_runner_state</span><span class="p">,</span> <span class="n">PPOTrainingResult</span><span class="p">(</span>
+                <span class="n">eval_rewards</span><span class="o">=</span><span class="n">eval_returns</span><span class="p">,</span> <span class="n">trajectories</span><span class="o">=</span><span class="n">trajectories</span><span class="p">,</span> <span class="n">metrics</span><span class="o">=</span><span class="n">metrics</span>
+            <span class="p">)</span>
+
+        <span class="n">runner_state</span><span class="p">,</span> <span class="n">train_result</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">lax</span><span class="o">.</span><span class="n">scan</span><span class="p">(</span>
+            <span class="n">train_eval_step</span><span class="p">,</span>
+            <span class="n">runner_state</span><span class="p">,</span>
+            <span class="kc">None</span><span class="p">,</span>
+            <span class="n">n_eval_steps</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">PPOState</span><span class="p">(</span><span class="n">runner_state</span><span class="o">=</span><span class="n">runner_state</span><span class="p">),</span> <span class="n">train_result</span></div>
+
+
+    <span class="nd">@functools</span><span class="o">.</span><span class="n">partial</span><span class="p">(</span><span class="n">jax</span><span class="o">.</span><span class="n">jit</span><span class="p">,</span> <span class="n">static_argnums</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">_update_step</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">runner_state</span><span class="p">:</span> <span class="n">PPORunnerState</span><span class="p">,</span> <span class="n">_</span><span class="p">:</span> <span class="kc">None</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">PPORunnerState</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">PPOMetrics</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="n">Transition</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Performs one PPO step of rollout and update.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            runner_state (PPORunnerState): PPO runner state.</span>
+<span class="sd">            _ (None): Unused parameter (required for jax.lax.scan).</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            tuple[PPORunnerState, tuple[PPOMetrics | None, Transition | None]]: Tuple of PPO runner state and tuple of metrics and trajectories (if tracked).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">runner_state</span><span class="p">,</span> <span class="n">traj_batch</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">lax</span><span class="o">.</span><span class="n">scan</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_env_step</span><span class="p">,</span> <span class="n">runner_state</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">hpo_config</span><span class="p">[</span><span class="s2">&quot;n_steps&quot;</span><span class="p">]</span>
+        <span class="p">)</span>
+        <span class="p">(</span>
+            <span class="n">rng</span><span class="p">,</span>
+            <span class="n">train_state</span><span class="p">,</span>
+            <span class="n">normalizer_state</span><span class="p">,</span>
+            <span class="n">env_state</span><span class="p">,</span>
+            <span class="n">last_obs</span><span class="p">,</span>
+            <span class="n">global_step</span><span class="p">,</span>
+            <span class="n">return_buffer_idx</span><span class="p">,</span>
+            <span class="n">return_buffer</span><span class="p">,</span>
+            <span class="n">cur_rewards</span><span class="p">,</span>
+        <span class="p">)</span> <span class="o">=</span> <span class="n">runner_state</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">hpo_config</span><span class="p">[</span><span class="s2">&quot;normalize_observations&quot;</span><span class="p">]:</span>
+            <span class="n">normalizer_state</span> <span class="o">=</span> <span class="n">running_statistics</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
+                <span class="n">normalizer_state</span><span class="p">,</span> <span class="n">traj_batch</span><span class="o">.</span><span class="n">obs</span>
+            <span class="p">)</span>
+            <span class="n">traj_batch</span> <span class="o">=</span> <span class="n">Transition</span><span class="p">(</span>
+                <span class="n">done</span><span class="o">=</span><span class="n">traj_batch</span><span class="o">.</span><span class="n">done</span><span class="p">,</span>
+                <span class="n">action</span><span class="o">=</span><span class="n">traj_batch</span><span class="o">.</span><span class="n">action</span><span class="p">,</span>
+                <span class="n">value</span><span class="o">=</span><span class="n">traj_batch</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
+                <span class="n">reward</span><span class="o">=</span><span class="n">traj_batch</span><span class="o">.</span><span class="n">reward</span><span class="p">,</span>
+                <span class="n">log_prob</span><span class="o">=</span><span class="n">traj_batch</span><span class="o">.</span><span class="n">log_prob</span><span class="p">,</span>
+                <span class="n">obs</span><span class="o">=</span><span class="n">running_statistics</span><span class="o">.</span><span class="n">normalize</span><span class="p">(</span><span class="n">traj_batch</span><span class="o">.</span><span class="n">obs</span><span class="p">,</span> <span class="n">normalizer_state</span><span class="p">),</span>
+                <span class="n">info</span><span class="o">=</span><span class="n">traj_batch</span><span class="o">.</span><span class="n">info</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="n">_</span><span class="p">,</span> <span class="n">last_val</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">network</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span>
+                <span class="n">train_state</span><span class="o">.</span><span class="n">params</span><span class="p">,</span>
+                <span class="n">running_statistics</span><span class="o">.</span><span class="n">normalize</span><span class="p">(</span><span class="n">last_obs</span><span class="p">,</span> <span class="n">normalizer_state</span><span class="p">),</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">_</span><span class="p">,</span> <span class="n">last_val</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">network</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">train_state</span><span class="o">.</span><span class="n">params</span><span class="p">,</span> <span class="n">last_obs</span><span class="p">)</span>
+
+        <span class="c1"># Calculate advantage</span>
+        <span class="n">advantages</span><span class="p">,</span> <span class="n">targets</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_calculate_gae</span><span class="p">(</span><span class="n">traj_batch</span><span class="p">,</span> <span class="n">last_val</span><span class="p">)</span>
+
+        <span class="c1"># Update network parameters</span>
+        <span class="n">update_state</span> <span class="o">=</span> <span class="p">(</span><span class="n">train_state</span><span class="p">,</span> <span class="n">traj_batch</span><span class="p">,</span> <span class="n">advantages</span><span class="p">,</span> <span class="n">targets</span><span class="p">,</span> <span class="n">rng</span><span class="p">)</span>
+        <span class="n">update_state</span><span class="p">,</span> <span class="p">(</span><span class="n">loss</span><span class="p">,</span> <span class="n">grads</span><span class="p">)</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">lax</span><span class="o">.</span><span class="n">scan</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_update_epoch</span><span class="p">,</span> <span class="n">update_state</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">hpo_config</span><span class="p">[</span><span class="s2">&quot;update_epochs&quot;</span><span class="p">]</span>
+        <span class="p">)</span>
+        <span class="n">train_state</span> <span class="o">=</span> <span class="n">update_state</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">rng</span> <span class="o">=</span> <span class="n">update_state</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+
+        <span class="n">runner_state</span> <span class="o">=</span> <span class="n">PPORunnerState</span><span class="p">(</span>
+            <span class="n">rng</span><span class="o">=</span><span class="n">rng</span><span class="p">,</span>
+            <span class="n">train_state</span><span class="o">=</span><span class="n">train_state</span><span class="p">,</span>
+            <span class="n">normalizer_state</span><span class="o">=</span><span class="n">normalizer_state</span><span class="p">,</span>
+            <span class="n">env_state</span><span class="o">=</span><span class="n">env_state</span><span class="p">,</span>
+            <span class="n">obs</span><span class="o">=</span><span class="n">last_obs</span><span class="p">,</span>
+            <span class="n">global_step</span><span class="o">=</span><span class="n">global_step</span><span class="p">,</span>
+            <span class="n">return_buffer_idx</span><span class="o">=</span><span class="n">return_buffer_idx</span><span class="p">,</span>
+            <span class="n">return_buffer</span><span class="o">=</span><span class="n">runner_state</span><span class="o">.</span><span class="n">return_buffer</span><span class="p">,</span>
+            <span class="n">cur_rewards</span><span class="o">=</span><span class="n">runner_state</span><span class="o">.</span><span class="n">cur_rewards</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">metrics</span><span class="p">,</span> <span class="n">trajectories</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">track_metrics</span><span class="p">:</span>
+            <span class="n">metrics</span> <span class="o">=</span> <span class="n">PPOMetrics</span><span class="p">(</span><span class="n">loss</span><span class="o">=</span><span class="n">loss</span><span class="p">,</span> <span class="n">grads</span><span class="o">=</span><span class="n">grads</span><span class="p">,</span> <span class="n">advantages</span><span class="o">=</span><span class="n">advantages</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">track_trajectories</span><span class="p">:</span>
+            <span class="n">trajectories</span> <span class="o">=</span> <span class="n">traj_batch</span>
+        <span class="k">return</span> <span class="n">runner_state</span><span class="p">,</span> <span class="p">(</span><span class="n">metrics</span><span class="p">,</span> <span class="n">trajectories</span><span class="p">)</span>
+
+    <span class="nd">@functools</span><span class="o">.</span><span class="n">partial</span><span class="p">(</span><span class="n">jax</span><span class="o">.</span><span class="n">jit</span><span class="p">,</span> <span class="n">static_argnums</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">_env_step</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">runner_state</span><span class="p">:</span> <span class="n">PPORunnerState</span><span class="p">,</span> <span class="n">_</span><span class="p">:</span> <span class="kc">None</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">PPORunnerState</span><span class="p">,</span> <span class="n">Transition</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Perform one environment step (n_envs step in case of parallel environments).</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            runner_state (PPORunnerState): PPO runner state.</span>
+<span class="sd">            _ (None): Unused parameter (required for jax.lax.scan).</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            tuple[PPORunnerState, Transition]: Tuple of PPO runner state and batch of transitions.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="p">(</span>
+            <span class="n">rng</span><span class="p">,</span>
+            <span class="n">train_state</span><span class="p">,</span>
+            <span class="n">normalizer_state</span><span class="p">,</span>
+            <span class="n">env_state</span><span class="p">,</span>
+            <span class="n">last_obs</span><span class="p">,</span>
+            <span class="n">global_step</span><span class="p">,</span>
+            <span class="n">return_buffer_idx</span><span class="p">,</span>
+            <span class="n">return_buffer</span><span class="p">,</span>
+            <span class="n">cur_rewards</span><span class="p">,</span>
+        <span class="p">)</span> <span class="o">=</span> <span class="n">runner_state</span>
+
+        <span class="c1"># Select action(s)</span>
+        <span class="n">rng</span><span class="p">,</span> <span class="n">_rng</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">rng</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">hpo_config</span><span class="p">[</span><span class="s2">&quot;normalize_observations&quot;</span><span class="p">]:</span>
+            <span class="n">pi</span><span class="p">,</span> <span class="n">value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">network</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span>
+                <span class="n">train_state</span><span class="o">.</span><span class="n">params</span><span class="p">,</span>
+                <span class="n">running_statistics</span><span class="o">.</span><span class="n">normalize</span><span class="p">(</span><span class="n">last_obs</span><span class="p">,</span> <span class="n">normalizer_state</span><span class="p">),</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">pi</span><span class="p">,</span> <span class="n">value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">network</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">train_state</span><span class="o">.</span><span class="n">params</span><span class="p">,</span> <span class="n">last_obs</span><span class="p">)</span>
+
+        <span class="n">action</span><span class="p">,</span> <span class="n">log_prob</span> <span class="o">=</span> <span class="n">pi</span><span class="o">.</span><span class="n">sample_and_log_prob</span><span class="p">(</span><span class="n">seed</span><span class="o">=</span><span class="n">_rng</span><span class="p">)</span>
+
+        <span class="n">clipped_action</span> <span class="o">=</span> <span class="n">action</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">action_type</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>  <span class="c1"># continuous action space</span>
+            <span class="n">clipped_action</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span>
+                <span class="n">action</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">env</span><span class="o">.</span><span class="n">action_space</span><span class="o">.</span><span class="n">low</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">env</span><span class="o">.</span><span class="n">action_space</span><span class="o">.</span><span class="n">high</span>
+            <span class="p">)</span>
+
+        <span class="c1"># Perform env step</span>
+        <span class="n">rng</span><span class="p">,</span> <span class="n">_rng</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">rng</span><span class="p">)</span>
+        <span class="n">env_state</span><span class="p">,</span> <span class="p">(</span><span class="n">obsv</span><span class="p">,</span> <span class="n">reward</span><span class="p">,</span> <span class="n">done</span><span class="p">,</span> <span class="n">info</span><span class="p">)</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">env</span><span class="o">.</span><span class="n">step</span><span class="p">(</span>
+            <span class="n">env_state</span><span class="p">,</span> <span class="n">clipped_action</span><span class="p">,</span> <span class="n">_rng</span>
+        <span class="p">)</span>
+        <span class="n">global_step</span> <span class="o">+=</span> <span class="mi">1</span>
+
+        <span class="n">transition</span> <span class="o">=</span> <span class="n">Transition</span><span class="p">(</span><span class="n">done</span><span class="p">,</span> <span class="n">action</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">reward</span><span class="p">,</span> <span class="n">log_prob</span><span class="p">,</span> <span class="n">last_obs</span><span class="p">,</span> <span class="n">info</span><span class="p">)</span>
+        <span class="n">cur_rewards</span> <span class="o">+=</span> <span class="n">reward</span>
+        <span class="n">jnp</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="kc">False</span><span class="p">])</span>  <span class="c1"># todo: print_reward!!</span>
+
+        <span class="n">runner_state</span> <span class="o">=</span> <span class="n">PPORunnerState</span><span class="p">(</span>
+            <span class="n">train_state</span><span class="o">=</span><span class="n">train_state</span><span class="p">,</span>
+            <span class="n">normalizer_state</span><span class="o">=</span><span class="n">normalizer_state</span><span class="p">,</span>
+            <span class="n">env_state</span><span class="o">=</span><span class="n">env_state</span><span class="p">,</span>
+            <span class="n">obs</span><span class="o">=</span><span class="n">obsv</span><span class="p">,</span>
+            <span class="n">rng</span><span class="o">=</span><span class="n">rng</span><span class="p">,</span>
+            <span class="n">global_step</span><span class="o">=</span><span class="n">global_step</span><span class="p">,</span>
+            <span class="n">return_buffer_idx</span><span class="o">=</span><span class="n">return_buffer_idx</span><span class="p">,</span>
+            <span class="n">return_buffer</span><span class="o">=</span><span class="n">return_buffer</span><span class="p">,</span>
+            <span class="n">cur_rewards</span><span class="o">=</span><span class="n">cur_rewards</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">runner_state</span><span class="p">,</span> <span class="n">transition</span>
+
+    <span class="nd">@functools</span><span class="o">.</span><span class="n">partial</span><span class="p">(</span><span class="n">jax</span><span class="o">.</span><span class="n">jit</span><span class="p">,</span> <span class="n">static_argnums</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">_calculate_gae</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">transition_batch</span><span class="p">:</span> <span class="n">Transition</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Generalized advantage estimation.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            transition_batch (Transition): Batch of transitions (rollout).</span>
+<span class="sd">            value (jnp.ndarray): Previous value estimation for each transition.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            tuple[jnp.ndarray, jnp.ndarray]: (advantages, targets). Tuple of advantage and estimated return for each transition of the batch.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">_</span><span class="p">,</span> <span class="n">advantages</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">lax</span><span class="o">.</span><span class="n">scan</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_get_advantages</span><span class="p">,</span>
+            <span class="p">(</span><span class="n">jnp</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">value</span><span class="p">),</span> <span class="n">value</span><span class="p">),</span>
+            <span class="n">transition_batch</span><span class="p">,</span>
+            <span class="n">reverse</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="n">unroll</span><span class="o">=</span><span class="mi">16</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">advantages</span><span class="p">,</span> <span class="n">advantages</span> <span class="o">+</span> <span class="n">transition_batch</span><span class="o">.</span><span class="n">value</span>
+
+    <span class="nd">@functools</span><span class="o">.</span><span class="n">partial</span><span class="p">(</span><span class="n">jax</span><span class="o">.</span><span class="n">jit</span><span class="p">,</span> <span class="n">static_argnums</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">_get_advantages</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">gae_and_next_value</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span>
+        <span class="n">transitions</span><span class="p">:</span> <span class="n">Transition</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculate advantages for a transition batch compatible with jax.lax.scan.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            gae_and_next_value (tuple[jnp.ndarray, jnp.ndarray]): Current loop state including gae and value estimation.</span>
+<span class="sd">            transitions (Transition): Transition batch.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            tuple[tuple[jnp.ndarray, jnp.ndarray], jnp.ndarray]: ((gae, value), gae). Tuple of loop variable (gae, value) and advantages estimation.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">gae</span><span class="p">,</span> <span class="n">next_value</span> <span class="o">=</span> <span class="n">gae_and_next_value</span>
+        <span class="n">done</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">reward</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">transitions</span><span class="o">.</span><span class="n">done</span><span class="p">,</span>
+            <span class="n">transitions</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
+            <span class="n">transitions</span><span class="o">.</span><span class="n">reward</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">delta</span> <span class="o">=</span> <span class="n">reward</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">hpo_config</span><span class="p">[</span><span class="s2">&quot;gamma&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="n">next_value</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">done</span><span class="p">)</span> <span class="o">-</span> <span class="n">value</span>
+        <span class="n">gae</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">delta</span>
+            <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">hpo_config</span><span class="p">[</span><span class="s2">&quot;gamma&quot;</span><span class="p">]</span>
+            <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">hpo_config</span><span class="p">[</span><span class="s2">&quot;gae_lambda&quot;</span><span class="p">]</span>
+            <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">done</span><span class="p">)</span>
+            <span class="o">*</span> <span class="n">gae</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">gae</span><span class="p">,</span> <span class="n">value</span><span class="p">),</span> <span class="n">gae</span>
+
+    <span class="nd">@functools</span><span class="o">.</span><span class="n">partial</span><span class="p">(</span><span class="n">jax</span><span class="o">.</span><span class="n">jit</span><span class="p">,</span> <span class="n">static_argnums</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">_update_epoch</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">update_state</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span>
+            <span class="n">PPOTrainState</span><span class="p">,</span> <span class="n">Transition</span><span class="p">,</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">chex</span><span class="o">.</span><span class="n">PRNGKey</span>
+        <span class="p">],</span>
+        <span class="n">_</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span>
+        <span class="nb">tuple</span><span class="p">[</span><span class="n">PPOTrainState</span><span class="p">,</span> <span class="n">Transition</span><span class="p">,</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">chex</span><span class="o">.</span><span class="n">PRNGKey</span><span class="p">],</span>
+        <span class="nb">tuple</span><span class="p">[</span><span class="nb">tuple</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="n">FrozenDict</span> <span class="o">|</span> <span class="kc">None</span><span class="p">],</span>
+    <span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;One epoch of network updates using minibatches of the current transition batch.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            update_state (tuple[PPOTrainState, Transition, jnp.ndarray, jnp.ndarray, chex.PRNGKey]): (train_state, transition_batch, advantages, targets, rng) Current update state.</span>
+<span class="sd">            _ (None): Unused parameter (required for jax.lax.scan).</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            tuple[tuple[PPOTrainState, Transition, jnp.ndarray, jnp.ndarray, chex.PRNGKey], tuple[tuple | None, tuple | None]]: Tuple of (train_state, transition_batch, advantages, targets, rng) and (loss, grads) if tracked.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">train_state</span><span class="p">,</span> <span class="n">traj_batch</span><span class="p">,</span> <span class="n">advantages</span><span class="p">,</span> <span class="n">targets</span><span class="p">,</span> <span class="n">rng</span> <span class="o">=</span> <span class="n">update_state</span>
+        <span class="n">rng</span><span class="p">,</span> <span class="n">_rng</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">rng</span><span class="p">)</span>
+
+        <span class="n">batch_size</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rollout_size</span>
+        <span class="n">trimmed_batch_size</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_minibatches</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">minibatch_size</span>
+
+        <span class="n">permutation</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">permutation</span><span class="p">(</span><span class="n">_rng</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">)</span>
+        <span class="n">batch</span> <span class="o">=</span> <span class="p">(</span><span class="n">traj_batch</span><span class="p">,</span> <span class="n">advantages</span><span class="p">,</span> <span class="n">targets</span><span class="p">)</span>
+        <span class="n">batch</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">tree_util</span><span class="o">.</span><span class="n">tree_map</span><span class="p">(</span>
+            <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="n">batch_size</span><span class="p">,)</span> <span class="o">+</span> <span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">:]),</span> <span class="n">batch</span>
+        <span class="p">)</span>
+        <span class="n">shuffled_batch</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">tree_util</span><span class="o">.</span><span class="n">tree_map</span><span class="p">(</span>
+            <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">take</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">permutation</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">),</span> <span class="n">batch</span>
+        <span class="p">)</span>
+
+        <span class="n">trimmed_batch</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">tree_util</span><span class="o">.</span><span class="n">tree_map</span><span class="p">(</span>
+            <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[:</span><span class="n">trimmed_batch_size</span><span class="p">],</span> <span class="n">shuffled_batch</span>
+        <span class="p">)</span>
+
+        <span class="n">minibatches</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">tree_util</span><span class="o">.</span><span class="n">tree_map</span><span class="p">(</span>
+            <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">n_minibatches</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">*</span><span class="nb">list</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">:])]),</span>
+            <span class="n">trimmed_batch</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="n">train_state</span><span class="p">,</span> <span class="p">(</span><span class="n">loss</span><span class="p">,</span> <span class="n">grads</span><span class="p">)</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">lax</span><span class="o">.</span><span class="n">scan</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_update_minibatch</span><span class="p">,</span> <span class="n">train_state</span><span class="p">,</span> <span class="n">minibatches</span>
+        <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">trimmed_batch_size</span> <span class="o">&lt;</span> <span class="n">batch_size</span><span class="p">:</span>
+            <span class="n">remaining_batch</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">tree_util</span><span class="o">.</span><span class="n">tree_map</span><span class="p">(</span>
+                <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="n">trimmed_batch_size</span><span class="p">:],</span> <span class="n">shuffled_batch</span>
+            <span class="p">)</span>
+            <span class="n">remaining_minibatch</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">tree_util</span><span class="o">.</span><span class="n">tree_map</span><span class="p">(</span>
+                <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">*</span><span class="nb">list</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">:])]),</span>
+                <span class="n">remaining_batch</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="n">train_state</span><span class="p">,</span> <span class="p">(</span><span class="n">remaining_loss</span><span class="p">,</span> <span class="n">remaining_grads</span><span class="p">)</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">lax</span><span class="o">.</span><span class="n">scan</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_update_minibatch</span><span class="p">,</span> <span class="n">train_state</span><span class="p">,</span> <span class="n">remaining_minibatch</span>
+            <span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">track_metrics</span><span class="p">:</span>
+                <span class="n">loss</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">tree_util</span><span class="o">.</span><span class="n">tree_map</span><span class="p">(</span>
+                    <span class="k">lambda</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">),</span> <span class="n">loss</span><span class="p">,</span> <span class="n">remaining_loss</span>
+                <span class="p">)</span>
+                <span class="n">grads</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">tree_util</span><span class="o">.</span><span class="n">tree_map</span><span class="p">(</span>
+                    <span class="k">lambda</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">),</span> <span class="n">grads</span><span class="p">,</span> <span class="n">remaining_grads</span>
+                <span class="p">)</span>
+
+        <span class="n">update_state</span> <span class="o">=</span> <span class="p">(</span><span class="n">train_state</span><span class="p">,</span> <span class="n">traj_batch</span><span class="p">,</span> <span class="n">advantages</span><span class="p">,</span> <span class="n">targets</span><span class="p">,</span> <span class="n">rng</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">update_state</span><span class="p">,</span> <span class="p">(</span><span class="n">loss</span><span class="p">,</span> <span class="n">grads</span><span class="p">)</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">track_metrics</span> <span class="k">else</span> <span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+
+    <span class="nd">@functools</span><span class="o">.</span><span class="n">partial</span><span class="p">(</span><span class="n">jax</span><span class="o">.</span><span class="n">jit</span><span class="p">,</span> <span class="n">static_argnums</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">_update_minibatch</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">train_state</span><span class="p">:</span> <span class="n">PPOTrainState</span><span class="p">,</span>
+        <span class="n">batch_info</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">PPOTrainState</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">tuple</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="n">FrozenDict</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Update network parameters using one minibatch.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            train_state (PPOTrainState): PPO training state.</span>
+<span class="sd">            batch_info (tuple[jnp.ndarray, jnp.ndarray, jnp.ndarray]): Minibatch of transitions, advantages and targets.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            tuple[PPOTrainState, tuple[tuple | None, tuple | None]]: Tuple of PPO train state and (loss, grads) if tracked.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">traj_batch</span><span class="p">,</span> <span class="n">advantages</span><span class="p">,</span> <span class="n">targets</span> <span class="o">=</span> <span class="n">batch_info</span>
+
+        <span class="n">grad_fn</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">value_and_grad</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_loss_fn</span><span class="p">,</span> <span class="n">has_aux</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">total_loss</span><span class="p">,</span> <span class="n">grads</span> <span class="o">=</span> <span class="n">grad_fn</span><span class="p">(</span><span class="n">train_state</span><span class="o">.</span><span class="n">params</span><span class="p">,</span> <span class="n">traj_batch</span><span class="p">,</span> <span class="n">advantages</span><span class="p">,</span> <span class="n">targets</span><span class="p">)</span>
+
+        <span class="n">train_state</span> <span class="o">=</span> <span class="n">train_state</span><span class="o">.</span><span class="n">apply_gradients</span><span class="p">(</span><span class="n">grads</span><span class="o">=</span><span class="n">grads</span><span class="p">)</span>
+
+        <span class="n">out</span> <span class="o">=</span> <span class="p">(</span><span class="n">total_loss</span><span class="p">,</span> <span class="n">grads</span><span class="p">)</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">track_metrics</span> <span class="k">else</span> <span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">train_state</span><span class="p">,</span> <span class="n">out</span>
+
+    <span class="nd">@functools</span><span class="o">.</span><span class="n">partial</span><span class="p">(</span><span class="n">jax</span><span class="o">.</span><span class="n">jit</span><span class="p">,</span> <span class="n">static_argnums</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">_loss_fn</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">params</span><span class="p">:</span> <span class="n">FrozenDict</span> <span class="o">|</span> <span class="nb">dict</span><span class="p">,</span>
+        <span class="n">traj_batch</span><span class="p">:</span> <span class="n">Transition</span><span class="p">,</span>
+        <span class="n">gae</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">targets</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculate loss given the current batch of transitions.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            params (FrozenDict | dict): Network parameters.</span>
+<span class="sd">            traj_batch (Transition): Batch of transitions</span>
+<span class="sd">            gae (jnp.ndarray): Advantages.</span>
+<span class="sd">            targets (jnp.ndarray): Targets.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            tuple[jnp.ndarray, tuple[jnp.ndarray, jnp.ndarray, jnp.ndarray]]: Tuple of (total_loss, (value_loss, actor_loss, entropy)).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Rerun network</span>
+        <span class="n">pi</span><span class="p">,</span> <span class="n">value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">network</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="n">traj_batch</span><span class="o">.</span><span class="n">obs</span><span class="p">)</span>
+        <span class="n">log_prob</span> <span class="o">=</span> <span class="n">pi</span><span class="o">.</span><span class="n">log_prob</span><span class="p">(</span><span class="n">traj_batch</span><span class="o">.</span><span class="n">action</span><span class="p">)</span>
+
+        <span class="c1"># Calculate value loss</span>
+        <span class="n">value_pred_clipped</span> <span class="o">=</span> <span class="n">traj_batch</span><span class="o">.</span><span class="n">value</span> <span class="o">+</span> <span class="p">(</span><span class="n">value</span> <span class="o">-</span> <span class="n">traj_batch</span><span class="o">.</span><span class="n">value</span><span class="p">)</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span>
+            <span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">hpo_config</span><span class="p">[</span><span class="s2">&quot;vf_clip_eps&quot;</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">hpo_config</span><span class="p">[</span><span class="s2">&quot;vf_clip_eps&quot;</span><span class="p">]</span>
+        <span class="p">)</span>
+        <span class="n">value_losses</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">square</span><span class="p">(</span><span class="n">value</span> <span class="o">-</span> <span class="n">targets</span><span class="p">)</span>
+        <span class="n">value_losses_clipped</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">square</span><span class="p">(</span><span class="n">value_pred_clipped</span> <span class="o">-</span> <span class="n">targets</span><span class="p">)</span>
+        <span class="n">value_loss</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">jnp</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">value_losses</span><span class="p">,</span> <span class="n">value_losses_clipped</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+
+        <span class="c1"># Calculate actor loss</span>
+        <span class="n">ratio</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">log_prob</span> <span class="o">-</span> <span class="n">traj_batch</span><span class="o">.</span><span class="n">log_prob</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">hpo_config</span><span class="p">[</span><span class="s2">&quot;normalize_advantage&quot;</span><span class="p">]:</span>
+            <span class="n">gae</span> <span class="o">=</span> <span class="p">(</span><span class="n">gae</span> <span class="o">-</span> <span class="n">gae</span><span class="o">.</span><span class="n">mean</span><span class="p">())</span> <span class="o">/</span> <span class="p">(</span><span class="n">gae</span><span class="o">.</span><span class="n">std</span><span class="p">()</span> <span class="o">+</span> <span class="mf">1e-8</span><span class="p">)</span>
+        <span class="n">loss_actor1</span> <span class="o">=</span> <span class="n">ratio</span> <span class="o">*</span> <span class="n">gae</span>
+        <span class="n">loss_actor2</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">jnp</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span>
+                <span class="n">ratio</span><span class="p">,</span>
+                <span class="mf">1.0</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">hpo_config</span><span class="p">[</span><span class="s2">&quot;clip_eps&quot;</span><span class="p">],</span>
+                <span class="mf">1.0</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">hpo_config</span><span class="p">[</span><span class="s2">&quot;clip_eps&quot;</span><span class="p">],</span>
+            <span class="p">)</span>
+            <span class="o">*</span> <span class="n">gae</span>
+        <span class="p">)</span>
+        <span class="n">loss_actor</span> <span class="o">=</span> <span class="o">-</span><span class="n">jnp</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">loss_actor1</span><span class="p">,</span> <span class="n">loss_actor2</span><span class="p">)</span>
+        <span class="n">loss_actor</span> <span class="o">=</span> <span class="n">loss_actor</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+        <span class="n">entropy</span> <span class="o">=</span> <span class="n">pi</span><span class="o">.</span><span class="n">entropy</span><span class="p">()</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+
+        <span class="n">total_loss</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">loss_actor</span>
+            <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">hpo_config</span><span class="p">[</span><span class="s2">&quot;vf_coef&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="n">value_loss</span>
+            <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">hpo_config</span><span class="p">[</span><span class="s2">&quot;ent_coef&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="n">entropy</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">total_loss</span><span class="p">,</span> <span class="p">(</span><span class="n">value_loss</span><span class="p">,</span> <span class="n">loss_actor</span><span class="p">,</span> <span class="n">entropy</span><span class="p">)</span></div>
+
+</pre></div>
+
+              </div>
+              
+              
+              <!-- Previous / next buttons -->
+<div class='prev-next-area'>
+</div>
+              
+          </main>
+          
+
+      </div>
+    </div>
+  
+  <script src="../../../../../_static/js/index.9ea38e314b9e6d9dab77.js"></script>
+<footer class="footer mt-5 mt-md-0">
+  <div class="container">
+    
+    <div class="footer-item">
+      <p class="copyright">
+    &copy; Copyright Copyright 2024, AutoML Hannover.<br>
+</p>
+    </div>
+    
+    <div class="footer-item">
+      <p class="sphinx-version">
+Created using <a href="http://sphinx-doc.org/">Sphinx</a>
+7.3.7. Template is modified version of <a
+href="https://pydata-sphinx-theme.readthedocs.io">PyData Sphinx Theme</a>. <br>
+</p>
+    </div>
+    
+  </div>
+</footer>
+  </body>
+</html>

@@ -1,0 +1,39 @@
+arlbench.core.running\_statistics
+=================================
+
+.. automodule:: arlbench.core.running_statistics
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      denormalize
+      init_state
+      normalize
+      update
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      NestedMeanStd
+      RunningStatisticsState
+   
+   
+
+   
+   
+   
+
+
+

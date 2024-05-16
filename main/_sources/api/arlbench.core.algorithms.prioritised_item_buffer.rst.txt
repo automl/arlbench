@@ -1,0 +1,30 @@
+arlbench.core.algorithms.prioritised\_item\_buffer
+==================================================
+
+.. automodule:: arlbench.core.algorithms.prioritised_item_buffer
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      create_prioritised_item_buffer
+      make_prioritised_item_buffer
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

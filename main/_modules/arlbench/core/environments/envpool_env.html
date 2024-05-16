@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>arlbench.core.environments.envpool_env &#8212; arlbench Documentation 0.1.0 documentation</title>
+    
+  <link href="../../../../_static/css/theme.css" rel="stylesheet">
+  <link href="../../../../_static/css/index.ac9c05f7c49ca1e1f876c6e36360ea26.css" rel="stylesheet">
+
+    
+  <link rel="stylesheet"
+    href="../../../../_static/vendor/fontawesome/5.13.0/css/all.min.css">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="../../../../_static/vendor/fontawesome/5.13.0/webfonts/fa-solid-900.woff2">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="../../../../_static/vendor/fontawesome/5.13.0/webfonts/fa-brands-400.woff2">
+
+    
+      
+
+    
+    <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=a746c00c" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/css/custom.css?v=2eb4fb78" />
+    
+  <link rel="preload" as="script" href="../../../../_static/js/index.9ea38e314b9e6d9dab77.js">
+
+    <script src="../../../../_static/documentation_options.js?v=38b66d78"></script>
+    <script src="../../../../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="docsearch:language" content="en">
+    
+
+    <!-- Google Analytics -->
+    
+  </head>
+  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="80">
+    
+    <div class="container-fluid" id="banner"></div>
+
+    
+    <nav class="navbar navbar-light navbar-expand-lg bg-light fixed-top bd-navbar" id="navbar-main"><div class="container-xl">
+
+  <div id="navbar-start">
+    
+    
+  <a class="navbar-brand" href="../../../../index.html">
+  <!-- <p class="title">arlbench Documentation</p> -->
+  </a>
+
+    
+  </div>
+
+  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbar-collapsible" aria-controls="navbar-collapsible" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+
+  
+  <div id="navbar-collapsible" class="col-lg-9 collapse navbar-collapse">
+    <div id="navbar-center" class="mr-auto">
+      
+    </div>
+
+    <div id="navbar-end">
+      
+      <div class="navbar-end-item">
+        <ul id="navbar-icon-links" class="navbar-nav" aria-label="">
+        <li class="nav-item">
+          <a class="nav-link" href="https://github.com/automl/ARLBench" rel="noopener" target="_blank" title="GitHub">
+            <span><i class="fab fa-github-square"></i></span>
+            <label class="sr-only">GitHub</label>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="https://twitter.com/automl_org?lang=de" rel="noopener" target="_blank" title="Twitter">
+            <span><i class="fab fa-twitter-square"></i></span>
+            <label class="sr-only">Twitter</label>
+          </a>
+        </li>
+      </ul>
+      </div>
+      
+      <div class="navbar-end-item">
+        <div class="dropdown mt-1">
+    <button type="button" class="btn btn-secondary btn-md navbar-btn dropdown-toggle" id="dLabelMore"
+        data-toggle="dropdown">
+        v0.1.0
+        <span class="caret"></span>
+    </button>
+    <div class="dropdown-menu list-group-flush py-0" aria-labelledby="dLabelMore">
+        <a class="list-group-item list-group-item-action" href="#">v0.1.0</a>
+    </div>
+</div>
+      </div>
+      
+      <div class="navbar-end-item">
+        <form class="bd-search align-items-center" action="../../../../search.html" method="get" style="width: 100%;">
+  <i class="icon fas fa-search"></i>
+  <input type="search" class="form-control btn btn-md" name="q" id="search-input"
+    placeholder="Search the docs ..." aria-label="Search the docs ..." autocomplete="off">
+</form>
+      </div>
+      
+    </div>
+  </div>
+</div>
+    </nav>
+    
+
+    <div class="container-xl">
+      <div class="row">
+          
+            
+            <!-- Only show if we have sidebars configured, else just a small margin  -->
+            <div class="col-12 col-md-3 bd-sidebar"><h4 class="mt-0 mb-0"><a href="../../../../index.html">arlbench Documentation</a></h4>
+<div class="mb-3">v0.1.0</div><nav class="bd-links" id="bd-docs-nav" aria-label="Main navigation">
+  <div class="bd-toc-item active">
+    <ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../../../installation.html">
+   Installation
+  </a>
+ </li>
+ <li class="toctree-l1 has-children">
+  <a class="reference internal" href="../../../../basic_usage/index.html">
+   Basic Usage
+  </a>
+  <input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" type="checkbox"/>
+  <label for="toctree-checkbox-1">
+   <i class="fas fa-chevron-down">
+   </i>
+  </label>
+  <ul class="simple">
+  </ul>
+ </li>
+ <li class="toctree-l1 has-children">
+  <a class="reference internal" href="../../../../advanced_usage/index.html">
+   Advanced Usage
+  </a>
+  <input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" type="checkbox"/>
+  <label for="toctree-checkbox-2">
+   <i class="fas fa-chevron-down">
+   </i>
+  </label>
+  <ul class="simple">
+  </ul>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../../../commands.html">
+   Helpful Commands
+  </a>
+ </li>
+ <li class="toctree-l1 has-children">
+  <a class="reference internal" href="../../../../api.html">
+   API References
+  </a>
+  <input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" type="checkbox"/>
+  <label for="toctree-checkbox-3">
+   <i class="fas fa-chevron-down">
+   </i>
+  </label>
+  <ul>
+   <li class="toctree-l2 has-children">
+    <a class="reference internal" href="../../../../api/arlbench.html">
+     arlbench
+    </a>
+    <input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" type="checkbox"/>
+    <label for="toctree-checkbox-4">
+     <i class="fas fa-chevron-down">
+     </i>
+    </label>
+    <ul>
+     <li class="toctree-l3">
+      <a class="reference internal" href="../../../../api/arlbench.arlbench.html">
+       arlbench.arlbench
+      </a>
+     </li>
+     <li class="toctree-l3 has-children">
+      <a class="reference internal" href="../../../../api/arlbench.autorl.html">
+       arlbench.autorl
+      </a>
+      <input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" type="checkbox"/>
+      <label for="toctree-checkbox-5">
+       <i class="fas fa-chevron-down">
+       </i>
+      </label>
+      <ul>
+       <li class="toctree-l4">
+        <a class="reference internal" href="../../../../api/arlbench.autorl.autorl_env.html">
+         arlbench.autorl.autorl_env
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="../../../../api/arlbench.autorl.checkpointing.html">
+         arlbench.autorl.checkpointing
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="../../../../api/arlbench.autorl.objectives.html">
+         arlbench.autorl.objectives
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="../../../../api/arlbench.autorl.state_features.html">
+         arlbench.autorl.state_features
+        </a>
+       </li>
+      </ul>
+     </li>
+     <li class="toctree-l3 has-children">
+      <a class="reference internal" href="../../../../api/arlbench.core.html">
+       arlbench.core
+      </a>
+      <input class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" type="checkbox"/>
+      <label for="toctree-checkbox-6">
+       <i class="fas fa-chevron-down">
+       </i>
+      </label>
+      <ul>
+       <li class="toctree-l4">
+        <a class="reference internal" href="../../../../api/arlbench.core.algorithms.html">
+         arlbench.core.algorithms
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="../../../../api/arlbench.core.environments.html">
+         arlbench.core.environments
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="../../../../api/arlbench.core.running_statistics.html">
+         arlbench.core.running_statistics
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="../../../../api/arlbench.core.wrappers.html">
+         arlbench.core.wrappers
+        </a>
+       </li>
+      </ul>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="../../../../api/arlbench.plotting.html">
+       arlbench.plotting
+      </a>
+     </li>
+     <li class="toctree-l3 has-children">
+      <a class="reference internal" href="../../../../api/arlbench.utils.html">
+       arlbench.utils
+      </a>
+      <input class="toctree-checkbox" id="toctree-checkbox-7" name="toctree-checkbox-7" type="checkbox"/>
+      <label for="toctree-checkbox-7">
+       <i class="fas fa-chevron-down">
+       </i>
+      </label>
+      <ul>
+       <li class="toctree-l4">
+        <a class="reference internal" href="../../../../api/arlbench.utils.common.html">
+         arlbench.utils.common
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="../../../../api/arlbench.utils.handle_termination.html">
+         arlbench.utils.handle_termination
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="../../../../api/arlbench.utils.hydra_utils.html">
+         arlbench.utils.hydra_utils
+        </a>
+       </li>
+      </ul>
+     </li>
+    </ul>
+   </li>
+  </ul>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../../../glossary.html">
+   Glossary
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../../../faq.html">
+   Frequently Asked Questions
+  </a>
+ </li>
+</ul>
+
+  </div>
+</nav>
+            </div>
+            
+          
+
+          
+          <div class="d-none d-xl-block col-xl-2 bd-toc">
+            
+          </div>
+          
+
+          
+          
+            
+          
+          <main class="col-12 col-md-9 col-xl-7 py-md-5 pl-md-5 pr-md-4 bd-content" role="main">
+              
+              <div>
+                
+  <h1>Source code for arlbench.core.environments.envpool_env</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">import</span> <span class="nn">functools</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span>
+
+<span class="kn">import</span> <span class="nn">jax</span>
+<span class="kn">import</span> <span class="nn">jax.numpy</span> <span class="k">as</span> <span class="nn">jnp</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="kn">from</span> <span class="nn">arlbench.utils</span> <span class="kn">import</span> <span class="n">gymnasium_space_to_gymnax_space</span>
+
+<span class="kn">from</span> <span class="nn">.autorl_env</span> <span class="kn">import</span> <span class="n">Environment</span>
+
+<span class="n">ATARI_ENVS</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s2">&quot;Adventure-v5&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;AirRaid-v5&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Alien-v5&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Amidar-v5&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Assault-v5&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Asterix-v5&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Asteroids-v5&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Atlantis-v5&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Atlantis2-v5&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Backgammon-v5&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;BankHeist-v5&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;BasicMath-v5&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;BattleZone-v5&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;BeamRider-v5&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Berzerk-v5&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Blackjack-v5&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Bowling-v5&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Boxing-v5&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Breakout-v5&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Carnival-v5&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Casino-v5&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Centipede-v5&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ChopperCommand-v5&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;CrazyClimber-v5&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Crossbow-v5&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Darkchambers-v5&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Defender-v5&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;DemonAttack-v5&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;DonkeyKong-v5&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;DoubleDunk-v5&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Earthworld-v5&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ElevatorAction-v5&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Enduro-v5&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Entombed-v5&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Et-v5&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;FishingDerby-v5&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;FlagCapture-v5&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Freeway-v5&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Frogger-v5&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Frostbite-v5&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Galaxian-v5&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Gopher-v5&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Gravitar-v5&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Hangman-v5&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;HauntedHouse-v5&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Hero-v5&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;HumanCannonball-v5&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;IceHockey-v5&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Jamesbond-v5&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;JourneyEscape-v5&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Kaboom-v5&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Kangaroo-v5&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;KeystoneKapers-v5&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;KingKong-v5&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Klax-v5&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Koolaid-v5&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Krull-v5&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;KungFuMaster-v5&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;LaserGates-v5&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;LostLuggage-v5&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;MarioBros-v5&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;MiniatureGolf-v5&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;MontezumaRevenge-v5&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;MrDo-v5&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;MsPacman-v5&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;NameThisGame-v5&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Othello-v5&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Pacman-v5&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Phoenix-v5&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Pitfall-v5&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Pitfall2-v5&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Pong-v5&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Pooyan-v5&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;PrivateEye-v5&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Qbert-v5&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Riverraid-v5&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;RoadRunner-v5&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Robotank-v5&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Seaquest-v5&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;SirLancelot-v5&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Skiing-v5&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Solaris-v5&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;SpaceInvaders-v5&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;SpaceWar-v5&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;StarGunner-v5&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Superman-v5&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Surround-v5&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Tennis-v5&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Tetris-v5&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;TicTacToe3d-v5&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;TimePilot-v5&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Trondead-v5&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Turmoil-v5&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Tutankham-v5&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;UpNDown-v5&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Venture-v5&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;VideoCheckers-v5&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;VideoChess-v5&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;VideoCube-v5&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;VideoPinball-v5&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;WizardOfWor-v5&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;WordZapper-v5&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;YarsRevenge-v5&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Zaxxon-v5&quot;</span><span class="p">,</span>
+<span class="p">]</span>
+
+
+<div class="viewcode-block" id="numpy_to_jax">
+<a class="viewcode-back" href="../../../../arlbench.core.environments.html#arlbench.core.environments.numpy_to_jax">[docs]</a>
+<span class="k">def</span> <span class="nf">numpy_to_jax</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Converts numpy arrays to jax numpy arrays.&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">jnp</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">x</span></div>
+
+
+
+<div class="viewcode-block" id="EnvpoolEnv">
+<a class="viewcode-back" href="../../../../arlbench.core.environments.html#arlbench.core.environments.EnvpoolEnv">[docs]</a>
+<span class="k">class</span> <span class="nc">EnvpoolEnv</span><span class="p">(</span><span class="n">Environment</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">env_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">n_envs</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">seed</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">env_kwargs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="k">if</span> <span class="n">env_kwargs</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">env_kwargs</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="kn">import</span> <span class="nn">envpool</span>
+        <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;Failed to import envpool. Please install the package first.&quot;</span>
+            <span class="p">)</span>
+        <span class="n">env</span> <span class="o">=</span> <span class="n">envpool</span><span class="o">.</span><span class="n">make</span><span class="p">(</span>
+            <span class="n">env_name</span><span class="p">,</span> <span class="n">env_type</span><span class="o">=</span><span class="s2">&quot;gymnasium&quot;</span><span class="p">,</span> <span class="n">num_envs</span><span class="o">=</span><span class="n">n_envs</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="n">seed</span><span class="p">,</span> <span class="o">**</span><span class="n">env_kwargs</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">is_atari</span> <span class="o">=</span> <span class="n">env_name</span> <span class="ow">in</span> <span class="n">ATARI_ENVS</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_atari</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">episodic_life</span> <span class="o">=</span> <span class="n">env_kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;episodic_life&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">use_fire_reset</span> <span class="o">=</span> <span class="n">env_kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;use_fire_reset&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">env_name</span><span class="p">,</span> <span class="n">env</span><span class="p">,</span> <span class="n">n_envs</span><span class="p">,</span> <span class="n">seed</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">reset_shape</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_reset</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_atari</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">has_lives</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">reset_shape</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="s2">&quot;lives&quot;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span>
+
+        <span class="n">rng</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">key</span><span class="p">(</span><span class="mi">42</span><span class="p">)</span>
+        <span class="n">_rngs</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">rng</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_n_envs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dummy_action</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+            <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">action_space</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">_rngs</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_n_envs</span><span class="p">)]</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_atari</span><span class="p">:</span>
+            <span class="c1"># fire action for reset</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">dummy_action</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dummy_action</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">step_shape</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_step</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dummy_action</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">single_step_shape</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">tree_map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[:</span><span class="mi">1</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">step_shape</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_handle0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">recv</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">send</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_xla_step</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_env</span><span class="o">.</span><span class="n">xla</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">_reset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">jax</span><span class="o">.</span><span class="n">tree_util</span><span class="o">.</span><span class="n">tree_map</span><span class="p">(</span><span class="n">numpy_to_jax</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_env</span><span class="o">.</span><span class="n">reset</span><span class="p">())</span>
+
+    <span class="k">def</span> <span class="nf">_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">action</span><span class="p">,</span> <span class="n">env_id</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_env</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">action</span><span class="o">=</span><span class="n">action</span><span class="p">,</span> <span class="n">env_id</span><span class="o">=</span><span class="n">env_id</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">jax</span><span class="o">.</span><span class="n">tree_util</span><span class="o">.</span><span class="n">tree_map</span><span class="p">(</span><span class="n">numpy_to_jax</span><span class="p">,</span> <span class="n">result</span><span class="p">)</span>
+
+<div class="viewcode-block" id="EnvpoolEnv.reset">
+<a class="viewcode-back" href="../../../../arlbench.core.environments.html#arlbench.core.environments.EnvpoolEnv.reset">[docs]</a>
+    <span class="nd">@functools</span><span class="o">.</span><span class="n">partial</span><span class="p">(</span><span class="n">jax</span><span class="o">.</span><span class="n">jit</span><span class="p">,</span> <span class="n">static_argnums</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">_</span><span class="p">):</span>
+        <span class="n">obs</span><span class="p">,</span> <span class="n">info</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">experimental</span><span class="o">.</span><span class="n">io_callback</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_reset</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">reset_shape</span><span class="p">)</span>
+        <span class="n">lives</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">info</span><span class="p">[</span><span class="s2">&quot;lives&quot;</span><span class="p">])</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_atari</span> <span class="k">else</span> <span class="kc">None</span>
+
+        <span class="k">return</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_handle0</span><span class="p">,</span> <span class="n">lives</span><span class="p">),</span> <span class="n">obs</span></div>
+
+
+<div class="viewcode-block" id="EnvpoolEnv.step">
+<a class="viewcode-back" href="../../../../arlbench.core.environments.html#arlbench.core.environments.EnvpoolEnv.step">[docs]</a>
+    <span class="nd">@functools</span><span class="o">.</span><span class="n">partial</span><span class="p">(</span><span class="n">jax</span><span class="o">.</span><span class="n">jit</span><span class="p">,</span> <span class="n">static_argnums</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">env_state</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">action</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">_</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_atari</span><span class="p">:</span>
+            <span class="n">env_state</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">env_state</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">env_state</span><span class="p">,</span> <span class="n">lives</span> <span class="o">=</span> <span class="n">env_state</span>
+        <span class="n">env_state</span><span class="p">,</span> <span class="p">(</span><span class="n">obs</span><span class="p">,</span> <span class="n">reward</span><span class="p">,</span> <span class="n">term</span><span class="p">,</span> <span class="n">trunc</span><span class="p">,</span> <span class="n">info</span><span class="p">)</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_xla_step</span><span class="p">(</span><span class="n">env_state</span><span class="p">,</span> <span class="n">action</span><span class="p">)</span>
+        <span class="n">done</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">logical_or</span><span class="p">(</span><span class="n">term</span><span class="p">,</span> <span class="n">trunc</span><span class="p">)</span>
+
+        <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="n">obs</span><span class="p">,</span> <span class="n">info</span><span class="p">):</span>
+            <span class="k">def</span> <span class="nf">reset_idx</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">obs</span><span class="p">):</span>
+                <span class="n">new_obs</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">experimental</span><span class="o">.</span><span class="n">io_callback</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_step</span><span class="p">,</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">single_step_shape</span><span class="p">,</span>
+                    <span class="n">action</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dummy_action</span><span class="p">[:</span><span class="mi">1</span><span class="p">],</span>
+                    <span class="n">env_id</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">i</span><span class="p">]),</span>
+                <span class="p">)</span>
+                <span class="k">return</span> <span class="n">obs</span>
+
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_n_envs</span><span class="p">):</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_atari</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">episodic_life</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">has_lives</span><span class="p">:</span>
+                    <span class="n">obs</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">lax</span><span class="o">.</span><span class="n">cond</span><span class="p">(</span>
+                        <span class="n">done</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">info</span><span class="p">[</span><span class="s2">&quot;lives&quot;</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">),</span>
+                        <span class="k">lambda</span> <span class="n">obs</span><span class="p">:</span> <span class="n">reset_idx</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">obs</span><span class="p">),</span>
+                        <span class="k">lambda</span> <span class="n">obs</span><span class="p">:</span> <span class="n">obs</span><span class="p">,</span>
+                        <span class="n">obs</span><span class="p">,</span>
+                    <span class="p">)</span>
+                <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_atari</span> <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">episodic_life</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">has_lives</span><span class="p">:</span>
+                    <span class="n">obs</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">lax</span><span class="o">.</span><span class="n">cond</span><span class="p">(</span>
+                        <span class="n">lives_gone</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
+                        <span class="k">lambda</span> <span class="n">obs</span><span class="p">:</span> <span class="n">reset_idx</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">obs</span><span class="p">),</span>
+                        <span class="k">lambda</span> <span class="n">obs</span><span class="p">:</span> <span class="n">obs</span><span class="p">,</span>
+                        <span class="n">obs</span><span class="p">,</span>
+                    <span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">obs</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">lax</span><span class="o">.</span><span class="n">cond</span><span class="p">(</span>
+                        <span class="n">done</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
+                        <span class="k">lambda</span> <span class="n">obs</span><span class="p">:</span> <span class="n">reset_idx</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">obs</span><span class="p">),</span>
+                        <span class="k">lambda</span> <span class="n">obs</span><span class="p">:</span> <span class="n">obs</span><span class="p">,</span>
+                        <span class="n">obs</span><span class="p">,</span>
+                    <span class="p">)</span>
+
+            <span class="k">return</span> <span class="n">obs</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_atari</span><span class="p">:</span>
+            <span class="n">new_lives</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">info</span><span class="p">[</span><span class="s2">&quot;lives&quot;</span><span class="p">])</span>
+            <span class="n">lives_gone</span> <span class="o">=</span> <span class="n">new_lives</span> <span class="o">&lt;</span> <span class="n">lives</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">new_lives</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_atari</span> <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">episodic_life</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">has_lives</span><span class="p">:</span>
+            <span class="n">auto_reset</span> <span class="o">=</span> <span class="n">lives_gone</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">auto_reset</span> <span class="o">=</span> <span class="n">done</span>
+        <span class="n">obs</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">lax</span><span class="o">.</span><span class="n">cond</span><span class="p">(</span><span class="n">jnp</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">auto_reset</span><span class="p">),</span> <span class="n">reset</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">obs</span><span class="p">,</span> <span class="n">info</span><span class="p">:</span> <span class="n">obs</span><span class="p">,</span> <span class="n">obs</span><span class="p">,</span> <span class="n">info</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="p">(</span><span class="n">env_state</span><span class="p">,</span> <span class="n">new_lives</span><span class="p">),</span> <span class="p">(</span><span class="n">obs</span><span class="p">,</span> <span class="n">reward</span><span class="p">,</span> <span class="n">done</span><span class="p">,</span> <span class="n">info</span><span class="p">)</span></div>
+
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">action_space</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">gymnasium_space_to_gymnax_space</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_env</span><span class="o">.</span><span class="n">action_space</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">observation_space</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">gymnasium_space_to_gymnax_space</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_env</span><span class="o">.</span><span class="n">observation_space</span><span class="p">)</span></div>
+
+</pre></div>
+
+              </div>
+              
+              
+              <!-- Previous / next buttons -->
+<div class='prev-next-area'>
+</div>
+              
+          </main>
+          
+
+      </div>
+    </div>
+  
+  <script src="../../../../_static/js/index.9ea38e314b9e6d9dab77.js"></script>
+<footer class="footer mt-5 mt-md-0">
+  <div class="container">
+    
+    <div class="footer-item">
+      <p class="copyright">
+    &copy; Copyright Copyright 2024, AutoML Hannover.<br>
+</p>
+    </div>
+    
+    <div class="footer-item">
+      <p class="sphinx-version">
+Created using <a href="http://sphinx-doc.org/">Sphinx</a>
+7.3.7. Template is modified version of <a
+href="https://pydata-sphinx-theme.readthedocs.io">PyData Sphinx Theme</a>. <br>
+</p>
+    </div>
+    
+  </div>
+</footer>
+  </body>
+</html>

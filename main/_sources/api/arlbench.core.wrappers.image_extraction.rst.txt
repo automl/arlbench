@@ -1,0 +1,29 @@
+arlbench.core.wrappers.image\_extraction
+========================================
+
+.. automodule:: arlbench.core.wrappers.image_extraction
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      ImageExtractionWrapper
+   
+   
+
+   
+   
+   
+
+
+

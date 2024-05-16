@@ -1,0 +1,55 @@
+arlbench.core.algorithms package
+================================
+
+Subpackages
+-----------
+
+.. toctree::
+   :maxdepth: 4
+
+   arlbench.core.algorithms.dqn
+   arlbench.core.algorithms.ppo
+   arlbench.core.algorithms.sac
+
+Submodules
+----------
+
+arlbench.core.algorithms.algorithm module
+-----------------------------------------
+
+.. automodule:: arlbench.core.algorithms.algorithm
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+arlbench.core.algorithms.buffers module
+---------------------------------------
+
+.. automodule:: arlbench.core.algorithms.buffers
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+arlbench.core.algorithms.common module
+--------------------------------------
+
+.. automodule:: arlbench.core.algorithms.common
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+arlbench.core.algorithms.prioritised\_item\_buffer module
+---------------------------------------------------------
+
+.. automodule:: arlbench.core.algorithms.prioritised_item_buffer
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Module contents
+---------------
+
+.. automodule:: arlbench.core.algorithms
+   :members:
+   :undoc-members:
+   :show-inheritance:

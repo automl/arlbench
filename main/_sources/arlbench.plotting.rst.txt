@@ -1,0 +1,21 @@
+arlbench.plotting package
+=========================
+
+Submodules
+----------
+
+arlbench.plotting.plotting module
+---------------------------------
+
+.. automodule:: arlbench.plotting.plotting
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Module contents
+---------------
+
+.. automodule:: arlbench.plotting
+   :members:
+   :undoc-members:
+   :show-inheritance:

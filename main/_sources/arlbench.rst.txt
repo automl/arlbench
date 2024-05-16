@@ -1,0 +1,32 @@
+arlbench package
+================
+
+Subpackages
+-----------
+
+.. toctree::
+   :maxdepth: 4
+
+   arlbench.autorl
+   arlbench.core
+   arlbench.plotting
+   arlbench.utils
+
+Submodules
+----------
+
+arlbench.arlbench module
+------------------------
+
+.. automodule:: arlbench.arlbench
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Module contents
+---------------
+
+.. automodule:: arlbench
+   :members:
+   :undoc-members:
+   :show-inheritance:

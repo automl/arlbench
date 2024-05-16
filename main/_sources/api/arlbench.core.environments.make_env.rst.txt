@@ -1,0 +1,6 @@
+arlbench.core.environments.make\_env
+====================================
+
+.. currentmodule:: arlbench.core.environments
+
+.. autofunction:: make_env
