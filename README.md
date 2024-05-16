@@ -109,4 +109,10 @@ Just like with RL agents, you can call 'step' multiple times until termination (
 
 If you use ARLBench in your work, please cite us:
 
-TODO
+```bibtex
+@misc{beckdierkes24,
+  author    = {J. Becktepe and J. Dierkes and C. Benjamins and D. Salinas and A. Mohan and R. Rajan and T. Eimer and F. Hutter and H. Hoos and M. Lindauer},
+  title     = {ARLBench},
+  year      = {2024},
+  url = {https://github.com/automl/arlbench},
+```
