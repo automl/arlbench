@@ -1,6 +1,6 @@
 # @package _global_
 defaults:
-  - override /environment: brax_ant
+  - override /environment: brax_hopper
   - override /algorithm: ppo
   - override /search_space: ppo_brax
 

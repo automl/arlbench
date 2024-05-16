@@ -10,9 +10,13 @@ import pandas as pd
 from arlbench.core.algorithms import PPO
 from arlbench.core.environments import make_env
 
-
 #jax.config.update('jax_platform_name', 'cpu')
 #jax.config.update("jax_enable_x64", True)
+
+
+os.environ['XLA_FLAGS'] = (
+    '--xla_gpu_triton_gemm_any=true'
+)
 
 
 def ppo_runner(dir_name, log, framework, env_name, config, training_kw_args, seed, cnn_policy):
@@ -23,7 +27,7 @@ def ppo_runner(dir_name, log, framework, env_name, config, training_kw_args, see
         seed=seed, 
         cnn_policy=cnn_policy,
         env_kwargs={
-            "backend": "spring"
+            "backend": "mjx"
         }
     )
     eval_env = make_env(
@@ -33,7 +37,7 @@ def ppo_runner(dir_name, log, framework, env_name, config, training_kw_args, see
         seed=seed, 
         cnn_policy=cnn_policy,
         env_kwargs={
-            "backend": "spring"
+            "backend": "mjx"
         }
     )
     rng = jax.random.PRNGKey(seed)
@@ -42,14 +46,14 @@ def ppo_runner(dir_name, log, framework, env_name, config, training_kw_args, see
     log.info(f"JAX default backend: {jax.default_backend()}")
 
     hpo_config = PPO.get_default_hpo_config()
-    hpo_config["minibatch_size"] = 2048
-    hpo_config["update_epochs"] = 1
+    hpo_config["minibatch_size"] = 1024
+    hpo_config["update_epochs"] = 4
     hpo_config["gamma"] = 0.99
-    hpo_config["gae_lambda"] = 0.95
-    hpo_config["ent_coef"] = 0.0
+    hpo_config["gae_lambda"] = 0.97
+    hpo_config["ent_coef"] = 0.01
     hpo_config["max_grad_norm"] = 0.5
-    hpo_config["clip_eps"] = 0.3
-    hpo_config["n_steps"] = 80
+    hpo_config["clip_eps"] = 0.2
+    hpo_config["n_steps"] = 5
     hpo_config["vf_coef"] = 0.5
     hpo_config["learning_rate"] = 3e-4
     hpo_config["normalize_observations"] = True
@@ -58,7 +62,7 @@ def ppo_runner(dir_name, log, framework, env_name, config, training_kw_args, see
     nas_config["activation"] = "relu"
     nas_config["hidden_size"] = 256
 
-    agent = PPO(hpo_config, env, nas_config=nas_config, cnn_policy=cnn_policy)
+    agent = PPO(hpo_config, env, eval_env=eval_env, nas_config=nas_config, cnn_policy=cnn_policy)
     algorithm_state = agent.init(rng)
 
     start = time.time()
@@ -89,13 +93,13 @@ def ppo_runner(dir_name, log, framework, env_name, config, training_kw_args, see
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--dir-name", type=str, default="test")
-    parser.add_argument("--training-steps", type=int, default=50000)
-    parser.add_argument("--n-eval-steps", type=int, default=100)
+    parser.add_argument("--training-steps", type=int, default=50000000)
+    parser.add_argument("--n-eval-steps", type=int, default=10)
     parser.add_argument("--n-eval-episodes", type=int, default=128)
-    parser.add_argument("--n-envs", type=int, default=1024)
+    parser.add_argument("--n-envs", type=int, default=2048)
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--env-framework", type=str, default="brax")
-    parser.add_argument("--env", type=str, default="ant")
+    parser.add_argument("--env", type=str, default="halfcheetah")
     parser.add_argument("--n-env-steps", type=int, default=1000)
     parser.add_argument("--cnn-policy", type=bool, default=False)
     args = parser.parse_args()
