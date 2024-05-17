@@ -1,8 +1,8 @@
 # @package _global_
 defaults:
-  - override /environment: atari_phoenix
+  - override /environment: atari_this_game
   - override /algorithm: ppo
-  - override /search_space: ppo_atari
+  - override /search_space: ppo_atari  
 
 environment:
   n_envs: 8
