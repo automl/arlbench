@@ -5,7 +5,7 @@ defaults:
   - override /search_space: ppo_box2d
 
 environment:
-  n_total_timesteps: 5000000
+  n_total_timesteps: 100000
   n_envs: 32
 
 hp_config:

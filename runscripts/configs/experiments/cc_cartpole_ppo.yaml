@@ -4,6 +4,8 @@ defaults:
   - override /algorithm: ppo   
   - override /search_space: ppo_cc    
 
+experiment_name: cc_cartpole_ppo
+
 environment:
   n_total_timesteps: 100000
 

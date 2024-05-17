@@ -4,6 +4,8 @@ defaults:
   - override /algorithm: sac       
   - override /search_space: sac_cc
 
+experiment_name: cc_pendulum_sac
+
 environment:
   n_total_timesteps: 20000
 
