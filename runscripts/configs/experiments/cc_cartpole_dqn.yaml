@@ -4,6 +4,8 @@ defaults:
   - override /algorithm: dqn   
   - override /search_space: dqn_cc
 
+experiment_name: cc_cartpole_dqn
+
 environment:
   n_total_timesteps: 50000
   n_envs: 8

@@ -17,7 +17,7 @@ def aggregate_runhistories(approach: str):
 
             if os.path.exists(combined_path):
                 logging.info(f"Aggregated runhistory already exists for {algorithm_env}. Skipping...")
-                continue
+                #continue
             
             all_data = []
             for seed_dir in os.listdir(agent_env_path):
