@@ -302,17 +302,18 @@ class AutoRLEnv(gymnasium.Env):
         seed = seed if seed else self._seed
 
         self._algorithm = self._make_algorithm()
+
+        # First, we check if there is a checkpoint to load. If not, we have to check 
+        # whether this is the first iteration, i.e., call of env.step(). Then we have to initialiaze
+        # the algorithm state. Otherwise, we are using the state from previous iteration(s)
         if checkpoint_path:
-            print("#### LOADING ####")
-            print("checkpoint_path:", checkpoint_path)
             try:
                 self._algorithm_state = self._load(checkpoint_path, seed)
-                print("#### LOADING successful ####")
             except Exception as e:
                 print(e)
                 init_rng = jax.random.key(seed)
                 self._algorithm_state = self._algorithm.init(init_rng)
-        else:
+        elif self._algorithm_state is None:
             init_rng = jax.random.key(seed)
             self._algorithm_state = self._algorithm.init(init_rng)
 
