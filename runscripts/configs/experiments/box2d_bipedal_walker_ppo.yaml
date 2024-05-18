@@ -5,10 +5,10 @@ defaults:
   - override /search_space: ppo_box2d
 
 environment:
-  n_total_timesteps: 100000
-  n_envs: 32
+  n_total_timesteps: 200000
+  n_envs: 8
 
 hp_config:
   update_epochs: 10
-  n_steps: 2048
+  n_steps: 256
   normalize_observations: True
