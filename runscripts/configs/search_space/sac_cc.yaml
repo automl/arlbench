@@ -31,6 +31,12 @@ hyperparameters:
       - true
       - false
     default: false
+  hp_config.buffer_size:
+    type: uniform_int
+    upper: 120000
+    lower: 1024
+    default: 120000
+    log: false
   hp_config.learning_rate:
     type: uniform_float
     upper: 0.1
