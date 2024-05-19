@@ -1,9 +1,0 @@
-# @package _global_
-defaults:
-  - override /environment: procgen_starpilot_easy
-  - override /algorithm: ppo
-  - override /search_space: ppo
-
-nas_config:
-  activation: relu
-  hidden_size: 512
