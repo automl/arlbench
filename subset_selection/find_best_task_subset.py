@@ -21,37 +21,20 @@ def spearman_corr(x, y):
     return spcorr
 
 
-def error(target, pred):
+def corr_error(target, pred):
     # define the error used to compare linear model, here we pick the model with the highest correlation with the target
     return 1 - spearman_corr(pred, target)
 
+def mse_error(target, pred):
+    return np.mean((pred - target)**2)
 
-def fit_and_compute_error(task_subset, train_metrics, train_target):
+def fit_and_compute_error(task_subset, train_metrics, train_target, error=mse_error):
     X = train_metrics[:, np.array(task_subset)]
     y = train_target
     lin_model = LinearRegression(positive=positive_weights, fit_intercept=fit_intercept)
     lin_model.fit(X, y)
     y_pred = lin_model.predict(X)
     return error(y, y_pred)
-
-
-def load_random():
-    n_models = 256
-    n_datasets = 14
-    n_seeds = 3
-    n_iterations = 100
-
-    metrics = np.random.rand(n_models, n_datasets, n_seeds, n_iterations)
-
-    # Use the average of metrics over seeds and dataset for the target score
-    target = metrics.mean(axis=(1, 2, 3))
-    higher_is_better = True
-    return OfflineEvaluations(
-        metrics=metrics,
-        datasets=[f"d{i}" for i in range(n_datasets)],
-        models=[f"m{i}" for i in range(n_models)],
-        target=target,
-    ), higher_is_better
 
 
 def load_arlbench(algorithm="ppo"):
@@ -61,7 +44,7 @@ def load_arlbench(algorithm="ppo"):
 
 
 def atari5_strategy(
-    n_subset: int, n_tasks: int, metrics_flatten, target, engine
+    n_subset: int, n_tasks: int, metrics_flatten, target, engine, error=mse_error
 ) -> List[int]:
     subsets = [[x] for x in generate_subsets(n_tasks, n_subset)]
     print(
@@ -70,7 +53,7 @@ def atari5_strategy(
     correlations = parallel_for(
         fit_and_compute_error,
         inputs=subsets,
-        context={"train_metrics": metrics_flatten, "train_target": target},
+        context={"train_metrics": metrics_flatten, "train_target": target, "error": error},
         engine=engine,
     )
     best_subset = subsets[np.argmin(correlations)][0]
@@ -85,9 +68,12 @@ def main(data, higher_is_better):
     n_models, n_datasets, _, _ = data.metrics.shape
 
     # use rank for the target
-    order = data.target.argsort()
-    target = order.argsort()
-    target = target / len(target)
+    # order = data.target.argsort()
+    # target = order.argsort()
+    # target = target / len(target)
+
+    # For ARLBench the target is already the ranked score
+    target = data.target
 
     # Use the last iteration only in case we have several
     # (n_models, n_datasets, n_seeds, n_iterations) -> (n_models, n_datasets, n_seeds)
@@ -96,7 +82,7 @@ def main(data, higher_is_better):
     # Fow now takes the average over seeds, this enforce that we select environment and not environment-seed combination
     # (n_models, n_datasets, n_seeds, 1) -> (n_models, n_datasets)
     metrics = metrics.mean(axis=2)
-
+    
     # Use ranking to normalize across environments
     metrics = pd.DataFrame(metrics).rank(axis=0, pct=True)
 
@@ -139,7 +125,7 @@ def main(data, higher_is_better):
         )
 
     # ~1 min on my mac in parallel with subset=5 and atari 5
-    task_order = atari5_strategy(n_subset, n_tasks, metrics_flatten, target, engine)
+    task_order = atari5_strategy(n_subset, n_tasks, metrics_flatten, target, engine, error=mse_error)
 
     print("Tasks chosen with Atari5 strategy:")
     for i, task_index in enumerate(task_order):
@@ -152,7 +138,7 @@ def main(data, higher_is_better):
     corr_unweighted = spearman_corr(
         metrics[:, task_order, :, :].mean(axis=(1, 2, 3)), target
     )
-    corr_weighted = 1 - fit_and_compute_error(task_order, metrics_flatten, target)
+    corr_weighted = 1 - fit_and_compute_error(task_order, metrics_flatten, target, error=corr_error)
 
     print(f"Correlation without weights: {corr_unweighted}")
     print(f"Correlation with weights: {corr_weighted}")
@@ -177,11 +163,6 @@ if __name__ == "__main__":
     positive_weights = True
     fit_intercept = False  # whether to fit an intercept in the linear model
 
-    # Note the correlation with Atari5 are not very high but this is due to a lack of data-cleaning compared to the original paper
-    # In other cases, I have obtained much larger correlations.
     data, higher_is_better = load_arlbench()
-
-    # Example to show how to load from numpy data
-    # data, higher_is_better = load_random()
 
     main(data, higher_is_better)

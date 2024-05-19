@@ -1,7 +1,6 @@
 import pandas as pd
 import os
 from offline_evaluations import OfflineEvaluations
-from pathlib import Path
 
 
 RAW_SOBOL_RESULTS = "runscripts/configs/initial_design"
@@ -43,7 +42,7 @@ def prepare_dataset():
         result_filtered = result_filtered.sort_values(["Configuration", "Seed"])
         
         # TODO should we only use the first 128 observations since we only have 128 for Atari?
-        # result_filtered = result_filtered[result_filtered["Configuration"] < 128]
+        result_filtered = result_filtered[result_filtered["Configuration"] < 128]
 
         # Prepare DataFrame to be merged
         merged_results[algorithm] = pd.concat(
@@ -63,6 +62,21 @@ def prepare_dataset():
         merged_result_path = os.path.join(merged_result_dir, "performances.csv")
         merged_results[algorithm].to_csv(merged_result_path, index=False)
 
+        # We use the average ranked scores over seeds as target 
+        target = merged_results[algorithm].groupby(["Configuration", "Environment"])["Score"].mean().reset_index()
+        
+        # Sine reward ranges might vary drastically across environments we normalize by ranking
+        pivot_target = target.pivot(index="Configuration", columns="Environment", values="Score")
+        target = pivot_target.rank(axis=0, pct=True)
+
+        # If the score is NaN we set it to the lowest rank
+        target = target.fillna(0)
+
+        # The target is the average rank of a configuration across all environments
+        target = target.mean(axis=1).values
+        
+        # target = merged_results[algorithm].loc[:, ["Configuration", "Score"]].groupby("Configuration").mean()["Score"].to_dict()
+
         # This is object will be used for the subset generation
         evaluations = OfflineEvaluations.from_dataframe(
             df=merged_results[algorithm],
@@ -70,11 +84,7 @@ def prepare_dataset():
             dataset_col="Environment",
             seed_col="Seed",
             iteration_col=None,
-            target=merged_results[algorithm]
-            .loc[:, ["Configuration", "Score"]]
-            .groupby("Configuration")
-            .mean()["Score"]
-            .to_dict(),
+            target=target,
             metric_col="Score",
         )
         evaluations.save(merged_result_dir)
