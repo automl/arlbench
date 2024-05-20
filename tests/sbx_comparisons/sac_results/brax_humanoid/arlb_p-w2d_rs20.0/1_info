@@ -1,0 +1,27 @@
+ppo_config: {'n_envs': 128, 'track_metrics': False, 'track_traj': False}
+hpo_config: Configuration(values={
+  'alpha': 1.0,
+  'alpha_auto': True,
+  'buffer_alpha': 0.9,
+  'buffer_batch_size': 128,
+  'buffer_beta': 0.9,
+  'buffer_epsilon': 0.001,
+  'buffer_prio_sampling': False,
+  'buffer_size': 1000000,
+  'gamma': 0.99,
+  'gradient_steps': 32,
+  'learning_rate': 0.0003000000000000001,
+  'learning_starts': 8192,
+  'normalize_observations': True,
+  'reward_scale': 20.0,
+  'target_update_interval': 1,
+  'tau': 0.005,
+  'train_freq': 1,
+  'use_target_network': True,
+})
+nas_config: Configuration(values={
+  'activation': 'relu',
+  'hidden_size': 256,
+})
+time: 695.3223860263824
+returns: ['338.98+-84.74', '646.90+-211.56', '2976.48+-2539.40', '4941.47+-2433.54', '5711.08+-3231.00', '6748.94+-2997.05', '7225.40+-2513.77', '7234.24+-3180.15', '7263.00+-2610.94', '7673.99+-3044.63']
