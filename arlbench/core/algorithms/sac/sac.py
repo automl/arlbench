@@ -224,17 +224,18 @@ class SAC(Algorithm):
                 "learning_rate": Float("learning_rate", (1e-6, 0.1), default=3e-4, log=True),
                 "gradient_steps": Integer("gradient_steps", (1, int(1e5)), default=1),
                 "gamma": Float("gamma", (0.8, 1.0), default=0.99),
-                "tau": Float("tau", (0.01, 1.0), default=1.0),
+                "tau": Float("tau", (0.0, 1.0), default=1.0),
                 "use_target_network": Categorical(
                     "use_target_network", [True, False], default=True
                 ),
                 "train_freq": Integer("train_freq", (1, 128), default=1),
                 "learning_starts": Integer(
-                    "learning_starts", (0, 1024), default=128
+                    "learning_starts", (0, 16384), default=128
                 ),
                 "target_update_interval": Integer(
-                    "target_update_interval", (1, 1000), default=1000
+                    "target_update_interval", (1, 1000), default=1
                 ),
+                "reward_scale": Float("reward_scale", (0.0, 100.0), default=1.0),
                 "alpha_auto": Categorical("alpha_auto", [True, False], default=True),
                 "alpha": Float("alpha", (0.0, 1.0), default=1.0),
                 "normalize_observations": Categorical(
@@ -267,7 +268,7 @@ class SAC(Algorithm):
                 "buffer_epsilon": Float("buffer_epsilon", (1e-3, 1e-2), default=1e-3),
                 "learning_rate": Float("learning_rate", (1e-6, 0.1), default=3e-4, log=True),
                 "gradient_steps": Integer("gradient_steps", (1, int(1e5)), default=1),
-                "tau": Float("tau", (0.01, 1.0), default=1.0),
+                "tau": Float("tau", (0.0, 1.0), default=1.0),
                 "use_target_network": Categorical(
                 "use_target_network", [True, False], default=True
                 ),
@@ -276,8 +277,9 @@ class SAC(Algorithm):
                     "learning_starts", (0, 1024), default=128
                 ),
                 "target_update_interval": Integer(
-                    "target_update_interval", (1, 1000), default=1000
+                    "target_update_interval", (1, 1000), default=1
                 ),
+                "reward_scale": Float("reward_scale", (0.0, 100.0), default=1.0),
                 "alpha_auto": Categorical("alpha_auto", [True, False], default=True),
                 "alpha": Float("alpha", (0.0, 1.0), default=1.0),
                 "normalize_observations": Categorical(
@@ -575,6 +577,8 @@ class SAC(Algorithm):
             )
             eval_returns = self.eval(runner_state, n_eval_episodes)
 
+            jax.debug.print("{ret}", ret=eval_returns.mean())
+
             return (runner_state, buffer_state), SACTrainingResult(
                 metrics=metrics, trajectories=trajectories, eval_rewards=eval_returns
             )
@@ -620,8 +624,9 @@ class SAC(Algorithm):
 
         qf_next_target = jnp.min(qf_next_target, axis=0)
         qf_next_target = qf_next_target - alpha_value * next_log_prob
+        scaled_reward = experience.reward * self.hpo_config["reward_scale"]
         target_q_value = (
-            experience.reward + (1 - experience.done) * self.hpo_config["gamma"] * qf_next_target
+             scaled_reward + (1 - experience.done) * self.hpo_config["gamma"] * qf_next_target
         )
 
         def mse_loss(params: FrozenDict):
@@ -998,7 +1003,7 @@ class SAC(Algorithm):
             buffer_state,
             step_metrics,
         ) = jax.lax.cond(
-            (global_step > self.hpo_config["learning_starts"])
+            (global_step > np.ceil(self.hpo_config["learning_starts"] / self.env.n_envs))
             & (global_step % self.hpo_config["train_freq"] == 0),
             do_update,
             dont_update,
