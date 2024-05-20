@@ -21,14 +21,11 @@ def spearman_corr(x, y):
     return spcorr
 
 
-def corr_error(target, pred):
+def error(target, pred):
     # define the error used to compare linear model, here we pick the model with the highest correlation with the target
     return 1 - spearman_corr(pred, target)
 
-def mse_error(target, pred):
-    return np.mean((pred - target)**2)
-
-def fit_and_compute_error(task_subset, train_metrics, train_target, error=mse_error):
+def fit_and_compute_error(task_subset, train_metrics, train_target):
     X = train_metrics[:, np.array(task_subset)]
     y = train_target
     lin_model = LinearRegression(positive=positive_weights, fit_intercept=fit_intercept)
@@ -44,7 +41,7 @@ def load_arlbench(algorithm="ppo"):
 
 
 def atari5_strategy(
-    n_subset: int, n_tasks: int, metrics_flatten, target, engine, error=mse_error
+    n_subset: int, n_tasks: int, metrics_flatten, target, engine
 ) -> List[int]:
     subsets = [[x] for x in generate_subsets(n_tasks, n_subset)]
     print(
@@ -53,7 +50,7 @@ def atari5_strategy(
     correlations = parallel_for(
         fit_and_compute_error,
         inputs=subsets,
-        context={"train_metrics": metrics_flatten, "train_target": target, "error": error},
+        context={"train_metrics": metrics_flatten, "train_target": target},
         engine=engine,
     )
     best_subset = subsets[np.argmin(correlations)][0]
@@ -125,7 +122,7 @@ def main(data, higher_is_better):
         )
 
     # ~1 min on my mac in parallel with subset=5 and atari 5
-    task_order = atari5_strategy(n_subset, n_tasks, metrics_flatten, target, engine, error=mse_error)
+    task_order = atari5_strategy(n_subset, n_tasks, metrics_flatten, target, engine)
 
     print("Tasks chosen with Atari5 strategy:")
     for i, task_index in enumerate(task_order):
@@ -138,7 +135,7 @@ def main(data, higher_is_better):
     corr_unweighted = spearman_corr(
         metrics[:, task_order, :, :].mean(axis=(1, 2, 3)), target
     )
-    corr_weighted = 1 - fit_and_compute_error(task_order, metrics_flatten, target, error=corr_error)
+    corr_weighted = 1 - fit_and_compute_error(task_order, metrics_flatten, target)
 
     print(f"Correlation without weights: {corr_unweighted}")
     print(f"Correlation with weights: {corr_weighted}")
