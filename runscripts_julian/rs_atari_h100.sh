@@ -1,2 +1,2 @@
 #!/bin/bash
-./run_rs_claix.sh dqn atari double_dunk claix_gpu_h100 128 128
+./run_rs_claix.sh sac brax ant claix_gpu_h100 256 256

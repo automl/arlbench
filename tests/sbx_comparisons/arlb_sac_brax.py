@@ -23,9 +23,7 @@ def ppo_runner(dir_name, log, framework, env_name, config, training_kw_args, see
         seed=seed, 
         cnn_policy=cnn_policy,
         env_kwargs={
-            #"episodic_life": True,
-            #"reward_clip": True,
-            #"frame_skip": 1
+            "backend": "mjx"
         }
     )
     eval_env = make_env(
@@ -35,9 +33,7 @@ def ppo_runner(dir_name, log, framework, env_name, config, training_kw_args, see
         seed=seed, 
         cnn_policy=cnn_policy,
         env_kwargs={
-            #"episodic_life": True,
-            #"reward_clip": True,
-            #"frame_skip": 1
+            "backend": "mjx"
         }
     )
     rng = jax.random.PRNGKey(seed)
@@ -46,19 +42,22 @@ def ppo_runner(dir_name, log, framework, env_name, config, training_kw_args, see
     log.info(f"JAX default backend: {jax.default_backend()}")
 
     hpo_config = SAC.get_default_hpo_config()
-    hpo_config["buffer_batch_size"] = 512
+    hpo_config["buffer_batch_size"] = 1024
     hpo_config["gamma"] = 0.99
     hpo_config["train_freq"] = 1
-    hpo_config["gradient_steps"] = 64
+    hpo_config["gradient_steps"] = 8
     #hpo_config["vf_coef"] = 0.5
     hpo_config["learning_rate"] = 3e-4
     hpo_config["normalize_observations"] = True
+    hpo_config["learning_starts"] = 8192
+    hpo_config["tau"] = 0.005
+    hpo_config["reward_scale"] = 0.1
 
     nas_config = SAC.get_default_nas_config()
     nas_config["activation"] = "relu"
     nas_config["hidden_size"] = 256
 
-    agent = SAC(hpo_config, env, nas_config=nas_config, cnn_policy=cnn_policy)
+    agent = SAC(hpo_config, env, eval_env=eval_env, nas_config=nas_config, cnn_policy=cnn_policy)
     algorithm_state = agent.init(rng)
 
     start = time.time()
@@ -76,9 +75,9 @@ def ppo_runner(dir_name, log, framework, env_name, config, training_kw_args, see
     for i in range(len(mean_return)):
         train_info_df[f"return_{i}"] = result.eval_rewards[i]
 
-    os.makedirs(os.path.join("ppo_results", f"{framework}_{env_name}", dir_name), exist_ok=True)
-    train_info_df.to_csv(os.path.join("ppo_results", f"{framework}_{env_name}", dir_name, f"{seed}_results.csv"))
-    with open(os.path.join("ppo_results", f"{framework}_{env_name}", dir_name, f"{seed}_info"), "w") as f:
+    os.makedirs(os.path.join("sac_results", f"{framework}_{env_name}", dir_name), exist_ok=True)
+    train_info_df.to_csv(os.path.join("sac_results", f"{framework}_{env_name}", dir_name, f"{seed}_results.csv"))
+    with open(os.path.join("sac_results", f"{framework}_{env_name}", dir_name, f"{seed}_info"), "w") as f:
         f.write(f"ppo_config: {config}\n")
         f.write(f"hpo_config: {hpo_config}\n")
         f.write(f"nas_config: {nas_config}\n")
@@ -92,7 +91,7 @@ if __name__ == "__main__":
     parser.add_argument("--training-steps", type=int, default=5000000)
     parser.add_argument("--n-eval-steps", type=int, default=10)
     parser.add_argument("--n-eval-episodes", type=int, default=128)
-    parser.add_argument("--n-envs", type=int, default=256)
+    parser.add_argument("--n-envs", type=int, default=64)
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--env-framework", type=str, default="brax")
     parser.add_argument("--env", type=str, default="ant")
