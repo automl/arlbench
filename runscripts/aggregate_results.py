@@ -26,7 +26,12 @@ def aggregate_runhistories(approach: str):
                 if os.path.isdir(seed_path):
                     csv_file = os.path.join(seed_path, "runhistory.csv")
                     if os.path.isfile(csv_file):
-                        data = pd.read_csv(csv_file)
+                        try:
+                            data = pd.read_csv(csv_file)
+                        except pd.errors.ParserError as e:
+                            print(f"Error while reading: {csv_file}")
+                            print(e)
+                            continue
                         data["seed"] = seed_dir
                         all_data.append(data)
 
