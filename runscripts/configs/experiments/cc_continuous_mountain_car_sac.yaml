@@ -4,7 +4,7 @@ defaults:
   - override /algorithm: sac   
   - override /search_space: sac_cc
 
-experiment_name: cc_continuous_mountain_car_sac
+experiment_name: cc_mountain_car_continuous_sac
 
 environment:
   n_total_timesteps: 50000
