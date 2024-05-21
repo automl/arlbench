@@ -66,6 +66,10 @@ def prepare_dataset():
         target = merged_results[algorithm].groupby(["Configuration", "Environment"])["Score"].mean().reset_index()
         
         # Sine reward ranges might vary drastically across environments we normalize by ranking
+        # Note: NaNs will be propagated trough the mean. That means if a configuration returns NaN
+        # for one seed (e.g. due to vanishing/exploding gradients) the configuration receives the
+        # score NaN for all seeds. This ensures that these configurations still receive the lowest rank
+        # since they are unstable
         pivot_target = target.pivot(index="Configuration", columns="Environment", values="Score")
         target = pivot_target.rank(axis=0, pct=True)
 

@@ -14,10 +14,11 @@ hp_config:
   learning_rate: 0.0003
   learning_starts: 128
   normalize_observations: false
-  target_update_interval: 1000
+  target_update_interval: 1
   train_freq: 1
   use_target_network: true
   tau: 1.0
+  reward_scale: 1.0
 nas_config:
   activation: tanh
   hidden_size: 256
