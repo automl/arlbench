@@ -79,8 +79,8 @@ make install-envpool
 ```
 </details>
 
-> **Caution**<br>
-Windows is currently not supported and also not tested. We recommend using the Linux subsytem if you're on a Windows machine.
+> [!CAUTION]
+> Windows is currently not supported and also not tested. We recommend using the Linux subsytem if you're on a Windows machine.
 
 ## Quickstart
 
