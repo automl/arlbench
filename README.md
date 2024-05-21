@@ -46,6 +46,7 @@ You can install ARLBench using `pip`:
 pip install arlbench
 ```
 
+[!WARNING]
 If you want to use envpool environments (not currently supported for Mac!), instead choose:
 ```bash
 pip install arlbench[envpool]
@@ -71,12 +72,15 @@ Then you can install the benchmark. For the base version, use:
 ```bash
 make install
 ```
-
+[!WARNING]
 For the envpool functionality (not available on Mac!), instead use:
 ```bash
 make install-envpool
 ```
 </details>
+
+[!CAUTION]
+Windows is currently not supported and also not tested. We recommend using the Linux subsytem if you're on a Windows machine.
 
 ## Quickstart
 
@@ -84,7 +88,22 @@ Here are the two ways you can use ARLBench: via the command line or as an enviro
 
 ### Use the CLI
 
-TODO: where does this even exist?
+We provide a command line script for black-box configuration in ARLBench. Simply run:
+```bash
+python run_arlbench.py
+```
+
+You can use the hydra command line syntax to override some of the configuration like this:
+```bash
+python run_arlbench.py algorithm=ppo
+```
+
+Or run multiple different versions after one another:
+```bash
+python run_arlbench.py -m autorl.seed=0,1,2,3,4
+```
+
+We recommend you create your own custom config files if using the CLI. Our [examples](https://github.com/automl/arlbench/tree/main/examples) can show you how these can look.
 
 ### Use the AutoRL environment
 
