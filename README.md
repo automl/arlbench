@@ -74,6 +74,7 @@ make install
 ```
 > [!WARNING]
 > For the envpool functionality (not available on Mac!), instead use:
+
 ```bash
 make install-envpool
 ```
