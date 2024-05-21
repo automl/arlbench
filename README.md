@@ -46,8 +46,7 @@ You can install ARLBench using `pip`:
 pip install arlbench
 ```
 
-> [!WARNING]
-> If you want to use envpool environments (not currently supported for Mac!), instead choose:
+If you want to use envpool environments (not currently supported for Mac!), instead choose:
 ```bash
 pip install arlbench[envpool]
 ```
@@ -72,8 +71,7 @@ Then you can install the benchmark. For the base version, use:
 ```bash
 make install
 ```
-> [!WARNING]
-> For the envpool functionality (not available on Mac!), instead use:
+For the envpool functionality (not available on Mac!), instead use:
 
 ```bash
 make install-envpool
