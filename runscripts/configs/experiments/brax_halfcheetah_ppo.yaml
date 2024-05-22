@@ -4,6 +4,8 @@ defaults:
   - override /algorithm: ppo
   - override /search_space: ppo_brax
 
+experiment_name: brax_halfcheetah_ppo
+
 hp_config:
   update_epochs: 4
   n_steps: 5

@@ -4,11 +4,18 @@ defaults:
   - override /algorithm: dqn   
   - override /search_space: dqn_atari
 
+experiment_name: atari_battle_zone_dqn
+
+environment:
+  n_envs: 4
+  n_total_timesteps: 10000000
+
 hp_config:
-  train_freq: 4
+  train_freq: 1
   gradient_steps: 1
   normalize_observations: False
 
 nas_config:
   activation: relu
   hidden_size: 512
+

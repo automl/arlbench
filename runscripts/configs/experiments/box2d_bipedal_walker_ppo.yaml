@@ -6,9 +6,13 @@ defaults:
 
 environment:
   n_total_timesteps: 200000
-  n_envs: 8
+  n_envs: 1
+  kwargs:
+    max_episode_steps: 1600   # prevents "getting stuck" during training
+  eval_kwargs:
+    max_episode_steps: 1600   # prevents "getting stuck" during evaluation
 
 hp_config:
   update_epochs: 10
-  n_steps: 256
+  n_steps: 2048
   normalize_observations: True
