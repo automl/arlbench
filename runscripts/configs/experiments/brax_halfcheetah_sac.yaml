@@ -2,12 +2,18 @@
 defaults:
   - override /environment: brax_halfcheetah    
   - override /algorithm: sac    
+  - override /search_space: sac_brax
 
-# https://huggingface.co/sb3/sac-HalfCheetah-v3
 environment:
-  n_envs: 1
-  n_total_timesteps: 1000000
+  n_envs: 64
+  n_total_timesteps: 5000000
 
 hp_config:
-  learning_starts: 10000
-  normalize_observations: False
+  gradient_steps: 8
+  target_update_interval: 1
+  train_freq: 1
+  normalize_observations: True
+
+nas_config:
+  activation: relu
+  hidden_size: 256

@@ -4,6 +4,8 @@ defaults:
   - override /algorithm: ppo
   - override /search_space: ppo_minigrid
 
+experiment_name: minigrid_empty_random_ppo
+
 environment:
   n_total_timesteps: 100000
   n_envs: 8

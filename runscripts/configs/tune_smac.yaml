@@ -12,6 +12,7 @@ hydra:
     n_trials: 30
     search_space: ${search_space}
     sweeper_kwargs:
+      max_budget: ${environment.n_total_timesteps}
       optimizer_kwargs:
         smac_facade:
           _target_: smac.facade.blackbox_facade.BlackBoxFacade
@@ -21,6 +22,8 @@ hydra:
           n_trials: ${hydra.sweeper.n_trials}
           deterministic: true
           n_workers: 1
+          name: ${experiment_name}
+          # output_directory: results/smac/${algorithm}_${autorl.env_name}/${smac_seed}/smac_output
         initial_design:
           _target_: smac.initial_design.sobol_design.SobolInitialDesign
           _partial_: true
