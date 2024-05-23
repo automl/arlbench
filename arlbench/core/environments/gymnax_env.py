@@ -13,9 +13,18 @@ if TYPE_CHECKING:
 
 
 class GymnaxEnv(Environment):
+    """A gymnax-based RL environment."""
+
     def __init__(
         self, env_name: str, n_envs: int, env_kwargs: dict[str, Any] | None = None
     ):
+        """Creates a gymnax environment for JAX-based RL training. 
+
+        Args:
+            env_name (str): Name/id of the brax environment.
+            n_envs (int): Number of environments.
+            env_kwargs (dict[str, Any] | None, optional): Keyword arguments to pass to the gymnax environment. Defaults to None.
+        """
         if env_kwargs is None:
             env_kwargs = {}
         env, env_params = gymnax.make(env_name, **env_kwargs)

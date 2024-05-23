@@ -14,24 +14,53 @@ if TYPE_CHECKING:
 
 
 class StateFeature(ABC):
+    """An abstract state features for the AutoRL environment.
+    
+    It can be wrapped around the training function to calculate the state features.
+    We do this be overriding the __new__() function. It allows us to imitate
+    the behaviour of a basic function while keeping the advantages of a static class.
+    """
     KEY: str  # Unique identifier
 
-    def __new__(cls, *args, **kwargs):
+    def __new__(cls, *args, **kwargs) -> TrainFunc:
+        """Creates a new instance of this state feature and directly wraps the train function.
+
+        This is done by first creating an object and subsequently calling self.__call__().
+
+        Returns:
+            TrainFunc: Wrapped training function.
+        """
         instance = super().__new__(cls)
         return instance.__call__(*args, **kwargs)
 
     @staticmethod
     @abstractmethod
-    def __call__(train_func: TrainFunc, objectives: dict) -> TrainFunc:
+    def __call__(train_func: TrainFunc, state_features: dict) -> TrainFunc:
+        """Wraps the training function with the state feature calculation.
+
+        Args:
+            train_func (TrainFunc):  Training function to wrap.
+            state_features (dict):  Dictionary to store state features.
+
+        Returns:
+            TrainFunc:  Wrapped training function.
+        """
         raise NotImplementedError
 
     @staticmethod
     @abstractmethod
     def get_state_space() -> gymnasium.spaces.Space:
+        """Returns a dictionary containing the specification of the state feature.
+
+        Returns:
+            dict: Specification.
+        """
         raise NotImplementedError
 
 
 class GradInfo(StateFeature):
+    """Gradient information state feature for the AutoRL environment. It contains the grad norm during training."""
+
     KEY = "grad_info"
 
     @staticmethod

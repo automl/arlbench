@@ -119,7 +119,7 @@ ATARI_ENVS = [
 ]
 
 
-def numpy_to_jax(x):
+def numpy_to_jax(x: np.ndarray) -> jnp.ndarray:
     """Converts numpy arrays to jax numpy arrays."""
     if isinstance(x, np.ndarray):
         return jnp.array(x)
@@ -128,6 +128,8 @@ def numpy_to_jax(x):
 
 
 class EnvpoolEnv(Environment):
+    """An envpool-based RL environment."""
+    
     def __init__(
         self,
         env_name: str,
@@ -135,17 +137,27 @@ class EnvpoolEnv(Environment):
         seed: int,
         env_kwargs: dict[str, Any] | None = None,
     ):
+        """Creates an envpool environment for JAX-based RL training. 
+
+        Args:
+            env_name (str): Name/id of the brax environment.
+            n_envs (int): Number of environments.
+            seed (int): Random seed.
+            env_kwargs (dict[str, Any] | None, optional): Keyword arguments to pass to the brax environment. Defaults to None.
+        """
         if env_kwargs is None:
             env_kwargs = {}
         try:
             import envpool
         except ImportError:
             raise ValueError(
-                "Failed to import envpool. Please install the package first."
+                "Failed to import envpool. Please make sure that the package is installed."
             )
         env = envpool.make(
             env_name, env_type="gymnasium", num_envs=n_envs, seed=seed, **env_kwargs
         )
+
+        # We need this since Atari has some special cases to consider
         self.is_atari = env_name in ATARI_ENVS
         if self.is_atari:
             self.episodic_life = env_kwargs.get("episodic_life", False)
@@ -153,28 +165,50 @@ class EnvpoolEnv(Environment):
 
         super().__init__(env_name, env, n_envs, seed)
 
+        # For JAX IO callbacks we need the shape of the reset function
         self.reset_shape = self._reset()
 
         if self.is_atari:
             self.has_lives = jnp.all(self.reset_shape[1]["lives"] > 0)
 
+        # The dummy actions are used for Atari games to select a random strategy
+        # in the beginning
         rng = jax.random.key(42)
         _rngs = jax.random.split(rng, self._n_envs)
         self.dummy_action = np.array(
             [self.action_space.sample(_rngs[i]) for i in range(self._n_envs)]
         )
+
         if self.is_atari:
             # fire action for reset
             self.dummy_action = np.ones_like(self.dummy_action)
+
+        # These shapes are also required for the IO callbacks
         self.step_shape = self._step(self.dummy_action)
         self.single_step_shape = jax.tree_map(lambda x: x[:1], self.step_shape)
 
+        # This gives us the envpool XLA interface
+        # See https://envpool.readthedocs.io/en/latest/content/xla_interface.html
         self._handle0, self.recv, self.send, self._xla_step = self._env.xla()
 
-    def _reset(self):
+    def _reset(self) -> tuple[jnp.ndarray, jnp.ndarray]:
+        """Wraps the envpool reset() by converting arrays from numpy to JAX numpy.
+
+        Returns:
+            tuple[jnp.ndarray, jnp.ndarray]: Observations and infos for each env.
+        """
         return jax.tree_util.tree_map(numpy_to_jax, self._env.reset())
 
-    def _step(self, action, env_id=None):
+    def _step(self, action: Any, env_id: int | None = None) -> tuple:
+        """Wraps the envpool step() by converting arrays from numpy to JAX numpy.
+
+        Args:
+            action (Any): Action to take.
+            env_id (int | None, optional): Internal env ID for envpool. Defaults to None.
+
+        Returns:
+            tuple: Step result.
+        """
         result = self._env.step(action=action, env_id=env_id)
         return jax.tree_util.tree_map(numpy_to_jax, result)
 
@@ -191,9 +225,15 @@ class EnvpoolEnv(Environment):
             env_state, _ = env_state
         else:
             env_state, lives = env_state
+        
+        # Here, we perform the actual step in the envpool environment
         env_state, (obs, reward, term, trunc, info) = self._xla_step(env_state, action)
         done = jnp.logical_or(term, trunc)
 
+        # Since the envpool AutoReset differs from the one implemented in Gymnasium
+        # we need this workaround to achieve the same behaviour.
+        # To reset only certain environments that are done already
+        # we need the non-jittable reset function
         def reset(obs, info):
             def reset_idx(i, obs):
                 new_obs, _, _, _, _ = jax.experimental.io_callback(

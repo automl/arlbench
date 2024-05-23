@@ -6,8 +6,8 @@ if TYPE_CHECKING:
     from arlbench.core.environments import Environment
 
 
-class AutoRLWrapper:
-    """Base class for AutoRL wrappers."""
+class Wrapper:
+    """Base class for ARLBench wrappers."""
 
     def __init__(self, env: Environment):
         self._env = env

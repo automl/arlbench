@@ -19,11 +19,21 @@ if TYPE_CHECKING:
 
 
 class BraxEnv(Environment):
+    """A brax-based RL environment."""
+    
     def __init__(
         self, env_name: str, n_envs: int, env_kwargs: dict[str, Any] | None = None
     ):
+        """Creates a brax environment for JAX-based RL training. 
+
+        Args:
+            env_name (str): Name/id of the brax environment.
+            n_envs (int): Number of environments.
+            env_kwargs (dict[str, Any] | None, optional): Keyword arguments to pass to the brax environment. Defaults to None.
+        """
         if env_kwargs is None:
             env_kwargs = {}
+
         env = envs.create(env_name, batch_size=n_envs, **env_kwargs)
         super().__init__(env_name, env, n_envs)
         self.max_steps_in_episode = 1000
@@ -41,13 +51,13 @@ class BraxEnv(Environment):
         return env_state, (env_state.obs, env_state.reward, env_state.done, {})
 
     @property
-    def action_space(self):
+    def action_space(self) -> gymnax.environments.spaces.Space:
         return gymnax.environments.spaces.Box(
             low=-np.inf, high=np.inf, shape=(self._env.action_size,)
         )
 
     @property
-    def observation_space(self):
+    def observation_space(self) -> gymnax.environments.spaces.Space:
         return gymnax.environments.spaces.Box(
             low=-np.inf, high=np.inf, shape=(self._env.observation_size,)
         )

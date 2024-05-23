@@ -17,7 +17,7 @@ if TYPE_CHECKING:
     from ConfigSpace import Configuration, ConfigurationSpace
 
     from arlbench.core.environments import Environment
-    from arlbench.core.wrappers import AutoRLWrapper
+    from arlbench.core.wrappers import Wrapper
 
 
 class Algorithm(ABC):
@@ -29,8 +29,8 @@ class Algorithm(ABC):
         self,
         hpo_config: Configuration,
         nas_config: Configuration,
-        env: Environment | AutoRLWrapper,
-        eval_env: Environment | AutoRLWrapper | None = None,
+        env: Environment | Wrapper,
+        eval_env: Environment | Wrapper | None = None,
         deterministic_eval: bool = True,
         track_trajectories: bool = False,
         track_metrics: bool = False,

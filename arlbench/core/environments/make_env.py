@@ -3,11 +3,10 @@ from __future__ import annotations
 import warnings
 from typing import TYPE_CHECKING
 
-from arlbench.core.wrappers import AutoRLWrapper, FlattenObservationWrapper
+from arlbench.core.wrappers import Wrapper, FlattenObservationWrapper
 
 if TYPE_CHECKING:
     from typing import Any
-
     from .autorl_env import Environment
 
 
@@ -18,8 +17,20 @@ def make_env(
     n_envs: int = 1,
     seed: int = 0,
     env_kwargs: dict[str, Any] | None = None,
-) -> Environment | AutoRLWrapper:
-    # todo: add env_kwargs to all different environments
+) -> Environment | Wrapper:
+    """ARLBench equivalent to make_env in gymnasium/gymnax etc. Creates a JAX-compatible RL environment.
+
+    Args:
+        env_framework (str): Environment framework to use. Must be one of the following: brax, envpool, gymnasium, gymnax, xland
+        env_name (str): Name/id of the environment. Has to match the env_framework.
+        cnn_policy (bool, optional): _description_. Defaults to False.
+        n_envs (int, optional): Number of environments. Defaults to 1.
+        seed (int, optional): Random seed. Defaults to 0.
+        env_kwargs (dict[str, Any] | None, optional): Keyword arguments to pass to the environment. Defaults to None.
+
+    Returns:
+        Environment | Wrapper: JAX-compatible RL environment.
+    """
     if env_kwargs is None:
         env_kwargs = {}
     if env_framework == "gymnasium":

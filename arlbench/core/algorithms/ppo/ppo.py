@@ -25,7 +25,7 @@ if TYPE_CHECKING:
 
     from arlbench.core.environments import Environment
     from arlbench.core.running_statistics import RunningStatisticsState
-    from arlbench.core.wrappers import AutoRLWrapper
+    from arlbench.core.wrappers import Wrapper
 
 
 class PPOTrainState(TrainState):
@@ -110,8 +110,8 @@ class PPO(Algorithm):
     def __init__(
         self,
         hpo_config: Configuration,
-        env: Environment | AutoRLWrapper,
-        eval_env: Environment | AutoRLWrapper | None = None,
+        env: Environment | Wrapper,
+        eval_env: Environment | Wrapper | None = None,
         cnn_policy: bool = False,
         nas_config: Configuration | None = None,
         deterministic_eval: bool = True,
