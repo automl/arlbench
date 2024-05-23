@@ -243,11 +243,6 @@
        </li>
       </ul>
      </li>
-     <li class="toctree-l3">
-      <a class="reference internal" href="../../../../api/arlbench.plotting.html">
-       arlbench.plotting
-      </a>
-     </li>
      <li class="toctree-l3 has-children">
       <a class="reference internal" href="../../../../api/arlbench.utils.html">
        arlbench.utils
@@ -320,6 +315,7 @@
 
 <span class="kn">import</span> <span class="nn">jax</span>
 <span class="kn">import</span> <span class="nn">jax.numpy</span> <span class="k">as</span> <span class="nn">jnp</span>
+<span class="kn">import</span> <span class="nn">gymnax</span>
 
 <span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
     <span class="kn">from</span> <span class="nn">chex</span> <span class="kn">import</span> <span class="n">PRNGKey</span>
@@ -328,7 +324,27 @@
 <div class="viewcode-block" id="Environment">
 <a class="viewcode-back" href="../../../../arlbench.core.environments.html#arlbench.core.environments.Environment">[docs]</a>
 <span class="k">class</span> <span class="nc">Environment</span><span class="p">(</span><span class="n">ABC</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;An abstract environment class to support various kinds of RL environments.</span>
+
+<span class="sd">    Sub-classes need to implement the following methods:</span>
+<span class="sd">      - reset()</span>
+<span class="sd">      - step()</span>
+<span class="sd">    Note: Both functions need to be fully jittable to support JAX-based RL algorithms!</span>
+
+<span class="sd">    As well as the properties:</span>
+<span class="sd">      - action_space</span>
+<span class="sd">      - observation_space</span>
+<span class="sd">    Note: These need to be gymnax spaces, not gymnasium spaces.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">env_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">env</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">n_envs</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">seed</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Creates a JAX-compatible RL environment. It is automatically vectorized to compute multiple environments simultaneously.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            env_name (str): Name/id of the environment.</span>
+<span class="sd">            env (Any): Inner/wrapped environment.</span>
+<span class="sd">            n_envs (int): Number of vectorized environments.</span>
+<span class="sd">            seed (int | None, optional): Random seed. Defaults to None.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_env_name</span> <span class="o">=</span> <span class="n">env_name</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_env</span> <span class="o">=</span> <span class="n">env</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_n_envs</span> <span class="o">=</span> <span class="n">n_envs</span>
@@ -337,7 +353,15 @@
 <div class="viewcode-block" id="Environment.reset">
 <a class="viewcode-back" href="../../../../arlbench.core.environments.html#arlbench.core.environments.Environment.reset">[docs]</a>
     <span class="nd">@abstractmethod</span>
-    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rng</span><span class="p">:</span> <span class="n">PRNGKey</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>  <span class="c1"># TODO improve typing</span>
+    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rng</span><span class="p">:</span> <span class="n">PRNGKey</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Environment reset() function. Resets the internal environment state.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            rng (PRNGKey): Random number generator key.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            tuple[Any, Any]: Returns a tuple containing the environment state as well as the actual return of the reset() function.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
 
 
@@ -346,28 +370,56 @@
     <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">step</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">env_state</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">action</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">rng</span><span class="p">:</span> <span class="n">PRNGKey</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>  <span class="c1"># TODO improve typing</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Environment step() function. Performs a step in the environment given an action.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            env_state (Any): Internal environment state.</span>
+<span class="sd">            action (Any): Action to take.</span>
+<span class="sd">            rng (PRNGKey): Random number generator key.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            tuple[Any, Any]:  Returns a tuple containing the environment state as well as the actual return of the step() function. </span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
 
 
 <div class="viewcode-block" id="Environment.action_space">
 <a class="viewcode-back" href="../../../../arlbench.core.environments.html#arlbench.core.environments.Environment.action_space">[docs]</a>
     <span class="nd">@abstractmethod</span>
-    <span class="k">def</span> <span class="nf">action_space</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">action_space</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">gymnax</span><span class="o">.</span><span class="n">environments</span><span class="o">.</span><span class="n">spaces</span><span class="o">.</span><span class="n">Space</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;The action space of the environment (gymnax space).</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            gymnax.environments.spaces.Space: Action space of the environment.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
 
 
 <div class="viewcode-block" id="Environment.observation_space">
 <a class="viewcode-back" href="../../../../arlbench.core.environments.html#arlbench.core.environments.Environment.observation_space">[docs]</a>
     <span class="nd">@abstractmethod</span>
-    <span class="k">def</span> <span class="nf">observation_space</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">observation_space</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">gymnax</span><span class="o">.</span><span class="n">environments</span><span class="o">.</span><span class="n">spaces</span><span class="o">.</span><span class="n">Space</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;The observation space of the environment (gymnax space).</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            gymnax.environments.spaces.Space: Observation space of the environment.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
 
 
 <div class="viewcode-block" id="Environment.sample_actions">
 <a class="viewcode-back" href="../../../../arlbench.core.environments.html#arlbench.core.environments.Environment.sample_actions">[docs]</a>
     <span class="nd">@functools</span><span class="o">.</span><span class="n">partial</span><span class="p">(</span><span class="n">jax</span><span class="o">.</span><span class="n">jit</span><span class="p">,</span> <span class="n">static_argnums</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
-    <span class="k">def</span> <span class="nf">sample_actions</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rng</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">sample_actions</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rng</span><span class="p">:</span> <span class="n">PRNGKey</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Samples a random action for each environment. </span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            rng (PRNGKey): Random number generator key.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            jnp.ndarray: Array of sampled actions, one for each environment.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">_rngs</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">rng</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_n_envs</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">jnp</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
             <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">action_space</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">_rngs</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_n_envs</span><span class="p">)]</span>
@@ -375,11 +427,21 @@
 
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">n_envs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">n_envs</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;The number of environments.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            int: _description_</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_n_envs</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">env_name</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">env_name</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns the name/id of the environments.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            str: Environment name.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_env_name</span></div>
 
 </pre></div>

@@ -243,11 +243,6 @@
        </li>
       </ul>
      </li>
-     <li class="toctree-l3">
-      <a class="reference internal" href="../../../api/arlbench.plotting.html">
-       arlbench.plotting
-      </a>
-     </li>
      <li class="toctree-l3 has-children">
       <a class="reference internal" href="../../../api/arlbench.utils.html">
        arlbench.utils
@@ -323,21 +318,40 @@
 <span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
     <span class="kn">from</span> <span class="nn">arlbench.core.algorithms</span> <span class="kn">import</span> <span class="n">TrainFunc</span>
 
-<span class="c1"># SORTING RANKS</span>
+<span class="c1"># These are the ranks we are using for sorting:</span>
 <span class="c1"># Runtime = 0</span>
 <span class="c1"># Emissions = 1</span>
 <span class="c1"># Reward = 2</span>
+<span class="c1"># The reason is, that we want to measure the runtime right before and after starting</span>
+<span class="c1"># the training to make it as accurate as possible. For the emissions, we want to have</span>
+<span class="c1"># only the training emissions and not the calculation of other objectives</span>
 
 
 <div class="viewcode-block" id="Objective">
 <a class="viewcode-back" href="../../../arlbench.autorl.html#arlbench.autorl.objectives.Objective">[docs]</a>
 <span class="k">class</span> <span class="nc">Objective</span><span class="p">(</span><span class="n">ABC</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;An abstract optimization objective for the AutoRL environment.</span>
+<span class="sd">    </span>
+<span class="sd">    It can be wrapped around the training function to calculate the objective.</span>
+<span class="sd">    We do this be overriding the __new__() function. It allows us to imitate</span>
+<span class="sd">    the behaviour of a basic function while keeping the advantages of a static class.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">KEY</span><span class="p">:</span> <span class="nb">str</span>  <span class="c1"># Unique identifier</span>
     <span class="n">RANK</span><span class="p">:</span> <span class="nb">int</span>  <span class="c1"># Sorting rank</span>
 
-    <span class="k">def</span> <span class="fm">__new__</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<div class="viewcode-block" id="Objective.__new__">
+<a class="viewcode-back" href="../../../arlbench.autorl.html#arlbench.autorl.objectives.Objective.__new__">[docs]</a>
+    <span class="k">def</span> <span class="fm">__new__</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TrainFunc</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Creates a new instance of this objective and directly wraps the train function.</span>
+
+<span class="sd">        This is done by first creating an object and subsequently calling self.__call__().</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            TrainFunc: Wrapped training function.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">instance</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__new__</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">instance</span><span class="o">.</span><span class="fm">__call__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">instance</span><span class="o">.</span><span class="fm">__call__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
 
 <div class="viewcode-block" id="Objective.__call__">
 <a class="viewcode-back" href="../../../arlbench.autorl.html#arlbench.autorl.objectives.Objective.__call__">[docs]</a>
@@ -346,6 +360,16 @@
     <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span>
         <span class="n">train_func</span><span class="p">:</span> <span class="n">TrainFunc</span><span class="p">,</span> <span class="n">objectives</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">optimize_objectives</span><span class="p">:</span> <span class="nb">str</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TrainFunc</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Wraps the training function with the objective calculation.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            train_func (TrainFunc): Training function to wrap.</span>
+<span class="sd">            objectives (dict): Dictionary to store objective.</span>
+<span class="sd">            optimize_objectives (str): Whether to minimize/maximize the objectve.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            TrainFunc: Training function.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
 
 
@@ -354,17 +378,34 @@
     <span class="nd">@staticmethod</span>
     <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">get_spec</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns a dictionary containing the specification of the objective.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            dict: Specification.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
 
 
+<div class="viewcode-block" id="Objective.__lt__">
+<a class="viewcode-back" href="../../../arlbench.autorl.html#arlbench.autorl.objectives.Objective.__lt__">[docs]</a>
     <span class="k">def</span> <span class="fm">__lt__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="n">Objective</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Implements &quot;less-than&quot; comparison between two objectives. Used for sorting based on objective rank.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            other (Objective): Other Objective to compare to.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            bool: Whether this Objective is less than the other Objective. </span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">RANK</span> <span class="o">&lt;</span> <span class="n">other</span><span class="o">.</span><span class="n">RANK</span></div>
+</div>
 
 
 
 <div class="viewcode-block" id="Runtime">
 <a class="viewcode-back" href="../../../arlbench.autorl.html#arlbench.autorl.objectives.Runtime">[docs]</a>
 <span class="k">class</span> <span class="nc">Runtime</span><span class="p">(</span><span class="n">Objective</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Runtime objective for the AutoRL environment. It measures the total training runtime.&quot;&quot;&quot;</span>
     <span class="n">KEY</span> <span class="o">=</span> <span class="s2">&quot;runtime&quot;</span>
     <span class="n">RANK</span> <span class="o">=</span> <span class="mi">0</span>
 
@@ -379,6 +420,8 @@
             <span class="n">result</span> <span class="o">=</span> <span class="n">train_func</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
             <span class="n">runtime</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start_time</span>
 
+            <span class="c1"># Naturally runtime is minimized. However, if we don&#39;t want</span>
+            <span class="c1"># to minimize the objectives we have to flip the sign</span>
             <span class="k">if</span> <span class="n">optimize_objectives</span> <span class="o">!=</span> <span class="n">Runtime</span><span class="o">.</span><span class="n">get_spec</span><span class="p">()[</span><span class="s2">&quot;optimize&quot;</span><span class="p">]:</span>
                 <span class="n">runtime</span> <span class="o">*=</span> <span class="o">-</span><span class="mi">1</span>
 
@@ -400,6 +443,8 @@
 <div class="viewcode-block" id="RewardMean">
 <a class="viewcode-back" href="../../../arlbench.autorl.html#arlbench.autorl.objectives.RewardMean">[docs]</a>
 <span class="k">class</span> <span class="nc">RewardMean</span><span class="p">(</span><span class="n">Objective</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Reward objective for the AutoRL environment. It measures the mean of the last evaluation rewards.&quot;&quot;&quot;</span>
+    
     <span class="n">KEY</span> <span class="o">=</span> <span class="s2">&quot;reward_mean&quot;</span>
     <span class="n">RANK</span> <span class="o">=</span> <span class="mi">2</span>
 
@@ -414,10 +459,12 @@
             <span class="n">_</span><span class="p">,</span> <span class="n">train_result</span> <span class="o">=</span> <span class="n">result</span>
             <span class="n">reward_mean</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">train_result</span><span class="o">.</span><span class="n">eval_rewards</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
 
+            <span class="c1"># Naturally the mean of the reward is maximized. However, if we don&#39;t want</span>
+            <span class="c1"># to maximize the objectives we have to flip the sign</span>
             <span class="k">if</span> <span class="n">optimize_objectives</span> <span class="o">!=</span> <span class="n">RewardMean</span><span class="o">.</span><span class="n">get_spec</span><span class="p">()[</span><span class="s2">&quot;optimize&quot;</span><span class="p">]:</span>
                 <span class="n">reward_mean</span> <span class="o">*=</span> <span class="o">-</span><span class="mi">1</span>
-            <span class="n">objectives</span><span class="p">[</span><span class="n">RewardMean</span><span class="o">.</span><span class="n">KEY</span><span class="p">]</span> <span class="o">=</span> <span class="n">reward_mean</span>
 
+            <span class="n">objectives</span><span class="p">[</span><span class="n">RewardMean</span><span class="o">.</span><span class="n">KEY</span><span class="p">]</span> <span class="o">=</span> <span class="n">reward_mean</span>
             <span class="k">return</span> <span class="n">result</span>
 
         <span class="k">return</span> <span class="n">wrapper</span></div>
@@ -440,6 +487,8 @@
 <div class="viewcode-block" id="RewardStd">
 <a class="viewcode-back" href="../../../arlbench.autorl.html#arlbench.autorl.objectives.RewardStd">[docs]</a>
 <span class="k">class</span> <span class="nc">RewardStd</span><span class="p">(</span><span class="n">Objective</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Reward objective for the AutoRL environment. It measures the standard deviation of the last evaluation rewards.&quot;&quot;&quot;</span>
+    
     <span class="n">KEY</span> <span class="o">=</span> <span class="s2">&quot;reward_std&quot;</span>
     <span class="n">RANK</span> <span class="o">=</span> <span class="mi">2</span>
 
@@ -454,8 +503,11 @@
             <span class="n">_</span><span class="p">,</span> <span class="n">train_result</span> <span class="o">=</span> <span class="n">result</span>
             <span class="n">reward_std</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">train_result</span><span class="o">.</span><span class="n">eval_rewards</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
 
+            <span class="c1"># Naturally the std of the reward is minimized. However, if we don&#39;t want</span>
+            <span class="c1"># to minimize objectives we have to flip the sign</span>
             <span class="k">if</span> <span class="n">optimize_objectives</span> <span class="o">!=</span> <span class="n">RewardStd</span><span class="o">.</span><span class="n">get_spec</span><span class="p">()[</span><span class="s2">&quot;optimize&quot;</span><span class="p">]:</span>
                 <span class="n">reward_std</span> <span class="o">*=</span> <span class="o">-</span><span class="mi">1</span>
+
             <span class="n">objectives</span><span class="p">[</span><span class="n">RewardStd</span><span class="o">.</span><span class="n">KEY</span><span class="p">]</span> <span class="o">=</span> <span class="n">reward_std</span>
 
             <span class="k">return</span> <span class="n">result</span>
@@ -475,6 +527,8 @@
 <div class="viewcode-block" id="Emissions">
 <a class="viewcode-back" href="../../../arlbench.autorl.html#arlbench.autorl.objectives.Emissions">[docs]</a>
 <span class="k">class</span> <span class="nc">Emissions</span><span class="p">(</span><span class="n">Objective</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Emissions objective for the AutoRL environment. It measures the emissions during the training using code carbon.&quot;&quot;&quot;</span>
+    
     <span class="n">KEY</span> <span class="o">=</span> <span class="s2">&quot;emissions&quot;</span>
     <span class="n">RANK</span> <span class="o">=</span> <span class="mi">1</span>
 
@@ -493,8 +547,11 @@
             <span class="n">tracker</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
             <span class="n">emissions</span> <span class="o">=</span> <span class="n">tracker</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
 
-            <span class="k">if</span> <span class="n">optimize_objectives</span> <span class="o">!=</span> <span class="n">Emissions</span><span class="o">.</span><span class="n">get_spec</span><span class="p">()[</span><span class="s2">&quot;optimize&quot;</span><span class="p">]:</span>
+            <span class="c1"># Naturally emissions are minimized. However, if we don&#39;t want</span>
+            <span class="c1"># to minimize objectives we have to flip the sign</span>
+            <span class="k">if</span> <span class="n">emissions</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">optimize_objectives</span> <span class="o">!=</span> <span class="n">Emissions</span><span class="o">.</span><span class="n">get_spec</span><span class="p">()[</span><span class="s2">&quot;optimize&quot;</span><span class="p">]:</span>
                 <span class="n">emissions</span> <span class="o">*=</span> <span class="o">-</span><span class="mi">1</span>
+
             <span class="n">objectives</span><span class="p">[</span><span class="n">Emissions</span><span class="o">.</span><span class="n">KEY</span><span class="p">]</span> <span class="o">=</span> <span class="n">emissions</span>
 
             <span class="k">try</span><span class="p">:</span>

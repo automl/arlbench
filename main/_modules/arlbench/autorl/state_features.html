@@ -243,11 +243,6 @@
        </li>
       </ul>
      </li>
-     <li class="toctree-l3">
-      <a class="reference internal" href="../../../api/arlbench.plotting.html">
-       arlbench.plotting
-      </a>
-     </li>
      <li class="toctree-l3 has-children">
       <a class="reference internal" href="../../../api/arlbench.utils.html">
        arlbench.utils
@@ -330,17 +325,42 @@
 <div class="viewcode-block" id="StateFeature">
 <a class="viewcode-back" href="../../../arlbench.autorl.html#arlbench.autorl.state_features.StateFeature">[docs]</a>
 <span class="k">class</span> <span class="nc">StateFeature</span><span class="p">(</span><span class="n">ABC</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;An abstract state features for the AutoRL environment.</span>
+<span class="sd">    </span>
+<span class="sd">    It can be wrapped around the training function to calculate the state features.</span>
+<span class="sd">    We do this be overriding the __new__() function. It allows us to imitate</span>
+<span class="sd">    the behaviour of a basic function while keeping the advantages of a static class.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">KEY</span><span class="p">:</span> <span class="nb">str</span>  <span class="c1"># Unique identifier</span>
 
-    <span class="k">def</span> <span class="fm">__new__</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<div class="viewcode-block" id="StateFeature.__new__">
+<a class="viewcode-back" href="../../../arlbench.autorl.html#arlbench.autorl.state_features.StateFeature.__new__">[docs]</a>
+    <span class="k">def</span> <span class="fm">__new__</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TrainFunc</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Creates a new instance of this state feature and directly wraps the train function.</span>
+
+<span class="sd">        This is done by first creating an object and subsequently calling self.__call__().</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            TrainFunc: Wrapped training function.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">instance</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__new__</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">instance</span><span class="o">.</span><span class="fm">__call__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">instance</span><span class="o">.</span><span class="fm">__call__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
 
 <div class="viewcode-block" id="StateFeature.__call__">
 <a class="viewcode-back" href="../../../arlbench.autorl.html#arlbench.autorl.state_features.StateFeature.__call__">[docs]</a>
     <span class="nd">@staticmethod</span>
     <span class="nd">@abstractmethod</span>
-    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="n">train_func</span><span class="p">:</span> <span class="n">TrainFunc</span><span class="p">,</span> <span class="n">objectives</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TrainFunc</span><span class="p">:</span>
+    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="n">train_func</span><span class="p">:</span> <span class="n">TrainFunc</span><span class="p">,</span> <span class="n">state_features</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TrainFunc</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Wraps the training function with the state feature calculation.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            train_func (TrainFunc):  Training function to wrap.</span>
+<span class="sd">            state_features (dict):  Dictionary to store state features.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            TrainFunc:  Wrapped training function.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
 
 
@@ -349,6 +369,11 @@
     <span class="nd">@staticmethod</span>
     <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">get_state_space</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">gymnasium</span><span class="o">.</span><span class="n">spaces</span><span class="o">.</span><span class="n">Space</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns a dictionary containing the specification of the state feature.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            dict: Specification.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
 </div>
 
@@ -357,6 +382,8 @@
 <div class="viewcode-block" id="GradInfo">
 <a class="viewcode-back" href="../../../arlbench.autorl.html#arlbench.autorl.state_features.GradInfo">[docs]</a>
 <span class="k">class</span> <span class="nc">GradInfo</span><span class="p">(</span><span class="n">StateFeature</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Gradient information state feature for the AutoRL environment. It contains the grad norm during training.&quot;&quot;&quot;</span>
+
     <span class="n">KEY</span> <span class="o">=</span> <span class="s2">&quot;grad_info&quot;</span>
 
 <div class="viewcode-block" id="GradInfo.__call__">

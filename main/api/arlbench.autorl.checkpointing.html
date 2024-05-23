@@ -246,11 +246,6 @@
        </li>
       </ul>
      </li>
-     <li class="toctree-l3">
-      <a class="reference internal" href="arlbench.plotting.html">
-       arlbench.plotting
-      </a>
-     </li>
      <li class="toctree-l3 has-children">
       <a class="reference internal" href="arlbench.utils.html">
        arlbench.utils
@@ -306,9 +301,61 @@
               
               <div class="toc-item">
                 
+<div class="tocsection onthispage pt-5 pb-3">
+    <i class="fas fa-list"></i> On this page
+</div>
 
 <nav id="bd-toc-nav">
-    
+    <ul class="visible nav section-nav flex-column">
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#arlbench.autorl.checkpointing.Checkpointer">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     Checkpointer
+    </span>
+   </code>
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#arlbench.autorl.checkpointing.Checkpointer.load">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       Checkpointer.load()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#arlbench.autorl.checkpointing.Checkpointer.load_buffer">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       Checkpointer.load_buffer()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#arlbench.autorl.checkpointing.Checkpointer.save">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       Checkpointer.save()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#arlbench.autorl.checkpointing.Checkpointer.save_buffer">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       Checkpointer.save_buffer()
+      </span>
+     </code>
+    </a>
+   </li>
+  </ul>
+ </li>
+</ul>
+
 </nav>
               </div>
               
@@ -334,10 +381,107 @@
 <table class="autosummary longtable table autosummary">
 <tbody>
 <tr class="row-odd"><td><p><a class="reference internal" href="../arlbench.autorl.html#arlbench.autorl.checkpointing.Checkpointer" title="arlbench.autorl.checkpointing.Checkpointer"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Checkpointer</span></code></a>()</p></td>
-<td><p></p></td>
+<td><p>Contains all checkpointing-related methods for the AutoRL environment.</p></td>
 </tr>
 </tbody>
 </table>
+<dl class="py class">
+<dt class="sig sig-object py" id="arlbench.autorl.checkpointing.Checkpointer">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">arlbench.autorl.checkpointing.</span></span><span class="sig-name descname"><span class="pre">Checkpointer</span></span><a class="reference internal" href="../_modules/arlbench/autorl/checkpointing.html#Checkpointer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.autorl.checkpointing.Checkpointer" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Contains all checkpointing-related methods for the AutoRL environment.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="arlbench.autorl.checkpointing.Checkpointer.load">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">load</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">checkpoint_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">algorithm_state</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arlbench/autorl/checkpointing.html#Checkpointer.load"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.autorl.checkpointing.Checkpointer.load" title="Link to this definition">¶</a></dt>
+<dd><p>Loads a AutoRL environment checkpoint.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>checkpoint_path</strong> (<em>str</em>) – Path of the checkpoint.</p></li>
+<li><p><strong>algorithm_state</strong> (<em>AlgorithmState</em>) – Current algorithm state, certain attributes will be overriden by checkpoint.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Common AutoRL environment attributes as well as dictionary to restored algorithm state: (hp_config, c_step, c_episode), algorithm_kw_args</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>tuple[tuple[dict[str, Any], int, int], dict]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="arlbench.autorl.checkpointing.Checkpointer.load_buffer">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">load_buffer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dummy_buffer_state</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">priority_state_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">buffer_dir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vault_uuid</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arlbench/autorl/checkpointing.html#Checkpointer.load_buffer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.autorl.checkpointing.Checkpointer.load_buffer" title="Link to this definition">¶</a></dt>
+<dd><p>Loads the buffer state from a checkpoint.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dummy_buffer_state</strong> (<em>PrioritisedTrajectoryBufferState</em>) – Dummy buffer state. This is required to know the size/data types of the buffer.</p></li>
+<li><p><strong>priority_state_path</strong> (<em>str</em>) – Path where the priorities are stored.</p></li>
+<li><p><strong>buffer_dir</strong> (<em>str</em>) – The directory where the buffer data is stored.</p></li>
+<li><p><strong>vault_uuid</strong> (<em>str</em>) – The unique ID of the vault containing the buffer data.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The buffer state that was loaded from disk.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>PrioritisedTrajectoryBufferState</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="arlbench.autorl.checkpointing.Checkpointer.save">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">save</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">algorithm</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">algorithm_state</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">autorl_config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hp_config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">done</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">c_episode</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">c_step</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">train_result</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tag</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arlbench/autorl/checkpointing.html#Checkpointer.save"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.autorl.checkpointing.Checkpointer.save" title="Link to this definition">¶</a></dt>
+<dd><p>Saves the current state of a AutoRL environment.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>algorithm</strong> (<em>str</em>) – Name of the algorithm.</p></li>
+<li><p><strong>algorithm_state</strong> (<em>AlgorithmState</em>) – Current algorithm state.</p></li>
+<li><p><strong>autorl_config</strong> (<em>dict</em>) – AutoRL configuration.</p></li>
+<li><p><strong>hp_config</strong> (<em>Configuration</em>) – Hyperparameter configuration of the algorithm.</p></li>
+<li><p><strong>done</strong> (<em>bool</em>) – Whether the environment is done.</p></li>
+<li><p><strong>c_episode</strong> (<em>int</em>) – Current episode of the AutoRL environment.</p></li>
+<li><p><strong>c_step</strong> (<em>int</em>) – Current step of the AutoRL environment.</p></li>
+<li><p><strong>train_result</strong> (<em>TrainResult</em><em> | </em><em>None</em>) – Last training result of the algorithm.</p></li>
+<li><p><strong>tag</strong> (<em>str</em><em> | </em><em>None</em><em>, </em><em>optional</em>) – Checkpoint tag which is appended to the checkpoint name. Defaults to None.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Path of the checkpoint.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="arlbench.autorl.checkpointing.Checkpointer.save_buffer">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">save_buffer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">buffer_state</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">checkpoint_dir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">checkpoint_name</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arlbench/autorl/checkpointing.html#Checkpointer.save_buffer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.autorl.checkpointing.Checkpointer.save_buffer" title="Link to this definition">¶</a></dt>
+<dd><p>Saves the buffer state of an algorithm.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>buffer_state</strong> (<em>TrajectoryBufferState</em><em> | </em><em>PrioritisedTrajectoryBufferState</em>) – Buffer state.</p></li>
+<li><p><strong>checkpoint_dir</strong> (<em>str</em>) – Checkpoint directory.</p></li>
+<li><p><strong>checkpoint_name</strong> (<em>str</em>) – Checkpoint name.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Dictionary containing the identifiers of single parts of the buffer. Required to load the checkpoint.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
 </section>
 
 

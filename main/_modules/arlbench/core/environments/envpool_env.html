@@ -243,11 +243,6 @@
        </li>
       </ul>
      </li>
-     <li class="toctree-l3">
-      <a class="reference internal" href="../../../../api/arlbench.plotting.html">
-       arlbench.plotting
-      </a>
-     </li>
      <li class="toctree-l3 has-children">
       <a class="reference internal" href="../../../../api/arlbench.utils.html">
        arlbench.utils
@@ -435,7 +430,7 @@
 
 <div class="viewcode-block" id="numpy_to_jax">
 <a class="viewcode-back" href="../../../../arlbench.core.environments.html#arlbench.core.environments.numpy_to_jax">[docs]</a>
-<span class="k">def</span> <span class="nf">numpy_to_jax</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">numpy_to_jax</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Converts numpy arrays to jax numpy arrays.&quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">jnp</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
@@ -447,6 +442,8 @@
 <div class="viewcode-block" id="EnvpoolEnv">
 <a class="viewcode-back" href="../../../../arlbench.core.environments.html#arlbench.core.environments.EnvpoolEnv">[docs]</a>
 <span class="k">class</span> <span class="nc">EnvpoolEnv</span><span class="p">(</span><span class="n">Environment</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;An envpool-based RL environment.&quot;&quot;&quot;</span>
+    
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">env_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
@@ -454,17 +451,27 @@
         <span class="n">seed</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
         <span class="n">env_kwargs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Creates an envpool environment for JAX-based RL training. </span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            env_name (str): Name/id of the brax environment.</span>
+<span class="sd">            n_envs (int): Number of environments.</span>
+<span class="sd">            seed (int): Random seed.</span>
+<span class="sd">            env_kwargs (dict[str, Any] | None, optional): Keyword arguments to pass to the brax environment. Defaults to None.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">env_kwargs</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">env_kwargs</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="kn">import</span> <span class="nn">envpool</span>
         <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="s2">&quot;Failed to import envpool. Please install the package first.&quot;</span>
+                <span class="s2">&quot;Failed to import envpool. Please make sure that the package is installed.&quot;</span>
             <span class="p">)</span>
         <span class="n">env</span> <span class="o">=</span> <span class="n">envpool</span><span class="o">.</span><span class="n">make</span><span class="p">(</span>
             <span class="n">env_name</span><span class="p">,</span> <span class="n">env_type</span><span class="o">=</span><span class="s2">&quot;gymnasium&quot;</span><span class="p">,</span> <span class="n">num_envs</span><span class="o">=</span><span class="n">n_envs</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="n">seed</span><span class="p">,</span> <span class="o">**</span><span class="n">env_kwargs</span>
         <span class="p">)</span>
+
+        <span class="c1"># We need this since Atari has some special cases to consider</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">is_atari</span> <span class="o">=</span> <span class="n">env_name</span> <span class="ow">in</span> <span class="n">ATARI_ENVS</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_atari</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">episodic_life</span> <span class="o">=</span> <span class="n">env_kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;episodic_life&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
@@ -472,28 +479,50 @@
 
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">env_name</span><span class="p">,</span> <span class="n">env</span><span class="p">,</span> <span class="n">n_envs</span><span class="p">,</span> <span class="n">seed</span><span class="p">)</span>
 
+        <span class="c1"># For JAX IO callbacks we need the shape of the reset function</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">reset_shape</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_reset</span><span class="p">()</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_atari</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">has_lives</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">reset_shape</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="s2">&quot;lives&quot;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span>
 
+        <span class="c1"># The dummy actions are used for Atari games to select a random strategy</span>
+        <span class="c1"># in the beginning</span>
         <span class="n">rng</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">key</span><span class="p">(</span><span class="mi">42</span><span class="p">)</span>
         <span class="n">_rngs</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">rng</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_n_envs</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">dummy_action</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
             <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">action_space</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">_rngs</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_n_envs</span><span class="p">)]</span>
         <span class="p">)</span>
+
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_atari</span><span class="p">:</span>
             <span class="c1"># fire action for reset</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">dummy_action</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dummy_action</span><span class="p">)</span>
+
+        <span class="c1"># These shapes are also required for the IO callbacks</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">step_shape</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_step</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dummy_action</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">single_step_shape</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">tree_map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[:</span><span class="mi">1</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">step_shape</span><span class="p">)</span>
 
+        <span class="c1"># This gives us the envpool XLA interface</span>
+        <span class="c1"># See https://envpool.readthedocs.io/en/latest/content/xla_interface.html</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_handle0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">recv</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">send</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_xla_step</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_env</span><span class="o">.</span><span class="n">xla</span><span class="p">()</span>
 
-    <span class="k">def</span> <span class="nf">_reset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">_reset</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Wraps the envpool reset() by converting arrays from numpy to JAX numpy.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            tuple[jnp.ndarray, jnp.ndarray]: Observations and infos for each env.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">jax</span><span class="o">.</span><span class="n">tree_util</span><span class="o">.</span><span class="n">tree_map</span><span class="p">(</span><span class="n">numpy_to_jax</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_env</span><span class="o">.</span><span class="n">reset</span><span class="p">())</span>
 
-    <span class="k">def</span> <span class="nf">_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">action</span><span class="p">,</span> <span class="n">env_id</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">action</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">env_id</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Wraps the envpool step() by converting arrays from numpy to JAX numpy.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            action (Any): Action to take.</span>
+<span class="sd">            env_id (int | None, optional): Internal env ID for envpool. Defaults to None.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            tuple: Step result.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_env</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">action</span><span class="o">=</span><span class="n">action</span><span class="p">,</span> <span class="n">env_id</span><span class="o">=</span><span class="n">env_id</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">jax</span><span class="o">.</span><span class="n">tree_util</span><span class="o">.</span><span class="n">tree_map</span><span class="p">(</span><span class="n">numpy_to_jax</span><span class="p">,</span> <span class="n">result</span><span class="p">)</span>
 
@@ -515,9 +544,15 @@
             <span class="n">env_state</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">env_state</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">env_state</span><span class="p">,</span> <span class="n">lives</span> <span class="o">=</span> <span class="n">env_state</span>
+        
+        <span class="c1"># Here, we perform the actual step in the envpool environment</span>
         <span class="n">env_state</span><span class="p">,</span> <span class="p">(</span><span class="n">obs</span><span class="p">,</span> <span class="n">reward</span><span class="p">,</span> <span class="n">term</span><span class="p">,</span> <span class="n">trunc</span><span class="p">,</span> <span class="n">info</span><span class="p">)</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_xla_step</span><span class="p">(</span><span class="n">env_state</span><span class="p">,</span> <span class="n">action</span><span class="p">)</span>
         <span class="n">done</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">logical_or</span><span class="p">(</span><span class="n">term</span><span class="p">,</span> <span class="n">trunc</span><span class="p">)</span>
 
+        <span class="c1"># Since the envpool AutoReset differs from the one implemented in Gymnasium</span>
+        <span class="c1"># we need this workaround to achieve the same behaviour.</span>
+        <span class="c1"># To reset only certain environments that are done already</span>
+        <span class="c1"># we need the non-jittable reset function</span>
         <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="n">obs</span><span class="p">,</span> <span class="n">info</span><span class="p">):</span>
             <span class="k">def</span> <span class="nf">reset_idx</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">obs</span><span class="p">):</span>
                 <span class="n">new_obs</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">experimental</span><span class="o">.</span><span class="n">io_callback</span><span class="p">(</span>

@@ -243,11 +243,6 @@
        </li>
       </ul>
      </li>
-     <li class="toctree-l3">
-      <a class="reference internal" href="../../../api/arlbench.plotting.html">
-       arlbench.plotting
-      </a>
-     </li>
      <li class="toctree-l3 has-children">
       <a class="reference internal" href="../../../api/arlbench.utils.html">
        arlbench.utils
@@ -318,7 +313,7 @@
 <span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">warnings</span>
 <span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">TYPE_CHECKING</span><span class="p">,</span> <span class="n">Any</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">TYPE_CHECKING</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Callable</span>
 
 <span class="kn">import</span> <span class="nn">jax</span>
 <span class="kn">import</span> <span class="nn">jax.numpy</span> <span class="k">as</span> <span class="nn">jnp</span>
@@ -349,6 +344,7 @@
 <div class="viewcode-block" id="Checkpointer">
 <a class="viewcode-back" href="../../../arlbench.autorl.html#arlbench.autorl.checkpointing.Checkpointer">[docs]</a>
 <span class="k">class</span> <span class="nc">Checkpointer</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Contains all checkpointing-related methods for the AutoRL environment.&quot;&quot;&quot;</span>
     <span class="n">NODES_FILE</span> <span class="o">=</span> <span class="s2">&quot;nodes.npy&quot;</span>
     <span class="n">SCALARS_FILE</span> <span class="o">=</span> <span class="s2">&quot;scalars.json&quot;</span>
     <span class="n">MRP_FILE</span> <span class="o">=</span> <span class="s2">&quot;max_recorded_priority.npy&quot;</span>
@@ -357,6 +353,13 @@
     <span class="k">def</span> <span class="nf">_save_orbax_checkpoint</span><span class="p">(</span>
         <span class="n">checkpoint</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">checkpoint_dir</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">checkpoint_name</span><span class="p">:</span> <span class="nb">str</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Stores a dictionary using orbax.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            checkpoint (dict[str, Any]): Dictionary to store.</span>
+<span class="sd">            checkpoint_dir (str): Checkpoint directory.</span>
+<span class="sd">            checkpoint_name (str): Checkpoint name.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">checkpointer</span> <span class="o">=</span> <span class="n">ocp</span><span class="o">.</span><span class="n">PyTreeCheckpointer</span><span class="p">()</span>
         <span class="n">checkpointer</span><span class="o">.</span><span class="n">save</span><span class="p">(</span>
             <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">checkpoint_dir</span><span class="p">,</span> <span class="n">checkpoint_name</span><span class="p">),</span>
@@ -368,6 +371,15 @@
     <span class="k">def</span> <span class="nf">_load_orbax_checkpoint</span><span class="p">(</span>
         <span class="n">checkpoint_dir</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">checkpoint_name</span><span class="p">:</span> <span class="nb">str</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Load a dictionary using orbax.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            checkpoint_dir (str): Checkpoint directory.</span>
+<span class="sd">            checkpoint_name (str): Checkpoint name.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            dict[str, Any]: Dictionary to load.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">checkpointer</span> <span class="o">=</span> <span class="n">ocp</span><span class="o">.</span><span class="n">PyTreeCheckpointer</span><span class="p">()</span>
         <span class="k">return</span> <span class="n">checkpointer</span><span class="o">.</span><span class="n">restore</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">checkpoint_dir</span><span class="p">,</span> <span class="n">checkpoint_name</span><span class="p">))</span>
 
@@ -385,6 +397,22 @@
         <span class="n">train_result</span><span class="p">:</span> <span class="n">TrainResult</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">tag</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Saves the current state of a AutoRL environment.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            algorithm (str): Name of the algorithm. </span>
+<span class="sd">            algorithm_state (AlgorithmState): Current algorithm state.</span>
+<span class="sd">            autorl_config (dict): AutoRL configuration.</span>
+<span class="sd">            hp_config (Configuration): Hyperparameter configuration of the algorithm.</span>
+<span class="sd">            done (bool): Whether the environment is done.</span>
+<span class="sd">            c_episode (int): Current episode of the AutoRL environment.</span>
+<span class="sd">            c_step (int):  Current step of the AutoRL environment.</span>
+<span class="sd">            train_result (TrainResult | None): Last training result of the algorithm.</span>
+<span class="sd">            tag (str | None, optional): Checkpoint tag which is appended to the checkpoint name. Defaults to None.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            str: Path of the checkpoint.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># Checkpoint setup</span>
         <span class="n">checkpoint</span> <span class="o">=</span> <span class="n">autorl_config</span><span class="p">[</span><span class="s2">&quot;checkpoint&quot;</span><span class="p">]</span>  <span class="c1"># list of strings</span>
         <span class="k">if</span> <span class="s2">&quot;all&quot;</span> <span class="ow">in</span> <span class="n">checkpoint</span><span class="p">:</span>
@@ -404,12 +432,14 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="n">checkpoint_name</span> <span class="o">+=</span> <span class="s2">&quot;_final&quot;</span>
 
-        <span class="c1"># append tag for error/sigterm</span>
+        <span class="c1"># Append tag for error/sigterm</span>
         <span class="k">if</span> <span class="n">tag</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">checkpoint_name</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;_</span><span class="si">{</span><span class="n">tag</span><span class="si">}</span><span class="s2">&quot;</span>
 
         <span class="n">runner_state</span> <span class="o">=</span> <span class="n">algorithm_state</span><span class="o">.</span><span class="n">runner_state</span>
 
+        <span class="c1"># We get the factory functions depending on the algorithm at hand</span>
+        <span class="c1"># This allows us to just call all functions without knowing which algorithm we are using</span>
         <span class="k">if</span> <span class="p">(</span>
             <span class="n">algorithm</span> <span class="o">==</span> <span class="s2">&quot;dqn&quot;</span>
             <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">runner_state</span><span class="p">,</span> <span class="n">DQNRunnerState</span><span class="p">)</span>
@@ -433,6 +463,7 @@
                 <span class="sa">f</span><span class="s2">&quot;Invalid type of runner state or training result for </span><span class="si">{</span><span class="n">algorithm</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">runner_state</span><span class="p">)</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">train_result</span><span class="p">)</span><span class="si">}</span><span class="s2">.&quot;</span>
             <span class="p">)</span>
 
+        <span class="c1"># First, we store the basic information of the AutoRL environment</span>
         <span class="n">ckpt</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
             <span class="s2">&quot;autorl_config&quot;</span><span class="p">:</span> <span class="n">autorl_config</span><span class="p">,</span>
             <span class="s2">&quot;hp_config&quot;</span><span class="p">:</span> <span class="nb">dict</span><span class="p">(</span><span class="n">hp_config</span><span class="p">),</span>
@@ -441,13 +472,14 @@
         <span class="p">}</span>
 
         <span class="k">if</span> <span class="n">checkpoint</span> <span class="o">==</span> <span class="p">[</span><span class="s2">&quot;all&quot;</span><span class="p">]:</span>
-            <span class="c1"># use all available checkpoint options</span>
+            <span class="c1"># Use all available checkpoint options</span>
             <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">algorithm_ckpt</span><span class="p">:</span>
+                <span class="c1"># Get actual checkpoint by calling factory function</span>
                 <span class="n">ckpt</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">algorithm_ckpt</span><span class="p">[</span>
                     <span class="n">key</span>
-                <span class="p">]()</span>  <span class="c1"># get actual checkpoint by calling factory function</span>
+                <span class="p">]()</span>  
         <span class="k">else</span><span class="p">:</span>
-            <span class="c1"># only use selected checkpoint options</span>
+            <span class="c1"># Only use selected checkpoint options</span>
             <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">checkpoint</span><span class="p">:</span>
                 <span class="k">if</span> <span class="n">key</span> <span class="o">==</span> <span class="s2">&quot;buffer&quot;</span><span class="p">:</span>
                     <span class="k">if</span> <span class="n">algorithm</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;dqn&quot;</span><span class="p">,</span> <span class="s2">&quot;sac&quot;</span><span class="p">]:</span>
@@ -457,14 +489,15 @@
                             <span class="sa">f</span><span class="s2">&quot;Invalid checkpoint for algorithm </span><span class="si">{</span><span class="n">algorithm</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">. Valid keys are </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">algorithm_ckpt</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span><span class="si">!s}</span><span class="s2">. Skipping key.&quot;</span>
                         <span class="p">)</span>
 
-                <span class="c1"># find all algorithm checkpoints that contain the requested key</span>
+                <span class="c1"># Find all algorithm checkpoints that contain the requested key</span>
                 <span class="n">found_key</span> <span class="o">=</span> <span class="kc">False</span>
                 <span class="k">for</span> <span class="n">algorithm_key</span> <span class="ow">in</span> <span class="n">algorithm_ckpt</span><span class="p">:</span>
                     <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">algorithm_key</span><span class="p">:</span>
                         <span class="n">found_key</span> <span class="o">=</span> <span class="kc">True</span>
+                        <span class="c1"># Get actual checkpoint by calling factory function</span>
                         <span class="n">ckpt</span><span class="p">[</span><span class="n">algorithm_key</span><span class="p">]</span> <span class="o">=</span> <span class="n">algorithm_ckpt</span><span class="p">[</span>
                             <span class="n">algorithm_key</span>
-                        <span class="p">]()</span>  <span class="c1"># get actual checkpoint by calling factory function</span>
+                        <span class="p">]()</span>  
                 <span class="k">if</span> <span class="ow">not</span> <span class="n">found_key</span><span class="p">:</span>
                     <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
                         <span class="sa">f</span><span class="s2">&quot;Invalid checkpoint for algorithm </span><span class="si">{</span><span class="n">algorithm</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">. Valid keys are </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">algorithm_ckpt</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span><span class="si">!s}</span><span class="s2">. Skipping key.&quot;</span>
@@ -484,6 +517,15 @@
     <span class="k">def</span> <span class="nf">_load_buffer</span><span class="p">(</span>
         <span class="n">ckpt</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">dummy_buffer_state</span><span class="p">:</span> <span class="n">PrioritisedTrajectoryBufferState</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PrioritisedTrajectoryBufferState</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Loads the buffer state from a given checkpoint.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            ckpt (dict[str, Any]): Checkpoint containing the buffer info.</span>
+<span class="sd">            dummy_buffer_state (PrioritisedTrajectoryBufferState): Dummy state that is required to know the buffer dimensions.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            PrioritisedTrajectoryBufferState | None: Buffer state if contained in the checkpoint.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="s2">&quot;buffer&quot;</span> <span class="ow">in</span> <span class="n">ckpt</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">Checkpointer</span><span class="o">.</span><span class="n">load_buffer</span><span class="p">(</span>
                 <span class="n">dummy_buffer_state</span><span class="p">,</span>
@@ -496,23 +538,60 @@
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">_load_params</span><span class="p">(</span><span class="n">ckpt</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">key</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FrozenDict</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Load network parameters from a give checkpoint.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            ckpt (dict[str, Any]):  Checkpoint containing the parameter info.</span>
+<span class="sd">            key (str): Key of the parameters in checkpoint dictionary.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            FrozenDict | None: Network parameters.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">ckpt</span> <span class="ow">or</span> <span class="n">ckpt</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">return</span> <span class="kc">None</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">params</span> <span class="o">=</span> <span class="n">ckpt</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
             <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+                <span class="c1"># Sometimes we have a list of parameters which only contains one element</span>
+                <span class="c1"># so we get rid of the list</span>
                 <span class="n">params</span> <span class="o">=</span> <span class="n">params</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
             <span class="k">return</span> <span class="n">FrozenDict</span><span class="p">(</span><span class="n">params</span><span class="p">)</span>
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">_load_adam_opt_state</span><span class="p">(</span><span class="n">ckpt</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">key</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="k">def</span> <span class="nf">apply</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Load the state of a adam optimizer from a given checkpoint.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            ckpt (dict[str, Any]): Checkpoint dictionary containing optimizer state.</span>
+<span class="sd">            key (str): Key of the optimizer state in the checkpoint dictionary.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            tuple | None: Optimizer state.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">def</span> <span class="nf">apply</span><span class="p">(</span><span class="n">func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">|</span> <span class="nb">list</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="o">|</span> <span class="n">Any</span><span class="p">:</span>
+<span class="w">            </span><span class="sd">&quot;&quot;&quot;Applies a given fuction to each element of a dict/list/tuple.</span>
+
+<span class="sd">            Args:</span>
+<span class="sd">                func (Callable): Function to apply.</span>
+<span class="sd">                t (dict | tuple): Tuple/list/dict to apply function to.</span>
+
+<span class="sd">            Returns:</span>
+<span class="sd">                tuple| Any: Input element with function applied to each element of list/tuple or dict itself.</span>
+<span class="sd">            &quot;&quot;&quot;</span>
             <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="nb">list</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">):</span>
                 <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">apply</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="n">item</span><span class="p">)</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">t</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="k">return</span> <span class="n">func</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
 
         <span class="k">def</span> <span class="nf">make_opt_state</span><span class="p">(</span><span class="n">opt_state</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ScaleByAdamState</span> <span class="o">|</span> <span class="n">EmptyState</span><span class="p">:</span>
+<span class="w">            </span><span class="sd">&quot;&quot;&quot;Converts a dictionary containing an optimizer state to an actual OptState.</span>
+
+<span class="sd">            Args:</span>
+<span class="sd">                opt_state (dict | None): Dictionary containing optimizer state.</span>
+
+<span class="sd">            Returns:</span>
+<span class="sd">                ScaleByAdamState | EmptyState: Actual optimizer state.</span>
+<span class="sd">            &quot;&quot;&quot;</span>
             <span class="k">if</span> <span class="n">opt_state</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="k">return</span> <span class="n">EmptyState</span><span class="p">()</span>
             <span class="k">else</span><span class="p">:</span>
@@ -535,6 +614,15 @@
     <span class="k">def</span> <span class="nf">load</span><span class="p">(</span>
         <span class="n">checkpoint_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">algorithm_state</span><span class="p">:</span> <span class="n">AlgorithmState</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span> <span class="nb">dict</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Loads a AutoRL environment checkpoint.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            checkpoint_path (str): Path of the checkpoint.</span>
+<span class="sd">            algorithm_state (AlgorithmState): Current algorithm state, certain attributes will be overriden by checkpoint.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            tuple[tuple[dict[str, Any], int, int], dict]: Common AutoRL environment attributes as well as dictionary to restored algorithm state: (hp_config, c_step, c_episode), algorithm_kw_args</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">checkpointer</span> <span class="o">=</span> <span class="n">ocp</span><span class="o">.</span><span class="n">PyTreeCheckpointer</span><span class="p">()</span>
         <span class="n">restored</span> <span class="o">=</span> <span class="n">checkpointer</span><span class="o">.</span><span class="n">restore</span><span class="p">(</span><span class="n">checkpoint_path</span><span class="p">)</span>
 
@@ -604,10 +692,22 @@
         <span class="n">checkpoint_dir</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">checkpoint_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Saves the buffer state of an algorithm.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            buffer_state (TrajectoryBufferState | PrioritisedTrajectoryBufferState): Buffer state.</span>
+<span class="sd">            checkpoint_dir (str): Checkpoint directory.</span>
+<span class="sd">            checkpoint_name (str): Checkpoint name.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            dict: Dictionary containing the identifiers of single parts of the buffer. Required to load the checkpoint.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">buffer_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">checkpoint_dir</span><span class="p">,</span> <span class="n">checkpoint_name</span> <span class="o">+</span> <span class="s2">&quot;_buffer_state&quot;</span><span class="p">)</span>
         <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">buffer_dir</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">buffer_state</span><span class="p">,</span> <span class="n">PrioritisedTrajectoryBufferState</span><span class="p">):</span>
+            <span class="c1"># In this case, we have to store the priorities separately since</span>
+            <span class="c1"># the vault does not store them</span>
             <span class="n">priority_state_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">buffer_dir</span><span class="p">,</span> <span class="s2">&quot;buffer_priority_state&quot;</span><span class="p">)</span>
             <span class="n">Checkpointer</span><span class="o">.</span><span class="n">_save_sum_tree_state</span><span class="p">(</span>
                 <span class="n">buffer_state</span><span class="o">.</span><span class="n">priority_state</span><span class="p">,</span> <span class="n">priority_state_path</span>
@@ -615,6 +715,8 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="n">priority_state_path</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
 
+        <span class="c1"># We are using a vault to store the buffer itself</span>
+        <span class="c1"># However, this does not include the priorities</span>
         <span class="n">vault_uuid</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%Y%m</span><span class="si">%d</span><span class="s2">%H%M%S&quot;</span><span class="p">)</span>
         <span class="n">v</span> <span class="o">=</span> <span class="n">Vault</span><span class="p">(</span>
             <span class="n">vault_name</span><span class="o">=</span><span class="s2">&quot;buffer_state_vault&quot;</span><span class="p">,</span>
@@ -623,12 +725,14 @@
             <span class="n">vault_uid</span><span class="o">=</span><span class="n">vault_uuid</span><span class="p">,</span>
         <span class="p">)</span>
 
-        <span class="c1"># write buffer</span>
+        <span class="c1"># Now we are writing the actual buffer state to disk</span>
         <span class="n">_fbx_shape</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">tree_util</span><span class="o">.</span><span class="n">tree_leaves</span><span class="p">(</span><span class="n">buffer_state</span><span class="o">.</span><span class="n">experience</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span>
         <span class="n">buffer_size</span> <span class="o">=</span> <span class="n">_fbx_shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
         <span class="n">source_interval</span> <span class="o">=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">buffer_size</span><span class="p">)</span>
         <span class="n">v</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">buffer_state</span><span class="p">,</span> <span class="n">source_interval</span><span class="o">=</span><span class="n">source_interval</span><span class="p">)</span>
 
+        <span class="c1"># This is required in the load_buffer() method to reconstructed all</span>
+        <span class="c1"># the bits and pieces</span>
         <span class="k">return</span> <span class="p">{</span>
             <span class="s2">&quot;vault_uuid&quot;</span><span class="p">:</span> <span class="n">vault_uuid</span><span class="p">,</span>
             <span class="s2">&quot;buffer_dir&quot;</span><span class="p">:</span> <span class="n">buffer_dir</span><span class="p">,</span>
@@ -645,6 +749,20 @@
         <span class="n">buffer_dir</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">vault_uuid</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PrioritisedTrajectoryBufferState</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Loads the buffer state from a checkpoint.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            dummy_buffer_state (PrioritisedTrajectoryBufferState): Dummy buffer state. This is required to know the size/data types of the buffer.</span>
+<span class="sd">            priority_state_path (str): Path where the priorities are stored.</span>
+<span class="sd">            buffer_dir (str): The directory where the buffer data is stored.</span>
+<span class="sd">            vault_uuid (str): The unique ID of the vault containing the buffer data.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            PrioritisedTrajectoryBufferState: The buffer state that was loaded from disk.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Using the vault we can easily load the data of the buffer</span>
+        <span class="c1"># As described in the part of saving the buffer, this does </span>
+        <span class="c1"># not contain the priorities</span>
         <span class="n">v</span> <span class="o">=</span> <span class="n">Vault</span><span class="p">(</span>
             <span class="n">vault_name</span><span class="o">=</span><span class="s2">&quot;buffer_state_vault&quot;</span><span class="p">,</span>
             <span class="n">experience_structure</span><span class="o">=</span><span class="n">dummy_buffer_state</span><span class="o">.</span><span class="n">experience</span><span class="p">,</span>
@@ -652,8 +770,11 @@
             <span class="n">vault_uid</span><span class="o">=</span><span class="n">vault_uuid</span><span class="p">,</span>
         <span class="p">)</span>
         <span class="n">buffer_state</span> <span class="o">=</span> <span class="n">v</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+
+        <span class="c1"># We have to load the priorities separately from the file we stored them</span>
         <span class="n">priority_state</span> <span class="o">=</span> <span class="n">Checkpointer</span><span class="o">.</span><span class="n">_load_sum_tree_state</span><span class="p">(</span><span class="n">priority_state_path</span><span class="p">)</span>
 
+        <span class="c1"># Now we can reassamble the buffer state</span>
         <span class="k">return</span> <span class="n">PrioritisedTrajectoryBufferState</span><span class="p">(</span>
             <span class="n">experience</span><span class="o">=</span><span class="n">buffer_state</span><span class="o">.</span><span class="n">experience</span><span class="p">,</span>
             <span class="n">current_index</span><span class="o">=</span><span class="n">buffer_state</span><span class="o">.</span><span class="n">current_index</span><span class="p">,</span>
@@ -664,10 +785,16 @@
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">_save_sum_tree_state</span><span class="p">(</span><span class="n">sum_tree_state</span><span class="p">:</span> <span class="n">SumTreeState</span><span class="p">,</span> <span class="n">directory</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="c1"># Ensure the directory exists</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Saves the state of a JAX sum stree to disk.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            sum_tree_state (SumTreeState): State of a JAX sum tree.</span>
+<span class="sd">            directory (str): Directory to store state in.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">directory</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
-        <span class="c1"># Serialize and save the JAX arrays as .npy files</span>
+        <span class="c1"># We store each property of the tree state separately since it</span>
+        <span class="c1"># is not serializable as a whole</span>
         <span class="n">np</span><span class="o">.</span><span class="n">save</span><span class="p">(</span>
             <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">directory</span><span class="p">,</span> <span class="n">Checkpointer</span><span class="o">.</span><span class="n">NODES_FILE</span><span class="p">),</span>
             <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">sum_tree_state</span><span class="o">.</span><span class="n">nodes</span><span class="p">),</span>
@@ -677,7 +804,7 @@
             <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">sum_tree_state</span><span class="o">.</span><span class="n">max_recorded_priority</span><span class="p">),</span>
         <span class="p">)</span>
 
-        <span class="c1"># Serialize scalar values to JSON</span>
+        <span class="c1"># We do the same for scalar values</span>
         <span class="n">scalar_values</span> <span class="o">=</span> <span class="p">{</span>
             <span class="s2">&quot;tree_depth&quot;</span><span class="p">:</span> <span class="n">sum_tree_state</span><span class="o">.</span><span class="n">tree_depth</span><span class="p">,</span>
             <span class="s2">&quot;capacity&quot;</span><span class="p">:</span> <span class="n">sum_tree_state</span><span class="o">.</span><span class="n">capacity</span><span class="p">,</span>
@@ -687,17 +814,26 @@
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">_load_sum_tree_state</span><span class="p">(</span><span class="n">directory</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SumTreeState</span><span class="p">:</span>
-        <span class="c1"># Load the JAX arrays from .npy files</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Loads the state of a JAX sum tree.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            directory (str): Directory containing the saved tree state.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            SumTreeState: JAX sum tree state.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># First, we load the nodes and maximum recorded priority from file</span>
+        <span class="c1"># and convert them to JAX arrays again</span>
         <span class="n">nodes</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">directory</span><span class="p">,</span> <span class="n">Checkpointer</span><span class="o">.</span><span class="n">NODES_FILE</span><span class="p">)))</span>
         <span class="n">max_recorded_priority</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
             <span class="n">np</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">directory</span><span class="p">,</span> <span class="n">Checkpointer</span><span class="o">.</span><span class="n">MRP_FILE</span><span class="p">))</span>
         <span class="p">)</span>
 
-        <span class="c1"># Load scalar values from JSON</span>
+        <span class="c1"># Scalars can be read easily</span>
         <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">directory</span><span class="p">,</span> <span class="n">Checkpointer</span><span class="o">.</span><span class="n">SCALARS_FILE</span><span class="p">))</span> <span class="k">as</span> <span class="n">json_file</span><span class="p">:</span>
             <span class="n">scalar_values</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">json_file</span><span class="p">)</span>
 
-        <span class="c1"># Reconstruct the SumTreeState object</span>
+        <span class="c1"># Now we can manually reconstruct the SumTreeState object</span>
         <span class="k">return</span> <span class="n">SumTreeState</span><span class="p">(</span>
             <span class="n">nodes</span><span class="o">=</span><span class="n">nodes</span><span class="p">,</span>
             <span class="n">max_recorded_priority</span><span class="o">=</span><span class="n">max_recorded_priority</span><span class="p">,</span>

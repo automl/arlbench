@@ -243,11 +243,6 @@
        </li>
       </ul>
      </li>
-     <li class="toctree-l3">
-      <a class="reference internal" href="../../../../api/arlbench.plotting.html">
-       arlbench.plotting
-      </a>
-     </li>
      <li class="toctree-l3 has-children">
       <a class="reference internal" href="../../../../api/arlbench.utils.html">
        arlbench.utils
@@ -331,6 +326,7 @@
 <div class="viewcode-block" id="XLandEnv">
 <a class="viewcode-back" href="../../../../arlbench.core.environments.html#arlbench.core.environments.xland_env.XLandEnv">[docs]</a>
 <span class="k">class</span> <span class="nc">XLandEnv</span><span class="p">(</span><span class="n">Environment</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;A xland-based RL environment.&quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">env_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
@@ -338,6 +334,14 @@
         <span class="n">env_kwargs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">cnn_policy</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Creates an xland environment for JAX-based RL training. </span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            env_name (str): Name/id of the brax environment.</span>
+<span class="sd">            n_envs (int): Number of environments.</span>
+<span class="sd">            env_kwargs (dict[str, Any] | None, optional): Keyword arguments to pass to the gymnax environment. Defaults to None.</span>
+<span class="sd">            cnn_policy (bool, optional): Use a CNN-based policy (instead of MLP-based). Defaults to False.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">env_kwargs</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">env_kwargs</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="k">try</span><span class="p">:</span>
@@ -346,7 +350,7 @@
             <span class="kn">from</span> <span class="nn">xminigrid.wrappers</span> <span class="kn">import</span> <span class="n">GymAutoResetWrapper</span>
         <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="s2">&quot;Failed to import XLand. Please install the package first.&quot;</span>
+                <span class="s2">&quot;Failed to import XLand. Please make sure the package is installed.&quot;</span>
             <span class="p">)</span>
         <span class="n">env</span><span class="p">,</span> <span class="n">env_params</span> <span class="o">=</span> <span class="n">xminigrid</span><span class="o">.</span><span class="n">make</span><span class="p">(</span><span class="n">env_name</span><span class="p">,</span> <span class="o">**</span><span class="n">env_kwargs</span><span class="p">)</span>
         <span class="n">env</span> <span class="o">=</span> <span class="n">GymAutoResetWrapper</span><span class="p">(</span><span class="n">env</span><span class="p">)</span>
@@ -372,9 +376,11 @@
 <a class="viewcode-back" href="../../../../arlbench.core.environments.html#arlbench.core.environments.xland_env.XLandEnv.step">[docs]</a>
     <span class="nd">@functools</span><span class="o">.</span><span class="n">partial</span><span class="p">(</span><span class="n">jax</span><span class="o">.</span><span class="n">jit</span><span class="p">,</span> <span class="n">static_argnums</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
     <span class="k">def</span> <span class="nf">step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">env_state</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">action</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">rng</span><span class="p">:</span> <span class="n">PRNGKey</span><span class="p">):</span>
+        <span class="c1"># here, the env_state is equal to the timestep</span>
+        <span class="c1"># (as referred to in the xland documentation)</span>
         <span class="n">timestep</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">vmap</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_env</span><span class="o">.</span><span class="n">step</span><span class="p">,</span> <span class="n">in_axes</span><span class="o">=</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">))(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">env_params</span><span class="p">,</span> <span class="n">env_state</span><span class="p">,</span> <span class="n">action</span>
-        <span class="p">)</span>  <span class="c1"># env_state = timestep</span>
+        <span class="p">)</span>  
 
         <span class="k">return</span> <span class="n">timestep</span><span class="p">,</span> <span class="p">(</span><span class="n">timestep</span><span class="o">.</span><span class="n">observation</span><span class="p">,</span> <span class="n">timestep</span><span class="o">.</span><span class="n">reward</span><span class="p">,</span> <span class="n">timestep</span><span class="o">.</span><span class="n">last</span><span class="p">(),</span> <span class="p">{})</span></div>
 

@@ -244,11 +244,6 @@
        </li>
       </ul>
      </li>
-     <li class="toctree-l3">
-      <a class="reference internal" href="api/arlbench.plotting.html">
-       arlbench.plotting
-      </a>
-     </li>
      <li class="toctree-l3 has-children">
       <a class="reference internal" href="api/arlbench.utils.html">
        arlbench.utils
@@ -314,22 +309,6 @@
   <a class="reference internal nav-link" href="#submodules">
    Submodules
   </a>
- </li>
- <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#module-arlbench.core.wrappers.autorl_wrapper">
-   arlbench.core.wrappers.autorl_wrapper module
-  </a>
-  <ul class="nav section-nav flex-column">
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#arlbench.core.wrappers.autorl_wrapper.AutoRLWrapper">
-     <code class="docutils literal notranslate">
-      <span class="pre">
-       AutoRLWrapper
-      </span>
-     </code>
-    </a>
-   </li>
-  </ul>
  </li>
  <li class="toc-h2 nav-item toc-entry">
   <a class="reference internal nav-link" href="#module-arlbench.core.wrappers.flatten_observation">
@@ -413,19 +392,26 @@
   </ul>
  </li>
  <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#module-arlbench.core.wrappers">
-   Module contents
+  <a class="reference internal nav-link" href="#module-arlbench.core.wrappers.wrapper">
+   arlbench.core.wrappers.wrapper module
   </a>
   <ul class="nav section-nav flex-column">
    <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#arlbench.core.wrappers.AutoRLWrapper">
+    <a class="reference internal nav-link" href="#arlbench.core.wrappers.wrapper.Wrapper">
      <code class="docutils literal notranslate">
       <span class="pre">
-       AutoRLWrapper
+       Wrapper
       </span>
      </code>
     </a>
    </li>
+  </ul>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#module-arlbench.core.wrappers">
+   Module contents
+  </a>
+  <ul class="nav section-nav flex-column">
    <li class="toc-h3 nav-item toc-entry">
     <a class="reference internal nav-link" href="#arlbench.core.wrappers.FlattenObservationWrapper">
      <code class="docutils literal notranslate">
@@ -493,6 +479,15 @@
      </li>
     </ul>
    </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#arlbench.core.wrappers.Wrapper">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       Wrapper
+      </span>
+     </code>
+    </a>
+   </li>
   </ul>
  </li>
 </ul>
@@ -521,22 +516,12 @@
 <section id="submodules">
 <h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading">¶</a></h2>
 </section>
-<section id="module-arlbench.core.wrappers.autorl_wrapper">
-<span id="arlbench-core-wrappers-autorl-wrapper-module"></span><h2>arlbench.core.wrappers.autorl_wrapper module<a class="headerlink" href="#module-arlbench.core.wrappers.autorl_wrapper" title="Link to this heading">¶</a></h2>
-<dl class="py class">
-<dt class="sig sig-object py" id="arlbench.core.wrappers.autorl_wrapper.AutoRLWrapper">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">arlbench.core.wrappers.autorl_wrapper.</span></span><span class="sig-name descname"><span class="pre">AutoRLWrapper</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">env</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/arlbench/core/wrappers/autorl_wrapper.html#AutoRLWrapper"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.core.wrappers.autorl_wrapper.AutoRLWrapper" title="Link to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
-<p>Base class for AutoRL wrappers.</p>
-</dd></dl>
-
-</section>
 <section id="module-arlbench.core.wrappers.flatten_observation">
 <span id="arlbench-core-wrappers-flatten-observation-module"></span><h2>arlbench.core.wrappers.flatten_observation module<a class="headerlink" href="#module-arlbench.core.wrappers.flatten_observation" title="Link to this heading">¶</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="arlbench.core.wrappers.flatten_observation.FlattenObservationWrapper">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">arlbench.core.wrappers.flatten_observation.</span></span><span class="sig-name descname"><span class="pre">FlattenObservationWrapper</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">env</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/arlbench/core/wrappers/flatten_observation.html#FlattenObservationWrapper"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.core.wrappers.flatten_observation.FlattenObservationWrapper" title="Link to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#arlbench.core.wrappers.autorl_wrapper.AutoRLWrapper" title="arlbench.core.wrappers.autorl_wrapper.AutoRLWrapper"><code class="xref py py-class docutils literal notranslate"><span class="pre">AutoRLWrapper</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="#arlbench.core.wrappers.wrapper.Wrapper" title="arlbench.core.wrappers.wrapper.Wrapper"><code class="xref py py-class docutils literal notranslate"><span class="pre">Wrapper</span></code></a></p>
 <p>Flatten the observations of the environment.</p>
 <dl class="py property">
 <dt class="sig sig-object py" id="arlbench.core.wrappers.flatten_observation.FlattenObservationWrapper.observation_space">
@@ -577,19 +562,22 @@
 </dd></dl>
 
 </section>
+<section id="module-arlbench.core.wrappers.wrapper">
+<span id="arlbench-core-wrappers-wrapper-module"></span><h2>arlbench.core.wrappers.wrapper module<a class="headerlink" href="#module-arlbench.core.wrappers.wrapper" title="Link to this heading">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="arlbench.core.wrappers.wrapper.Wrapper">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">arlbench.core.wrappers.wrapper.</span></span><span class="sig-name descname"><span class="pre">Wrapper</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">env</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/arlbench/core/wrappers/wrapper.html#Wrapper"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.core.wrappers.wrapper.Wrapper" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Base class for ARLBench wrappers.</p>
+</dd></dl>
+
+</section>
 <section id="module-arlbench.core.wrappers">
 <span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-arlbench.core.wrappers" title="Link to this heading">¶</a></h2>
 <dl class="py class">
-<dt class="sig sig-object py" id="arlbench.core.wrappers.AutoRLWrapper">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">arlbench.core.wrappers.</span></span><span class="sig-name descname"><span class="pre">AutoRLWrapper</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">env</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/arlbench/core/wrappers/autorl_wrapper.html#AutoRLWrapper"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.core.wrappers.AutoRLWrapper" title="Link to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
-<p>Base class for AutoRL wrappers.</p>
-</dd></dl>
-
-<dl class="py class">
 <dt class="sig sig-object py" id="arlbench.core.wrappers.FlattenObservationWrapper">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">arlbench.core.wrappers.</span></span><span class="sig-name descname"><span class="pre">FlattenObservationWrapper</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">env</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/arlbench/core/wrappers/flatten_observation.html#FlattenObservationWrapper"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.core.wrappers.FlattenObservationWrapper" title="Link to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#arlbench.core.wrappers.autorl_wrapper.AutoRLWrapper" title="arlbench.core.wrappers.autorl_wrapper.AutoRLWrapper"><code class="xref py py-class docutils literal notranslate"><span class="pre">AutoRLWrapper</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="#arlbench.core.wrappers.wrapper.Wrapper" title="arlbench.core.wrappers.wrapper.Wrapper"><code class="xref py py-class docutils literal notranslate"><span class="pre">Wrapper</span></code></a></p>
 <p>Flatten the observations of the environment.</p>
 <dl class="py property">
 <dt class="sig sig-object py" id="arlbench.core.wrappers.FlattenObservationWrapper.observation_space">
@@ -624,6 +612,13 @@
 <dd><p>Uses the <a class="reference internal" href="#arlbench.core.wrappers.ImageExtractionWrapper.step" title="arlbench.core.wrappers.ImageExtractionWrapper.step"><code class="xref py py-meth docutils literal notranslate"><span class="pre">step()</span></code></a> of the <code class="xref py py-attr docutils literal notranslate"><span class="pre">env</span></code> that can be overwritten to change the returned data.</p>
 </dd></dl>
 
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="arlbench.core.wrappers.Wrapper">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">arlbench.core.wrappers.</span></span><span class="sig-name descname"><span class="pre">Wrapper</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">env</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/arlbench/core/wrappers/wrapper.html#Wrapper"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.core.wrappers.Wrapper" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Base class for ARLBench wrappers.</p>
 </dd></dl>
 
 </section>

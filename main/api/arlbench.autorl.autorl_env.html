@@ -246,11 +246,6 @@
        </li>
       </ul>
      </li>
-     <li class="toctree-l3">
-      <a class="reference internal" href="arlbench.plotting.html">
-       arlbench.plotting
-      </a>
-     </li>
      <li class="toctree-l3 has-children">
       <a class="reference internal" href="arlbench.utils.html">
        arlbench.utils
@@ -455,10 +450,10 @@ If a checkpoint path is passed to reset, the agent state is initialized with the
 <dl class="py property">
 <dt class="sig sig-object py" id="arlbench.autorl.autorl_env.AutoRLEnv.action_space">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">action_space</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Space</span></em><a class="headerlink" href="#arlbench.autorl.autorl_env.AutoRLEnv.action_space" title="Link to this definition">¶</a></dt>
-<dd><p>_summary_.</p>
+<dd><p>Returns the hyperparameter configuration spaces as gymnasium space.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>_description_</p>
+<dd class="field-odd"><p>Hyperparameter configuration space.</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p>gymnasium.spaces.Space</p>
@@ -469,10 +464,10 @@ If a checkpoint path is passed to reset, the agent state is initialized with the
 <dl class="py property">
 <dt class="sig sig-object py" id="arlbench.autorl.autorl_env.AutoRLEnv.checkpoints">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">checkpoints</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#arlbench.autorl.autorl_env.AutoRLEnv.checkpoints" title="Link to this definition">¶</a></dt>
-<dd><p>_summary_.</p>
+<dd><p>Returns a list of created checkpoints for this AutoRL environment.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>_description_</p>
+<dd class="field-odd"><p>List of checkpoint paths.</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p>list[str]</p>
@@ -483,10 +478,10 @@ If a checkpoint path is passed to reset, the agent state is initialized with the
 <dl class="py property">
 <dt class="sig sig-object py" id="arlbench.autorl.autorl_env.AutoRLEnv.config">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">config</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">dict</span></em><a class="headerlink" href="#arlbench.autorl.autorl_env.AutoRLEnv.config" title="Link to this definition">¶</a></dt>
-<dd><p>_summary_.</p>
+<dd><p>Returns the AutoRL configuration.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>_description_</p>
+<dd class="field-odd"><p>AutoRL configuration.</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p>dict</p>
@@ -497,10 +492,10 @@ If a checkpoint path is passed to reset, the agent state is initialized with the
 <dl class="py property">
 <dt class="sig sig-object py" id="arlbench.autorl.autorl_env.AutoRLEnv.config_space">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">config_space</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ConfigurationSpace</span></em><a class="headerlink" href="#arlbench.autorl.autorl_env.AutoRLEnv.config_space" title="Link to this definition">¶</a></dt>
-<dd><p>_summary_.</p>
+<dd><p>Returns the hyperparameter configuration spaces as ConfigSpace.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>_description_</p>
+<dd class="field-odd"><p>Hyperparameter configuration space.</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p>ConfigurationSpace</p>
@@ -511,19 +506,16 @@ If a checkpoint path is passed to reset, the agent state is initialized with the
 <dl class="py method">
 <dt class="sig sig-object py" id="arlbench.autorl.autorl_env.AutoRLEnv.eval">
 <span class="sig-name descname"><span class="pre">eval</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">num_eval_episodes</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arlbench/autorl/autorl_env.html#AutoRLEnv.eval"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.autorl.autorl_env.AutoRLEnv.eval" title="Link to this definition">¶</a></dt>
-<dd><p>_summary_.</p>
+<dd><p>Evaluates the algorithm using its current training state.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>num_eval_episodes</strong> (<em>int</em>) – _description_</p>
+<dd class="field-odd"><p><strong>num_eval_episodes</strong> (<em>int</em>) – Number of evaluation episodes to run.</p>
 </dd>
-<dt class="field-even">Raises<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>ValueError</strong> – _description_</p>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Array of evaluation return for each episode.</p>
 </dd>
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>_description_</p>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p>np.ndarray</p>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.ndarray</p>
 </dd>
 </dl>
 </dd></dl>
@@ -531,7 +523,7 @@ If a checkpoint path is passed to reset, the agent state is initialized with the
 <dl class="py property">
 <dt class="sig sig-object py" id="arlbench.autorl.autorl_env.AutoRLEnv.hpo_config">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">hpo_config</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Configuration</span></em><a class="headerlink" href="#arlbench.autorl.autorl_env.AutoRLEnv.hpo_config" title="Link to this definition">¶</a></dt>
-<dd><p>_summary_.</p>
+<dd><p>Returns .</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p>_description_</p>
@@ -545,10 +537,10 @@ If a checkpoint path is passed to reset, the agent state is initialized with the
 <dl class="py property">
 <dt class="sig sig-object py" id="arlbench.autorl.autorl_env.AutoRLEnv.objectives">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">objectives</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#arlbench.autorl.autorl_env.AutoRLEnv.objectives" title="Link to this definition">¶</a></dt>
-<dd><p>_summary_.</p>
+<dd><p>Returns configured objectives.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>_description_</p>
+<dd class="field-odd"><p>List of objectives.</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p>list[str]</p>
@@ -559,10 +551,10 @@ If a checkpoint path is passed to reset, the agent state is initialized with the
 <dl class="py property">
 <dt class="sig sig-object py" id="arlbench.autorl.autorl_env.AutoRLEnv.observation_space">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">observation_space</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Space</span></em><a class="headerlink" href="#arlbench.autorl.autorl_env.AutoRLEnv.observation_space" title="Link to this definition">¶</a></dt>
-<dd><p>_summary_.</p>
+<dd><p>Returns a gymnasium spaces of state features (observations).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>_description_</p>
+<dd class="field-odd"><p>Gynasium space.</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p>gymnasium.spaces.Space</p>
@@ -572,20 +564,14 @@ If a checkpoint path is passed to reset, the agent state is initialized with the
 
 <dl class="py method">
 <dt class="sig sig-object py" id="arlbench.autorl.autorl_env.AutoRLEnv.reset">
-<span class="sig-name descname"><span class="pre">reset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arlbench/autorl/autorl_env.html#AutoRLEnv.reset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.autorl.autorl_env.AutoRLEnv.reset" title="Link to this definition">¶</a></dt>
-<dd><p>_summary_.</p>
+<span class="sig-name descname"><span class="pre">reset</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arlbench/autorl/autorl_env.html#AutoRLEnv.reset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.autorl.autorl_env.AutoRLEnv.reset" title="Link to this definition">¶</a></dt>
+<dd><p>Resets the AutoRL environment and current algorithm state.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>seed</strong> (<em>int</em><em> | </em><em>None</em><em>, </em><em>optional</em>) – _description_. Defaults to None.</p></li>
-<li><p><strong>checkpoint_path</strong> (<em>str</em><em> | </em><em>None</em><em>, </em><em>optional</em>) – _description_. Defaults to None.</p></li>
-</ul>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Empty observation and state information.</p>
 </dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>_description_</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>tuple[ObservationT, InfoT]</p>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>tuple[ObservationT, InfoT]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -593,22 +579,22 @@ If a checkpoint path is passed to reset, the agent state is initialized with the
 <dl class="py method">
 <dt class="sig sig-object py" id="arlbench.autorl.autorl_env.AutoRLEnv.step">
 <span class="sig-name descname"><span class="pre">step</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">action</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">checkpoint_path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_total_timesteps</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_eval_steps</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_eval_episodes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arlbench/autorl/autorl_env.html#AutoRLEnv.step"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.autorl.autorl_env.AutoRLEnv.step" title="Link to this definition">¶</a></dt>
-<dd><p>_summary_.</p>
+<dd><p>Performs one iteration of RL training.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>action</strong> (<em>Configuration</em><em> | </em><em>dict</em>) – _description_</p></li>
-<li><p><strong>n_total_timesteps</strong> (<em>int</em><em> | </em><em>None</em><em>, </em><em>optional</em>) – _description_. Defaults to None.</p></li>
-<li><p><strong>n_eval_steps</strong> (<em>int</em><em> | </em><em>None</em><em>, </em><em>optional</em>) – _description_. Defaults to None.</p></li>
-<li><p><strong>n_eval_episodes</strong> (<em>int</em><em> | </em><em>None</em><em>, </em><em>optional</em>) – _description_. Defaults to None.</p></li>
-<li><p><strong>seed</strong> (<em>int</em><em> | </em><em>None</em><em>, </em><em>optional</em>) – _description_. Defaults to None.</p></li>
+<li><p><strong>action</strong> (<em>Configuration</em><em> | </em><em>dict</em>) – Hyperparameter configuration to use for training.</p></li>
+<li><p><strong>n_total_timesteps</strong> (<em>int</em><em> | </em><em>None</em><em>, </em><em>optional</em>) – Number of total training steps. Defaults to None.</p></li>
+<li><p><strong>n_eval_steps</strong> (<em>int</em><em> | </em><em>None</em><em>, </em><em>optional</em>) – Number of evaluations during training. Defaults to None.</p></li>
+<li><p><strong>n_eval_episodes</strong> (<em>int</em><em> | </em><em>None</em><em>, </em><em>optional</em>) – Number of episodes to run per evalution during training. Defaults to None.</p></li>
+<li><p><strong>seed</strong> (<em>int</em><em> | </em><em>None</em><em>, </em><em>optional</em>) – Random seed. Defaults to None. If None, seed of the AutoRL environment is used.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
 <dd class="field-even"><p><strong>ValueError</strong> – Error is raised if step() is called before reset() was called.</p>
 </dd>
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>_description_</p>
+<dd class="field-odd"><p>State information, objectives, terminated, truncated, additional information.</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p>tuple[ObservationT, ObjectivesT, bool, bool, InfoT]</p>

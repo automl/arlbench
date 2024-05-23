@@ -244,11 +244,6 @@
        </li>
       </ul>
      </li>
-     <li class="toctree-l3">
-      <a class="reference internal" href="api/arlbench.plotting.html">
-       arlbench.plotting
-      </a>
-     </li>
      <li class="toctree-l3 has-children">
       <a class="reference internal" href="api/arlbench.utils.html">
        arlbench.utils
@@ -602,6 +597,24 @@
       </a>
      </li>
      <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#arlbench.autorl.objectives.Objective.__lt__">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Objective.__lt__()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#arlbench.autorl.objectives.Objective.__new__">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Objective.__new__()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
       <a class="reference internal nav-link" href="#arlbench.autorl.objectives.Objective.get_spec">
        <code class="docutils literal notranslate">
         <span class="pre">
@@ -826,6 +839,15 @@
       </a>
      </li>
      <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#arlbench.autorl.state_features.StateFeature.__new__">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         StateFeature.__new__()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
       <a class="reference internal nav-link" href="#arlbench.autorl.state_features.StateFeature.get_state_space">
        <code class="docutils literal notranslate">
         <span class="pre">
@@ -999,10 +1021,10 @@ If a checkpoint path is passed to reset, the agent state is initialized with the
 <dl class="py property">
 <dt class="sig sig-object py" id="arlbench.autorl.autorl_env.AutoRLEnv.action_space">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">action_space</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Space</span></em><a class="headerlink" href="#arlbench.autorl.autorl_env.AutoRLEnv.action_space" title="Link to this definition">¶</a></dt>
-<dd><p>_summary_.</p>
+<dd><p>Returns the hyperparameter configuration spaces as gymnasium space.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>_description_</p>
+<dd class="field-odd"><p>Hyperparameter configuration space.</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p>gymnasium.spaces.Space</p>
@@ -1013,10 +1035,10 @@ If a checkpoint path is passed to reset, the agent state is initialized with the
 <dl class="py property">
 <dt class="sig sig-object py" id="arlbench.autorl.autorl_env.AutoRLEnv.checkpoints">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">checkpoints</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#arlbench.autorl.autorl_env.AutoRLEnv.checkpoints" title="Link to this definition">¶</a></dt>
-<dd><p>_summary_.</p>
+<dd><p>Returns a list of created checkpoints for this AutoRL environment.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>_description_</p>
+<dd class="field-odd"><p>List of checkpoint paths.</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p>list[str]</p>
@@ -1027,10 +1049,10 @@ If a checkpoint path is passed to reset, the agent state is initialized with the
 <dl class="py property">
 <dt class="sig sig-object py" id="arlbench.autorl.autorl_env.AutoRLEnv.config">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">config</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">dict</span></em><a class="headerlink" href="#arlbench.autorl.autorl_env.AutoRLEnv.config" title="Link to this definition">¶</a></dt>
-<dd><p>_summary_.</p>
+<dd><p>Returns the AutoRL configuration.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>_description_</p>
+<dd class="field-odd"><p>AutoRL configuration.</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p>dict</p>
@@ -1041,10 +1063,10 @@ If a checkpoint path is passed to reset, the agent state is initialized with the
 <dl class="py property">
 <dt class="sig sig-object py" id="arlbench.autorl.autorl_env.AutoRLEnv.config_space">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">config_space</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ConfigurationSpace</span></em><a class="headerlink" href="#arlbench.autorl.autorl_env.AutoRLEnv.config_space" title="Link to this definition">¶</a></dt>
-<dd><p>_summary_.</p>
+<dd><p>Returns the hyperparameter configuration spaces as ConfigSpace.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>_description_</p>
+<dd class="field-odd"><p>Hyperparameter configuration space.</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p>ConfigurationSpace</p>
@@ -1055,19 +1077,16 @@ If a checkpoint path is passed to reset, the agent state is initialized with the
 <dl class="py method">
 <dt class="sig sig-object py" id="arlbench.autorl.autorl_env.AutoRLEnv.eval">
 <span class="sig-name descname"><span class="pre">eval</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">num_eval_episodes</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/arlbench/autorl/autorl_env.html#AutoRLEnv.eval"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.autorl.autorl_env.AutoRLEnv.eval" title="Link to this definition">¶</a></dt>
-<dd><p>_summary_.</p>
+<dd><p>Evaluates the algorithm using its current training state.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>num_eval_episodes</strong> (<em>int</em>) – _description_</p>
+<dd class="field-odd"><p><strong>num_eval_episodes</strong> (<em>int</em>) – Number of evaluation episodes to run.</p>
 </dd>
-<dt class="field-even">Raises<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>ValueError</strong> – _description_</p>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Array of evaluation return for each episode.</p>
 </dd>
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>_description_</p>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p>np.ndarray</p>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.ndarray</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1075,7 +1094,7 @@ If a checkpoint path is passed to reset, the agent state is initialized with the
 <dl class="py property">
 <dt class="sig sig-object py" id="arlbench.autorl.autorl_env.AutoRLEnv.hpo_config">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">hpo_config</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Configuration</span></em><a class="headerlink" href="#arlbench.autorl.autorl_env.AutoRLEnv.hpo_config" title="Link to this definition">¶</a></dt>
-<dd><p>_summary_.</p>
+<dd><p>Returns .</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p>_description_</p>
@@ -1089,10 +1108,10 @@ If a checkpoint path is passed to reset, the agent state is initialized with the
 <dl class="py property">
 <dt class="sig sig-object py" id="arlbench.autorl.autorl_env.AutoRLEnv.objectives">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">objectives</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#arlbench.autorl.autorl_env.AutoRLEnv.objectives" title="Link to this definition">¶</a></dt>
-<dd><p>_summary_.</p>
+<dd><p>Returns configured objectives.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>_description_</p>
+<dd class="field-odd"><p>List of objectives.</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p>list[str]</p>
@@ -1103,10 +1122,10 @@ If a checkpoint path is passed to reset, the agent state is initialized with the
 <dl class="py property">
 <dt class="sig sig-object py" id="arlbench.autorl.autorl_env.AutoRLEnv.observation_space">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">observation_space</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Space</span></em><a class="headerlink" href="#arlbench.autorl.autorl_env.AutoRLEnv.observation_space" title="Link to this definition">¶</a></dt>
-<dd><p>_summary_.</p>
+<dd><p>Returns a gymnasium spaces of state features (observations).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>_description_</p>
+<dd class="field-odd"><p>Gynasium space.</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p>gymnasium.spaces.Space</p>
@@ -1116,20 +1135,14 @@ If a checkpoint path is passed to reset, the agent state is initialized with the
 
 <dl class="py method">
 <dt class="sig sig-object py" id="arlbench.autorl.autorl_env.AutoRLEnv.reset">
-<span class="sig-name descname"><span class="pre">reset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/arlbench/autorl/autorl_env.html#AutoRLEnv.reset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.autorl.autorl_env.AutoRLEnv.reset" title="Link to this definition">¶</a></dt>
-<dd><p>_summary_.</p>
+<span class="sig-name descname"><span class="pre">reset</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/arlbench/autorl/autorl_env.html#AutoRLEnv.reset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.autorl.autorl_env.AutoRLEnv.reset" title="Link to this definition">¶</a></dt>
+<dd><p>Resets the AutoRL environment and current algorithm state.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>seed</strong> (<em>int</em><em> | </em><em>None</em><em>, </em><em>optional</em>) – _description_. Defaults to None.</p></li>
-<li><p><strong>checkpoint_path</strong> (<em>str</em><em> | </em><em>None</em><em>, </em><em>optional</em>) – _description_. Defaults to None.</p></li>
-</ul>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Empty observation and state information.</p>
 </dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>_description_</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>tuple[ObservationT, InfoT]</p>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>tuple[ObservationT, InfoT]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1137,22 +1150,22 @@ If a checkpoint path is passed to reset, the agent state is initialized with the
 <dl class="py method">
 <dt class="sig sig-object py" id="arlbench.autorl.autorl_env.AutoRLEnv.step">
 <span class="sig-name descname"><span class="pre">step</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">action</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">checkpoint_path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_total_timesteps</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_eval_steps</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_eval_episodes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/arlbench/autorl/autorl_env.html#AutoRLEnv.step"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.autorl.autorl_env.AutoRLEnv.step" title="Link to this definition">¶</a></dt>
-<dd><p>_summary_.</p>
+<dd><p>Performs one iteration of RL training.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>action</strong> (<em>Configuration</em><em> | </em><em>dict</em>) – _description_</p></li>
-<li><p><strong>n_total_timesteps</strong> (<em>int</em><em> | </em><em>None</em><em>, </em><em>optional</em>) – _description_. Defaults to None.</p></li>
-<li><p><strong>n_eval_steps</strong> (<em>int</em><em> | </em><em>None</em><em>, </em><em>optional</em>) – _description_. Defaults to None.</p></li>
-<li><p><strong>n_eval_episodes</strong> (<em>int</em><em> | </em><em>None</em><em>, </em><em>optional</em>) – _description_. Defaults to None.</p></li>
-<li><p><strong>seed</strong> (<em>int</em><em> | </em><em>None</em><em>, </em><em>optional</em>) – _description_. Defaults to None.</p></li>
+<li><p><strong>action</strong> (<em>Configuration</em><em> | </em><em>dict</em>) – Hyperparameter configuration to use for training.</p></li>
+<li><p><strong>n_total_timesteps</strong> (<em>int</em><em> | </em><em>None</em><em>, </em><em>optional</em>) – Number of total training steps. Defaults to None.</p></li>
+<li><p><strong>n_eval_steps</strong> (<em>int</em><em> | </em><em>None</em><em>, </em><em>optional</em>) – Number of evaluations during training. Defaults to None.</p></li>
+<li><p><strong>n_eval_episodes</strong> (<em>int</em><em> | </em><em>None</em><em>, </em><em>optional</em>) – Number of episodes to run per evalution during training. Defaults to None.</p></li>
+<li><p><strong>seed</strong> (<em>int</em><em> | </em><em>None</em><em>, </em><em>optional</em>) – Random seed. Defaults to None. If None, seed of the AutoRL environment is used.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
 <dd class="field-even"><p><strong>ValueError</strong> – Error is raised if step() is called before reset() was called.</p>
 </dd>
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>_description_</p>
+<dd class="field-odd"><p>State information, objectives, terminated, truncated, additional information.</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p>tuple[ObservationT, ObjectivesT, bool, bool, InfoT]</p>
@@ -1169,6 +1182,7 @@ If a checkpoint path is passed to reset, the agent state is initialized with the
 <dt class="sig sig-object py" id="arlbench.autorl.checkpointing.Checkpointer">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">arlbench.autorl.checkpointing.</span></span><span class="sig-name descname"><span class="pre">Checkpointer</span></span><a class="reference internal" href="_modules/arlbench/autorl/checkpointing.html#Checkpointer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.autorl.checkpointing.Checkpointer" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Contains all checkpointing-related methods for the AutoRL environment.</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="arlbench.autorl.checkpointing.Checkpointer.MRP_FILE">
 <span class="sig-name descname"><span class="pre">MRP_FILE</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'max_recorded_priority.npy'</span></em><a class="headerlink" href="#arlbench.autorl.checkpointing.Checkpointer.MRP_FILE" title="Link to this definition">¶</a></dt>
@@ -1187,9 +1201,19 @@ If a checkpoint path is passed to reset, the agent state is initialized with the
 <dl class="py method">
 <dt class="sig sig-object py" id="arlbench.autorl.checkpointing.Checkpointer.load">
 <em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">load</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">checkpoint_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">algorithm_state</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/arlbench/autorl/checkpointing.html#Checkpointer.load"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.autorl.checkpointing.Checkpointer.load" title="Link to this definition">¶</a></dt>
-<dd><dl class="field-list simple">
+<dd><p>Loads a AutoRL environment checkpoint.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>checkpoint_path</strong> (<em>str</em>) – Path of the checkpoint.</p></li>
+<li><p><strong>algorithm_state</strong> (<em>AlgorithmState</em>) – Current algorithm state, certain attributes will be overriden by checkpoint.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Common AutoRL environment attributes as well as dictionary to restored algorithm state: (hp_config, c_step, c_episode), algorithm_kw_args</p>
+</dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>, <code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code>], <code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code>], <code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code>]</span></p>
+<dd class="field-odd"><p>tuple[tuple[dict[str, Any], int, int], dict]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1197,9 +1221,21 @@ If a checkpoint path is passed to reset, the agent state is initialized with the
 <dl class="py method">
 <dt class="sig sig-object py" id="arlbench.autorl.checkpointing.Checkpointer.load_buffer">
 <em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">load_buffer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dummy_buffer_state</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">priority_state_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">buffer_dir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vault_uuid</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/arlbench/autorl/checkpointing.html#Checkpointer.load_buffer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.autorl.checkpointing.Checkpointer.load_buffer" title="Link to this definition">¶</a></dt>
-<dd><dl class="field-list simple">
+<dd><p>Loads the buffer state from a checkpoint.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dummy_buffer_state</strong> (<em>PrioritisedTrajectoryBufferState</em>) – Dummy buffer state. This is required to know the size/data types of the buffer.</p></li>
+<li><p><strong>priority_state_path</strong> (<em>str</em>) – Path where the priorities are stored.</p></li>
+<li><p><strong>buffer_dir</strong> (<em>str</em>) – The directory where the buffer data is stored.</p></li>
+<li><p><strong>vault_uuid</strong> (<em>str</em>) – The unique ID of the vault containing the buffer data.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The buffer state that was loaded from disk.</p>
+</dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">PrioritisedTrajectoryBufferState</span></code></span></p>
+<dd class="field-odd"><p>PrioritisedTrajectoryBufferState</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1207,9 +1243,26 @@ If a checkpoint path is passed to reset, the agent state is initialized with the
 <dl class="py method">
 <dt class="sig sig-object py" id="arlbench.autorl.checkpointing.Checkpointer.save">
 <em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">save</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">algorithm</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">algorithm_state</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">autorl_config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hp_config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">done</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">c_episode</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">c_step</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">train_result</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tag</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/arlbench/autorl/checkpointing.html#Checkpointer.save"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.autorl.checkpointing.Checkpointer.save" title="Link to this definition">¶</a></dt>
-<dd><dl class="field-list simple">
+<dd><p>Saves the current state of a AutoRL environment.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>algorithm</strong> (<em>str</em>) – Name of the algorithm.</p></li>
+<li><p><strong>algorithm_state</strong> (<em>AlgorithmState</em>) – Current algorithm state.</p></li>
+<li><p><strong>autorl_config</strong> (<em>dict</em>) – AutoRL configuration.</p></li>
+<li><p><strong>hp_config</strong> (<em>Configuration</em>) – Hyperparameter configuration of the algorithm.</p></li>
+<li><p><strong>done</strong> (<em>bool</em>) – Whether the environment is done.</p></li>
+<li><p><strong>c_episode</strong> (<em>int</em>) – Current episode of the AutoRL environment.</p></li>
+<li><p><strong>c_step</strong> (<em>int</em>) – Current step of the AutoRL environment.</p></li>
+<li><p><strong>train_result</strong> (<em>TrainResult</em><em> | </em><em>None</em>) – Last training result of the algorithm.</p></li>
+<li><p><strong>tag</strong> (<em>str</em><em> | </em><em>None</em><em>, </em><em>optional</em>) – Checkpoint tag which is appended to the checkpoint name. Defaults to None.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Path of the checkpoint.</p>
+</dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></span></p>
+<dd class="field-odd"><p>str</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1217,9 +1270,20 @@ If a checkpoint path is passed to reset, the agent state is initialized with the
 <dl class="py method">
 <dt class="sig sig-object py" id="arlbench.autorl.checkpointing.Checkpointer.save_buffer">
 <em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">save_buffer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">buffer_state</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">checkpoint_dir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">checkpoint_name</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/arlbench/autorl/checkpointing.html#Checkpointer.save_buffer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.autorl.checkpointing.Checkpointer.save_buffer" title="Link to this definition">¶</a></dt>
-<dd><dl class="field-list simple">
+<dd><p>Saves the buffer state of an algorithm.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>buffer_state</strong> (<em>TrajectoryBufferState</em><em> | </em><em>PrioritisedTrajectoryBufferState</em>) – Buffer state.</p></li>
+<li><p><strong>checkpoint_dir</strong> (<em>str</em>) – Checkpoint directory.</p></li>
+<li><p><strong>checkpoint_name</strong> (<em>str</em>) – Checkpoint name.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Dictionary containing the identifiers of single parts of the buffer. Required to load the checkpoint.</p>
+</dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></span></p>
+<dd class="field-odd"><p>dict</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1233,6 +1297,7 @@ If a checkpoint path is passed to reset, the agent state is initialized with the
 <dt class="sig sig-object py" id="arlbench.autorl.objectives.Emissions">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">arlbench.autorl.objectives.</span></span><span class="sig-name descname"><span class="pre">Emissions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/arlbench/autorl/objectives.html#Emissions"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.autorl.objectives.Emissions" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#arlbench.autorl.objectives.Objective" title="arlbench.autorl.objectives.Objective"><code class="xref py py-class docutils literal notranslate"><span class="pre">Objective</span></code></a></p>
+<p>Emissions objective for the AutoRL environment. It measures the emissions during the training using code carbon.</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="arlbench.autorl.objectives.Emissions.KEY">
 <span class="sig-name descname"><span class="pre">KEY</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'emissions'</span></em><a class="headerlink" href="#arlbench.autorl.objectives.Emissions.KEY" title="Link to this definition">¶</a></dt>
@@ -1246,10 +1311,20 @@ If a checkpoint path is passed to reset, the agent state is initialized with the
 <dl class="py method">
 <dt class="sig sig-object py" id="arlbench.autorl.objectives.Emissions.__call__">
 <em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">__call__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">train_func</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">objectives</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optimize_objectives</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/arlbench/autorl/objectives.html#Emissions.__call__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.autorl.objectives.Emissions.__call__" title="Link to this definition">¶</a></dt>
-<dd><p>Call self as a function.</p>
+<dd><p>Wraps the training function with the objective calculation.</p>
 <dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>train_func</strong> (<em>TrainFunc</em>) – Training function to wrap.</p></li>
+<li><p><strong>objectives</strong> (<em>dict</em>) – Dictionary to store objective.</p></li>
+<li><p><strong>optimize_objectives</strong> (<em>str</em>) – Whether to minimize/maximize the objectve.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Training function.</p>
+</dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">Callable</span></code>[[<code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<a class="reference internal" href="arlbench.core.algorithms.dqn.html#arlbench.core.algorithms.dqn.dqn.DQNRunnerState" title="arlbench.core.algorithms.dqn.dqn.DQNRunnerState"><code class="xref py py-class docutils literal notranslate"><span class="pre">DQNRunnerState</span></code></a>, <a class="reference internal" href="arlbench.core.algorithms.ppo.html#arlbench.core.algorithms.ppo.ppo.PPORunnerState" title="arlbench.core.algorithms.ppo.ppo.PPORunnerState"><code class="xref py py-class docutils literal notranslate"><span class="pre">PPORunnerState</span></code></a>, <a class="reference internal" href="arlbench.core.algorithms.sac.html#arlbench.core.algorithms.sac.sac.SACRunnerState" title="arlbench.core.algorithms.sac.sac.SACRunnerState"><code class="xref py py-class docutils literal notranslate"><span class="pre">SACRunnerState</span></code></a>], <code class="xref py py-class docutils literal notranslate"><span class="pre">PrioritisedTrajectoryBufferState</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code> | <code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code> | <code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code> | <code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code>], <code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code>[<a class="reference internal" href="arlbench.core.algorithms.dqn.html#arlbench.core.algorithms.dqn.dqn.DQNState" title="arlbench.core.algorithms.dqn.dqn.DQNState"><code class="xref py py-class docutils literal notranslate"><span class="pre">DQNState</span></code></a>, <a class="reference internal" href="arlbench.core.algorithms.dqn.html#arlbench.core.algorithms.dqn.dqn.DQNTrainingResult" title="arlbench.core.algorithms.dqn.dqn.DQNTrainingResult"><code class="xref py py-class docutils literal notranslate"><span class="pre">DQNTrainingResult</span></code></a>], <code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code>[<a class="reference internal" href="arlbench.core.algorithms.ppo.html#arlbench.core.algorithms.ppo.ppo.PPOState" title="arlbench.core.algorithms.ppo.ppo.PPOState"><code class="xref py py-class docutils literal notranslate"><span class="pre">PPOState</span></code></a>, <a class="reference internal" href="arlbench.core.algorithms.ppo.html#arlbench.core.algorithms.ppo.ppo.PPOTrainingResult" title="arlbench.core.algorithms.ppo.ppo.PPOTrainingResult"><code class="xref py py-class docutils literal notranslate"><span class="pre">PPOTrainingResult</span></code></a>], <code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code>[<a class="reference internal" href="arlbench.core.algorithms.sac.html#arlbench.core.algorithms.sac.sac.SACState" title="arlbench.core.algorithms.sac.sac.SACState"><code class="xref py py-class docutils literal notranslate"><span class="pre">SACState</span></code></a>, <a class="reference internal" href="arlbench.core.algorithms.sac.html#arlbench.core.algorithms.sac.sac.SACTrainingResult" title="arlbench.core.algorithms.sac.sac.SACTrainingResult"><code class="xref py py-class docutils literal notranslate"><span class="pre">SACTrainingResult</span></code></a>]]]</span></p>
+<dd class="field-odd"><p>TrainFunc</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1257,9 +1332,13 @@ If a checkpoint path is passed to reset, the agent state is initialized with the
 <dl class="py method">
 <dt class="sig sig-object py" id="arlbench.autorl.objectives.Emissions.get_spec">
 <em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_spec</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/arlbench/autorl/objectives.html#Emissions.get_spec"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.autorl.objectives.Emissions.get_spec" title="Link to this definition">¶</a></dt>
-<dd><dl class="field-list simple">
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></span></p>
+<dd><p>Returns a dictionary containing the specification of the objective.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Specification.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>dict</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1270,6 +1349,10 @@ If a checkpoint path is passed to reset, the agent state is initialized with the
 <dt class="sig sig-object py" id="arlbench.autorl.objectives.Objective">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">arlbench.autorl.objectives.</span></span><span class="sig-name descname"><span class="pre">Objective</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/arlbench/autorl/objectives.html#Objective"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.autorl.objectives.Objective" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">ABC</span></code></p>
+<p>An abstract optimization objective for the AutoRL environment.</p>
+<p>It can be wrapped around the training function to calculate the objective.
+We do this be overriding the __new__() function. It allows us to imitate
+the behaviour of a basic function while keeping the advantages of a static class.</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="arlbench.autorl.objectives.Objective.KEY">
 <span class="sig-name descname"><span class="pre">KEY</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></em><a class="headerlink" href="#arlbench.autorl.objectives.Objective.KEY" title="Link to this definition">¶</a></dt>
@@ -1283,10 +1366,52 @@ If a checkpoint path is passed to reset, the agent state is initialized with the
 <dl class="py method">
 <dt class="sig sig-object py" id="arlbench.autorl.objectives.Objective.__call__">
 <em class="property"><span class="pre">abstract</span><span class="w"> </span><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">__call__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">train_func</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">objectives</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optimize_objectives</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/arlbench/autorl/objectives.html#Objective.__call__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.autorl.objectives.Objective.__call__" title="Link to this definition">¶</a></dt>
-<dd><p>Call self as a function.</p>
+<dd><p>Wraps the training function with the objective calculation.</p>
 <dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>train_func</strong> (<em>TrainFunc</em>) – Training function to wrap.</p></li>
+<li><p><strong>objectives</strong> (<em>dict</em>) – Dictionary to store objective.</p></li>
+<li><p><strong>optimize_objectives</strong> (<em>str</em>) – Whether to minimize/maximize the objectve.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Training function.</p>
+</dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">Callable</span></code>[[<code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<a class="reference internal" href="arlbench.core.algorithms.dqn.html#arlbench.core.algorithms.dqn.dqn.DQNRunnerState" title="arlbench.core.algorithms.dqn.dqn.DQNRunnerState"><code class="xref py py-class docutils literal notranslate"><span class="pre">DQNRunnerState</span></code></a>, <a class="reference internal" href="arlbench.core.algorithms.ppo.html#arlbench.core.algorithms.ppo.ppo.PPORunnerState" title="arlbench.core.algorithms.ppo.ppo.PPORunnerState"><code class="xref py py-class docutils literal notranslate"><span class="pre">PPORunnerState</span></code></a>, <a class="reference internal" href="arlbench.core.algorithms.sac.html#arlbench.core.algorithms.sac.sac.SACRunnerState" title="arlbench.core.algorithms.sac.sac.SACRunnerState"><code class="xref py py-class docutils literal notranslate"><span class="pre">SACRunnerState</span></code></a>], <code class="xref py py-class docutils literal notranslate"><span class="pre">PrioritisedTrajectoryBufferState</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code> | <code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code> | <code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code> | <code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code>], <code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code>[<a class="reference internal" href="arlbench.core.algorithms.dqn.html#arlbench.core.algorithms.dqn.dqn.DQNState" title="arlbench.core.algorithms.dqn.dqn.DQNState"><code class="xref py py-class docutils literal notranslate"><span class="pre">DQNState</span></code></a>, <a class="reference internal" href="arlbench.core.algorithms.dqn.html#arlbench.core.algorithms.dqn.dqn.DQNTrainingResult" title="arlbench.core.algorithms.dqn.dqn.DQNTrainingResult"><code class="xref py py-class docutils literal notranslate"><span class="pre">DQNTrainingResult</span></code></a>], <code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code>[<a class="reference internal" href="arlbench.core.algorithms.ppo.html#arlbench.core.algorithms.ppo.ppo.PPOState" title="arlbench.core.algorithms.ppo.ppo.PPOState"><code class="xref py py-class docutils literal notranslate"><span class="pre">PPOState</span></code></a>, <a class="reference internal" href="arlbench.core.algorithms.ppo.html#arlbench.core.algorithms.ppo.ppo.PPOTrainingResult" title="arlbench.core.algorithms.ppo.ppo.PPOTrainingResult"><code class="xref py py-class docutils literal notranslate"><span class="pre">PPOTrainingResult</span></code></a>], <code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code>[<a class="reference internal" href="arlbench.core.algorithms.sac.html#arlbench.core.algorithms.sac.sac.SACState" title="arlbench.core.algorithms.sac.sac.SACState"><code class="xref py py-class docutils literal notranslate"><span class="pre">SACState</span></code></a>, <a class="reference internal" href="arlbench.core.algorithms.sac.html#arlbench.core.algorithms.sac.sac.SACTrainingResult" title="arlbench.core.algorithms.sac.sac.SACTrainingResult"><code class="xref py py-class docutils literal notranslate"><span class="pre">SACTrainingResult</span></code></a>]]]</span></p>
+<dd class="field-odd"><p>TrainFunc</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="arlbench.autorl.objectives.Objective.__lt__">
+<span class="sig-name descname"><span class="pre">__lt__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/arlbench/autorl/objectives.html#Objective.__lt__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.autorl.objectives.Objective.__lt__" title="Link to this definition">¶</a></dt>
+<dd><p>Implements “less-than” comparison between two objectives. Used for sorting based on objective rank.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>other</strong> (<a class="reference internal" href="#arlbench.autorl.objectives.Objective" title="arlbench.autorl.objectives.Objective"><em>Objective</em></a>) – Other Objective to compare to.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Whether this Objective is less than the other Objective.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="arlbench.autorl.objectives.Objective.__new__">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">__new__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cls</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/arlbench/autorl/objectives.html#Objective.__new__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.autorl.objectives.Objective.__new__" title="Link to this definition">¶</a></dt>
+<dd><p>Creates a new instance of this objective and directly wraps the train function.</p>
+<p>This is done by first creating an object and subsequently calling self.__call__().</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Wrapped training function.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>TrainFunc</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1294,9 +1419,13 @@ If a checkpoint path is passed to reset, the agent state is initialized with the
 <dl class="py method">
 <dt class="sig sig-object py" id="arlbench.autorl.objectives.Objective.get_spec">
 <em class="property"><span class="pre">abstract</span><span class="w"> </span><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_spec</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/arlbench/autorl/objectives.html#Objective.get_spec"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.autorl.objectives.Objective.get_spec" title="Link to this definition">¶</a></dt>
-<dd><dl class="field-list simple">
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></span></p>
+<dd><p>Returns a dictionary containing the specification of the objective.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Specification.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>dict</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1307,6 +1436,7 @@ If a checkpoint path is passed to reset, the agent state is initialized with the
 <dt class="sig sig-object py" id="arlbench.autorl.objectives.RewardMean">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">arlbench.autorl.objectives.</span></span><span class="sig-name descname"><span class="pre">RewardMean</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/arlbench/autorl/objectives.html#RewardMean"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.autorl.objectives.RewardMean" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#arlbench.autorl.objectives.Objective" title="arlbench.autorl.objectives.Objective"><code class="xref py py-class docutils literal notranslate"><span class="pre">Objective</span></code></a></p>
+<p>Reward objective for the AutoRL environment. It measures the mean of the last evaluation rewards.</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="arlbench.autorl.objectives.RewardMean.KEY">
 <span class="sig-name descname"><span class="pre">KEY</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'reward_mean'</span></em><a class="headerlink" href="#arlbench.autorl.objectives.RewardMean.KEY" title="Link to this definition">¶</a></dt>
@@ -1320,10 +1450,20 @@ If a checkpoint path is passed to reset, the agent state is initialized with the
 <dl class="py method">
 <dt class="sig sig-object py" id="arlbench.autorl.objectives.RewardMean.__call__">
 <em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">__call__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">train_func</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">objectives</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optimize_objectives</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/arlbench/autorl/objectives.html#RewardMean.__call__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.autorl.objectives.RewardMean.__call__" title="Link to this definition">¶</a></dt>
-<dd><p>Call self as a function.</p>
+<dd><p>Wraps the training function with the objective calculation.</p>
 <dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>train_func</strong> (<em>TrainFunc</em>) – Training function to wrap.</p></li>
+<li><p><strong>objectives</strong> (<em>dict</em>) – Dictionary to store objective.</p></li>
+<li><p><strong>optimize_objectives</strong> (<em>str</em>) – Whether to minimize/maximize the objectve.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Training function.</p>
+</dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">Callable</span></code>[[<code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<a class="reference internal" href="arlbench.core.algorithms.dqn.html#arlbench.core.algorithms.dqn.dqn.DQNRunnerState" title="arlbench.core.algorithms.dqn.dqn.DQNRunnerState"><code class="xref py py-class docutils literal notranslate"><span class="pre">DQNRunnerState</span></code></a>, <a class="reference internal" href="arlbench.core.algorithms.ppo.html#arlbench.core.algorithms.ppo.ppo.PPORunnerState" title="arlbench.core.algorithms.ppo.ppo.PPORunnerState"><code class="xref py py-class docutils literal notranslate"><span class="pre">PPORunnerState</span></code></a>, <a class="reference internal" href="arlbench.core.algorithms.sac.html#arlbench.core.algorithms.sac.sac.SACRunnerState" title="arlbench.core.algorithms.sac.sac.SACRunnerState"><code class="xref py py-class docutils literal notranslate"><span class="pre">SACRunnerState</span></code></a>], <code class="xref py py-class docutils literal notranslate"><span class="pre">PrioritisedTrajectoryBufferState</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code> | <code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code> | <code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code> | <code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code>], <code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code>[<a class="reference internal" href="arlbench.core.algorithms.dqn.html#arlbench.core.algorithms.dqn.dqn.DQNState" title="arlbench.core.algorithms.dqn.dqn.DQNState"><code class="xref py py-class docutils literal notranslate"><span class="pre">DQNState</span></code></a>, <a class="reference internal" href="arlbench.core.algorithms.dqn.html#arlbench.core.algorithms.dqn.dqn.DQNTrainingResult" title="arlbench.core.algorithms.dqn.dqn.DQNTrainingResult"><code class="xref py py-class docutils literal notranslate"><span class="pre">DQNTrainingResult</span></code></a>], <code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code>[<a class="reference internal" href="arlbench.core.algorithms.ppo.html#arlbench.core.algorithms.ppo.ppo.PPOState" title="arlbench.core.algorithms.ppo.ppo.PPOState"><code class="xref py py-class docutils literal notranslate"><span class="pre">PPOState</span></code></a>, <a class="reference internal" href="arlbench.core.algorithms.ppo.html#arlbench.core.algorithms.ppo.ppo.PPOTrainingResult" title="arlbench.core.algorithms.ppo.ppo.PPOTrainingResult"><code class="xref py py-class docutils literal notranslate"><span class="pre">PPOTrainingResult</span></code></a>], <code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code>[<a class="reference internal" href="arlbench.core.algorithms.sac.html#arlbench.core.algorithms.sac.sac.SACState" title="arlbench.core.algorithms.sac.sac.SACState"><code class="xref py py-class docutils literal notranslate"><span class="pre">SACState</span></code></a>, <a class="reference internal" href="arlbench.core.algorithms.sac.html#arlbench.core.algorithms.sac.sac.SACTrainingResult" title="arlbench.core.algorithms.sac.sac.SACTrainingResult"><code class="xref py py-class docutils literal notranslate"><span class="pre">SACTrainingResult</span></code></a>]]]</span></p>
+<dd class="field-odd"><p>TrainFunc</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1331,9 +1471,13 @@ If a checkpoint path is passed to reset, the agent state is initialized with the
 <dl class="py method">
 <dt class="sig sig-object py" id="arlbench.autorl.objectives.RewardMean.get_spec">
 <em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_spec</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/arlbench/autorl/objectives.html#RewardMean.get_spec"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.autorl.objectives.RewardMean.get_spec" title="Link to this definition">¶</a></dt>
-<dd><dl class="field-list simple">
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></span></p>
+<dd><p>Returns a dictionary containing the specification of the objective.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Specification.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>dict</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1344,6 +1488,7 @@ If a checkpoint path is passed to reset, the agent state is initialized with the
 <dt class="sig sig-object py" id="arlbench.autorl.objectives.RewardStd">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">arlbench.autorl.objectives.</span></span><span class="sig-name descname"><span class="pre">RewardStd</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/arlbench/autorl/objectives.html#RewardStd"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.autorl.objectives.RewardStd" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#arlbench.autorl.objectives.Objective" title="arlbench.autorl.objectives.Objective"><code class="xref py py-class docutils literal notranslate"><span class="pre">Objective</span></code></a></p>
+<p>Reward objective for the AutoRL environment. It measures the standard deviation of the last evaluation rewards.</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="arlbench.autorl.objectives.RewardStd.KEY">
 <span class="sig-name descname"><span class="pre">KEY</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'reward_std'</span></em><a class="headerlink" href="#arlbench.autorl.objectives.RewardStd.KEY" title="Link to this definition">¶</a></dt>
@@ -1357,10 +1502,20 @@ If a checkpoint path is passed to reset, the agent state is initialized with the
 <dl class="py method">
 <dt class="sig sig-object py" id="arlbench.autorl.objectives.RewardStd.__call__">
 <em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">__call__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">train_func</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">objectives</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optimize_objectives</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/arlbench/autorl/objectives.html#RewardStd.__call__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.autorl.objectives.RewardStd.__call__" title="Link to this definition">¶</a></dt>
-<dd><p>Call self as a function.</p>
+<dd><p>Wraps the training function with the objective calculation.</p>
 <dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>train_func</strong> (<em>TrainFunc</em>) – Training function to wrap.</p></li>
+<li><p><strong>objectives</strong> (<em>dict</em>) – Dictionary to store objective.</p></li>
+<li><p><strong>optimize_objectives</strong> (<em>str</em>) – Whether to minimize/maximize the objectve.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Training function.</p>
+</dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">Callable</span></code>[[<code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<a class="reference internal" href="arlbench.core.algorithms.dqn.html#arlbench.core.algorithms.dqn.dqn.DQNRunnerState" title="arlbench.core.algorithms.dqn.dqn.DQNRunnerState"><code class="xref py py-class docutils literal notranslate"><span class="pre">DQNRunnerState</span></code></a>, <a class="reference internal" href="arlbench.core.algorithms.ppo.html#arlbench.core.algorithms.ppo.ppo.PPORunnerState" title="arlbench.core.algorithms.ppo.ppo.PPORunnerState"><code class="xref py py-class docutils literal notranslate"><span class="pre">PPORunnerState</span></code></a>, <a class="reference internal" href="arlbench.core.algorithms.sac.html#arlbench.core.algorithms.sac.sac.SACRunnerState" title="arlbench.core.algorithms.sac.sac.SACRunnerState"><code class="xref py py-class docutils literal notranslate"><span class="pre">SACRunnerState</span></code></a>], <code class="xref py py-class docutils literal notranslate"><span class="pre">PrioritisedTrajectoryBufferState</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code> | <code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code> | <code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code> | <code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code>], <code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code>[<a class="reference internal" href="arlbench.core.algorithms.dqn.html#arlbench.core.algorithms.dqn.dqn.DQNState" title="arlbench.core.algorithms.dqn.dqn.DQNState"><code class="xref py py-class docutils literal notranslate"><span class="pre">DQNState</span></code></a>, <a class="reference internal" href="arlbench.core.algorithms.dqn.html#arlbench.core.algorithms.dqn.dqn.DQNTrainingResult" title="arlbench.core.algorithms.dqn.dqn.DQNTrainingResult"><code class="xref py py-class docutils literal notranslate"><span class="pre">DQNTrainingResult</span></code></a>], <code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code>[<a class="reference internal" href="arlbench.core.algorithms.ppo.html#arlbench.core.algorithms.ppo.ppo.PPOState" title="arlbench.core.algorithms.ppo.ppo.PPOState"><code class="xref py py-class docutils literal notranslate"><span class="pre">PPOState</span></code></a>, <a class="reference internal" href="arlbench.core.algorithms.ppo.html#arlbench.core.algorithms.ppo.ppo.PPOTrainingResult" title="arlbench.core.algorithms.ppo.ppo.PPOTrainingResult"><code class="xref py py-class docutils literal notranslate"><span class="pre">PPOTrainingResult</span></code></a>], <code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code>[<a class="reference internal" href="arlbench.core.algorithms.sac.html#arlbench.core.algorithms.sac.sac.SACState" title="arlbench.core.algorithms.sac.sac.SACState"><code class="xref py py-class docutils literal notranslate"><span class="pre">SACState</span></code></a>, <a class="reference internal" href="arlbench.core.algorithms.sac.html#arlbench.core.algorithms.sac.sac.SACTrainingResult" title="arlbench.core.algorithms.sac.sac.SACTrainingResult"><code class="xref py py-class docutils literal notranslate"><span class="pre">SACTrainingResult</span></code></a>]]]</span></p>
+<dd class="field-odd"><p>TrainFunc</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1368,9 +1523,13 @@ If a checkpoint path is passed to reset, the agent state is initialized with the
 <dl class="py method">
 <dt class="sig sig-object py" id="arlbench.autorl.objectives.RewardStd.get_spec">
 <em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_spec</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/arlbench/autorl/objectives.html#RewardStd.get_spec"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.autorl.objectives.RewardStd.get_spec" title="Link to this definition">¶</a></dt>
-<dd><dl class="field-list simple">
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></span></p>
+<dd><p>Returns a dictionary containing the specification of the objective.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Specification.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>dict</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1381,6 +1540,7 @@ If a checkpoint path is passed to reset, the agent state is initialized with the
 <dt class="sig sig-object py" id="arlbench.autorl.objectives.Runtime">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">arlbench.autorl.objectives.</span></span><span class="sig-name descname"><span class="pre">Runtime</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/arlbench/autorl/objectives.html#Runtime"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.autorl.objectives.Runtime" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#arlbench.autorl.objectives.Objective" title="arlbench.autorl.objectives.Objective"><code class="xref py py-class docutils literal notranslate"><span class="pre">Objective</span></code></a></p>
+<p>Runtime objective for the AutoRL environment. It measures the total training runtime.</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="arlbench.autorl.objectives.Runtime.KEY">
 <span class="sig-name descname"><span class="pre">KEY</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'runtime'</span></em><a class="headerlink" href="#arlbench.autorl.objectives.Runtime.KEY" title="Link to this definition">¶</a></dt>
@@ -1394,10 +1554,20 @@ If a checkpoint path is passed to reset, the agent state is initialized with the
 <dl class="py method">
 <dt class="sig sig-object py" id="arlbench.autorl.objectives.Runtime.__call__">
 <em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">__call__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">train_func</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">objectives</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optimize_objectives</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/arlbench/autorl/objectives.html#Runtime.__call__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.autorl.objectives.Runtime.__call__" title="Link to this definition">¶</a></dt>
-<dd><p>Call self as a function.</p>
+<dd><p>Wraps the training function with the objective calculation.</p>
 <dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>train_func</strong> (<em>TrainFunc</em>) – Training function to wrap.</p></li>
+<li><p><strong>objectives</strong> (<em>dict</em>) – Dictionary to store objective.</p></li>
+<li><p><strong>optimize_objectives</strong> (<em>str</em>) – Whether to minimize/maximize the objectve.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Training function.</p>
+</dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">Callable</span></code>[[<code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<a class="reference internal" href="arlbench.core.algorithms.dqn.html#arlbench.core.algorithms.dqn.dqn.DQNRunnerState" title="arlbench.core.algorithms.dqn.dqn.DQNRunnerState"><code class="xref py py-class docutils literal notranslate"><span class="pre">DQNRunnerState</span></code></a>, <a class="reference internal" href="arlbench.core.algorithms.ppo.html#arlbench.core.algorithms.ppo.ppo.PPORunnerState" title="arlbench.core.algorithms.ppo.ppo.PPORunnerState"><code class="xref py py-class docutils literal notranslate"><span class="pre">PPORunnerState</span></code></a>, <a class="reference internal" href="arlbench.core.algorithms.sac.html#arlbench.core.algorithms.sac.sac.SACRunnerState" title="arlbench.core.algorithms.sac.sac.SACRunnerState"><code class="xref py py-class docutils literal notranslate"><span class="pre">SACRunnerState</span></code></a>], <code class="xref py py-class docutils literal notranslate"><span class="pre">PrioritisedTrajectoryBufferState</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code> | <code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code> | <code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code> | <code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code>], <code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code>[<a class="reference internal" href="arlbench.core.algorithms.dqn.html#arlbench.core.algorithms.dqn.dqn.DQNState" title="arlbench.core.algorithms.dqn.dqn.DQNState"><code class="xref py py-class docutils literal notranslate"><span class="pre">DQNState</span></code></a>, <a class="reference internal" href="arlbench.core.algorithms.dqn.html#arlbench.core.algorithms.dqn.dqn.DQNTrainingResult" title="arlbench.core.algorithms.dqn.dqn.DQNTrainingResult"><code class="xref py py-class docutils literal notranslate"><span class="pre">DQNTrainingResult</span></code></a>], <code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code>[<a class="reference internal" href="arlbench.core.algorithms.ppo.html#arlbench.core.algorithms.ppo.ppo.PPOState" title="arlbench.core.algorithms.ppo.ppo.PPOState"><code class="xref py py-class docutils literal notranslate"><span class="pre">PPOState</span></code></a>, <a class="reference internal" href="arlbench.core.algorithms.ppo.html#arlbench.core.algorithms.ppo.ppo.PPOTrainingResult" title="arlbench.core.algorithms.ppo.ppo.PPOTrainingResult"><code class="xref py py-class docutils literal notranslate"><span class="pre">PPOTrainingResult</span></code></a>], <code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code>[<a class="reference internal" href="arlbench.core.algorithms.sac.html#arlbench.core.algorithms.sac.sac.SACState" title="arlbench.core.algorithms.sac.sac.SACState"><code class="xref py py-class docutils literal notranslate"><span class="pre">SACState</span></code></a>, <a class="reference internal" href="arlbench.core.algorithms.sac.html#arlbench.core.algorithms.sac.sac.SACTrainingResult" title="arlbench.core.algorithms.sac.sac.SACTrainingResult"><code class="xref py py-class docutils literal notranslate"><span class="pre">SACTrainingResult</span></code></a>]]]</span></p>
+<dd class="field-odd"><p>TrainFunc</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1405,9 +1575,13 @@ If a checkpoint path is passed to reset, the agent state is initialized with the
 <dl class="py method">
 <dt class="sig sig-object py" id="arlbench.autorl.objectives.Runtime.get_spec">
 <em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_spec</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/arlbench/autorl/objectives.html#Runtime.get_spec"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.autorl.objectives.Runtime.get_spec" title="Link to this definition">¶</a></dt>
-<dd><dl class="field-list simple">
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></span></p>
+<dd><p>Returns a dictionary containing the specification of the objective.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Specification.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>dict</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1421,6 +1595,7 @@ If a checkpoint path is passed to reset, the agent state is initialized with the
 <dt class="sig sig-object py" id="arlbench.autorl.state_features.GradInfo">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">arlbench.autorl.state_features.</span></span><span class="sig-name descname"><span class="pre">GradInfo</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/arlbench/autorl/state_features.html#GradInfo"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.autorl.state_features.GradInfo" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#arlbench.autorl.state_features.StateFeature" title="arlbench.autorl.state_features.StateFeature"><code class="xref py py-class docutils literal notranslate"><span class="pre">StateFeature</span></code></a></p>
+<p>Gradient information state feature for the AutoRL environment. It contains the grad norm during training.</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="arlbench.autorl.state_features.GradInfo.KEY">
 <span class="sig-name descname"><span class="pre">KEY</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'grad_info'</span></em><a class="headerlink" href="#arlbench.autorl.state_features.GradInfo.KEY" title="Link to this definition">¶</a></dt>
@@ -1429,10 +1604,19 @@ If a checkpoint path is passed to reset, the agent state is initialized with the
 <dl class="py method">
 <dt class="sig sig-object py" id="arlbench.autorl.state_features.GradInfo.__call__">
 <em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">__call__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">train_func</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">state_features</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/arlbench/autorl/state_features.html#GradInfo.__call__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.autorl.state_features.GradInfo.__call__" title="Link to this definition">¶</a></dt>
-<dd><p>Call self as a function.</p>
+<dd><p>Wraps the training function with the state feature calculation.</p>
 <dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>train_func</strong> (<em>TrainFunc</em>) – Training function to wrap.</p></li>
+<li><p><strong>state_features</strong> (<em>dict</em>) – Dictionary to store state features.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Wrapped training function.</p>
+</dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">Callable</span></code>[[<code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<a class="reference internal" href="arlbench.core.algorithms.dqn.html#arlbench.core.algorithms.dqn.dqn.DQNRunnerState" title="arlbench.core.algorithms.dqn.dqn.DQNRunnerState"><code class="xref py py-class docutils literal notranslate"><span class="pre">DQNRunnerState</span></code></a>, <a class="reference internal" href="arlbench.core.algorithms.ppo.html#arlbench.core.algorithms.ppo.ppo.PPORunnerState" title="arlbench.core.algorithms.ppo.ppo.PPORunnerState"><code class="xref py py-class docutils literal notranslate"><span class="pre">PPORunnerState</span></code></a>, <a class="reference internal" href="arlbench.core.algorithms.sac.html#arlbench.core.algorithms.sac.sac.SACRunnerState" title="arlbench.core.algorithms.sac.sac.SACRunnerState"><code class="xref py py-class docutils literal notranslate"><span class="pre">SACRunnerState</span></code></a>], <code class="xref py py-class docutils literal notranslate"><span class="pre">PrioritisedTrajectoryBufferState</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code> | <code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code> | <code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code> | <code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code>], <code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code>[<a class="reference internal" href="arlbench.core.algorithms.dqn.html#arlbench.core.algorithms.dqn.dqn.DQNState" title="arlbench.core.algorithms.dqn.dqn.DQNState"><code class="xref py py-class docutils literal notranslate"><span class="pre">DQNState</span></code></a>, <a class="reference internal" href="arlbench.core.algorithms.dqn.html#arlbench.core.algorithms.dqn.dqn.DQNTrainingResult" title="arlbench.core.algorithms.dqn.dqn.DQNTrainingResult"><code class="xref py py-class docutils literal notranslate"><span class="pre">DQNTrainingResult</span></code></a>], <code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code>[<a class="reference internal" href="arlbench.core.algorithms.ppo.html#arlbench.core.algorithms.ppo.ppo.PPOState" title="arlbench.core.algorithms.ppo.ppo.PPOState"><code class="xref py py-class docutils literal notranslate"><span class="pre">PPOState</span></code></a>, <a class="reference internal" href="arlbench.core.algorithms.ppo.html#arlbench.core.algorithms.ppo.ppo.PPOTrainingResult" title="arlbench.core.algorithms.ppo.ppo.PPOTrainingResult"><code class="xref py py-class docutils literal notranslate"><span class="pre">PPOTrainingResult</span></code></a>], <code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code>[<a class="reference internal" href="arlbench.core.algorithms.sac.html#arlbench.core.algorithms.sac.sac.SACState" title="arlbench.core.algorithms.sac.sac.SACState"><code class="xref py py-class docutils literal notranslate"><span class="pre">SACState</span></code></a>, <a class="reference internal" href="arlbench.core.algorithms.sac.html#arlbench.core.algorithms.sac.sac.SACTrainingResult" title="arlbench.core.algorithms.sac.sac.SACTrainingResult"><code class="xref py py-class docutils literal notranslate"><span class="pre">SACTrainingResult</span></code></a>]]]</span></p>
+<dd class="field-odd"><p>TrainFunc</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1440,9 +1624,13 @@ If a checkpoint path is passed to reset, the agent state is initialized with the
 <dl class="py method">
 <dt class="sig sig-object py" id="arlbench.autorl.state_features.GradInfo.get_state_space">
 <em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_state_space</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/arlbench/autorl/state_features.html#GradInfo.get_state_space"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.autorl.state_features.GradInfo.get_state_space" title="Link to this definition">¶</a></dt>
-<dd><dl class="field-list simple">
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">Space</span></code></span></p>
+<dd><p>Returns a dictionary containing the specification of the state feature.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Specification.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>dict</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1453,6 +1641,10 @@ If a checkpoint path is passed to reset, the agent state is initialized with the
 <dt class="sig sig-object py" id="arlbench.autorl.state_features.StateFeature">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">arlbench.autorl.state_features.</span></span><span class="sig-name descname"><span class="pre">StateFeature</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/arlbench/autorl/state_features.html#StateFeature"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.autorl.state_features.StateFeature" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">ABC</span></code></p>
+<p>An abstract state features for the AutoRL environment.</p>
+<p>It can be wrapped around the training function to calculate the state features.
+We do this be overriding the __new__() function. It allows us to imitate
+the behaviour of a basic function while keeping the advantages of a static class.</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="arlbench.autorl.state_features.StateFeature.KEY">
 <span class="sig-name descname"><span class="pre">KEY</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></em><a class="headerlink" href="#arlbench.autorl.state_features.StateFeature.KEY" title="Link to this definition">¶</a></dt>
@@ -1460,11 +1652,35 @@ If a checkpoint path is passed to reset, the agent state is initialized with the
 
 <dl class="py method">
 <dt class="sig sig-object py" id="arlbench.autorl.state_features.StateFeature.__call__">
-<em class="property"><span class="pre">abstract</span><span class="w"> </span><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">__call__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">train_func</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">objectives</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/arlbench/autorl/state_features.html#StateFeature.__call__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.autorl.state_features.StateFeature.__call__" title="Link to this definition">¶</a></dt>
-<dd><p>Call self as a function.</p>
+<em class="property"><span class="pre">abstract</span><span class="w"> </span><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">__call__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">train_func</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">state_features</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/arlbench/autorl/state_features.html#StateFeature.__call__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.autorl.state_features.StateFeature.__call__" title="Link to this definition">¶</a></dt>
+<dd><p>Wraps the training function with the state feature calculation.</p>
 <dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>train_func</strong> (<em>TrainFunc</em>) – Training function to wrap.</p></li>
+<li><p><strong>state_features</strong> (<em>dict</em>) – Dictionary to store state features.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Wrapped training function.</p>
+</dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">Callable</span></code>[[<code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<a class="reference internal" href="arlbench.core.algorithms.dqn.html#arlbench.core.algorithms.dqn.dqn.DQNRunnerState" title="arlbench.core.algorithms.dqn.dqn.DQNRunnerState"><code class="xref py py-class docutils literal notranslate"><span class="pre">DQNRunnerState</span></code></a>, <a class="reference internal" href="arlbench.core.algorithms.ppo.html#arlbench.core.algorithms.ppo.ppo.PPORunnerState" title="arlbench.core.algorithms.ppo.ppo.PPORunnerState"><code class="xref py py-class docutils literal notranslate"><span class="pre">PPORunnerState</span></code></a>, <a class="reference internal" href="arlbench.core.algorithms.sac.html#arlbench.core.algorithms.sac.sac.SACRunnerState" title="arlbench.core.algorithms.sac.sac.SACRunnerState"><code class="xref py py-class docutils literal notranslate"><span class="pre">SACRunnerState</span></code></a>], <code class="xref py py-class docutils literal notranslate"><span class="pre">PrioritisedTrajectoryBufferState</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code> | <code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code> | <code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code> | <code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code>], <code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code>[<a class="reference internal" href="arlbench.core.algorithms.dqn.html#arlbench.core.algorithms.dqn.dqn.DQNState" title="arlbench.core.algorithms.dqn.dqn.DQNState"><code class="xref py py-class docutils literal notranslate"><span class="pre">DQNState</span></code></a>, <a class="reference internal" href="arlbench.core.algorithms.dqn.html#arlbench.core.algorithms.dqn.dqn.DQNTrainingResult" title="arlbench.core.algorithms.dqn.dqn.DQNTrainingResult"><code class="xref py py-class docutils literal notranslate"><span class="pre">DQNTrainingResult</span></code></a>], <code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code>[<a class="reference internal" href="arlbench.core.algorithms.ppo.html#arlbench.core.algorithms.ppo.ppo.PPOState" title="arlbench.core.algorithms.ppo.ppo.PPOState"><code class="xref py py-class docutils literal notranslate"><span class="pre">PPOState</span></code></a>, <a class="reference internal" href="arlbench.core.algorithms.ppo.html#arlbench.core.algorithms.ppo.ppo.PPOTrainingResult" title="arlbench.core.algorithms.ppo.ppo.PPOTrainingResult"><code class="xref py py-class docutils literal notranslate"><span class="pre">PPOTrainingResult</span></code></a>], <code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code>[<a class="reference internal" href="arlbench.core.algorithms.sac.html#arlbench.core.algorithms.sac.sac.SACState" title="arlbench.core.algorithms.sac.sac.SACState"><code class="xref py py-class docutils literal notranslate"><span class="pre">SACState</span></code></a>, <a class="reference internal" href="arlbench.core.algorithms.sac.html#arlbench.core.algorithms.sac.sac.SACTrainingResult" title="arlbench.core.algorithms.sac.sac.SACTrainingResult"><code class="xref py py-class docutils literal notranslate"><span class="pre">SACTrainingResult</span></code></a>]]]</span></p>
+<dd class="field-odd"><p>TrainFunc</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="arlbench.autorl.state_features.StateFeature.__new__">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">__new__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cls</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/arlbench/autorl/state_features.html#StateFeature.__new__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.autorl.state_features.StateFeature.__new__" title="Link to this definition">¶</a></dt>
+<dd><p>Creates a new instance of this state feature and directly wraps the train function.</p>
+<p>This is done by first creating an object and subsequently calling self.__call__().</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Wrapped training function.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>TrainFunc</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1472,9 +1688,13 @@ If a checkpoint path is passed to reset, the agent state is initialized with the
 <dl class="py method">
 <dt class="sig sig-object py" id="arlbench.autorl.state_features.StateFeature.get_state_space">
 <em class="property"><span class="pre">abstract</span><span class="w"> </span><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_state_space</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/arlbench/autorl/state_features.html#StateFeature.get_state_space"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.autorl.state_features.StateFeature.get_state_space" title="Link to this definition">¶</a></dt>
-<dd><dl class="field-list simple">
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">Space</span></code></span></p>
+<dd><p>Returns a dictionary containing the specification of the state feature.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Specification.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>dict</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1500,10 +1720,10 @@ If a checkpoint path is passed to reset, the agent state is initialized with the
 <dl class="py property">
 <dt class="sig sig-object py" id="arlbench.autorl.AutoRLEnv.action_space">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">action_space</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Space</span></em><a class="headerlink" href="#arlbench.autorl.AutoRLEnv.action_space" title="Link to this definition">¶</a></dt>
-<dd><p>_summary_.</p>
+<dd><p>Returns the hyperparameter configuration spaces as gymnasium space.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>_description_</p>
+<dd class="field-odd"><p>Hyperparameter configuration space.</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p>gymnasium.spaces.Space</p>
@@ -1514,10 +1734,10 @@ If a checkpoint path is passed to reset, the agent state is initialized with the
 <dl class="py property">
 <dt class="sig sig-object py" id="arlbench.autorl.AutoRLEnv.checkpoints">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">checkpoints</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#arlbench.autorl.AutoRLEnv.checkpoints" title="Link to this definition">¶</a></dt>
-<dd><p>_summary_.</p>
+<dd><p>Returns a list of created checkpoints for this AutoRL environment.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>_description_</p>
+<dd class="field-odd"><p>List of checkpoint paths.</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p>list[str]</p>
@@ -1528,10 +1748,10 @@ If a checkpoint path is passed to reset, the agent state is initialized with the
 <dl class="py property">
 <dt class="sig sig-object py" id="arlbench.autorl.AutoRLEnv.config">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">config</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">dict</span></em><a class="headerlink" href="#arlbench.autorl.AutoRLEnv.config" title="Link to this definition">¶</a></dt>
-<dd><p>_summary_.</p>
+<dd><p>Returns the AutoRL configuration.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>_description_</p>
+<dd class="field-odd"><p>AutoRL configuration.</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p>dict</p>
@@ -1542,10 +1762,10 @@ If a checkpoint path is passed to reset, the agent state is initialized with the
 <dl class="py property">
 <dt class="sig sig-object py" id="arlbench.autorl.AutoRLEnv.config_space">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">config_space</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ConfigurationSpace</span></em><a class="headerlink" href="#arlbench.autorl.AutoRLEnv.config_space" title="Link to this definition">¶</a></dt>
-<dd><p>_summary_.</p>
+<dd><p>Returns the hyperparameter configuration spaces as ConfigSpace.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>_description_</p>
+<dd class="field-odd"><p>Hyperparameter configuration space.</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p>ConfigurationSpace</p>
@@ -1556,19 +1776,16 @@ If a checkpoint path is passed to reset, the agent state is initialized with the
 <dl class="py method">
 <dt class="sig sig-object py" id="arlbench.autorl.AutoRLEnv.eval">
 <span class="sig-name descname"><span class="pre">eval</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">num_eval_episodes</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/arlbench/autorl/autorl_env.html#AutoRLEnv.eval"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.autorl.AutoRLEnv.eval" title="Link to this definition">¶</a></dt>
-<dd><p>_summary_.</p>
+<dd><p>Evaluates the algorithm using its current training state.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>num_eval_episodes</strong> (<em>int</em>) – _description_</p>
+<dd class="field-odd"><p><strong>num_eval_episodes</strong> (<em>int</em>) – Number of evaluation episodes to run.</p>
 </dd>
-<dt class="field-even">Raises<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>ValueError</strong> – _description_</p>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Array of evaluation return for each episode.</p>
 </dd>
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>_description_</p>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p>np.ndarray</p>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.ndarray</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1576,7 +1793,7 @@ If a checkpoint path is passed to reset, the agent state is initialized with the
 <dl class="py property">
 <dt class="sig sig-object py" id="arlbench.autorl.AutoRLEnv.hpo_config">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">hpo_config</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Configuration</span></em><a class="headerlink" href="#arlbench.autorl.AutoRLEnv.hpo_config" title="Link to this definition">¶</a></dt>
-<dd><p>_summary_.</p>
+<dd><p>Returns .</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p>_description_</p>
@@ -1590,10 +1807,10 @@ If a checkpoint path is passed to reset, the agent state is initialized with the
 <dl class="py property">
 <dt class="sig sig-object py" id="arlbench.autorl.AutoRLEnv.objectives">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">objectives</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#arlbench.autorl.AutoRLEnv.objectives" title="Link to this definition">¶</a></dt>
-<dd><p>_summary_.</p>
+<dd><p>Returns configured objectives.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>_description_</p>
+<dd class="field-odd"><p>List of objectives.</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p>list[str]</p>
@@ -1604,10 +1821,10 @@ If a checkpoint path is passed to reset, the agent state is initialized with the
 <dl class="py property">
 <dt class="sig sig-object py" id="arlbench.autorl.AutoRLEnv.observation_space">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">observation_space</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Space</span></em><a class="headerlink" href="#arlbench.autorl.AutoRLEnv.observation_space" title="Link to this definition">¶</a></dt>
-<dd><p>_summary_.</p>
+<dd><p>Returns a gymnasium spaces of state features (observations).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>_description_</p>
+<dd class="field-odd"><p>Gynasium space.</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p>gymnasium.spaces.Space</p>
@@ -1617,20 +1834,14 @@ If a checkpoint path is passed to reset, the agent state is initialized with the
 
 <dl class="py method">
 <dt class="sig sig-object py" id="arlbench.autorl.AutoRLEnv.reset">
-<span class="sig-name descname"><span class="pre">reset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/arlbench/autorl/autorl_env.html#AutoRLEnv.reset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.autorl.AutoRLEnv.reset" title="Link to this definition">¶</a></dt>
-<dd><p>_summary_.</p>
+<span class="sig-name descname"><span class="pre">reset</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/arlbench/autorl/autorl_env.html#AutoRLEnv.reset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.autorl.AutoRLEnv.reset" title="Link to this definition">¶</a></dt>
+<dd><p>Resets the AutoRL environment and current algorithm state.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>seed</strong> (<em>int</em><em> | </em><em>None</em><em>, </em><em>optional</em>) – _description_. Defaults to None.</p></li>
-<li><p><strong>checkpoint_path</strong> (<em>str</em><em> | </em><em>None</em><em>, </em><em>optional</em>) – _description_. Defaults to None.</p></li>
-</ul>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Empty observation and state information.</p>
 </dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>_description_</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>tuple[ObservationT, InfoT]</p>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>tuple[ObservationT, InfoT]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1638,22 +1849,22 @@ If a checkpoint path is passed to reset, the agent state is initialized with the
 <dl class="py method">
 <dt class="sig sig-object py" id="arlbench.autorl.AutoRLEnv.step">
 <span class="sig-name descname"><span class="pre">step</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">action</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">checkpoint_path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_total_timesteps</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_eval_steps</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_eval_episodes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/arlbench/autorl/autorl_env.html#AutoRLEnv.step"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.autorl.AutoRLEnv.step" title="Link to this definition">¶</a></dt>
-<dd><p>_summary_.</p>
+<dd><p>Performs one iteration of RL training.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>action</strong> (<em>Configuration</em><em> | </em><em>dict</em>) – _description_</p></li>
-<li><p><strong>n_total_timesteps</strong> (<em>int</em><em> | </em><em>None</em><em>, </em><em>optional</em>) – _description_. Defaults to None.</p></li>
-<li><p><strong>n_eval_steps</strong> (<em>int</em><em> | </em><em>None</em><em>, </em><em>optional</em>) – _description_. Defaults to None.</p></li>
-<li><p><strong>n_eval_episodes</strong> (<em>int</em><em> | </em><em>None</em><em>, </em><em>optional</em>) – _description_. Defaults to None.</p></li>
-<li><p><strong>seed</strong> (<em>int</em><em> | </em><em>None</em><em>, </em><em>optional</em>) – _description_. Defaults to None.</p></li>
+<li><p><strong>action</strong> (<em>Configuration</em><em> | </em><em>dict</em>) – Hyperparameter configuration to use for training.</p></li>
+<li><p><strong>n_total_timesteps</strong> (<em>int</em><em> | </em><em>None</em><em>, </em><em>optional</em>) – Number of total training steps. Defaults to None.</p></li>
+<li><p><strong>n_eval_steps</strong> (<em>int</em><em> | </em><em>None</em><em>, </em><em>optional</em>) – Number of evaluations during training. Defaults to None.</p></li>
+<li><p><strong>n_eval_episodes</strong> (<em>int</em><em> | </em><em>None</em><em>, </em><em>optional</em>) – Number of episodes to run per evalution during training. Defaults to None.</p></li>
+<li><p><strong>seed</strong> (<em>int</em><em> | </em><em>None</em><em>, </em><em>optional</em>) – Random seed. Defaults to None. If None, seed of the AutoRL environment is used.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
 <dd class="field-even"><p><strong>ValueError</strong> – Error is raised if step() is called before reset() was called.</p>
 </dd>
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>_description_</p>
+<dd class="field-odd"><p>State information, objectives, terminated, truncated, additional information.</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p>tuple[ObservationT, ObjectivesT, bool, bool, InfoT]</p>

@@ -243,11 +243,6 @@
        </li>
       </ul>
      </li>
-     <li class="toctree-l3">
-      <a class="reference internal" href="../../../../../api/arlbench.plotting.html">
-       arlbench.plotting
-      </a>
-     </li>
      <li class="toctree-l3 has-children">
       <a class="reference internal" href="../../../../../api/arlbench.utils.html">
        arlbench.utils
@@ -339,7 +334,7 @@
 
     <span class="kn">from</span> <span class="nn">arlbench.core.environments</span> <span class="kn">import</span> <span class="n">Environment</span>
     <span class="kn">from</span> <span class="nn">arlbench.core.running_statistics</span> <span class="kn">import</span> <span class="n">RunningStatisticsState</span>
-    <span class="kn">from</span> <span class="nn">arlbench.core.wrappers</span> <span class="kn">import</span> <span class="n">AutoRLWrapper</span>
+    <span class="kn">from</span> <span class="nn">arlbench.core.wrappers</span> <span class="kn">import</span> <span class="n">Wrapper</span>
 
 
 <div class="viewcode-block" id="PPOTrainState">
@@ -447,8 +442,8 @@
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">hpo_config</span><span class="p">:</span> <span class="n">Configuration</span><span class="p">,</span>
-        <span class="n">env</span><span class="p">:</span> <span class="n">Environment</span> <span class="o">|</span> <span class="n">AutoRLWrapper</span><span class="p">,</span>
-        <span class="n">eval_env</span><span class="p">:</span> <span class="n">Environment</span> <span class="o">|</span> <span class="n">AutoRLWrapper</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">env</span><span class="p">:</span> <span class="n">Environment</span> <span class="o">|</span> <span class="n">Wrapper</span><span class="p">,</span>
+        <span class="n">eval_env</span><span class="p">:</span> <span class="n">Environment</span> <span class="o">|</span> <span class="n">Wrapper</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">cnn_policy</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
         <span class="n">nas_config</span><span class="p">:</span> <span class="n">Configuration</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">deterministic_eval</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>

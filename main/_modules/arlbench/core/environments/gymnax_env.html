@@ -243,11 +243,6 @@
        </li>
       </ul>
      </li>
-     <li class="toctree-l3">
-      <a class="reference internal" href="../../../../api/arlbench.plotting.html">
-       arlbench.plotting
-      </a>
-     </li>
      <li class="toctree-l3 has-children">
       <a class="reference internal" href="../../../../api/arlbench.utils.html">
        arlbench.utils
@@ -329,9 +324,18 @@
 <div class="viewcode-block" id="GymnaxEnv">
 <a class="viewcode-back" href="../../../../arlbench.core.environments.html#arlbench.core.environments.GymnaxEnv">[docs]</a>
 <span class="k">class</span> <span class="nc">GymnaxEnv</span><span class="p">(</span><span class="n">Environment</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;A gymnax-based RL environment.&quot;&quot;&quot;</span>
+
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">env_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">n_envs</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">env_kwargs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Creates a gymnax environment for JAX-based RL training. </span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            env_name (str): Name/id of the brax environment.</span>
+<span class="sd">            n_envs (int): Number of environments.</span>
+<span class="sd">            env_kwargs (dict[str, Any] | None, optional): Keyword arguments to pass to the gymnax environment. Defaults to None.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">env_kwargs</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">env_kwargs</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="n">env</span><span class="p">,</span> <span class="n">env_params</span> <span class="o">=</span> <span class="n">gymnax</span><span class="o">.</span><span class="n">make</span><span class="p">(</span><span class="n">env_name</span><span class="p">,</span> <span class="o">**</span><span class="n">env_kwargs</span><span class="p">)</span>

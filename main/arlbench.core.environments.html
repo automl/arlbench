@@ -244,11 +244,6 @@
        </li>
       </ul>
      </li>
-     <li class="toctree-l3">
-      <a class="reference internal" href="api/arlbench.plotting.html">
-       arlbench.plotting
-      </a>
-     </li>
      <li class="toctree-l3 has-children">
       <a class="reference internal" href="api/arlbench.utils.html">
        arlbench.utils
@@ -1028,32 +1023,92 @@
 <dt class="sig sig-object py" id="arlbench.core.environments.autorl_env.Environment">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">arlbench.core.environments.autorl_env.</span></span><span class="sig-name descname"><span class="pre">Environment</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">env_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">env</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_envs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/arlbench/core/environments/autorl_env.html#Environment"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.core.environments.autorl_env.Environment" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">ABC</span></code></p>
+<p>An abstract environment class to support various kinds of RL environments.</p>
+<dl class="simple">
+<dt>Sub-classes need to implement the following methods:</dt><dd><ul class="simple">
+<li><p>reset()</p></li>
+<li><p>step()</p></li>
+</ul>
+</dd>
+</dl>
+<p>Note: Both functions need to be fully jittable to support JAX-based RL algorithms!</p>
+<dl class="simple">
+<dt>As well as the properties:</dt><dd><ul class="simple">
+<li><p>action_space</p></li>
+<li><p>observation_space</p></li>
+</ul>
+</dd>
+</dl>
+<p>Note: These need to be gymnax spaces, not gymnasium spaces.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="arlbench.core.environments.autorl_env.Environment.action_space">
 <em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">action_space</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/arlbench/core/environments/autorl_env.html#Environment.action_space"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.core.environments.autorl_env.Environment.action_space" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>The action space of the environment (gymnax space).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Action space of the environment.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>gymnax.environments.spaces.Space</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="arlbench.core.environments.autorl_env.Environment.env_name">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">env_name</span></span><a class="headerlink" href="#arlbench.core.environments.autorl_env.Environment.env_name" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">env_name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#arlbench.core.environments.autorl_env.Environment.env_name" title="Link to this definition">¶</a></dt>
+<dd><p>Returns the name/id of the environments.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Environment name.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="arlbench.core.environments.autorl_env.Environment.n_envs">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">n_envs</span></span><a class="headerlink" href="#arlbench.core.environments.autorl_env.Environment.n_envs" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">n_envs</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#arlbench.core.environments.autorl_env.Environment.n_envs" title="Link to this definition">¶</a></dt>
+<dd><p>The number of environments.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>_description_</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="arlbench.core.environments.autorl_env.Environment.observation_space">
 <em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">observation_space</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/arlbench/core/environments/autorl_env.html#Environment.observation_space"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.core.environments.autorl_env.Environment.observation_space" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>The observation space of the environment (gymnax space).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Observation space of the environment.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>gymnax.environments.spaces.Space</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="arlbench.core.environments.autorl_env.Environment.reset">
 <em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">reset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rng</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/arlbench/core/environments/autorl_env.html#Environment.reset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.core.environments.autorl_env.Environment.reset" title="Link to this definition">¶</a></dt>
-<dd><dl class="field-list simple">
+<dd><p>Environment reset() function. Resets the internal environment state.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>rng</strong> (<em>PRNGKey</em>) – Random number generator key.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Returns a tuple containing the environment state as well as the actual return of the reset() function.</p>
+</dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code>[<code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code>, <code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code>]</span></p>
+<dd class="field-odd"><p>tuple[Any, Any]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1061,14 +1116,37 @@
 <dl class="py method">
 <dt class="sig sig-object py" id="arlbench.core.environments.autorl_env.Environment.sample_actions">
 <span class="sig-name descname"><span class="pre">sample_actions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rng</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/arlbench/core/environments/autorl_env.html#Environment.sample_actions"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.core.environments.autorl_env.Environment.sample_actions" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Samples a random action for each environment.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>rng</strong> (<em>PRNGKey</em>) – Random number generator key.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Array of sampled actions, one for each environment.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>jnp.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="arlbench.core.environments.autorl_env.Environment.step">
 <em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">step</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">env_state</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">action</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rng</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/arlbench/core/environments/autorl_env.html#Environment.step"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.core.environments.autorl_env.Environment.step" title="Link to this definition">¶</a></dt>
-<dd><dl class="field-list simple">
+<dd><p>Environment step() function. Performs a step in the environment given an action.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>env_state</strong> (<em>Any</em>) – Internal environment state.</p></li>
+<li><p><strong>action</strong> (<em>Any</em>) – Action to take.</p></li>
+<li><p><strong>rng</strong> (<em>PRNGKey</em>) – Random number generator key.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Returns a tuple containing the environment state as well as the actual return of the step() function.</p>
+</dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code>[<code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code>, <code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code>]</span></p>
+<dd class="field-odd"><p>tuple[Any, Any]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1082,15 +1160,34 @@
 <dt class="sig sig-object py" id="arlbench.core.environments.brax_env.BraxEnv">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">arlbench.core.environments.brax_env.</span></span><span class="sig-name descname"><span class="pre">BraxEnv</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">env_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_envs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">env_kwargs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/arlbench/core/environments/brax_env.html#BraxEnv"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.core.environments.brax_env.BraxEnv" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#arlbench.core.environments.autorl_env.Environment" title="arlbench.core.environments.autorl_env.Environment"><code class="xref py py-class docutils literal notranslate"><span class="pre">Environment</span></code></a></p>
+<p>A brax-based RL environment.</p>
 <dl class="py property">
 <dt class="sig sig-object py" id="arlbench.core.environments.brax_env.BraxEnv.action_space">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">action_space</span></span><a class="headerlink" href="#arlbench.core.environments.brax_env.BraxEnv.action_space" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">action_space</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Space</span></em><a class="headerlink" href="#arlbench.core.environments.brax_env.BraxEnv.action_space" title="Link to this definition">¶</a></dt>
+<dd><p>The action space of the environment (gymnax space).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Action space of the environment.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>gymnax.environments.spaces.Space</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="arlbench.core.environments.brax_env.BraxEnv.observation_space">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">observation_space</span></span><a class="headerlink" href="#arlbench.core.environments.brax_env.BraxEnv.observation_space" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">observation_space</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Space</span></em><a class="headerlink" href="#arlbench.core.environments.brax_env.BraxEnv.observation_space" title="Link to this definition">¶</a></dt>
+<dd><p>The observation space of the environment (gymnax space).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Observation space of the environment.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>gymnax.environments.spaces.Space</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="arlbench.core.environments.brax_env.BraxEnv.reset">
@@ -1121,15 +1218,34 @@
 <dt class="sig sig-object py" id="arlbench.core.environments.envpool_env.EnvpoolEnv">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">arlbench.core.environments.envpool_env.</span></span><span class="sig-name descname"><span class="pre">EnvpoolEnv</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">env_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_envs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seed</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">env_kwargs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/arlbench/core/environments/envpool_env.html#EnvpoolEnv"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.core.environments.envpool_env.EnvpoolEnv" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#arlbench.core.environments.autorl_env.Environment" title="arlbench.core.environments.autorl_env.Environment"><code class="xref py py-class docutils literal notranslate"><span class="pre">Environment</span></code></a></p>
+<p>An envpool-based RL environment.</p>
 <dl class="py property">
 <dt class="sig sig-object py" id="arlbench.core.environments.envpool_env.EnvpoolEnv.action_space">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">action_space</span></span><a class="headerlink" href="#arlbench.core.environments.envpool_env.EnvpoolEnv.action_space" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>The action space of the environment (gymnax space).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Action space of the environment.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>gymnax.environments.spaces.Space</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="arlbench.core.environments.envpool_env.EnvpoolEnv.observation_space">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">observation_space</span></span><a class="headerlink" href="#arlbench.core.environments.envpool_env.EnvpoolEnv.observation_space" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>The observation space of the environment (gymnax space).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Observation space of the environment.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>gymnax.environments.spaces.Space</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="arlbench.core.environments.envpool_env.EnvpoolEnv.reset">
@@ -1147,6 +1263,11 @@
 <dt class="sig sig-object py" id="arlbench.core.environments.envpool_env.numpy_to_jax">
 <span class="sig-prename descclassname"><span class="pre">arlbench.core.environments.envpool_env.</span></span><span class="sig-name descname"><span class="pre">numpy_to_jax</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/arlbench/core/environments/envpool_env.html#numpy_to_jax"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.core.environments.envpool_env.numpy_to_jax" title="Link to this definition">¶</a></dt>
 <dd><p>Converts numpy arrays to jax numpy arrays.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">Array</span></code></span></p>
+</dd>
+</dl>
 </dd></dl>
 
 </section>
@@ -1156,15 +1277,34 @@
 <dt class="sig sig-object py" id="arlbench.core.environments.gymnasium_env.GymnasiumEnv">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">arlbench.core.environments.gymnasium_env.</span></span><span class="sig-name descname"><span class="pre">GymnasiumEnv</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">env_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seed</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">env_kwargs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/arlbench/core/environments/gymnasium_env.html#GymnasiumEnv"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.core.environments.gymnasium_env.GymnasiumEnv" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#arlbench.core.environments.autorl_env.Environment" title="arlbench.core.environments.autorl_env.Environment"><code class="xref py py-class docutils literal notranslate"><span class="pre">Environment</span></code></a></p>
+<p>A gymnasium-based RL environment.</p>
 <dl class="py property">
 <dt class="sig sig-object py" id="arlbench.core.environments.gymnasium_env.GymnasiumEnv.action_space">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">action_space</span></span><a class="headerlink" href="#arlbench.core.environments.gymnasium_env.GymnasiumEnv.action_space" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>The action space of the environment (gymnax space).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Action space of the environment.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>gymnax.environments.spaces.Space</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="arlbench.core.environments.gymnasium_env.GymnasiumEnv.observation_space">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">observation_space</span></span><a class="headerlink" href="#arlbench.core.environments.gymnasium_env.GymnasiumEnv.observation_space" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>The observation space of the environment (gymnax space).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Observation space of the environment.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>gymnax.environments.spaces.Space</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="arlbench.core.environments.gymnasium_env.GymnasiumEnv.reset">
@@ -1195,15 +1335,34 @@
 <dt class="sig sig-object py" id="arlbench.core.environments.gymnax_env.GymnaxEnv">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">arlbench.core.environments.gymnax_env.</span></span><span class="sig-name descname"><span class="pre">GymnaxEnv</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">env_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_envs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">env_kwargs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/arlbench/core/environments/gymnax_env.html#GymnaxEnv"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.core.environments.gymnax_env.GymnaxEnv" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#arlbench.core.environments.autorl_env.Environment" title="arlbench.core.environments.autorl_env.Environment"><code class="xref py py-class docutils literal notranslate"><span class="pre">Environment</span></code></a></p>
+<p>A gymnax-based RL environment.</p>
 <dl class="py property">
 <dt class="sig sig-object py" id="arlbench.core.environments.gymnax_env.GymnaxEnv.action_space">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">action_space</span></span><a class="headerlink" href="#arlbench.core.environments.gymnax_env.GymnaxEnv.action_space" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>The action space of the environment (gymnax space).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Action space of the environment.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>gymnax.environments.spaces.Space</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="arlbench.core.environments.gymnax_env.GymnaxEnv.observation_space">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">observation_space</span></span><a class="headerlink" href="#arlbench.core.environments.gymnax_env.GymnaxEnv.observation_space" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>The observation space of the environment (gymnax space).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Observation space of the environment.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>gymnax.environments.spaces.Space</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="arlbench.core.environments.gymnax_env.GymnaxEnv.reset">
@@ -1228,9 +1387,23 @@
 <dl class="py function">
 <dt class="sig sig-object py" id="arlbench.core.environments.make_env.make_env">
 <span class="sig-prename descclassname"><span class="pre">arlbench.core.environments.make_env.</span></span><span class="sig-name descname"><span class="pre">make_env</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">env_framework</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">env_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cnn_policy</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_envs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">env_kwargs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/arlbench/core/environments/make_env.html#make_env"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.core.environments.make_env.make_env" title="Link to this definition">¶</a></dt>
-<dd><dl class="field-list simple">
+<dd><p>ARLBench equivalent to make_env in gymnasium/gymnax etc. Creates a JAX-compatible RL environment.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>env_framework</strong> (<em>str</em>) – Environment framework to use. Must be one of the following: brax, envpool, gymnasium, gymnax, xland</p></li>
+<li><p><strong>env_name</strong> (<em>str</em>) – Name/id of the environment. Has to match the env_framework.</p></li>
+<li><p><strong>cnn_policy</strong> (<em>bool</em><em>, </em><em>optional</em>) – _description_. Defaults to False.</p></li>
+<li><p><strong>n_envs</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of environments. Defaults to 1.</p></li>
+<li><p><strong>seed</strong> (<em>int</em><em>, </em><em>optional</em>) – Random seed. Defaults to 0.</p></li>
+<li><p><strong>env_kwargs</strong> (<em>dict</em><em>[</em><em>str</em><em>, </em><em>Any</em><em>] </em><em>| </em><em>None</em><em>, </em><em>optional</em>) – Keyword arguments to pass to the environment. Defaults to None.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>JAX-compatible RL environment.</p>
+</dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference internal" href="#arlbench.core.environments.autorl_env.Environment" title="arlbench.core.environments.autorl_env.Environment"><code class="xref py py-class docutils literal notranslate"><span class="pre">Environment</span></code></a> | <a class="reference internal" href="arlbench.core.wrappers.html#arlbench.core.wrappers.autorl_wrapper.AutoRLWrapper" title="arlbench.core.wrappers.autorl_wrapper.AutoRLWrapper"><code class="xref py py-class docutils literal notranslate"><span class="pre">AutoRLWrapper</span></code></a></span></p>
+<dd class="field-odd"><p><a class="reference internal" href="#arlbench.core.environments.Environment" title="arlbench.core.environments.Environment">Environment</a> | <a class="reference internal" href="arlbench.core.wrappers.html#arlbench.core.wrappers.Wrapper" title="arlbench.core.wrappers.Wrapper">Wrapper</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -1242,15 +1415,34 @@
 <dt class="sig sig-object py" id="arlbench.core.environments.xland_env.XLandEnv">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">arlbench.core.environments.xland_env.</span></span><span class="sig-name descname"><span class="pre">XLandEnv</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">env_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_envs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">env_kwargs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cnn_policy</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/arlbench/core/environments/xland_env.html#XLandEnv"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.core.environments.xland_env.XLandEnv" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#arlbench.core.environments.autorl_env.Environment" title="arlbench.core.environments.autorl_env.Environment"><code class="xref py py-class docutils literal notranslate"><span class="pre">Environment</span></code></a></p>
+<p>A xland-based RL environment.</p>
 <dl class="py property">
 <dt class="sig sig-object py" id="arlbench.core.environments.xland_env.XLandEnv.action_space">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">action_space</span></span><a class="headerlink" href="#arlbench.core.environments.xland_env.XLandEnv.action_space" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>The action space of the environment (gymnax space).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Action space of the environment.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>gymnax.environments.spaces.Space</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="arlbench.core.environments.xland_env.XLandEnv.observation_space">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">observation_space</span></span><a class="headerlink" href="#arlbench.core.environments.xland_env.XLandEnv.observation_space" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>The observation space of the environment (gymnax space).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Observation space of the environment.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>gymnax.environments.spaces.Space</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="arlbench.core.environments.xland_env.XLandEnv.reset">
@@ -1276,15 +1468,34 @@
 <dt class="sig sig-object py" id="arlbench.core.environments.BraxEnv">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">arlbench.core.environments.</span></span><span class="sig-name descname"><span class="pre">BraxEnv</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">env_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_envs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">env_kwargs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/arlbench/core/environments/brax_env.html#BraxEnv"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.core.environments.BraxEnv" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#arlbench.core.environments.autorl_env.Environment" title="arlbench.core.environments.autorl_env.Environment"><code class="xref py py-class docutils literal notranslate"><span class="pre">Environment</span></code></a></p>
+<p>A brax-based RL environment.</p>
 <dl class="py property">
 <dt class="sig sig-object py" id="arlbench.core.environments.BraxEnv.action_space">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">action_space</span></span><a class="headerlink" href="#arlbench.core.environments.BraxEnv.action_space" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">action_space</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Space</span></em><a class="headerlink" href="#arlbench.core.environments.BraxEnv.action_space" title="Link to this definition">¶</a></dt>
+<dd><p>The action space of the environment (gymnax space).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Action space of the environment.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>gymnax.environments.spaces.Space</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="arlbench.core.environments.BraxEnv.observation_space">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">observation_space</span></span><a class="headerlink" href="#arlbench.core.environments.BraxEnv.observation_space" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">observation_space</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Space</span></em><a class="headerlink" href="#arlbench.core.environments.BraxEnv.observation_space" title="Link to this definition">¶</a></dt>
+<dd><p>The observation space of the environment (gymnax space).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Observation space of the environment.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>gymnax.environments.spaces.Space</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="arlbench.core.environments.BraxEnv.reset">
@@ -1312,32 +1523,92 @@
 <dt class="sig sig-object py" id="arlbench.core.environments.Environment">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">arlbench.core.environments.</span></span><span class="sig-name descname"><span class="pre">Environment</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">env_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">env</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_envs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/arlbench/core/environments/autorl_env.html#Environment"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.core.environments.Environment" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">ABC</span></code></p>
+<p>An abstract environment class to support various kinds of RL environments.</p>
+<dl class="simple">
+<dt>Sub-classes need to implement the following methods:</dt><dd><ul class="simple">
+<li><p>reset()</p></li>
+<li><p>step()</p></li>
+</ul>
+</dd>
+</dl>
+<p>Note: Both functions need to be fully jittable to support JAX-based RL algorithms!</p>
+<dl class="simple">
+<dt>As well as the properties:</dt><dd><ul class="simple">
+<li><p>action_space</p></li>
+<li><p>observation_space</p></li>
+</ul>
+</dd>
+</dl>
+<p>Note: These need to be gymnax spaces, not gymnasium spaces.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="arlbench.core.environments.Environment.action_space">
 <em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">action_space</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/arlbench/core/environments/autorl_env.html#Environment.action_space"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.core.environments.Environment.action_space" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>The action space of the environment (gymnax space).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Action space of the environment.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>gymnax.environments.spaces.Space</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="arlbench.core.environments.Environment.env_name">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">env_name</span></span><a class="headerlink" href="#arlbench.core.environments.Environment.env_name" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">env_name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#arlbench.core.environments.Environment.env_name" title="Link to this definition">¶</a></dt>
+<dd><p>Returns the name/id of the environments.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Environment name.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="arlbench.core.environments.Environment.n_envs">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">n_envs</span></span><a class="headerlink" href="#arlbench.core.environments.Environment.n_envs" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">n_envs</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#arlbench.core.environments.Environment.n_envs" title="Link to this definition">¶</a></dt>
+<dd><p>The number of environments.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>_description_</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="arlbench.core.environments.Environment.observation_space">
 <em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">observation_space</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/arlbench/core/environments/autorl_env.html#Environment.observation_space"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.core.environments.Environment.observation_space" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>The observation space of the environment (gymnax space).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Observation space of the environment.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>gymnax.environments.spaces.Space</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="arlbench.core.environments.Environment.reset">
 <em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">reset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rng</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/arlbench/core/environments/autorl_env.html#Environment.reset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.core.environments.Environment.reset" title="Link to this definition">¶</a></dt>
-<dd><dl class="field-list simple">
+<dd><p>Environment reset() function. Resets the internal environment state.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>rng</strong> (<em>PRNGKey</em>) – Random number generator key.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Returns a tuple containing the environment state as well as the actual return of the reset() function.</p>
+</dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code>[<code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code>, <code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code>]</span></p>
+<dd class="field-odd"><p>tuple[Any, Any]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1345,14 +1616,37 @@
 <dl class="py method">
 <dt class="sig sig-object py" id="arlbench.core.environments.Environment.sample_actions">
 <span class="sig-name descname"><span class="pre">sample_actions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rng</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/arlbench/core/environments/autorl_env.html#Environment.sample_actions"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.core.environments.Environment.sample_actions" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Samples a random action for each environment.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>rng</strong> (<em>PRNGKey</em>) – Random number generator key.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Array of sampled actions, one for each environment.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>jnp.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="arlbench.core.environments.Environment.step">
 <em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">step</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">env_state</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">action</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rng</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/arlbench/core/environments/autorl_env.html#Environment.step"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.core.environments.Environment.step" title="Link to this definition">¶</a></dt>
-<dd><dl class="field-list simple">
+<dd><p>Environment step() function. Performs a step in the environment given an action.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>env_state</strong> (<em>Any</em>) – Internal environment state.</p></li>
+<li><p><strong>action</strong> (<em>Any</em>) – Action to take.</p></li>
+<li><p><strong>rng</strong> (<em>PRNGKey</em>) – Random number generator key.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Returns a tuple containing the environment state as well as the actual return of the step() function.</p>
+</dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code>[<code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code>, <code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code>]</span></p>
+<dd class="field-odd"><p>tuple[Any, Any]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1363,15 +1657,34 @@
 <dt class="sig sig-object py" id="arlbench.core.environments.EnvpoolEnv">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">arlbench.core.environments.</span></span><span class="sig-name descname"><span class="pre">EnvpoolEnv</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">env_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_envs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seed</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">env_kwargs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/arlbench/core/environments/envpool_env.html#EnvpoolEnv"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.core.environments.EnvpoolEnv" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#arlbench.core.environments.autorl_env.Environment" title="arlbench.core.environments.autorl_env.Environment"><code class="xref py py-class docutils literal notranslate"><span class="pre">Environment</span></code></a></p>
+<p>An envpool-based RL environment.</p>
 <dl class="py property">
 <dt class="sig sig-object py" id="arlbench.core.environments.EnvpoolEnv.action_space">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">action_space</span></span><a class="headerlink" href="#arlbench.core.environments.EnvpoolEnv.action_space" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>The action space of the environment (gymnax space).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Action space of the environment.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>gymnax.environments.spaces.Space</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="arlbench.core.environments.EnvpoolEnv.observation_space">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">observation_space</span></span><a class="headerlink" href="#arlbench.core.environments.EnvpoolEnv.observation_space" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>The observation space of the environment (gymnax space).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Observation space of the environment.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>gymnax.environments.spaces.Space</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="arlbench.core.environments.EnvpoolEnv.reset">
@@ -1389,15 +1702,34 @@
 <dt class="sig sig-object py" id="arlbench.core.environments.GymnasiumEnv">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">arlbench.core.environments.</span></span><span class="sig-name descname"><span class="pre">GymnasiumEnv</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">env_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seed</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">env_kwargs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/arlbench/core/environments/gymnasium_env.html#GymnasiumEnv"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.core.environments.GymnasiumEnv" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#arlbench.core.environments.autorl_env.Environment" title="arlbench.core.environments.autorl_env.Environment"><code class="xref py py-class docutils literal notranslate"><span class="pre">Environment</span></code></a></p>
+<p>A gymnasium-based RL environment.</p>
 <dl class="py property">
 <dt class="sig sig-object py" id="arlbench.core.environments.GymnasiumEnv.action_space">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">action_space</span></span><a class="headerlink" href="#arlbench.core.environments.GymnasiumEnv.action_space" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>The action space of the environment (gymnax space).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Action space of the environment.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>gymnax.environments.spaces.Space</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="arlbench.core.environments.GymnasiumEnv.observation_space">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">observation_space</span></span><a class="headerlink" href="#arlbench.core.environments.GymnasiumEnv.observation_space" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>The observation space of the environment (gymnax space).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Observation space of the environment.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>gymnax.environments.spaces.Space</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="arlbench.core.environments.GymnasiumEnv.reset">
@@ -1425,15 +1757,34 @@
 <dt class="sig sig-object py" id="arlbench.core.environments.GymnaxEnv">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">arlbench.core.environments.</span></span><span class="sig-name descname"><span class="pre">GymnaxEnv</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">env_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_envs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">env_kwargs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/arlbench/core/environments/gymnax_env.html#GymnaxEnv"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.core.environments.GymnaxEnv" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#arlbench.core.environments.autorl_env.Environment" title="arlbench.core.environments.autorl_env.Environment"><code class="xref py py-class docutils literal notranslate"><span class="pre">Environment</span></code></a></p>
+<p>A gymnax-based RL environment.</p>
 <dl class="py property">
 <dt class="sig sig-object py" id="arlbench.core.environments.GymnaxEnv.action_space">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">action_space</span></span><a class="headerlink" href="#arlbench.core.environments.GymnaxEnv.action_space" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>The action space of the environment (gymnax space).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Action space of the environment.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>gymnax.environments.spaces.Space</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="arlbench.core.environments.GymnaxEnv.observation_space">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">observation_space</span></span><a class="headerlink" href="#arlbench.core.environments.GymnaxEnv.observation_space" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>The observation space of the environment (gymnax space).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Observation space of the environment.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>gymnax.environments.spaces.Space</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="arlbench.core.environments.GymnaxEnv.reset">
@@ -1455,9 +1806,23 @@
 <dl class="py function">
 <dt class="sig sig-object py" id="arlbench.core.environments.make_env">
 <span class="sig-prename descclassname"><span class="pre">arlbench.core.environments.</span></span><span class="sig-name descname"><span class="pre">make_env</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">env_framework</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">env_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cnn_policy</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_envs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">env_kwargs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/arlbench/core/environments/make_env.html#make_env"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.core.environments.make_env" title="Link to this definition">¶</a></dt>
-<dd><dl class="field-list simple">
+<dd><p>ARLBench equivalent to make_env in gymnasium/gymnax etc. Creates a JAX-compatible RL environment.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>env_framework</strong> (<em>str</em>) – Environment framework to use. Must be one of the following: brax, envpool, gymnasium, gymnax, xland</p></li>
+<li><p><strong>env_name</strong> (<em>str</em>) – Name/id of the environment. Has to match the env_framework.</p></li>
+<li><p><strong>cnn_policy</strong> (<em>bool</em><em>, </em><em>optional</em>) – _description_. Defaults to False.</p></li>
+<li><p><strong>n_envs</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of environments. Defaults to 1.</p></li>
+<li><p><strong>seed</strong> (<em>int</em><em>, </em><em>optional</em>) – Random seed. Defaults to 0.</p></li>
+<li><p><strong>env_kwargs</strong> (<em>dict</em><em>[</em><em>str</em><em>, </em><em>Any</em><em>] </em><em>| </em><em>None</em><em>, </em><em>optional</em>) – Keyword arguments to pass to the environment. Defaults to None.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>JAX-compatible RL environment.</p>
+</dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference internal" href="#arlbench.core.environments.autorl_env.Environment" title="arlbench.core.environments.autorl_env.Environment"><code class="xref py py-class docutils literal notranslate"><span class="pre">Environment</span></code></a> | <a class="reference internal" href="arlbench.core.wrappers.html#arlbench.core.wrappers.autorl_wrapper.AutoRLWrapper" title="arlbench.core.wrappers.autorl_wrapper.AutoRLWrapper"><code class="xref py py-class docutils literal notranslate"><span class="pre">AutoRLWrapper</span></code></a></span></p>
+<dd class="field-odd"><p><a class="reference internal" href="#arlbench.core.environments.Environment" title="arlbench.core.environments.Environment">Environment</a> | <a class="reference internal" href="arlbench.core.wrappers.html#arlbench.core.wrappers.Wrapper" title="arlbench.core.wrappers.Wrapper">Wrapper</a></p>
 </dd>
 </dl>
 </dd></dl>

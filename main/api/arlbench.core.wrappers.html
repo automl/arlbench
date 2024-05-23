@@ -32,7 +32,7 @@
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="arlbench.core.wrappers.autorl_wrapper" href="arlbench.core.wrappers.autorl_wrapper.html" />
+    <link rel="next" title="arlbench.core.wrappers.flatten_observation" href="arlbench.core.wrappers.flatten_observation.html" />
     <link rel="prev" title="arlbench.core.running_statistics" href="arlbench.core.running_statistics.html" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="docsearch:language" content="en">
@@ -246,11 +246,6 @@
        </li>
       </ul>
      </li>
-     <li class="toctree-l3">
-      <a class="reference internal" href="arlbench.plotting.html">
-       arlbench.plotting
-      </a>
-     </li>
      <li class="toctree-l3 has-children">
       <a class="reference internal" href="arlbench.utils.html">
        arlbench.utils
@@ -313,15 +308,6 @@
 <nav id="bd-toc-nav">
     <ul class="visible nav section-nav flex-column">
  <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#arlbench.core.wrappers.AutoRLWrapper">
-   <code class="docutils literal notranslate">
-    <span class="pre">
-     AutoRLWrapper
-    </span>
-   </code>
-  </a>
- </li>
- <li class="toc-h2 nav-item toc-entry">
   <a class="reference internal nav-link" href="#arlbench.core.wrappers.FlattenObservationWrapper">
    <code class="docutils literal notranslate">
     <span class="pre">
@@ -359,6 +345,15 @@
    </li>
   </ul>
  </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#arlbench.core.wrappers.Wrapper">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     Wrapper
+    </span>
+   </code>
+  </a>
+ </li>
 </ul>
 
 </nav>
@@ -383,16 +378,9 @@
   <section id="module-arlbench.core.wrappers">
 <span id="arlbench-core-wrappers"></span><h1>arlbench.core.wrappers<a class="headerlink" href="#module-arlbench.core.wrappers" title="Link to this heading">¶</a></h1>
 <dl class="py class">
-<dt class="sig sig-object py" id="arlbench.core.wrappers.AutoRLWrapper">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">arlbench.core.wrappers.</span></span><span class="sig-name descname"><span class="pre">AutoRLWrapper</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">env</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arlbench/core/wrappers/autorl_wrapper.html#AutoRLWrapper"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.core.wrappers.AutoRLWrapper" title="Link to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
-<p>Base class for AutoRL wrappers.</p>
-</dd></dl>
-
-<dl class="py class">
 <dt class="sig sig-object py" id="arlbench.core.wrappers.FlattenObservationWrapper">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">arlbench.core.wrappers.</span></span><span class="sig-name descname"><span class="pre">FlattenObservationWrapper</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">env</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arlbench/core/wrappers/flatten_observation.html#FlattenObservationWrapper"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.core.wrappers.FlattenObservationWrapper" title="Link to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="../arlbench.core.wrappers.html#arlbench.core.wrappers.autorl_wrapper.AutoRLWrapper" title="arlbench.core.wrappers.autorl_wrapper.AutoRLWrapper"><code class="xref py py-class docutils literal notranslate"><span class="pre">AutoRLWrapper</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="../arlbench.core.wrappers.html#arlbench.core.wrappers.wrapper.Wrapper" title="arlbench.core.wrappers.wrapper.Wrapper"><code class="xref py py-class docutils literal notranslate"><span class="pre">Wrapper</span></code></a></p>
 <p>Flatten the observations of the environment.</p>
 </dd></dl>
 
@@ -414,16 +402,23 @@
 
 </dd></dl>
 
+<dl class="py class">
+<dt class="sig sig-object py" id="arlbench.core.wrappers.Wrapper">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">arlbench.core.wrappers.</span></span><span class="sig-name descname"><span class="pre">Wrapper</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">env</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arlbench/core/wrappers/wrapper.html#Wrapper"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.core.wrappers.Wrapper" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Base class for ARLBench wrappers.</p>
+</dd></dl>
+
 <p class="rubric">Modules</p>
 <table class="autosummary longtable table autosummary">
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="../arlbench.core.wrappers.html#module-arlbench.core.wrappers.autorl_wrapper" title="arlbench.core.wrappers.autorl_wrapper"><code class="xref py py-obj docutils literal notranslate"><span class="pre">arlbench.core.wrappers.autorl_wrapper</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="../arlbench.core.wrappers.html#module-arlbench.core.wrappers.flatten_observation" title="arlbench.core.wrappers.flatten_observation"><code class="xref py py-obj docutils literal notranslate"><span class="pre">arlbench.core.wrappers.flatten_observation</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="../arlbench.core.wrappers.html#module-arlbench.core.wrappers.flatten_observation" title="arlbench.core.wrappers.flatten_observation"><code class="xref py py-obj docutils literal notranslate"><span class="pre">arlbench.core.wrappers.flatten_observation</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="../arlbench.core.wrappers.html#module-arlbench.core.wrappers.image_extraction" title="arlbench.core.wrappers.image_extraction"><code class="xref py py-obj docutils literal notranslate"><span class="pre">arlbench.core.wrappers.image_extraction</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="../arlbench.core.wrappers.html#module-arlbench.core.wrappers.image_extraction" title="arlbench.core.wrappers.image_extraction"><code class="xref py py-obj docutils literal notranslate"><span class="pre">arlbench.core.wrappers.image_extraction</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="../arlbench.core.wrappers.html#module-arlbench.core.wrappers.wrapper" title="arlbench.core.wrappers.wrapper"><code class="xref py py-obj docutils literal notranslate"><span class="pre">arlbench.core.wrappers.wrapper</span></code></a></p></td>
 <td><p></p></td>
 </tr>
 </tbody>
@@ -443,10 +438,10 @@
             <p class="prev-next-title">arlbench.core.running_statistics</p>
         </div>
     </a>
-    <a class='right-next' id="next-link" href="arlbench.core.wrappers.autorl_wrapper.html" title="next page">
+    <a class='right-next' id="next-link" href="arlbench.core.wrappers.flatten_observation.html" title="next page">
     <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">arlbench.core.wrappers.autorl_wrapper</p>
+        <p class="prev-next-title">arlbench.core.wrappers.flatten_observation</p>
     </div>
     <i class="fas fa-angle-right"></i>
     </a>

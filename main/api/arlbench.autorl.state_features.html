@@ -246,11 +246,6 @@
        </li>
       </ul>
      </li>
-     <li class="toctree-l3">
-      <a class="reference internal" href="arlbench.plotting.html">
-       arlbench.plotting
-      </a>
-     </li>
      <li class="toctree-l3 has-children">
       <a class="reference internal" href="arlbench.utils.html">
        arlbench.utils
@@ -330,6 +325,15 @@
      </code>
     </a>
    </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#arlbench.autorl.state_features.GradInfo.get_state_space">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       GradInfo.get_state_space()
+      </span>
+     </code>
+    </a>
+   </li>
   </ul>
  </li>
  <li class="toc-h2 nav-item toc-entry">
@@ -346,6 +350,24 @@
      <code class="docutils literal notranslate">
       <span class="pre">
        StateFeature.__call__()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#arlbench.autorl.state_features.StateFeature.__new__">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       StateFeature.__new__()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#arlbench.autorl.state_features.StateFeature.get_state_space">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       StateFeature.get_state_space()
       </span>
      </code>
     </a>
@@ -379,10 +401,10 @@
 <table class="autosummary longtable table autosummary">
 <tbody>
 <tr class="row-odd"><td><p><a class="reference internal" href="../arlbench.autorl.html#arlbench.autorl.state_features.GradInfo" title="arlbench.autorl.state_features.GradInfo"><code class="xref py py-obj docutils literal notranslate"><span class="pre">GradInfo</span></code></a>(*args, **kwargs)</p></td>
-<td><p></p></td>
+<td><p>Gradient information state feature for the AutoRL environment.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="../arlbench.autorl.html#arlbench.autorl.state_features.StateFeature" title="arlbench.autorl.state_features.StateFeature"><code class="xref py py-obj docutils literal notranslate"><span class="pre">StateFeature</span></code></a>(*args, **kwargs)</p></td>
-<td><p></p></td>
+<td><p>An abstract state features for the AutoRL environment.</p></td>
 </tr>
 </tbody>
 </table>
@@ -390,13 +412,37 @@
 <dt class="sig sig-object py" id="arlbench.autorl.state_features.GradInfo">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">arlbench.autorl.state_features.</span></span><span class="sig-name descname"><span class="pre">GradInfo</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arlbench/autorl/state_features.html#GradInfo"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.autorl.state_features.GradInfo" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="../arlbench.autorl.html#arlbench.autorl.state_features.StateFeature" title="arlbench.autorl.state_features.StateFeature"><code class="xref py py-class docutils literal notranslate"><span class="pre">StateFeature</span></code></a></p>
+<p>Gradient information state feature for the AutoRL environment. It contains the grad norm during training.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="arlbench.autorl.state_features.GradInfo.__call__">
 <em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">__call__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">train_func</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">state_features</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arlbench/autorl/state_features.html#GradInfo.__call__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.autorl.state_features.GradInfo.__call__" title="Link to this definition">¶</a></dt>
-<dd><p>Call self as a function.</p>
+<dd><p>Wraps the training function with the state feature calculation.</p>
 <dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>train_func</strong> (<em>TrainFunc</em>) – Training function to wrap.</p></li>
+<li><p><strong>state_features</strong> (<em>dict</em>) – Dictionary to store state features.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Wrapped training function.</p>
+</dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">Callable</span></code>[[<code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<a class="reference internal" href="../arlbench.core.algorithms.dqn.html#arlbench.core.algorithms.dqn.dqn.DQNRunnerState" title="arlbench.core.algorithms.dqn.dqn.DQNRunnerState"><code class="xref py py-class docutils literal notranslate"><span class="pre">DQNRunnerState</span></code></a>, <a class="reference internal" href="../arlbench.core.algorithms.ppo.html#arlbench.core.algorithms.ppo.ppo.PPORunnerState" title="arlbench.core.algorithms.ppo.ppo.PPORunnerState"><code class="xref py py-class docutils literal notranslate"><span class="pre">PPORunnerState</span></code></a>, <a class="reference internal" href="../arlbench.core.algorithms.sac.html#arlbench.core.algorithms.sac.sac.SACRunnerState" title="arlbench.core.algorithms.sac.sac.SACRunnerState"><code class="xref py py-class docutils literal notranslate"><span class="pre">SACRunnerState</span></code></a>], <code class="xref py py-class docutils literal notranslate"><span class="pre">PrioritisedTrajectoryBufferState</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code> | <code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code> | <code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code> | <code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code>], <code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code>[<a class="reference internal" href="../arlbench.core.algorithms.dqn.html#arlbench.core.algorithms.dqn.dqn.DQNState" title="arlbench.core.algorithms.dqn.dqn.DQNState"><code class="xref py py-class docutils literal notranslate"><span class="pre">DQNState</span></code></a>, <a class="reference internal" href="../arlbench.core.algorithms.dqn.html#arlbench.core.algorithms.dqn.dqn.DQNTrainingResult" title="arlbench.core.algorithms.dqn.dqn.DQNTrainingResult"><code class="xref py py-class docutils literal notranslate"><span class="pre">DQNTrainingResult</span></code></a>], <code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code>[<a class="reference internal" href="../arlbench.core.algorithms.ppo.html#arlbench.core.algorithms.ppo.ppo.PPOState" title="arlbench.core.algorithms.ppo.ppo.PPOState"><code class="xref py py-class docutils literal notranslate"><span class="pre">PPOState</span></code></a>, <a class="reference internal" href="../arlbench.core.algorithms.ppo.html#arlbench.core.algorithms.ppo.ppo.PPOTrainingResult" title="arlbench.core.algorithms.ppo.ppo.PPOTrainingResult"><code class="xref py py-class docutils literal notranslate"><span class="pre">PPOTrainingResult</span></code></a>], <code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code>[<a class="reference internal" href="../arlbench.core.algorithms.sac.html#arlbench.core.algorithms.sac.sac.SACState" title="arlbench.core.algorithms.sac.sac.SACState"><code class="xref py py-class docutils literal notranslate"><span class="pre">SACState</span></code></a>, <a class="reference internal" href="../arlbench.core.algorithms.sac.html#arlbench.core.algorithms.sac.sac.SACTrainingResult" title="arlbench.core.algorithms.sac.sac.SACTrainingResult"><code class="xref py py-class docutils literal notranslate"><span class="pre">SACTrainingResult</span></code></a>]]]</span></p>
+<dd class="field-odd"><p>TrainFunc</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="arlbench.autorl.state_features.GradInfo.get_state_space">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_state_space</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arlbench/autorl/state_features.html#GradInfo.get_state_space"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.autorl.state_features.GradInfo.get_state_space" title="Link to this definition">¶</a></dt>
+<dd><p>Returns a dictionary containing the specification of the state feature.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Specification.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>dict</p>
 </dd>
 </dl>
 </dd></dl>
@@ -407,13 +453,55 @@
 <dt class="sig sig-object py" id="arlbench.autorl.state_features.StateFeature">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">arlbench.autorl.state_features.</span></span><span class="sig-name descname"><span class="pre">StateFeature</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arlbench/autorl/state_features.html#StateFeature"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.autorl.state_features.StateFeature" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">ABC</span></code></p>
+<p>An abstract state features for the AutoRL environment.</p>
+<p>It can be wrapped around the training function to calculate the state features.
+We do this be overriding the __new__() function. It allows us to imitate
+the behaviour of a basic function while keeping the advantages of a static class.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="arlbench.autorl.state_features.StateFeature.__call__">
-<em class="property"><span class="pre">abstract</span><span class="w"> </span><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">__call__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">train_func</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">objectives</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arlbench/autorl/state_features.html#StateFeature.__call__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.autorl.state_features.StateFeature.__call__" title="Link to this definition">¶</a></dt>
-<dd><p>Call self as a function.</p>
+<em class="property"><span class="pre">abstract</span><span class="w"> </span><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">__call__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">train_func</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">state_features</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arlbench/autorl/state_features.html#StateFeature.__call__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.autorl.state_features.StateFeature.__call__" title="Link to this definition">¶</a></dt>
+<dd><p>Wraps the training function with the state feature calculation.</p>
 <dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>train_func</strong> (<em>TrainFunc</em>) – Training function to wrap.</p></li>
+<li><p><strong>state_features</strong> (<em>dict</em>) – Dictionary to store state features.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Wrapped training function.</p>
+</dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">Callable</span></code>[[<code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<a class="reference internal" href="../arlbench.core.algorithms.dqn.html#arlbench.core.algorithms.dqn.dqn.DQNRunnerState" title="arlbench.core.algorithms.dqn.dqn.DQNRunnerState"><code class="xref py py-class docutils literal notranslate"><span class="pre">DQNRunnerState</span></code></a>, <a class="reference internal" href="../arlbench.core.algorithms.ppo.html#arlbench.core.algorithms.ppo.ppo.PPORunnerState" title="arlbench.core.algorithms.ppo.ppo.PPORunnerState"><code class="xref py py-class docutils literal notranslate"><span class="pre">PPORunnerState</span></code></a>, <a class="reference internal" href="../arlbench.core.algorithms.sac.html#arlbench.core.algorithms.sac.sac.SACRunnerState" title="arlbench.core.algorithms.sac.sac.SACRunnerState"><code class="xref py py-class docutils literal notranslate"><span class="pre">SACRunnerState</span></code></a>], <code class="xref py py-class docutils literal notranslate"><span class="pre">PrioritisedTrajectoryBufferState</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code> | <code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code> | <code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code> | <code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code>], <code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code>[<a class="reference internal" href="../arlbench.core.algorithms.dqn.html#arlbench.core.algorithms.dqn.dqn.DQNState" title="arlbench.core.algorithms.dqn.dqn.DQNState"><code class="xref py py-class docutils literal notranslate"><span class="pre">DQNState</span></code></a>, <a class="reference internal" href="../arlbench.core.algorithms.dqn.html#arlbench.core.algorithms.dqn.dqn.DQNTrainingResult" title="arlbench.core.algorithms.dqn.dqn.DQNTrainingResult"><code class="xref py py-class docutils literal notranslate"><span class="pre">DQNTrainingResult</span></code></a>], <code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code>[<a class="reference internal" href="../arlbench.core.algorithms.ppo.html#arlbench.core.algorithms.ppo.ppo.PPOState" title="arlbench.core.algorithms.ppo.ppo.PPOState"><code class="xref py py-class docutils literal notranslate"><span class="pre">PPOState</span></code></a>, <a class="reference internal" href="../arlbench.core.algorithms.ppo.html#arlbench.core.algorithms.ppo.ppo.PPOTrainingResult" title="arlbench.core.algorithms.ppo.ppo.PPOTrainingResult"><code class="xref py py-class docutils literal notranslate"><span class="pre">PPOTrainingResult</span></code></a>], <code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code>[<a class="reference internal" href="../arlbench.core.algorithms.sac.html#arlbench.core.algorithms.sac.sac.SACState" title="arlbench.core.algorithms.sac.sac.SACState"><code class="xref py py-class docutils literal notranslate"><span class="pre">SACState</span></code></a>, <a class="reference internal" href="../arlbench.core.algorithms.sac.html#arlbench.core.algorithms.sac.sac.SACTrainingResult" title="arlbench.core.algorithms.sac.sac.SACTrainingResult"><code class="xref py py-class docutils literal notranslate"><span class="pre">SACTrainingResult</span></code></a>]]]</span></p>
+<dd class="field-odd"><p>TrainFunc</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="arlbench.autorl.state_features.StateFeature.__new__">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">__new__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cls</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arlbench/autorl/state_features.html#StateFeature.__new__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.autorl.state_features.StateFeature.__new__" title="Link to this definition">¶</a></dt>
+<dd><p>Creates a new instance of this state feature and directly wraps the train function.</p>
+<p>This is done by first creating an object and subsequently calling self.__call__().</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Wrapped training function.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>TrainFunc</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="arlbench.autorl.state_features.StateFeature.get_state_space">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_state_space</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arlbench/autorl/state_features.html#StateFeature.get_state_space"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.autorl.state_features.StateFeature.get_state_space" title="Link to this definition">¶</a></dt>
+<dd><p>Returns a dictionary containing the specification of the state feature.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Specification.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>dict</p>
 </dd>
 </dl>
 </dd></dl>

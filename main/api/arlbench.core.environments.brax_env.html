@@ -246,11 +246,6 @@
        </li>
       </ul>
      </li>
-     <li class="toctree-l3">
-      <a class="reference internal" href="arlbench.plotting.html">
-       arlbench.plotting
-      </a>
-     </li>
      <li class="toctree-l3 has-children">
       <a class="reference internal" href="arlbench.utils.html">
        arlbench.utils
@@ -320,6 +315,26 @@
     </span>
    </code>
   </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#arlbench.core.environments.brax_env.BraxEnv.action_space">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       BraxEnv.action_space
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#arlbench.core.environments.brax_env.BraxEnv.observation_space">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       BraxEnv.observation_space
+      </span>
+     </code>
+    </a>
+   </li>
+  </ul>
  </li>
 </ul>
 
@@ -348,7 +363,7 @@
 <table class="autosummary longtable table autosummary">
 <tbody>
 <tr class="row-odd"><td><p><a class="reference internal" href="../arlbench.core.environments.html#arlbench.core.environments.brax_env.BraxEnv" title="arlbench.core.environments.brax_env.BraxEnv"><code class="xref py py-obj docutils literal notranslate"><span class="pre">BraxEnv</span></code></a>(env_name, n_envs[, env_kwargs])</p></td>
-<td><p></p></td>
+<td><p>A brax-based RL environment.</p></td>
 </tr>
 </tbody>
 </table>
@@ -356,6 +371,35 @@
 <dt class="sig sig-object py" id="arlbench.core.environments.brax_env.BraxEnv">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">arlbench.core.environments.brax_env.</span></span><span class="sig-name descname"><span class="pre">BraxEnv</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">env_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_envs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">env_kwargs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arlbench/core/environments/brax_env.html#BraxEnv"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.core.environments.brax_env.BraxEnv" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="../arlbench.core.environments.html#arlbench.core.environments.autorl_env.Environment" title="arlbench.core.environments.autorl_env.Environment"><code class="xref py py-class docutils literal notranslate"><span class="pre">Environment</span></code></a></p>
+<p>A brax-based RL environment.</p>
+<dl class="py property">
+<dt class="sig sig-object py" id="arlbench.core.environments.brax_env.BraxEnv.action_space">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">action_space</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Space</span></em><a class="headerlink" href="#arlbench.core.environments.brax_env.BraxEnv.action_space" title="Link to this definition">¶</a></dt>
+<dd><p>The action space of the environment (gymnax space).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Action space of the environment.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>gymnax.environments.spaces.Space</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="arlbench.core.environments.brax_env.BraxEnv.observation_space">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">observation_space</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Space</span></em><a class="headerlink" href="#arlbench.core.environments.brax_env.BraxEnv.observation_space" title="Link to this definition">¶</a></dt>
+<dd><p>The observation space of the environment (gymnax space).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Observation space of the environment.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>gymnax.environments.spaces.Space</p>
+</dd>
+</dl>
+</dd></dl>
+
 </dd></dl>
 
 </section>

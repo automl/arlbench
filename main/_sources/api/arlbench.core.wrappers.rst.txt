@@ -27,7 +27,7 @@ arlbench.core.wrappers
    :toctree:
    :recursive:
 
-   arlbench.core.wrappers.autorl_wrapper
    arlbench.core.wrappers.flatten_observation
    arlbench.core.wrappers.image_extraction
+   arlbench.core.wrappers.wrapper
 

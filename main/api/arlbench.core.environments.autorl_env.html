@@ -246,11 +246,6 @@
        </li>
       </ul>
      </li>
-     <li class="toctree-l3">
-      <a class="reference internal" href="arlbench.plotting.html">
-       arlbench.plotting
-      </a>
-     </li>
      <li class="toctree-l3 has-children">
       <a class="reference internal" href="arlbench.utils.html">
        arlbench.utils
@@ -320,6 +315,71 @@
     </span>
    </code>
   </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#arlbench.core.environments.autorl_env.Environment.action_space">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       Environment.action_space()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#arlbench.core.environments.autorl_env.Environment.env_name">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       Environment.env_name
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#arlbench.core.environments.autorl_env.Environment.n_envs">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       Environment.n_envs
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#arlbench.core.environments.autorl_env.Environment.observation_space">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       Environment.observation_space()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#arlbench.core.environments.autorl_env.Environment.reset">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       Environment.reset()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#arlbench.core.environments.autorl_env.Environment.sample_actions">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       Environment.sample_actions()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#arlbench.core.environments.autorl_env.Environment.step">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       Environment.step()
+      </span>
+     </code>
+    </a>
+   </li>
+  </ul>
  </li>
 </ul>
 
@@ -348,7 +408,7 @@
 <table class="autosummary longtable table autosummary">
 <tbody>
 <tr class="row-odd"><td><p><a class="reference internal" href="../arlbench.core.environments.html#arlbench.core.environments.autorl_env.Environment" title="arlbench.core.environments.autorl_env.Environment"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Environment</span></code></a>(env_name, env, n_envs[, seed])</p></td>
-<td><p></p></td>
+<td><p>An abstract environment class to support various kinds of RL environments.</p></td>
 </tr>
 </tbody>
 </table>
@@ -356,6 +416,134 @@
 <dt class="sig sig-object py" id="arlbench.core.environments.autorl_env.Environment">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">arlbench.core.environments.autorl_env.</span></span><span class="sig-name descname"><span class="pre">Environment</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">env_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">env</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_envs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arlbench/core/environments/autorl_env.html#Environment"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.core.environments.autorl_env.Environment" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">ABC</span></code></p>
+<p>An abstract environment class to support various kinds of RL environments.</p>
+<dl class="simple">
+<dt>Sub-classes need to implement the following methods:</dt><dd><ul class="simple">
+<li><p>reset()</p></li>
+<li><p>step()</p></li>
+</ul>
+</dd>
+</dl>
+<p>Note: Both functions need to be fully jittable to support JAX-based RL algorithms!</p>
+<dl class="simple">
+<dt>As well as the properties:</dt><dd><ul class="simple">
+<li><p>action_space</p></li>
+<li><p>observation_space</p></li>
+</ul>
+</dd>
+</dl>
+<p>Note: These need to be gymnax spaces, not gymnasium spaces.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="arlbench.core.environments.autorl_env.Environment.action_space">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">action_space</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arlbench/core/environments/autorl_env.html#Environment.action_space"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.core.environments.autorl_env.Environment.action_space" title="Link to this definition">¶</a></dt>
+<dd><p>The action space of the environment (gymnax space).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Action space of the environment.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>gymnax.environments.spaces.Space</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="arlbench.core.environments.autorl_env.Environment.env_name">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">env_name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#arlbench.core.environments.autorl_env.Environment.env_name" title="Link to this definition">¶</a></dt>
+<dd><p>Returns the name/id of the environments.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Environment name.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="arlbench.core.environments.autorl_env.Environment.n_envs">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">n_envs</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#arlbench.core.environments.autorl_env.Environment.n_envs" title="Link to this definition">¶</a></dt>
+<dd><p>The number of environments.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>_description_</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="arlbench.core.environments.autorl_env.Environment.observation_space">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">observation_space</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arlbench/core/environments/autorl_env.html#Environment.observation_space"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.core.environments.autorl_env.Environment.observation_space" title="Link to this definition">¶</a></dt>
+<dd><p>The observation space of the environment (gymnax space).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Observation space of the environment.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>gymnax.environments.spaces.Space</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="arlbench.core.environments.autorl_env.Environment.reset">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">reset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rng</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arlbench/core/environments/autorl_env.html#Environment.reset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.core.environments.autorl_env.Environment.reset" title="Link to this definition">¶</a></dt>
+<dd><p>Environment reset() function. Resets the internal environment state.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>rng</strong> (<em>PRNGKey</em>) – Random number generator key.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Returns a tuple containing the environment state as well as the actual return of the reset() function.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>tuple[Any, Any]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="arlbench.core.environments.autorl_env.Environment.sample_actions">
+<span class="sig-name descname"><span class="pre">sample_actions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rng</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arlbench/core/environments/autorl_env.html#Environment.sample_actions"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.core.environments.autorl_env.Environment.sample_actions" title="Link to this definition">¶</a></dt>
+<dd><p>Samples a random action for each environment.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>rng</strong> (<em>PRNGKey</em>) – Random number generator key.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Array of sampled actions, one for each environment.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>jnp.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="arlbench.core.environments.autorl_env.Environment.step">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">step</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">env_state</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">action</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rng</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arlbench/core/environments/autorl_env.html#Environment.step"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.core.environments.autorl_env.Environment.step" title="Link to this definition">¶</a></dt>
+<dd><p>Environment step() function. Performs a step in the environment given an action.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>env_state</strong> (<em>Any</em>) – Internal environment state.</p></li>
+<li><p><strong>action</strong> (<em>Any</em>) – Action to take.</p></li>
+<li><p><strong>rng</strong> (<em>PRNGKey</em>) – Random number generator key.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Returns a tuple containing the environment state as well as the actual return of the step() function.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>tuple[Any, Any]</p>
+</dd>
+</dl>
+</dd></dl>
+
 </dd></dl>
 
 </section>

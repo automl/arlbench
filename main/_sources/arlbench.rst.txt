@@ -9,7 +9,6 @@ Subpackages
 
    arlbench.autorl
    arlbench.core
-   arlbench.plotting
    arlbench.utils
 
 Submodules

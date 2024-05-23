@@ -243,11 +243,6 @@
        </li>
       </ul>
      </li>
-     <li class="toctree-l3">
-      <a class="reference internal" href="../../../api/arlbench.plotting.html">
-       arlbench.plotting
-      </a>
-     </li>
      <li class="toctree-l3 has-children">
       <a class="reference internal" href="../../../api/arlbench.utils.html">
        arlbench.utils
@@ -460,14 +455,10 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_observation_space</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_obs_space</span><span class="p">()</span>
 
     <span class="k">def</span> <span class="nf">_get_objectives</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">Objective</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;_summary_.</span>
-
-<span class="sd">        Raises:</span>
-<span class="sd">            ValueError: _description_</span>
-<span class="sd">            ValueError: _description_</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Maps the objectives as list of strings to a sorted list of the actual objective classes.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            list[Objective]: _description_</span>
+<span class="sd">            list[Objective]: List of objective classes in the correct order to be wrapped around the train function.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="p">[</span><span class="s2">&quot;objectives&quot;</span><span class="p">])</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Please select at least one optimization objective.&quot;</span><span class="p">)</span>
@@ -482,17 +473,15 @@
         <span class="c1"># Ensure right order of objectives, e.g. runtime is wrapped first</span>
         <span class="n">objectives</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">objectives</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">o</span><span class="p">:</span> <span class="n">o</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
 
-        <span class="c1"># Extract online objective classes</span>
+        <span class="c1"># Now we are extracting the actual classes for each objective</span>
+        <span class="c1"># They are used to wrap the train function and compute the objective</span>
         <span class="k">return</span> <span class="p">[</span><span class="n">o</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">o</span> <span class="ow">in</span> <span class="n">objectives</span><span class="p">]</span>
 
     <span class="k">def</span> <span class="nf">_get_state_features</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">StateFeature</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;_summary_.</span>
-
-<span class="sd">        Raises:</span>
-<span class="sd">            ValueError: _description_</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Maps the state features as list of strings to a sorted list of the actual state feature classes.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            list[StateFeature]: _description_</span>
+<span class="sd">            list[StateFeature]: List of state features classes in the correct order to be wrapped around the train function.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">state_features</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">cfg_state_features</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="p">[</span><span class="s2">&quot;state_features&quot;</span><span class="p">]))</span>
@@ -503,10 +492,10 @@
         <span class="k">return</span> <span class="n">state_features</span>
 
     <span class="k">def</span> <span class="nf">_get_obs_space</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">gymnasium</span><span class="o">.</span><span class="n">spaces</span><span class="o">.</span><span class="n">Dict</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;_summary_.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns the state feature space as gymnasium space.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            gymnasium.spaces.Dict: _description_</span>
+<span class="sd">            gymnasium.spaces.Dict: Gymnasium space.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">obs_space</span> <span class="o">=</span> <span class="p">{</span><span class="n">f</span><span class="o">.</span><span class="n">KEY</span><span class="p">:</span> <span class="n">f</span><span class="o">.</span><span class="n">get_state_space</span><span class="p">()</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_state_features</span><span class="p">}</span>
 
@@ -517,10 +506,10 @@
         <span class="k">return</span> <span class="n">gymnasium</span><span class="o">.</span><span class="n">spaces</span><span class="o">.</span><span class="n">Dict</span><span class="p">(</span><span class="n">obs_space</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_step</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;_summary_.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Fundamental step behaviour, handles truncation.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            bool: _description_</span>
+<span class="sd">            bool: Whether the episode is done.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_c_step</span> <span class="o">+=</span> <span class="mi">1</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_c_step</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="p">[</span><span class="s2">&quot;n_steps&quot;</span><span class="p">]:</span>
@@ -528,10 +517,10 @@
         <span class="k">return</span> <span class="kc">False</span>
 
     <span class="k">def</span> <span class="nf">_train</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">train_kw_args</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">TrainReturnT</span><span class="p">,</span> <span class="nb">dict</span><span class="p">,</span> <span class="nb">dict</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;_summary_.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Performs the RL training and returns the result as well as objectives and state features.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            tuple[TrainReturnT, dict, dict]: _description_</span>
+<span class="sd">            tuple[TrainReturnT, dict, dict]: Tuple of training result, objectives, and observation (state features).</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">_algorithm_state</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
 
@@ -539,16 +528,17 @@
         <span class="n">obs</span> <span class="o">=</span> <span class="p">{}</span>  <span class="c1"># state features are stored here</span>
         <span class="n">train_func</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_algorithm</span><span class="o">.</span><span class="n">train</span>
 
+        <span class="c1"># The objectives are wrapped first since runtime should be accurate</span>
         <span class="k">for</span> <span class="n">o</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_objectives</span><span class="p">:</span>
             <span class="n">train_func</span> <span class="o">=</span> <span class="n">o</span><span class="p">(</span><span class="n">train_func</span><span class="p">,</span> <span class="n">objectives</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="p">[</span><span class="s2">&quot;optimize_objectives&quot;</span><span class="p">])</span>
 
+        <span class="c1"># Then we wrap the state features around the training function</span>
         <span class="n">obs</span><span class="p">[</span><span class="s2">&quot;steps&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">_c_step</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_total_training_steps</span><span class="p">])</span>
         <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_state_features</span><span class="p">:</span>
             <span class="n">train_func</span> <span class="o">=</span> <span class="n">f</span><span class="p">(</span><span class="n">train_func</span><span class="p">,</span> <span class="n">obs</span><span class="p">)</span>
 
         <span class="c1"># Track configuration + budgets using deepcave (https://github.com/automl/DeepCAVE)</span>
-        <span class="c1"># TODO test</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;deep_cave&quot;</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;deep_cave&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">):</span>
             <span class="kn">from</span> <span class="nn">deepcave</span> <span class="kn">import</span> <span class="n">Objective</span><span class="p">,</span> <span class="n">Recorder</span>
 
             <span class="n">dc_objectives</span> <span class="o">=</span> <span class="p">[</span><span class="n">Objective</span><span class="p">(</span><span class="o">**</span><span class="n">o</span><span class="o">.</span><span class="n">get_spec</span><span class="p">())</span> <span class="k">for</span> <span class="n">o</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_objectives</span><span class="p">]</span>
@@ -563,6 +553,11 @@
         <span class="k">return</span> <span class="n">result</span><span class="p">,</span> <span class="n">objectives</span><span class="p">,</span> <span class="n">obs</span>
 
     <span class="k">def</span> <span class="nf">_make_algorithm</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Algorithm</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Instantiated the RL algorithm given the current AutoRL config and hyperparameter configuration.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Algorithm: RL algorithm instance. </span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_algorithm_cls</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_hpo_config</span><span class="p">,</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_env</span><span class="p">,</span>
@@ -585,20 +580,20 @@
         <span class="n">n_eval_episodes</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">seed</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">ObservationT</span><span class="p">,</span> <span class="n">ObjectivesT</span><span class="p">,</span> <span class="nb">bool</span><span class="p">,</span> <span class="nb">bool</span><span class="p">,</span> <span class="n">InfoT</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;_summary_.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Performs one iteration of RL training.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            action (Configuration | dict): _description_</span>
-<span class="sd">            n_total_timesteps (int | None, optional): _description_. Defaults to None.</span>
-<span class="sd">            n_eval_steps (int | None, optional): _description_. Defaults to None.</span>
-<span class="sd">            n_eval_episodes (int | None, optional): _description_. Defaults to None.</span>
-<span class="sd">            seed (int | None, optional): _description_. Defaults to None.</span>
+<span class="sd">            action (Configuration | dict): Hyperparameter configuration to use for training.</span>
+<span class="sd">            n_total_timesteps (int | None, optional): Number of total training steps. Defaults to None.</span>
+<span class="sd">            n_eval_steps (int | None, optional): Number of evaluations during training. Defaults to None.</span>
+<span class="sd">            n_eval_episodes (int | None, optional): Number of episodes to run per evalution during training. Defaults to None.</span>
+<span class="sd">            seed (int | None, optional): Random seed. Defaults to None. If None, seed of the AutoRL environment is used.</span>
 
 <span class="sd">        Raises:</span>
 <span class="sd">            ValueError: Error is raised if step() is called before reset() was called.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            tuple[ObservationT, ObjectivesT, bool, bool, InfoT]: _description_</span>
+<span class="sd">            tuple[ObservationT, ObjectivesT, bool, bool, InfoT]: State information, objectives, terminated, truncated, additional information.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">action</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>  <span class="c1"># no action provided</span>
             <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
@@ -622,8 +617,9 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_algorithm</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_make_algorithm</span><span class="p">()</span>
 
         <span class="c1"># First, we check if there is a checkpoint to load. If not, we have to check </span>
-        <span class="c1"># whether this is the first iteration, i.e., call of env.step(). Then we have to initialiaze</span>
-        <span class="c1"># the algorithm state. Otherwise, we are using the state from previous iteration(s)</span>
+        <span class="c1"># whether this is the first iteration, i.e., call of env.step(). In that case,</span>
+        <span class="c1"># we have to initialiaze the algorithm state.</span>
+        <span class="c1"># Otherwise, we are using the state from previous iteration(s)</span>
         <span class="k">if</span> <span class="n">checkpoint_path</span><span class="p">:</span>
             <span class="k">try</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_algorithm_state</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_load</span><span class="p">(</span><span class="n">checkpoint_path</span><span class="p">,</span> <span class="n">seed</span><span class="p">)</span>
@@ -677,37 +673,29 @@
 <div class="viewcode-block" id="AutoRLEnv.reset">
 <a class="viewcode-back" href="../../../arlbench.autorl.html#arlbench.AutoRLEnv.reset">[docs]</a>
     <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span>
-        <span class="n">seed</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="bp">self</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">ObservationT</span><span class="p">,</span> <span class="n">InfoT</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;_summary_.</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            seed (int | None, optional): _description_. Defaults to None.</span>
-<span class="sd">            checkpoint_path (str | None, optional): _description_. Defaults to None.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Resets the AutoRL environment and current algorithm state.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            tuple[ObservationT, InfoT]: _description_</span>
+<span class="sd">            tuple[ObservationT, InfoT]: Empty observation and state information.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_done</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_c_step</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_c_episode</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_algorithm_state</span> <span class="o">=</span> <span class="kc">None</span>
 
         <span class="k">return</span> <span class="p">{},</span> <span class="p">{}</span></div>
 
 
     <span class="k">def</span> <span class="nf">_save</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tag</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;_summary_.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Saves the current algorithm state and training result.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            tag (str | None, optional): _description_. Defaults to None.</span>
-
-<span class="sd">        Raises:</span>
-<span class="sd">            ValueError: _description_</span>
-<span class="sd">            ValueError: _description_</span>
+<span class="sd">            tag (str | None, optional): Checkpoint tag. Defaults to None.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            str: _description_</span>
+<span class="sd">            str: Checkpoint path.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_algorithm_state</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s2">&quot;Agent not initialized. Not able to save agent state.&quot;</span><span class="p">)</span>
@@ -731,55 +719,54 @@
         <span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_load</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">checkpoint_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">seed</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AlgorithmState</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;_summary_.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Load the algorithm state from a checkpoint.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            checkpoint_path (str): _description_</span>
-<span class="sd">            seed (int | None, optional): _description_. Defaults to None.</span>
+<span class="sd">            checkpoint_path (str): Path of the checkpoint to load.</span>
+<span class="sd">            seed (int | None, optional): Random seed to use for algorithm initialization. Defaults to None.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">init_rng</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">PRNGKey</span><span class="p">(</span><span class="n">seed</span><span class="p">)</span>
         <span class="n">algorithm_state</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_algorithm</span><span class="o">.</span><span class="n">init</span><span class="p">(</span><span class="n">init_rng</span><span class="p">)</span>
         <span class="p">(</span>
             <span class="p">(</span>
-                <span class="n">hpo_config</span><span class="p">,</span>
+                <span class="n">_</span><span class="p">,</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_c_step</span><span class="p">,</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_c_episode</span><span class="p">,</span>
             <span class="p">),</span>
             <span class="n">algorithm_kw_args</span><span class="p">,</span>
         <span class="p">)</span> <span class="o">=</span> <span class="n">Checkpointer</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">checkpoint_path</span><span class="p">,</span> <span class="n">algorithm_state</span><span class="p">)</span>
-        <span class="c1"># hpo_config = Configuration(self._config_space, hpo_config)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_algorithm</span><span class="o">.</span><span class="n">init</span><span class="p">(</span><span class="n">init_rng</span><span class="p">,</span> <span class="o">**</span><span class="n">algorithm_kw_args</span><span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">action_space</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">gymnasium</span><span class="o">.</span><span class="n">spaces</span><span class="o">.</span><span class="n">Space</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;_summary_.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns the hyperparameter configuration spaces as gymnasium space.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            gymnasium.spaces.Space: _description_</span>
+<span class="sd">            gymnasium.spaces.Space: Hyperparameter configuration space.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">config_space_to_gymnasium_space</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_config_space</span><span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">config_space</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ConfigurationSpace</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;_summary_.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns the hyperparameter configuration spaces as ConfigSpace.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            ConfigurationSpace: _description_</span>
+<span class="sd">            ConfigurationSpace: Hyperparameter configuration space.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config_space</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">observation_space</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">gymnasium</span><span class="o">.</span><span class="n">spaces</span><span class="o">.</span><span class="n">Space</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;_summary_.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns a gymnasium spaces of state features (observations).</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            gymnasium.spaces.Space: _description_</span>
+<span class="sd">            gymnasium.spaces.Space: Gynasium space.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_observation_space</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">hpo_config</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Configuration</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;_summary_.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns .</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            Configuration: _description_</span>
@@ -788,44 +775,41 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">checkpoints</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;_summary_.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns a list of created checkpoints for this AutoRL environment.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            list[str]: _description_</span>
+<span class="sd">            list[str]: List of checkpoint paths.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_checkpoints</span><span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">objectives</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;_summary_.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns configured objectives.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            list[str]: _description_</span>
+<span class="sd">            list[str]: List of objectives.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="p">[</span><span class="n">o</span><span class="o">.</span><span class="vm">__name__</span> <span class="k">for</span> <span class="n">o</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_objectives</span><span class="p">]</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">config</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;_summary_.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns the AutoRL configuration.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            dict: _description_</span>
+<span class="sd">            dict: AutoRL configuration.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
 
 <div class="viewcode-block" id="AutoRLEnv.eval">
 <a class="viewcode-back" href="../../../arlbench.autorl.html#arlbench.AutoRLEnv.eval">[docs]</a>
     <span class="k">def</span> <span class="nf">eval</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">num_eval_episodes</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;_summary_.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Evaluates the algorithm using its current training state.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            num_eval_episodes (int): _description_</span>
-
-<span class="sd">        Raises:</span>
-<span class="sd">            ValueError: _description_</span>
+<span class="sd">            num_eval_episodes (int): Number of evaluation episodes to run.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            np.ndarray: _description_</span>
+<span class="sd">            np.ndarray: Array of evaluation return for each episode.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_algorithm</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">_algorithm_state</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Agent not initialized. Call reset() first.&quot;</span><span class="p">)</span>

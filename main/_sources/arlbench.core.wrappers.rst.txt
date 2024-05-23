@@ -4,14 +4,6 @@ arlbench.core.wrappers package
 Submodules
 ----------
 
-arlbench.core.wrappers.autorl\_wrapper module
----------------------------------------------
-
-.. automodule:: arlbench.core.wrappers.autorl_wrapper
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
 arlbench.core.wrappers.flatten\_observation module
 --------------------------------------------------
 
@@ -24,6 +16,14 @@ arlbench.core.wrappers.image\_extraction module
 -----------------------------------------------
 
 .. automodule:: arlbench.core.wrappers.image_extraction
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+arlbench.core.wrappers.wrapper module
+-------------------------------------
+
+.. automodule:: arlbench.core.wrappers.wrapper
    :members:
    :undoc-members:
    :show-inheritance:
