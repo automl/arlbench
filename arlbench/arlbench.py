@@ -10,17 +10,20 @@ from .autorl import AutoRLEnv
 
 def run_arlbench(cfg: DictConfig, logger: Logger | None = None) -> float | tuple | list:
     """Run ARLBench using the given config and return objective(s)."""
+    # We check if we need to load a checkpoint for HyperPBT
+    # If so, we load the first episode and first step of ARLBench since we always run only
+    # one iteration
     if "load" in cfg and cfg.load:
-        print(f"### ATTEMPTING TO LOAD {cfg.load} ###")
         checkpoint_path = os.path.join(
             cfg.load,
             cfg.autorl.checkpoint_name,
             "default_checkpoint_c_episode_1_step_1",
         )
-        print(f"### CHECKPOINT PATH = {checkpoint_path} ###")
     else:
         checkpoint_path = None
 
+    # We check if we need to save a checkpoint for HyperPBT
+    # If so, we need to adapt the autorl config accordingly
     if "save" in cfg and cfg.save:
         cfg.autorl.checkpoint_dir = str(cfg.save).replace(".pt", "")
         if cfg.algorithm == "PPO":
@@ -28,6 +31,7 @@ def run_arlbench(cfg: DictConfig, logger: Logger | None = None) -> float | tuple
         else:
             cfg.autorl.checkpoint = ["opt_state", "params", "buffer"]
 
+    # Here, we define how the AutoRLEnv should behave
     env = AutoRLEnv(cfg.autorl)
     _ = env.reset()
 
@@ -39,10 +43,8 @@ def run_arlbench(cfg: DictConfig, logger: Logger | None = None) -> float | tuple
     if logger:
         logger.info("Training finished.")
 
+    # Additionally, we store the evaluation rewards we had during training
     info["train_info_df"].to_csv("evaluation.csv", index=False)
-
-    if "reward_curves" in cfg and cfg.reward_curves:
-        return list(info["train_info_df"]["returns"])
 
     if len(objectives) == 1:
         return objectives[next(iter(objectives.keys()))]

@@ -3,19 +3,23 @@
 from __future__ import annotations
 
 import warnings
+
 warnings.filterwarnings("ignore")
 import logging
 import sys
 import traceback
+from typing import TYPE_CHECKING
 
 import hydra
 import jax
 from arlbench.autorl import AutoRLEnv
-from omegaconf import DictConfig
+
+if TYPE_CHECKING:
+    from omegaconf import DictConfig
+
 
 def run(cfg: DictConfig, logger: logging.Logger):
     """Gradient-based learning rate schedule. Spike the learning rate for one step if gradients stagnate."""
-
     # Initialize environment with general config
     env = AutoRLEnv(cfg.autorl)
 

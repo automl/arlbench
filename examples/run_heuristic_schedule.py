@@ -3,19 +3,24 @@
 from __future__ import annotations
 
 import warnings
+
 warnings.filterwarnings("ignore")
 import logging
 import sys
 import traceback
+from typing import TYPE_CHECKING
 
 import hydra
 import jax
 from arlbench.autorl import AutoRLEnv
-from omegaconf import DictConfig
+
+if TYPE_CHECKING:
+    from omegaconf import DictConfig
+
 
 def run(cfg: DictConfig, logger: logging.Logger):
     """Heuristic-based exploration schedule. Decrease epsilon in DQN when evaluation performance reaches a certain threshold."""
-    logger.info(f"Starting run with epsilon value {str(cfg.hp_config.initial_epsilon)}")
+    logger.info(f"Starting run with epsilon value {cfg.hp_config.initial_epsilon!s}")
 
     # Initialize environment with general config
     env = AutoRLEnv(cfg.autorl)
@@ -30,7 +35,7 @@ def run(cfg: DictConfig, logger: logging.Logger):
             cfg.hp_config.target_epsilon = 0.7
             cfg.hp_config.initial_epsilon = 0.7
             logger.info("Agent reached performance threshold, decreasing epsilon to 0.7")
-    
+
     logger.info(f"Training finished with a total reward of {objectives['reward_mean']}")
 
 @hydra.main(version_base=None, config_path="configs", config_name="epsilon_heuristic")

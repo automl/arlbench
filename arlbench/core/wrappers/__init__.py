@@ -1,5 +1,4 @@
-from .wrapper import Wrapper
 from .flatten_observation import FlattenObservationWrapper
-from .image_extraction import ImageExtractionWrapper
+from .wrapper import Wrapper
 
-__all__ = ["Wrapper", "ImageExtractionWrapper", "FlattenObservationWrapper"]
+__all__ = ["Wrapper", "FlattenObservationWrapper"]

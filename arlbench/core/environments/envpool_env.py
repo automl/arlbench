@@ -129,7 +129,7 @@ def numpy_to_jax(x: np.ndarray) -> jnp.ndarray:
 
 class EnvpoolEnv(Environment):
     """An envpool-based RL environment."""
-    
+
     def __init__(
         self,
         env_name: str,
@@ -137,7 +137,7 @@ class EnvpoolEnv(Environment):
         seed: int,
         env_kwargs: dict[str, Any] | None = None,
     ):
-        """Creates an envpool environment for JAX-based RL training. 
+        """Creates an envpool environment for JAX-based RL training.
 
         Args:
             env_name (str): Name/id of the brax environment.
@@ -225,7 +225,7 @@ class EnvpoolEnv(Environment):
             env_state, _ = env_state
         else:
             env_state, lives = env_state
-        
+
         # Here, we perform the actual step in the envpool environment
         env_state, (obs, reward, term, trunc, info) = self._xla_step(env_state, action)
         done = jnp.logical_or(term, trunc)

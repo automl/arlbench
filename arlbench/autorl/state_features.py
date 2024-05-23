@@ -15,7 +15,7 @@ if TYPE_CHECKING:
 
 class StateFeature(ABC):
     """An abstract state features for the AutoRL environment.
-    
+
     It can be wrapped around the training function to calculate the state features.
     We do this be overriding the __new__() function. It allows us to imitate
     the behaviour of a basic function while keeping the advantages of a static class.

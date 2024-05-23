@@ -23,7 +23,7 @@ class XLandEnv(Environment):
         env_kwargs: dict[str, Any] | None = None,
         cnn_policy: bool = False,
     ):
-        """Creates an xland environment for JAX-based RL training. 
+        """Creates an xland environment for JAX-based RL training.
 
         Args:
             env_name (str): Name/id of the brax environment.
@@ -64,7 +64,7 @@ class XLandEnv(Environment):
         # (as referred to in the xland documentation)
         timestep = jax.vmap(self._env.step, in_axes=(None, 0, 0))(
             self.env_params, env_state, action
-        )  
+        )
 
         return timestep, (timestep.observation, timestep.reward, timestep.last(), {})
 
