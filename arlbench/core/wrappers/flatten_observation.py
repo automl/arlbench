@@ -7,14 +7,14 @@ import jax
 import numpy as np
 from gymnax.environments import spaces
 
-from .autorl_wrapper import AutoRLWrapper
+from .wrapper import Wrapper
 
 if TYPE_CHECKING:
     from arlbench.core.environments import Environment
 
 
 # TODO add test cases
-class FlattenObservationWrapper(AutoRLWrapper):
+class FlattenObservationWrapper(Wrapper):
     """Flatten the observations of the environment."""
 
     def __init__(self, env: Environment):

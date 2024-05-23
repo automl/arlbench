@@ -144,14 +144,10 @@ class AutoRLEnv(gymnasium.Env):
         self._observation_space = self._get_obs_space()
 
     def _get_objectives(self) -> list[Objective]:
-        """_summary_.
-
-        Raises:
-            ValueError: _description_
-            ValueError: _description_
+        """Maps the objectives as list of strings to a sorted list of the actual objective classes.
 
         Returns:
-            list[Objective]: _description_
+            list[Objective]: List of objective classes in the correct order to be wrapped around the train function.
         """
         if len(self._config["objectives"]) == 0:
             raise ValueError("Please select at least one optimization objective.")
@@ -166,17 +162,15 @@ class AutoRLEnv(gymnasium.Env):
         # Ensure right order of objectives, e.g. runtime is wrapped first
         objectives = sorted(objectives, key=lambda o: o[1])
 
-        # Extract online objective classes
+        # Now we are extracting the actual classes for each objective
+        # They are used to wrap the train function and compute the objective
         return [o[0] for o in objectives]
 
     def _get_state_features(self) -> list[StateFeature]:
-        """_summary_.
-
-        Raises:
-            ValueError: _description_
+        """Maps the state features as list of strings to a sorted list of the actual state feature classes.
 
         Returns:
-            list[StateFeature]: _description_
+            list[StateFeature]: List of state features classes in the correct order to be wrapped around the train function.
         """
         state_features = []
         cfg_state_features = list(set(self._config["state_features"]))
@@ -187,10 +181,10 @@ class AutoRLEnv(gymnasium.Env):
         return state_features
 
     def _get_obs_space(self) -> gymnasium.spaces.Dict:
-        """_summary_.
+        """Returns the state feature space as gymnasium space.
 
         Returns:
-            gymnasium.spaces.Dict: _description_
+            gymnasium.spaces.Dict: Gymnasium space.
         """
         obs_space = {f.KEY: f.get_state_space() for f in self._state_features}
 
@@ -201,10 +195,10 @@ class AutoRLEnv(gymnasium.Env):
         return gymnasium.spaces.Dict(obs_space)
 
     def _step(self) -> bool:
-        """_summary_.
+        """Fundamental step behaviour, handles truncation.
 
         Returns:
-            bool: _description_
+            bool: Whether the episode is done.
         """
         self._c_step += 1
         if self._c_step >= self._config["n_steps"]:
@@ -212,10 +206,10 @@ class AutoRLEnv(gymnasium.Env):
         return False
 
     def _train(self, **train_kw_args) -> tuple[TrainReturnT, dict, dict]:
-        """_summary_.
+        """Performs the RL training and returns the result as well as objectives and state features.
 
         Returns:
-            tuple[TrainReturnT, dict, dict]: _description_
+            tuple[TrainReturnT, dict, dict]: Tuple of training result, objectives, and observation (state features).
         """
         assert self._algorithm_state is not None
 
@@ -223,16 +217,17 @@ class AutoRLEnv(gymnasium.Env):
         obs = {}  # state features are stored here
         train_func = self._algorithm.train
 
+        # The objectives are wrapped first since runtime should be accurate
         for o in self._objectives:
             train_func = o(train_func, objectives, self._config["optimize_objectives"])
 
+        # Then we wrap the state features around the training function
         obs["steps"] = np.array([self._c_step, self._total_training_steps])
         for f in self._state_features:
             train_func = f(train_func, obs)
 
         # Track configuration + budgets using deepcave (https://github.com/automl/DeepCAVE)
-        # TODO test
-        if self._config.get("deep_cave"):
+        if self._config.get("deep_cave", False):
             from deepcave import Objective, Recorder
 
             dc_objectives = [Objective(**o.get_spec()) for o in self._objectives]
@@ -247,6 +242,11 @@ class AutoRLEnv(gymnasium.Env):
         return result, objectives, obs
 
     def _make_algorithm(self) -> Algorithm:
+        """Instantiated the RL algorithm given the current AutoRL config and hyperparameter configuration.
+
+        Returns:
+            Algorithm: RL algorithm instance. 
+        """
         return self._algorithm_cls(
             self._hpo_config,
             self._env,
@@ -267,20 +267,20 @@ class AutoRLEnv(gymnasium.Env):
         n_eval_episodes: int | None = None,
         seed: int | None = None,
     ) -> tuple[ObservationT, ObjectivesT, bool, bool, InfoT]:
-        """_summary_.
+        """Performs one iteration of RL training.
 
         Args:
-            action (Configuration | dict): _description_
-            n_total_timesteps (int | None, optional): _description_. Defaults to None.
-            n_eval_steps (int | None, optional): _description_. Defaults to None.
-            n_eval_episodes (int | None, optional): _description_. Defaults to None.
-            seed (int | None, optional): _description_. Defaults to None.
+            action (Configuration | dict): Hyperparameter configuration to use for training.
+            n_total_timesteps (int | None, optional): Number of total training steps. Defaults to None.
+            n_eval_steps (int | None, optional): Number of evaluations during training. Defaults to None.
+            n_eval_episodes (int | None, optional): Number of episodes to run per evalution during training. Defaults to None.
+            seed (int | None, optional): Random seed. Defaults to None. If None, seed of the AutoRL environment is used.
 
         Raises:
             ValueError: Error is raised if step() is called before reset() was called.
 
         Returns:
-            tuple[ObservationT, ObjectivesT, bool, bool, InfoT]: _description_
+            tuple[ObservationT, ObjectivesT, bool, bool, InfoT]: State information, objectives, terminated, truncated, additional information.
         """
         if len(action.keys()) == 0:  # no action provided
             warnings.warn(
@@ -304,8 +304,9 @@ class AutoRLEnv(gymnasium.Env):
         self._algorithm = self._make_algorithm()
 
         # First, we check if there is a checkpoint to load. If not, we have to check 
-        # whether this is the first iteration, i.e., call of env.step(). Then we have to initialiaze
-        # the algorithm state. Otherwise, we are using the state from previous iteration(s)
+        # whether this is the first iteration, i.e., call of env.step(). In that case,
+        # we have to initialiaze the algorithm state.
+        # Otherwise, we are using the state from previous iteration(s)
         if checkpoint_path:
             try:
                 self._algorithm_state = self._load(checkpoint_path, seed)
@@ -356,36 +357,28 @@ class AutoRLEnv(gymnasium.Env):
         return obs, objectives, False, self._done, info
 
     def reset(
-        self,
-        seed: int | None = None,
+        self
     ) -> tuple[ObservationT, InfoT]:
-        """_summary_.
-
-        Args:
-            seed (int | None, optional): _description_. Defaults to None.
-            checkpoint_path (str | None, optional): _description_. Defaults to None.
+        """Resets the AutoRL environment and current algorithm state.
 
         Returns:
-            tuple[ObservationT, InfoT]: _description_
+            tuple[ObservationT, InfoT]: Empty observation and state information.
         """
         self._done = False
         self._c_step = 0
         self._c_episode += 1
+        self._algorithm_state = None
 
         return {}, {}
 
     def _save(self, tag: str | None = None) -> str:
-        """_summary_.
+        """Saves the current algorithm state and training result.
 
         Args:
-            tag (str | None, optional): _description_. Defaults to None.
-
-        Raises:
-            ValueError: _description_
-            ValueError: _description_
+            tag (str | None, optional): Checkpoint tag. Defaults to None.
 
         Returns:
-            str: _description_
+            str: Checkpoint path.
         """
         if self._algorithm_state is None:
             warnings.warn("Agent not initialized. Not able to save agent state.")
@@ -409,55 +402,54 @@ class AutoRLEnv(gymnasium.Env):
         )
 
     def _load(self, checkpoint_path: str, seed: int) -> AlgorithmState:
-        """_summary_.
+        """Load the algorithm state from a checkpoint.
 
         Args:
-            checkpoint_path (str): _description_
-            seed (int | None, optional): _description_. Defaults to None.
+            checkpoint_path (str): Path of the checkpoint to load.
+            seed (int | None, optional): Random seed to use for algorithm initialization. Defaults to None.
         """
         init_rng = jax.random.PRNGKey(seed)
         algorithm_state = self._algorithm.init(init_rng)
         (
             (
-                hpo_config,
+                _,
                 self._c_step,
                 self._c_episode,
             ),
             algorithm_kw_args,
         ) = Checkpointer.load(checkpoint_path, algorithm_state)
-        # hpo_config = Configuration(self._config_space, hpo_config)
         return self._algorithm.init(init_rng, **algorithm_kw_args)
 
     @property
     def action_space(self) -> gymnasium.spaces.Space:
-        """_summary_.
+        """Returns the hyperparameter configuration spaces as gymnasium space.
 
         Returns:
-            gymnasium.spaces.Space: _description_
+            gymnasium.spaces.Space: Hyperparameter configuration space.
         """
         return config_space_to_gymnasium_space(self._config_space)
 
     @property
     def config_space(self) -> ConfigurationSpace:
-        """_summary_.
+        """Returns the hyperparameter configuration spaces as ConfigSpace.
 
         Returns:
-            ConfigurationSpace: _description_
+            ConfigurationSpace: Hyperparameter configuration space.
         """
         return self._config_space
 
     @property
     def observation_space(self) -> gymnasium.spaces.Space:
-        """_summary_.
+        """Returns a gymnasium spaces of state features (observations).
 
         Returns:
-            gymnasium.spaces.Space: _description_
+            gymnasium.spaces.Space: Gynasium space.
         """
         return self._observation_space
 
     @property
     def hpo_config(self) -> Configuration:
-        """_summary_.
+        """Returns .
 
         Returns:
             Configuration: _description_
@@ -466,42 +458,39 @@ class AutoRLEnv(gymnasium.Env):
 
     @property
     def checkpoints(self) -> list[str]:
-        """_summary_.
+        """Returns a list of created checkpoints for this AutoRL environment.
 
         Returns:
-            list[str]: _description_
+            list[str]: List of checkpoint paths.
         """
         return list(self._checkpoints)
 
     @property
     def objectives(self) -> list[str]:
-        """_summary_.
+        """Returns configured objectives.
 
         Returns:
-            list[str]: _description_
+            list[str]: List of objectives.
         """
         return [o.__name__ for o in self._objectives]
 
     @property
     def config(self) -> dict:
-        """_summary_.
+        """Returns the AutoRL configuration.
 
         Returns:
-            dict: _description_
+            dict: AutoRL configuration.
         """
         return self._config.copy()
 
     def eval(self, num_eval_episodes: int) -> np.ndarray:
-        """_summary_.
+        """Evaluates the algorithm using its current training state.
 
         Args:
-            num_eval_episodes (int): _description_
-
-        Raises:
-            ValueError: _description_
+            num_eval_episodes (int): Number of evaluation episodes to run.
 
         Returns:
-            np.ndarray: _description_
+            np.ndarray: Array of evaluation return for each episode.
         """
         if self._algorithm is None or self._algorithm_state is None:
             raise ValueError("Agent not initialized. Call reset() first.")

@@ -19,16 +19,26 @@ if TYPE_CHECKING:
 
 
 class GymnasiumEnv(Environment):
+    """A gymnasium-based RL environment."""
+
     def __init__(
         self, env_name: str, seed: int, env_kwargs: dict[str, Any] | None = None
-    ):
+    ):        
+        """Creates a gymnasium environment for JAX-based RL training. 
+
+        Args:
+            env_name (str): Name/id of the brax environment.
+            seed (int): Random seed.
+            env_kwargs (dict[str, Any] | None, optional): Keyword arguments to pass to the brax environment. Defaults to None.
+        """
         if env_kwargs is None:
             env_kwargs = {}
         env = gymnasium.make(env_name, **env_kwargs)
         super().__init__(env_name, env, 1, seed)
 
+        # For the JAX IO callback we need the shapes of the values returned
+        # by step() and reset()
         self._reset_result = jnp.array(self._env.observation_space.sample())
-
         self._step_result = (
             jnp.array(self._env.observation_space.sample(), dtype=jnp.float32),
             jnp.array([1.0], dtype=jnp.float32),
@@ -37,7 +47,15 @@ class GymnasiumEnv(Environment):
         )
 
     @functools.partial(jax.jit, static_argnums=0)
-    def __reset(self, _) -> chex.Array:
+    def __reset(self, _: None) -> jnp.ndarray:
+        """Wraps the internal reset() function.
+
+        Args:
+            _ (None): Unused parameter.
+
+        Returns:
+            jnp.ndarray: Reset() result.
+        """
         def reset_env():
             obs, _ = self._env.reset(seed=self._seed)
             return obs
@@ -51,9 +69,25 @@ class GymnasiumEnv(Environment):
 
     @functools.partial(jax.jit, static_argnums=0)
     def __step(
-        self, action: chex.Array
-    ) -> tuple[chex.Array, chex.Array, chex.Array, dict]:
-        def step(_action):
+        self, action: jnp.ndarray
+    ) -> tuple[jnp.ndarray, jnp.ndarray, jnp.ndarray, dict]:
+        """Wraps the internal step() function.
+
+        Args:
+            action (jnp.ndarray): Action to take.
+
+        Returns:
+            tuple[jnp.ndarray, jnp.ndarray, jnp.ndarray, dict]: Step result: (obs, reward, done, info).
+        """
+        def step(_action: jnp.ndarray) -> tuple[jnp.ndarray, jnp.ndarray, jnp.ndarray, dict]:
+            """Internal step to match function data types and perform autoreset.
+
+            Args:
+                _action (jnp.ndarray): Action to take.
+
+            Returns:
+                tuple[jnp.ndarray, jnp.ndarray, jnp.ndarray, dict]: Step result: (obs, reward, done, info).
+            """
             obs, reward, term, trunc, _ = self._env.step(_action)
 
             # Autoreset
