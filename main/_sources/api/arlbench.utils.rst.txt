@@ -28,6 +28,4 @@ arlbench.utils
    :recursive:
 
    arlbench.utils.common
-   arlbench.utils.handle_termination
-   arlbench.utils.hydra_utils
 

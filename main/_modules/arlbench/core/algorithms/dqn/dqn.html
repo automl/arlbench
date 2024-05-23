@@ -258,16 +258,6 @@
          arlbench.utils.common
         </a>
        </li>
-       <li class="toctree-l4">
-        <a class="reference internal" href="../../../../../api/arlbench.utils.handle_termination.html">
-         arlbench.utils.handle_termination
-        </a>
-       </li>
-       <li class="toctree-l4">
-        <a class="reference internal" href="../../../../../api/arlbench.utils.hydra_utils.html">
-         arlbench.utils.hydra_utils
-        </a>
-       </li>
       </ul>
      </li>
     </ul>
@@ -483,6 +473,7 @@
             <span class="n">track_metrics</span><span class="o">=</span><span class="n">track_metrics</span><span class="p">,</span>
         <span class="p">)</span>
 
+        <span class="c1"># For the network, we need the properties of the action space</span>
         <span class="n">action_size</span><span class="p">,</span> <span class="n">discrete</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">action_type</span>
         <span class="n">network_cls</span> <span class="o">=</span> <span class="n">CNNQ</span> <span class="k">if</span> <span class="n">cnn_policy</span> <span class="k">else</span> <span class="n">MLPQ</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">network</span> <span class="o">=</span> <span class="n">network_cls</span><span class="p">(</span>
@@ -501,6 +492,10 @@
             <span class="n">priority_exponent</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">hpo_config</span><span class="p">[</span><span class="s2">&quot;buffer_alpha&quot;</span><span class="p">],</span>
             <span class="n">device</span><span class="o">=</span><span class="n">jax</span><span class="o">.</span><span class="n">default_backend</span><span class="p">(),</span>
         <span class="p">)</span>
+
+        <span class="c1"># This is how we can turn the prioritized sampling on/off for dynamic HPO</span>
+        <span class="c1"># We always use the prioritized replay buffer, but if &quot;buffer_prio_sampling&quot;</span>
+        <span class="c1"># is disabled, we replace the sampling function by the uniform sampling</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">hpo_config</span><span class="p">[</span><span class="s2">&quot;buffer_prio_sampling&quot;</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">:</span>
             <span class="n">sample_fn</span> <span class="o">=</span> <span class="n">functools</span><span class="o">.</span><span class="n">partial</span><span class="p">(</span>
                 <span class="n">uniform_sample</span><span class="p">,</span>
@@ -568,7 +563,6 @@
 <a class="viewcode-back" href="../../../../../arlbench.core.algorithms.dqn.html#arlbench.core.algorithms.DQN.get_hpo_search_space">[docs]</a>
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">get_hpo_search_space</span><span class="p">(</span><span class="n">seed</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ConfigurationSpace</span><span class="p">:</span>
-        <span class="c1"># defaults from https://stable-baselines3.readthedocs.io/en/master/modules/dqn.html</span>
         <span class="n">cs</span> <span class="o">=</span> <span class="n">ConfigurationSpace</span><span class="p">(</span>
             <span class="n">name</span><span class="o">=</span><span class="s2">&quot;DQNConfigSpace&quot;</span><span class="p">,</span>
             <span class="n">seed</span><span class="o">=</span><span class="n">seed</span><span class="p">,</span>
@@ -710,15 +704,18 @@
 <span class="sd">            DQNState: DQN state.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">rng</span><span class="p">,</span> <span class="n">reset_rng</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">rng</span><span class="p">)</span>
-
         <span class="n">env_state</span><span class="p">,</span> <span class="n">obs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">env</span><span class="o">.</span><span class="n">reset</span><span class="p">(</span><span class="n">reset_rng</span><span class="p">)</span>
 
+        <span class="c1"># If any of these if not defined, we need a dummy environment transition</span>
+        <span class="c1"># to initialize them</span>
         <span class="k">if</span> <span class="n">buffer_state</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">network_params</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">target_params</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">dummy_rng</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">PRNGKey</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
             <span class="n">_action</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">env</span><span class="o">.</span><span class="n">sample_actions</span><span class="p">(</span><span class="n">dummy_rng</span><span class="p">)</span>
             <span class="n">_</span><span class="p">,</span> <span class="p">(</span><span class="n">_obs</span><span class="p">,</span> <span class="n">_reward</span><span class="p">,</span> <span class="n">_done</span><span class="p">,</span> <span class="n">_</span><span class="p">)</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">env</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">env_state</span><span class="p">,</span> <span class="n">_action</span><span class="p">,</span> <span class="n">dummy_rng</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">buffer_state</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># This is how transitions will look like during training so we need to pass one</span>
+            <span class="c1"># once to the buffer to estimate and allocate the required buffer size</span>
             <span class="n">_timestep</span> <span class="o">=</span> <span class="n">TimeStep</span><span class="p">(</span>
                 <span class="n">last_obs</span><span class="o">=</span><span class="n">_obs</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
                 <span class="n">obs</span><span class="o">=</span><span class="n">_obs</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>

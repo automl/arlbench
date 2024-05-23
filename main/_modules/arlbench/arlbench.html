@@ -258,16 +258,6 @@
          arlbench.utils.common
         </a>
        </li>
-       <li class="toctree-l4">
-        <a class="reference internal" href="../../api/arlbench.utils.handle_termination.html">
-         arlbench.utils.handle_termination
-        </a>
-       </li>
-       <li class="toctree-l4">
-        <a class="reference internal" href="../../api/arlbench.utils.hydra_utils.html">
-         arlbench.utils.hydra_utils
-        </a>
-       </li>
       </ul>
      </li>
     </ul>
@@ -321,17 +311,20 @@
 <a class="viewcode-back" href="../../arlbench.html#arlbench.run_arlbench">[docs]</a>
 <span class="k">def</span> <span class="nf">run_arlbench</span><span class="p">(</span><span class="n">cfg</span><span class="p">:</span> <span class="n">DictConfig</span><span class="p">,</span> <span class="n">logger</span><span class="p">:</span> <span class="n">Logger</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">tuple</span> <span class="o">|</span> <span class="nb">list</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Run ARLBench using the given config and return objective(s).&quot;&quot;&quot;</span>
+    <span class="c1"># We check if we need to load a checkpoint for HyperPBT</span>
+    <span class="c1"># If so, we load the first episode and first step of ARLBench since we always run only</span>
+    <span class="c1"># one iteration</span>
     <span class="k">if</span> <span class="s2">&quot;load&quot;</span> <span class="ow">in</span> <span class="n">cfg</span> <span class="ow">and</span> <span class="n">cfg</span><span class="o">.</span><span class="n">load</span><span class="p">:</span>
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;### ATTEMPTING TO LOAD </span><span class="si">{</span><span class="n">cfg</span><span class="o">.</span><span class="n">load</span><span class="si">}</span><span class="s2"> ###&quot;</span><span class="p">)</span>
         <span class="n">checkpoint_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
             <span class="n">cfg</span><span class="o">.</span><span class="n">load</span><span class="p">,</span>
             <span class="n">cfg</span><span class="o">.</span><span class="n">autorl</span><span class="o">.</span><span class="n">checkpoint_name</span><span class="p">,</span>
             <span class="s2">&quot;default_checkpoint_c_episode_1_step_1&quot;</span><span class="p">,</span>
         <span class="p">)</span>
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;### CHECKPOINT PATH = </span><span class="si">{</span><span class="n">checkpoint_path</span><span class="si">}</span><span class="s2"> ###&quot;</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">checkpoint_path</span> <span class="o">=</span> <span class="kc">None</span>
 
+    <span class="c1"># We check if we need to save a checkpoint for HyperPBT</span>
+    <span class="c1"># If so, we need to adapt the autorl config accordingly</span>
     <span class="k">if</span> <span class="s2">&quot;save&quot;</span> <span class="ow">in</span> <span class="n">cfg</span> <span class="ow">and</span> <span class="n">cfg</span><span class="o">.</span><span class="n">save</span><span class="p">:</span>
         <span class="n">cfg</span><span class="o">.</span><span class="n">autorl</span><span class="o">.</span><span class="n">checkpoint_dir</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">cfg</span><span class="o">.</span><span class="n">save</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;.pt&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">cfg</span><span class="o">.</span><span class="n">algorithm</span> <span class="o">==</span> <span class="s2">&quot;PPO&quot;</span><span class="p">:</span>
@@ -339,6 +332,7 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="n">cfg</span><span class="o">.</span><span class="n">autorl</span><span class="o">.</span><span class="n">checkpoint</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;opt_state&quot;</span><span class="p">,</span> <span class="s2">&quot;params&quot;</span><span class="p">,</span> <span class="s2">&quot;buffer&quot;</span><span class="p">]</span>
 
+    <span class="c1"># Here, we define how the AutoRLEnv should behave</span>
     <span class="n">env</span> <span class="o">=</span> <span class="n">AutoRLEnv</span><span class="p">(</span><span class="n">cfg</span><span class="o">.</span><span class="n">autorl</span><span class="p">)</span>
     <span class="n">_</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
 
@@ -350,10 +344,8 @@
     <span class="k">if</span> <span class="n">logger</span><span class="p">:</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Training finished.&quot;</span><span class="p">)</span>
 
+    <span class="c1"># Additionally, we store the evaluation rewards we had during training</span>
     <span class="n">info</span><span class="p">[</span><span class="s2">&quot;train_info_df&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="s2">&quot;evaluation.csv&quot;</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-
-    <span class="k">if</span> <span class="s2">&quot;reward_curves&quot;</span> <span class="ow">in</span> <span class="n">cfg</span> <span class="ow">and</span> <span class="n">cfg</span><span class="o">.</span><span class="n">reward_curves</span><span class="p">:</span>
-        <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="n">info</span><span class="p">[</span><span class="s2">&quot;train_info_df&quot;</span><span class="p">][</span><span class="s2">&quot;returns&quot;</span><span class="p">])</span>
 
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">objectives</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">objectives</span><span class="p">[</span><span class="nb">next</span><span class="p">(</span><span class="nb">iter</span><span class="p">(</span><span class="n">objectives</span><span class="o">.</span><span class="n">keys</span><span class="p">()))]</span>

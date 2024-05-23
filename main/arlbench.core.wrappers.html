@@ -259,16 +259,6 @@
          arlbench.utils.common
         </a>
        </li>
-       <li class="toctree-l4">
-        <a class="reference internal" href="api/arlbench.utils.handle_termination.html">
-         arlbench.utils.handle_termination
-        </a>
-       </li>
-       <li class="toctree-l4">
-        <a class="reference internal" href="api/arlbench.utils.hydra_utils.html">
-         arlbench.utils.hydra_utils
-        </a>
-       </li>
       </ul>
      </li>
     </ul>
@@ -356,42 +346,6 @@
   </ul>
  </li>
  <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#module-arlbench.core.wrappers.image_extraction">
-   arlbench.core.wrappers.image_extraction module
-  </a>
-  <ul class="nav section-nav flex-column">
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#arlbench.core.wrappers.image_extraction.ImageExtractionWrapper">
-     <code class="docutils literal notranslate">
-      <span class="pre">
-       ImageExtractionWrapper
-      </span>
-     </code>
-    </a>
-    <ul class="nav section-nav flex-column">
-     <li class="toc-h4 nav-item toc-entry">
-      <a class="reference internal nav-link" href="#arlbench.core.wrappers.image_extraction.ImageExtractionWrapper.reset">
-       <code class="docutils literal notranslate">
-        <span class="pre">
-         ImageExtractionWrapper.reset()
-        </span>
-       </code>
-      </a>
-     </li>
-     <li class="toc-h4 nav-item toc-entry">
-      <a class="reference internal nav-link" href="#arlbench.core.wrappers.image_extraction.ImageExtractionWrapper.step">
-       <code class="docutils literal notranslate">
-        <span class="pre">
-         ImageExtractionWrapper.step()
-        </span>
-       </code>
-      </a>
-     </li>
-    </ul>
-   </li>
-  </ul>
- </li>
- <li class="toc-h2 nav-item toc-entry">
   <a class="reference internal nav-link" href="#module-arlbench.core.wrappers.wrapper">
    arlbench.core.wrappers.wrapper module
   </a>
@@ -451,35 +405,6 @@
     </ul>
    </li>
    <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#arlbench.core.wrappers.ImageExtractionWrapper">
-     <code class="docutils literal notranslate">
-      <span class="pre">
-       ImageExtractionWrapper
-      </span>
-     </code>
-    </a>
-    <ul class="nav section-nav flex-column">
-     <li class="toc-h4 nav-item toc-entry">
-      <a class="reference internal nav-link" href="#arlbench.core.wrappers.ImageExtractionWrapper.reset">
-       <code class="docutils literal notranslate">
-        <span class="pre">
-         ImageExtractionWrapper.reset()
-        </span>
-       </code>
-      </a>
-     </li>
-     <li class="toc-h4 nav-item toc-entry">
-      <a class="reference internal nav-link" href="#arlbench.core.wrappers.ImageExtractionWrapper.step">
-       <code class="docutils literal notranslate">
-        <span class="pre">
-         ImageExtractionWrapper.step()
-        </span>
-       </code>
-      </a>
-     </li>
-    </ul>
-   </li>
-   <li class="toc-h3 nav-item toc-entry">
     <a class="reference internal nav-link" href="#arlbench.core.wrappers.Wrapper">
      <code class="docutils literal notranslate">
       <span class="pre">
@@ -522,41 +447,59 @@
 <dt class="sig sig-object py" id="arlbench.core.wrappers.flatten_observation.FlattenObservationWrapper">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">arlbench.core.wrappers.flatten_observation.</span></span><span class="sig-name descname"><span class="pre">FlattenObservationWrapper</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">env</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/arlbench/core/wrappers/flatten_observation.html#FlattenObservationWrapper"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.core.wrappers.flatten_observation.FlattenObservationWrapper" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#arlbench.core.wrappers.wrapper.Wrapper" title="arlbench.core.wrappers.wrapper.Wrapper"><code class="xref py py-class docutils literal notranslate"><span class="pre">Wrapper</span></code></a></p>
-<p>Flatten the observations of the environment.</p>
+<p>Wraps the given environment to flatten its observations.</p>
 <dl class="py property">
 <dt class="sig sig-object py" id="arlbench.core.wrappers.flatten_observation.FlattenObservationWrapper.observation_space">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">observation_space</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Box</span></em><a class="headerlink" href="#arlbench.core.wrappers.flatten_observation.FlattenObservationWrapper.observation_space" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>The flattened observation space of the environment.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Flattened obseration space.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>spaces.Box</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="arlbench.core.wrappers.flatten_observation.FlattenObservationWrapper.reset">
 <span class="sig-name descname"><span class="pre">reset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rng</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/arlbench/core/wrappers/flatten_observation.html#FlattenObservationWrapper.reset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.core.wrappers.flatten_observation.FlattenObservationWrapper.reset" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Calls the reset() function of the environment and flattens the returned observations.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>rng</strong> (<em>chex.PRNGKey</em>) – Random number generator key.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Result of the step function but observations are flattened.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>tuple[Any, jnp.ndarray]</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="arlbench.core.wrappers.flatten_observation.FlattenObservationWrapper.step">
 <span class="sig-name descname"><span class="pre">step</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">env_state</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">action</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rng</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/arlbench/core/wrappers/flatten_observation.html#FlattenObservationWrapper.step"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.core.wrappers.flatten_observation.FlattenObservationWrapper.step" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
-</section>
-<section id="module-arlbench.core.wrappers.image_extraction">
-<span id="arlbench-core-wrappers-image-extraction-module"></span><h2>arlbench.core.wrappers.image_extraction module<a class="headerlink" href="#module-arlbench.core.wrappers.image_extraction" title="Link to this heading">¶</a></h2>
-<dl class="py class">
-<dt class="sig sig-object py" id="arlbench.core.wrappers.image_extraction.ImageExtractionWrapper">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">arlbench.core.wrappers.image_extraction.</span></span><span class="sig-name descname"><span class="pre">ImageExtractionWrapper</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">env</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/arlbench/core/wrappers/image_extraction.html#ImageExtractionWrapper"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.core.wrappers.image_extraction.ImageExtractionWrapper" title="Link to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Wrapper</span></code></p>
-<dl class="py method">
-<dt class="sig sig-object py" id="arlbench.core.wrappers.image_extraction.ImageExtractionWrapper.reset">
-<span class="sig-name descname"><span class="pre">reset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/arlbench/core/wrappers/image_extraction.html#ImageExtractionWrapper.reset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.core.wrappers.image_extraction.ImageExtractionWrapper.reset" title="Link to this definition">¶</a></dt>
-<dd><p>Uses the <a class="reference internal" href="#arlbench.core.wrappers.image_extraction.ImageExtractionWrapper.reset" title="arlbench.core.wrappers.image_extraction.ImageExtractionWrapper.reset"><code class="xref py py-meth docutils literal notranslate"><span class="pre">reset()</span></code></a> of the <code class="xref py py-attr docutils literal notranslate"><span class="pre">env</span></code> that can be overwritten to change the returned data.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="arlbench.core.wrappers.image_extraction.ImageExtractionWrapper.step">
-<span class="sig-name descname"><span class="pre">step</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">action</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/arlbench/core/wrappers/image_extraction.html#ImageExtractionWrapper.step"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.core.wrappers.image_extraction.ImageExtractionWrapper.step" title="Link to this definition">¶</a></dt>
-<dd><p>Uses the <a class="reference internal" href="#arlbench.core.wrappers.image_extraction.ImageExtractionWrapper.step" title="arlbench.core.wrappers.image_extraction.ImageExtractionWrapper.step"><code class="xref py py-meth docutils literal notranslate"><span class="pre">step()</span></code></a> of the <code class="xref py py-attr docutils literal notranslate"><span class="pre">env</span></code> that can be overwritten to change the returned data.</p>
+<dd><p>Calls the step() function of the environment and flattens the returned
+observations.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>env_state</strong> (<em>Any</em>) – The internal environment state.</p></li>
+<li><p><strong>action</strong> (<em>jnp.ndarray</em>) – The actions to take.</p></li>
+<li><p><strong>rng</strong> (<em>chex.PRNGKey</em>) – Random number generator key.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Result of
+the step function but observations are flattened.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>tuple[Any, tuple[jnp.ndarray, jnp.ndarray, jnp.ndarray, dict]]</p>
+</dd>
+</dl>
 </dd></dl>
 
 </dd></dl>
@@ -578,38 +521,59 @@
 <dt class="sig sig-object py" id="arlbench.core.wrappers.FlattenObservationWrapper">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">arlbench.core.wrappers.</span></span><span class="sig-name descname"><span class="pre">FlattenObservationWrapper</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">env</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/arlbench/core/wrappers/flatten_observation.html#FlattenObservationWrapper"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.core.wrappers.FlattenObservationWrapper" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#arlbench.core.wrappers.wrapper.Wrapper" title="arlbench.core.wrappers.wrapper.Wrapper"><code class="xref py py-class docutils literal notranslate"><span class="pre">Wrapper</span></code></a></p>
-<p>Flatten the observations of the environment.</p>
+<p>Wraps the given environment to flatten its observations.</p>
 <dl class="py property">
 <dt class="sig sig-object py" id="arlbench.core.wrappers.FlattenObservationWrapper.observation_space">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">observation_space</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Box</span></em><a class="headerlink" href="#arlbench.core.wrappers.FlattenObservationWrapper.observation_space" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>The flattened observation space of the environment.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Flattened obseration space.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>spaces.Box</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="arlbench.core.wrappers.FlattenObservationWrapper.reset">
 <span class="sig-name descname"><span class="pre">reset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rng</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/arlbench/core/wrappers/flatten_observation.html#FlattenObservationWrapper.reset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.core.wrappers.FlattenObservationWrapper.reset" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Calls the reset() function of the environment and flattens the returned observations.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>rng</strong> (<em>chex.PRNGKey</em>) – Random number generator key.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Result of the step function but observations are flattened.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>tuple[Any, jnp.ndarray]</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="arlbench.core.wrappers.FlattenObservationWrapper.step">
 <span class="sig-name descname"><span class="pre">step</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">env_state</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">action</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rng</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/arlbench/core/wrappers/flatten_observation.html#FlattenObservationWrapper.step"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.core.wrappers.FlattenObservationWrapper.step" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
-<dl class="py class">
-<dt class="sig sig-object py" id="arlbench.core.wrappers.ImageExtractionWrapper">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">arlbench.core.wrappers.</span></span><span class="sig-name descname"><span class="pre">ImageExtractionWrapper</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">env</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/arlbench/core/wrappers/image_extraction.html#ImageExtractionWrapper"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.core.wrappers.ImageExtractionWrapper" title="Link to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Wrapper</span></code></p>
-<dl class="py method">
-<dt class="sig sig-object py" id="arlbench.core.wrappers.ImageExtractionWrapper.reset">
-<span class="sig-name descname"><span class="pre">reset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/arlbench/core/wrappers/image_extraction.html#ImageExtractionWrapper.reset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.core.wrappers.ImageExtractionWrapper.reset" title="Link to this definition">¶</a></dt>
-<dd><p>Uses the <a class="reference internal" href="#arlbench.core.wrappers.ImageExtractionWrapper.reset" title="arlbench.core.wrappers.ImageExtractionWrapper.reset"><code class="xref py py-meth docutils literal notranslate"><span class="pre">reset()</span></code></a> of the <code class="xref py py-attr docutils literal notranslate"><span class="pre">env</span></code> that can be overwritten to change the returned data.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="arlbench.core.wrappers.ImageExtractionWrapper.step">
-<span class="sig-name descname"><span class="pre">step</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">action</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/arlbench/core/wrappers/image_extraction.html#ImageExtractionWrapper.step"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.core.wrappers.ImageExtractionWrapper.step" title="Link to this definition">¶</a></dt>
-<dd><p>Uses the <a class="reference internal" href="#arlbench.core.wrappers.ImageExtractionWrapper.step" title="arlbench.core.wrappers.ImageExtractionWrapper.step"><code class="xref py py-meth docutils literal notranslate"><span class="pre">step()</span></code></a> of the <code class="xref py py-attr docutils literal notranslate"><span class="pre">env</span></code> that can be overwritten to change the returned data.</p>
+<dd><p>Calls the step() function of the environment and flattens the returned
+observations.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>env_state</strong> (<em>Any</em>) – The internal environment state.</p></li>
+<li><p><strong>action</strong> (<em>jnp.ndarray</em>) – The actions to take.</p></li>
+<li><p><strong>rng</strong> (<em>chex.PRNGKey</em>) – Random number generator key.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Result of
+the step function but observations are flattened.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>tuple[Any, tuple[jnp.ndarray, jnp.ndarray, jnp.ndarray, dict]]</p>
+</dd>
+</dl>
 </dd></dl>
 
 </dd></dl>

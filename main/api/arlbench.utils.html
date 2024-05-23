@@ -261,16 +261,6 @@
          arlbench.utils.common
         </a>
        </li>
-       <li class="toctree-l4">
-        <a class="reference internal" href="arlbench.utils.handle_termination.html">
-         arlbench.utils.handle_termination
-        </a>
-       </li>
-       <li class="toctree-l4">
-        <a class="reference internal" href="arlbench.utils.hydra_utils.html">
-         arlbench.utils.hydra_utils
-        </a>
-       </li>
       </ul>
      </li>
     </ul>
@@ -308,39 +298,55 @@
 <nav id="bd-toc-nav">
     <ul class="visible nav section-nav flex-column">
  <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#arlbench.utils.HandleTermination">
+  <a class="reference internal nav-link" href="#arlbench.utils.config_space_to_gymnasium_space">
    <code class="docutils literal notranslate">
     <span class="pre">
-     HandleTermination
+     config_space_to_gymnasium_space()
     </span>
    </code>
   </a>
-  <ul class="nav section-nav flex-column">
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#arlbench.utils.HandleTermination.__exit__">
-     <code class="docutils literal notranslate">
-      <span class="pre">
-       HandleTermination.__exit__()
-      </span>
-     </code>
-    </a>
-   </li>
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#arlbench.utils.HandleTermination.handle_sigterm">
-     <code class="docutils literal notranslate">
-      <span class="pre">
-       HandleTermination.handle_sigterm()
-      </span>
-     </code>
-    </a>
-   </li>
-  </ul>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#arlbench.utils.config_space_to_yaml">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     config_space_to_yaml()
+    </span>
+   </code>
+  </a>
  </li>
  <li class="toc-h2 nav-item toc-entry">
   <a class="reference internal nav-link" href="#arlbench.utils.gymnasium_space_to_gymnax_space">
    <code class="docutils literal notranslate">
     <span class="pre">
      gymnasium_space_to_gymnax_space()
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#arlbench.utils.recursive_concat">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     recursive_concat()
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#arlbench.utils.save_defaults_to_yaml">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     save_defaults_to_yaml()
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#arlbench.utils.tuple_concat">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     tuple_concat()
     </span>
    </code>
   </a>
@@ -368,35 +374,127 @@
                 
   <section id="module-arlbench.utils">
 <span id="arlbench-utils"></span><h1>arlbench.utils<a class="headerlink" href="#module-arlbench.utils" title="Link to this heading">¶</a></h1>
-<dl class="py class">
-<dt class="sig sig-object py" id="arlbench.utils.HandleTermination">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">arlbench.utils.</span></span><span class="sig-name descname"><span class="pre">HandleTermination</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">env</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arlbench/utils/handle_termination.html#HandleTermination"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.utils.HandleTermination" title="Link to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
-<p>This is a context manager that handles different termination signals.
-The comments show how to save a model and optimizer states
-even if there’s an error in the code.</p>
-<dl class="py method">
-<dt class="sig sig-object py" id="arlbench.utils.HandleTermination.__exit__">
-<span class="sig-name descname"><span class="pre">__exit__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">exc_type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">exc_value</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">traceback</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arlbench/utils/handle_termination.html#HandleTermination.__exit__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.utils.HandleTermination.__exit__" title="Link to this definition">¶</a></dt>
-<dd><p>An exception was raised, so save the model and optimizer states
-with an exception tag before re-raising.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="arlbench.utils.config_space_to_gymnasium_space">
+<span class="sig-prename descclassname"><span class="pre">arlbench.utils.</span></span><span class="sig-name descname"><span class="pre">config_space_to_gymnasium_space</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config_space</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arlbench/utils/common.html#config_space_to_gymnasium_space"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.utils.config_space_to_gymnasium_space" title="Link to this definition">¶</a></dt>
+<dd><p>Converts a configuration space to a gymnasium space.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>config_space</strong> (<em>ConfigurationSpace</em>) – Configuration space.</p></li>
+<li><p><strong>seed</strong> (<em>int</em><em> | </em><em>None</em><em>, </em><em>optional</em>) – Seed for the gymnasium space. Defaults to None.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Gymnasium space.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>gymnasium.spaces.Dict</p>
+</dd>
+</dl>
 </dd></dl>
 
-<dl class="py method">
-<dt class="sig sig-object py" id="arlbench.utils.HandleTermination.handle_sigterm">
-<span class="sig-name descname"><span class="pre">handle_sigterm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">signum</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">frame</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arlbench/utils/handle_termination.html#HandleTermination.handle_sigterm"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.utils.HandleTermination.handle_sigterm" title="Link to this definition">¶</a></dt>
-<dd><p>Save the model and optimizer states before exiting.</p>
-</dd></dl>
-
+<dl class="py function">
+<dt class="sig sig-object py" id="arlbench.utils.config_space_to_yaml">
+<span class="sig-prename descclassname"><span class="pre">arlbench.utils.</span></span><span class="sig-name descname"><span class="pre">config_space_to_yaml</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config_space</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">config_key</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'hp_config'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arlbench/utils/common.html#config_space_to_yaml"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.utils.config_space_to_yaml" title="Link to this definition">¶</a></dt>
+<dd><p>Converts a ConfigSpace object to yaml.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>config_space</strong> (<em>ConfigurationSpace</em>) – Configuration space object.</p></li>
+<li><p><strong>config_key</strong> (<em>str</em><em>, </em><em>optional</em>) – Key for the hyperparameters.</p></li>
+<li><p><strong>&quot;hp_config&quot;.</strong> (<em>Defaults to</em>)</p></li>
+<li><p><strong>seed</strong> (<em>int</em><em>, </em><em>optional</em>) – Configuration space seed to write to yaml. Defaults to 0.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>_description_</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>_type_</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="arlbench.utils.gymnasium_space_to_gymnax_space">
 <span class="sig-prename descclassname"><span class="pre">arlbench.utils.</span></span><span class="sig-name descname"><span class="pre">gymnasium_space_to_gymnax_space</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">space</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arlbench/utils/common.html#gymnasium_space_to_gymnax_space"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.utils.gymnasium_space_to_gymnax_space" title="Link to this definition">¶</a></dt>
-<dd><p>Convert Gym space to equivalent Gymnax space.</p>
+<dd><p>Converst a gymnasium space to a gymnax space.</p>
 <dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>space</strong> (<em>Space</em>) – Gymnasium space.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Gymnax space.</p>
+</dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">Space</span></code></span></p>
+<dd class="field-odd"><p>gymnax_spaces.Space</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="arlbench.utils.recursive_concat">
+<span class="sig-prename descclassname"><span class="pre">arlbench.utils.</span></span><span class="sig-name descname"><span class="pre">recursive_concat</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dict1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dict2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">axis</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arlbench/utils/common.html#recursive_concat"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.utils.recursive_concat" title="Link to this definition">¶</a></dt>
+<dd><p>Recursively concatenates two dictionaries value-wise for same keys.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dict1</strong> (<em>dict</em>) – First dictionary.</p></li>
+<li><p><strong>dict2</strong> (<em>dict</em>) – Second dictionary.</p></li>
+<li><p><strong>axis</strong> (<em>int</em><em>, </em><em>optional</em>) – Concat axis. Defaults to 0.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Concatenated dictionary.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="arlbench.utils.save_defaults_to_yaml">
+<span class="sig-prename descclassname"><span class="pre">arlbench.utils.</span></span><span class="sig-name descname"><span class="pre">save_defaults_to_yaml</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">hp_config_space</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nas_config_sapce</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">algorithm</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arlbench/utils/common.html#save_defaults_to_yaml"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.utils.save_defaults_to_yaml" title="Link to this definition">¶</a></dt>
+<dd><p>Extracts the default values of the hp_config_space and nas_config_sapce and
+returns a yaml file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>hp_config_space</strong> (<em>ConfigurationSpace</em>) – The hyperparameter configuration space</p></li>
+<li><p><strong>algorithm.</strong> (<em>space</em><em> of </em><em>the</em>)</p></li>
+<li><p><strong>nas_config_sapce</strong> (<em>ConfigurationSpace</em>) – The neural architecture configuration</p></li>
+<li><p><strong>algorithm.</strong></p></li>
+<li><p><strong>algorithm</strong> (<em>str</em>) – The name of the algorithm.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>yaml string.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="arlbench.utils.tuple_concat">
+<span class="sig-prename descclassname"><span class="pre">arlbench.utils.</span></span><span class="sig-name descname"><span class="pre">tuple_concat</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tuple1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tuple2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">axis</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arlbench/utils/common.html#tuple_concat"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.utils.tuple_concat" title="Link to this definition">¶</a></dt>
+<dd><p>Concatenates two tuples element-wise.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>tuple1</strong> (<em>tuple</em>) – First tuple.</p></li>
+<li><p><strong>tuple2</strong> (<em>tuple</em>) – Second tuple.</p></li>
+<li><p><strong>axis</strong> (<em>int</em><em>, </em><em>optional</em>) – Concat axis. Defaults to 0.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Concatenated tuple.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>tuple</p>
 </dd>
 </dl>
 </dd></dl>
@@ -405,12 +503,6 @@ with an exception tag before re-raising.</p>
 <table class="autosummary longtable table autosummary">
 <tbody>
 <tr class="row-odd"><td><p><a class="reference internal" href="../arlbench.utils.html#module-arlbench.utils.common" title="arlbench.utils.common"><code class="xref py py-obj docutils literal notranslate"><span class="pre">arlbench.utils.common</span></code></a></p></td>
-<td><p></p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="../arlbench.utils.html#module-arlbench.utils.handle_termination" title="arlbench.utils.handle_termination"><code class="xref py py-obj docutils literal notranslate"><span class="pre">arlbench.utils.handle_termination</span></code></a></p></td>
-<td><p>Main module.</p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="../arlbench.utils.html#module-arlbench.utils.hydra_utils" title="arlbench.utils.hydra_utils"><code class="xref py py-obj docutils literal notranslate"><span class="pre">arlbench.utils.hydra_utils</span></code></a></p></td>
 <td><p></p></td>
 </tr>
 </tbody>

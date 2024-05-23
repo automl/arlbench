@@ -258,16 +258,6 @@
          arlbench.utils.common
         </a>
        </li>
-       <li class="toctree-l4">
-        <a class="reference internal" href="../../../api/arlbench.utils.handle_termination.html">
-         arlbench.utils.handle_termination
-        </a>
-       </li>
-       <li class="toctree-l4">
-        <a class="reference internal" href="../../../api/arlbench.utils.hydra_utils.html">
-         arlbench.utils.hydra_utils
-        </a>
-       </li>
       </ul>
      </li>
     </ul>
@@ -316,31 +306,35 @@
 <span class="kn">import</span> <span class="nn">jax.numpy</span> <span class="k">as</span> <span class="nn">jnp</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">yaml</span>
+<span class="kn">from</span> <span class="nn">ConfigSpace</span> <span class="kn">import</span> <span class="n">ConfigurationSpace</span>
 
-
-<div class="viewcode-block" id="to_gymnasium_space">
-<a class="viewcode-back" href="../../../arlbench.utils.html#arlbench.utils.to_gymnasium_space">[docs]</a>
-<span class="k">def</span> <span class="nf">to_gymnasium_space</span><span class="p">(</span><span class="n">space</span><span class="p">):</span>
-    <span class="kn">import</span> <span class="nn">gym</span> <span class="k">as</span> <span class="nn">old_gym</span>
-
-    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">space</span><span class="p">,</span> <span class="n">old_gym</span><span class="o">.</span><span class="n">spaces</span><span class="o">.</span><span class="n">Box</span><span class="p">):</span>
-        <span class="n">new_space</span> <span class="o">=</span> <span class="n">gymnasium</span><span class="o">.</span><span class="n">spaces</span><span class="o">.</span><span class="n">Box</span><span class="p">(</span>
-            <span class="n">low</span><span class="o">=</span><span class="n">space</span><span class="o">.</span><span class="n">low</span><span class="p">,</span> <span class="n">high</span><span class="o">=</span><span class="n">space</span><span class="o">.</span><span class="n">high</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">space</span><span class="o">.</span><span class="n">low</span><span class="o">.</span><span class="n">dtype</span>
-        <span class="p">)</span>
-    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">space</span><span class="p">,</span> <span class="n">old_gym</span><span class="o">.</span><span class="n">spaces</span><span class="o">.</span><span class="n">Discrete</span><span class="p">):</span>
-        <span class="n">new_space</span> <span class="o">=</span> <span class="n">gymnasium</span><span class="o">.</span><span class="n">spaces</span><span class="o">.</span><span class="n">Discrete</span><span class="p">(</span><span class="n">space</span><span class="o">.</span><span class="n">n</span><span class="p">)</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
-    <span class="k">return</span> <span class="n">new_space</span></div>
-
+<span class="n">CAT_HP_CHOICES</span> <span class="o">=</span> <span class="mi">2</span>
 
 
 <div class="viewcode-block" id="save_defaults_to_yaml">
 <a class="viewcode-back" href="../../../arlbench.utils.html#arlbench.utils.save_defaults_to_yaml">[docs]</a>
-<span class="k">def</span> <span class="nf">save_defaults_to_yaml</span><span class="p">(</span><span class="n">hp_config_space</span><span class="p">,</span> <span class="n">nas_config_sapce</span><span class="p">,</span> <span class="n">algorithm</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">save_defaults_to_yaml</span><span class="p">(</span>
+        <span class="n">hp_config_space</span><span class="p">:</span> <span class="n">ConfigurationSpace</span><span class="p">,</span>
+        <span class="n">nas_config_sapce</span><span class="p">:</span> <span class="n">ConfigurationSpace</span><span class="p">,</span>
+        <span class="n">algorithm</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Extracts the default values of the hp_config_space and nas_config_sapce and</span>
+<span class="sd">    returns a yaml file.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        hp_config_space (ConfigurationSpace): The hyperparameter configuration space</span>
+<span class="sd">        of the algorithm.</span>
+<span class="sd">        nas_config_sapce (ConfigurationSpace): The neural architecture configuration</span>
+<span class="sd">        space of the algorithm.</span>
+<span class="sd">        algorithm (str): The name of the algorithm.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        str: yaml string.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">yaml_dict</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;algorithm&quot;</span><span class="p">:</span> <span class="n">algorithm</span><span class="p">,</span> <span class="s2">&quot;hp_config&quot;</span><span class="p">:</span> <span class="p">{},</span> <span class="s2">&quot;nas_config&quot;</span><span class="p">:</span> <span class="p">{}}</span>
 
-    <span class="k">def</span> <span class="nf">add_hps</span><span class="p">(</span><span class="n">config_space</span><span class="p">,</span> <span class="n">config_key</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">add_hps</span><span class="p">(</span><span class="n">config_space</span><span class="p">:</span> <span class="n">ConfigurationSpace</span><span class="p">,</span> <span class="n">config_key</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Adds hyperparameter defaults to a dictionary.&quot;&quot;&quot;</span>
         <span class="k">for</span> <span class="n">hp_name</span><span class="p">,</span> <span class="n">hp</span> <span class="ow">in</span> <span class="n">config_space</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
             <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">hp</span><span class="p">,</span> <span class="n">ConfigSpace</span><span class="o">.</span><span class="n">UniformIntegerHyperparameter</span><span class="p">):</span>
                 <span class="n">yaml_dict</span><span class="p">[</span><span class="n">config_key</span><span class="p">][</span><span class="n">hp_name</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">hp</span><span class="o">.</span><span class="n">default_value</span><span class="p">)</span>
@@ -366,10 +360,22 @@
 <div class="viewcode-block" id="config_space_to_yaml">
 <a class="viewcode-back" href="../../../arlbench.utils.html#arlbench.utils.config_space_to_yaml">[docs]</a>
 <span class="k">def</span> <span class="nf">config_space_to_yaml</span><span class="p">(</span>
-    <span class="n">config_space</span><span class="p">:</span> <span class="n">ConfigSpace</span><span class="o">.</span><span class="n">ConfigurationSpace</span><span class="p">,</span>
+    <span class="n">config_space</span><span class="p">:</span> <span class="n">ConfigurationSpace</span><span class="p">,</span>
     <span class="n">config_key</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;hp_config&quot;</span><span class="p">,</span>
     <span class="n">seed</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
-<span class="p">):</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Converts a ConfigSpace object to yaml.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        config_space (ConfigurationSpace): Configuration space object.</span>
+<span class="sd">        config_key (str, optional): Key for the hyperparameters.</span>
+<span class="sd">        Defaults to &quot;hp_config&quot;.</span>
+<span class="sd">        seed (int, optional): Configuration space seed to write to yaml. Defaults to 0.</span>
+
+
+<span class="sd">    Returns:</span>
+<span class="sd">        _type_: _description_</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">yaml_dict</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;seed&quot;</span><span class="p">:</span> <span class="n">seed</span><span class="p">,</span> <span class="s2">&quot;hyperparameters&quot;</span><span class="p">:</span> <span class="p">{},</span> <span class="s2">&quot;conditions&quot;</span><span class="p">:</span> <span class="p">[]}</span>
     <span class="k">for</span> <span class="n">hp_name</span><span class="p">,</span> <span class="n">hp</span> <span class="ow">in</span> <span class="n">config_space</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
         <span class="k">if</span> <span class="n">hp_name</span> <span class="o">==</span> <span class="s2">&quot;normalize_observations&quot;</span><span class="p">:</span>
@@ -394,7 +400,7 @@
             <span class="p">}</span>
         <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">hp</span><span class="p">,</span> <span class="n">ConfigSpace</span><span class="o">.</span><span class="n">CategoricalHyperparameter</span><span class="p">):</span>
             <span class="k">try</span><span class="p">:</span>
-                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">hp</span><span class="o">.</span><span class="n">choices</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>  <span class="c1"># assume bool</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">hp</span><span class="o">.</span><span class="n">choices</span><span class="p">)</span> <span class="o">==</span> <span class="n">CAT_HP_CHOICES</span><span class="p">:</span>  <span class="c1"># assume bool</span>
                     <span class="n">param</span> <span class="o">=</span> <span class="p">{</span>
                         <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;categorical&quot;</span><span class="p">,</span>
                         <span class="s2">&quot;choices&quot;</span><span class="p">:</span> <span class="p">[</span><span class="nb">bool</span><span class="p">(</span><span class="n">c</span><span class="p">)</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">hp</span><span class="o">.</span><span class="n">choices</span><span class="p">],</span>
@@ -406,7 +412,7 @@
                         <span class="s2">&quot;choices&quot;</span><span class="p">:</span> <span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">c</span><span class="p">)</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">hp</span><span class="o">.</span><span class="n">choices</span><span class="p">],</span>
                         <span class="s2">&quot;default&quot;</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">hp</span><span class="o">.</span><span class="n">default_value</span><span class="p">),</span>
                     <span class="p">}</span>
-            <span class="k">except</span><span class="p">:</span>
+            <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
                 <span class="n">param</span> <span class="o">=</span> <span class="p">{</span>
                     <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;categorical&quot;</span><span class="p">,</span>
                     <span class="s2">&quot;choices&quot;</span><span class="p">:</span> <span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">c</span><span class="p">)</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">hp</span><span class="o">.</span><span class="n">choices</span><span class="p">],</span>
@@ -435,8 +441,17 @@
 <div class="viewcode-block" id="config_space_to_gymnasium_space">
 <a class="viewcode-back" href="../../../arlbench.utils.html#arlbench.utils.config_space_to_gymnasium_space">[docs]</a>
 <span class="k">def</span> <span class="nf">config_space_to_gymnasium_space</span><span class="p">(</span>
-    <span class="n">config_space</span><span class="p">:</span> <span class="n">ConfigSpace</span><span class="o">.</span><span class="n">ConfigurationSpace</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="kc">None</span>
+    <span class="n">config_space</span><span class="p">:</span> <span class="n">ConfigurationSpace</span><span class="p">,</span> <span class="n">seed</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">gymnasium</span><span class="o">.</span><span class="n">spaces</span><span class="o">.</span><span class="n">Dict</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Converts a configuration space to a gymnasium space.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        config_space (ConfigurationSpace): Configuration space.</span>
+<span class="sd">        seed (int | None, optional): Seed for the gymnasium space. Defaults to None.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        gymnasium.spaces.Dict: Gymnasium space.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">spaces</span> <span class="o">=</span> <span class="p">{}</span>
 
     <span class="k">for</span> <span class="n">hp_name</span><span class="p">,</span> <span class="n">hp</span> <span class="ow">in</span> <span class="n">config_space</span><span class="o">.</span><span class="n">_hyperparameters</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
@@ -462,7 +477,14 @@
 <div class="viewcode-block" id="gymnasium_space_to_gymnax_space">
 <a class="viewcode-back" href="../../../arlbench.utils.html#arlbench.utils.gymnasium_space_to_gymnax_space">[docs]</a>
 <span class="k">def</span> <span class="nf">gymnasium_space_to_gymnax_space</span><span class="p">(</span><span class="n">space</span><span class="p">:</span> <span class="n">gym_spaces</span><span class="o">.</span><span class="n">Space</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">gymnax_spaces</span><span class="o">.</span><span class="n">Space</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Convert Gym space to equivalent Gymnax space.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Converst a gymnasium space to a gymnax space.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        space (Space): Gymnasium space.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        gymnax_spaces.Space: Gymnax space.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">space</span><span class="p">,</span> <span class="n">gym_spaces</span><span class="o">.</span><span class="n">Discrete</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">gymnax_spaces</span><span class="o">.</span><span class="n">Discrete</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">space</span><span class="o">.</span><span class="n">n</span><span class="p">))</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">space</span><span class="p">,</span> <span class="n">gym_spaces</span><span class="o">.</span><span class="n">Box</span><span class="p">):</span>
@@ -488,23 +510,19 @@
 
 
 
-<div class="viewcode-block" id="flatten_dict">
-<a class="viewcode-back" href="../../../arlbench.utils.html#arlbench.utils.flatten_dict">[docs]</a>
-<span class="k">def</span> <span class="nf">flatten_dict</span><span class="p">(</span><span class="n">d</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Flatten a nested dictionary into a tuple containing all items.&quot;&quot;&quot;</span>
-    <span class="n">values</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="k">for</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">d</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
-            <span class="n">values</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">flatten_dict</span><span class="p">(</span><span class="n">value</span><span class="p">))</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">values</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
-    <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">values</span><span class="p">)</span></div>
-
-
-
 <div class="viewcode-block" id="recursive_concat">
 <a class="viewcode-back" href="../../../arlbench.utils.html#arlbench.utils.recursive_concat">[docs]</a>
-<span class="k">def</span> <span class="nf">recursive_concat</span><span class="p">(</span><span class="n">dict1</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">dict2</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">axis</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">recursive_concat</span><span class="p">(</span><span class="n">dict1</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">dict2</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">axis</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Recursively concatenates two dictionaries value-wise for same keys.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        dict1 (dict): First dictionary.</span>
+<span class="sd">        dict2 (dict): Second dictionary.</span>
+<span class="sd">        axis (int, optional): Concat axis. Defaults to 0.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        dict: Concatenated dictionary.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">concat_dict</span> <span class="o">=</span> <span class="p">{}</span>
 
     <span class="k">assert</span> <span class="n">dict1</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="o">==</span> <span class="n">dict2</span><span class="o">.</span><span class="n">keys</span><span class="p">(),</span> <span class="s2">&quot;Dictionaries have different sets of keys&quot;</span>
@@ -521,7 +539,17 @@
 
 <div class="viewcode-block" id="tuple_concat">
 <a class="viewcode-back" href="../../../arlbench.utils.html#arlbench.utils.tuple_concat">[docs]</a>
-<span class="k">def</span> <span class="nf">tuple_concat</span><span class="p">(</span><span class="n">tuple1</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">,</span> <span class="n">tuple2</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">,</span> <span class="n">axis</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">tuple_concat</span><span class="p">(</span><span class="n">tuple1</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">,</span> <span class="n">tuple2</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">,</span> <span class="n">axis</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Concatenates two tuples element-wise.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        tuple1 (tuple): First tuple.</span>
+<span class="sd">        tuple2 (tuple): Second tuple.</span>
+<span class="sd">        axis (int, optional): Concat axis. Defaults to 0.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        tuple: Concatenated tuple.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">tuple1</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">tuple2</span><span class="p">),</span> <span class="s2">&quot;Tuples must be of the same length&quot;</span>
 
     <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span>

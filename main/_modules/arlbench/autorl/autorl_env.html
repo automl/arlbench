@@ -258,16 +258,6 @@
          arlbench.utils.common
         </a>
        </li>
-       <li class="toctree-l4">
-        <a class="reference internal" href="../../../api/arlbench.utils.handle_termination.html">
-         arlbench.utils.handle_termination
-        </a>
-       </li>
-       <li class="toctree-l4">
-        <a class="reference internal" href="../../../api/arlbench.utils.hydra_utils.html">
-         arlbench.utils.hydra_utils
-        </a>
-       </li>
       </ul>
      </li>
     </ul>
@@ -556,7 +546,7 @@
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Instantiated the RL algorithm given the current AutoRL config and hyperparameter configuration.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            Algorithm: RL algorithm instance. </span>
+<span class="sd">            Algorithm: RL algorithm instance.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_algorithm_cls</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_hpo_config</span><span class="p">,</span>
@@ -616,7 +606,7 @@
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_algorithm</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_make_algorithm</span><span class="p">()</span>
 
-        <span class="c1"># First, we check if there is a checkpoint to load. If not, we have to check </span>
+        <span class="c1"># First, we check if there is a checkpoint to load. If not, we have to check</span>
         <span class="c1"># whether this is the first iteration, i.e., call of env.step(). In that case,</span>
         <span class="c1"># we have to initialiaze the algorithm state.</span>
         <span class="c1"># Otherwise, we are using the state from previous iteration(s)</span>

@@ -258,16 +258,6 @@
          arlbench.utils.common
         </a>
        </li>
-       <li class="toctree-l4">
-        <a class="reference internal" href="../../../api/arlbench.utils.handle_termination.html">
-         arlbench.utils.handle_termination
-        </a>
-       </li>
-       <li class="toctree-l4">
-        <a class="reference internal" href="../../../api/arlbench.utils.hydra_utils.html">
-         arlbench.utils.hydra_utils
-        </a>
-       </li>
       </ul>
      </li>
     </ul>
@@ -331,7 +321,7 @@
 <a class="viewcode-back" href="../../../arlbench.autorl.html#arlbench.autorl.objectives.Objective">[docs]</a>
 <span class="k">class</span> <span class="nc">Objective</span><span class="p">(</span><span class="n">ABC</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;An abstract optimization objective for the AutoRL environment.</span>
-<span class="sd">    </span>
+
 <span class="sd">    It can be wrapped around the training function to calculate the objective.</span>
 <span class="sd">    We do this be overriding the __new__() function. It allows us to imitate</span>
 <span class="sd">    the behaviour of a basic function while keeping the advantages of a static class.</span>
@@ -395,7 +385,7 @@
 <span class="sd">            other (Objective): Other Objective to compare to.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            bool: Whether this Objective is less than the other Objective. </span>
+<span class="sd">            bool: Whether this Objective is less than the other Objective.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">RANK</span> <span class="o">&lt;</span> <span class="n">other</span><span class="o">.</span><span class="n">RANK</span></div>
 </div>
@@ -444,7 +434,7 @@
 <a class="viewcode-back" href="../../../arlbench.autorl.html#arlbench.autorl.objectives.RewardMean">[docs]</a>
 <span class="k">class</span> <span class="nc">RewardMean</span><span class="p">(</span><span class="n">Objective</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Reward objective for the AutoRL environment. It measures the mean of the last evaluation rewards.&quot;&quot;&quot;</span>
-    
+
     <span class="n">KEY</span> <span class="o">=</span> <span class="s2">&quot;reward_mean&quot;</span>
     <span class="n">RANK</span> <span class="o">=</span> <span class="mi">2</span>
 
@@ -488,7 +478,7 @@
 <a class="viewcode-back" href="../../../arlbench.autorl.html#arlbench.autorl.objectives.RewardStd">[docs]</a>
 <span class="k">class</span> <span class="nc">RewardStd</span><span class="p">(</span><span class="n">Objective</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Reward objective for the AutoRL environment. It measures the standard deviation of the last evaluation rewards.&quot;&quot;&quot;</span>
-    
+
     <span class="n">KEY</span> <span class="o">=</span> <span class="s2">&quot;reward_std&quot;</span>
     <span class="n">RANK</span> <span class="o">=</span> <span class="mi">2</span>
 
@@ -528,7 +518,7 @@
 <a class="viewcode-back" href="../../../arlbench.autorl.html#arlbench.autorl.objectives.Emissions">[docs]</a>
 <span class="k">class</span> <span class="nc">Emissions</span><span class="p">(</span><span class="n">Objective</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Emissions objective for the AutoRL environment. It measures the emissions during the training using code carbon.&quot;&quot;&quot;</span>
-    
+
     <span class="n">KEY</span> <span class="o">=</span> <span class="s2">&quot;emissions&quot;</span>
     <span class="n">RANK</span> <span class="o">=</span> <span class="mi">1</span>
 

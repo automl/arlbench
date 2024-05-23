@@ -258,16 +258,6 @@
          arlbench.utils.common
         </a>
        </li>
-       <li class="toctree-l4">
-        <a class="reference internal" href="../../../api/arlbench.utils.handle_termination.html">
-         arlbench.utils.handle_termination
-        </a>
-       </li>
-       <li class="toctree-l4">
-        <a class="reference internal" href="../../../api/arlbench.utils.hydra_utils.html">
-         arlbench.utils.hydra_utils
-        </a>
-       </li>
       </ul>
      </li>
     </ul>
@@ -312,8 +302,9 @@
 <span class="kn">import</span> <span class="nn">json</span>
 <span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">warnings</span>
+<span class="kn">from</span> <span class="nn">collections.abc</span> <span class="kn">import</span> <span class="n">Callable</span>
 <span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">TYPE_CHECKING</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Callable</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">TYPE_CHECKING</span><span class="p">,</span> <span class="n">Any</span>
 
 <span class="kn">import</span> <span class="nn">jax</span>
 <span class="kn">import</span> <span class="nn">jax.numpy</span> <span class="k">as</span> <span class="nn">jnp</span>
@@ -400,7 +391,7 @@
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Saves the current state of a AutoRL environment.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            algorithm (str): Name of the algorithm. </span>
+<span class="sd">            algorithm (str): Name of the algorithm.</span>
 <span class="sd">            algorithm_state (AlgorithmState): Current algorithm state.</span>
 <span class="sd">            autorl_config (dict): AutoRL configuration.</span>
 <span class="sd">            hp_config (Configuration): Hyperparameter configuration of the algorithm.</span>
@@ -477,7 +468,7 @@
                 <span class="c1"># Get actual checkpoint by calling factory function</span>
                 <span class="n">ckpt</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">algorithm_ckpt</span><span class="p">[</span>
                     <span class="n">key</span>
-                <span class="p">]()</span>  
+                <span class="p">]()</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="c1"># Only use selected checkpoint options</span>
             <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">checkpoint</span><span class="p">:</span>
@@ -497,7 +488,7 @@
                         <span class="c1"># Get actual checkpoint by calling factory function</span>
                         <span class="n">ckpt</span><span class="p">[</span><span class="n">algorithm_key</span><span class="p">]</span> <span class="o">=</span> <span class="n">algorithm_ckpt</span><span class="p">[</span>
                             <span class="n">algorithm_key</span>
-                        <span class="p">]()</span>  
+                        <span class="p">]()</span>
                 <span class="k">if</span> <span class="ow">not</span> <span class="n">found_key</span><span class="p">:</span>
                     <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
                         <span class="sa">f</span><span class="s2">&quot;Invalid checkpoint for algorithm </span><span class="si">{</span><span class="n">algorithm</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">. Valid keys are </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">algorithm_ckpt</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span><span class="si">!s}</span><span class="s2">. Skipping key.&quot;</span>
@@ -761,7 +752,7 @@
 <span class="sd">            PrioritisedTrajectoryBufferState: The buffer state that was loaded from disk.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># Using the vault we can easily load the data of the buffer</span>
-        <span class="c1"># As described in the part of saving the buffer, this does </span>
+        <span class="c1"># As described in the part of saving the buffer, this does</span>
         <span class="c1"># not contain the priorities</span>
         <span class="n">v</span> <span class="o">=</span> <span class="n">Vault</span><span class="p">(</span>
             <span class="n">vault_name</span><span class="o">=</span><span class="s2">&quot;buffer_state_vault&quot;</span><span class="p">,</span>

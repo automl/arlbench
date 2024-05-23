@@ -258,16 +258,6 @@
          arlbench.utils.common
         </a>
        </li>
-       <li class="toctree-l4">
-        <a class="reference internal" href="../../../../api/arlbench.utils.handle_termination.html">
-         arlbench.utils.handle_termination
-        </a>
-       </li>
-       <li class="toctree-l4">
-        <a class="reference internal" href="../../../../api/arlbench.utils.hydra_utils.html">
-         arlbench.utils.hydra_utils
-        </a>
-       </li>
       </ul>
      </li>
     </ul>
@@ -334,7 +324,7 @@
         <span class="n">env_kwargs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">cnn_policy</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Creates an xland environment for JAX-based RL training. </span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Creates an xland environment for JAX-based RL training.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            env_name (str): Name/id of the brax environment.</span>
@@ -380,7 +370,7 @@
         <span class="c1"># (as referred to in the xland documentation)</span>
         <span class="n">timestep</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">vmap</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_env</span><span class="o">.</span><span class="n">step</span><span class="p">,</span> <span class="n">in_axes</span><span class="o">=</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">))(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">env_params</span><span class="p">,</span> <span class="n">env_state</span><span class="p">,</span> <span class="n">action</span>
-        <span class="p">)</span>  
+        <span class="p">)</span>
 
         <span class="k">return</span> <span class="n">timestep</span><span class="p">,</span> <span class="p">(</span><span class="n">timestep</span><span class="o">.</span><span class="n">observation</span><span class="p">,</span> <span class="n">timestep</span><span class="o">.</span><span class="n">reward</span><span class="p">,</span> <span class="n">timestep</span><span class="o">.</span><span class="n">last</span><span class="p">(),</span> <span class="p">{})</span></div>
 

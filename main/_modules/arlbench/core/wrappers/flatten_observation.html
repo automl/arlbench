@@ -258,16 +258,6 @@
          arlbench.utils.common
         </a>
        </li>
-       <li class="toctree-l4">
-        <a class="reference internal" href="../../../../api/arlbench.utils.handle_termination.html">
-         arlbench.utils.handle_termination
-        </a>
-       </li>
-       <li class="toctree-l4">
-        <a class="reference internal" href="../../../../api/arlbench.utils.hydra_utils.html">
-         arlbench.utils.hydra_utils
-        </a>
-       </li>
       </ul>
      </li>
     </ul>
@@ -310,15 +300,18 @@
 <span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
 
 <span class="kn">import</span> <span class="nn">functools</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">TYPE_CHECKING</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">TYPE_CHECKING</span><span class="p">,</span> <span class="n">Any</span>
 
 <span class="kn">import</span> <span class="nn">jax</span>
+<span class="kn">import</span> <span class="nn">jax.numpy</span> <span class="k">as</span> <span class="nn">jnp</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">from</span> <span class="nn">gymnax.environments</span> <span class="kn">import</span> <span class="n">spaces</span>
 
 <span class="kn">from</span> <span class="nn">.wrapper</span> <span class="kn">import</span> <span class="n">Wrapper</span>
 
 <span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">chex</span>
+
     <span class="kn">from</span> <span class="nn">arlbench.core.environments</span> <span class="kn">import</span> <span class="n">Environment</span>
 
 
@@ -326,13 +319,23 @@
 <div class="viewcode-block" id="FlattenObservationWrapper">
 <a class="viewcode-back" href="../../../../arlbench.core.wrappers.html#arlbench.core.wrappers.FlattenObservationWrapper">[docs]</a>
 <span class="k">class</span> <span class="nc">FlattenObservationWrapper</span><span class="p">(</span><span class="n">Wrapper</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Flatten the observations of the environment.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Wraps the given environment to flatten its observations.&quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">env</span><span class="p">:</span> <span class="n">Environment</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Wraps the given environment to flatten its observations.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            env (Environment): Environment to wrap.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">env</span><span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">observation_space</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">spaces</span><span class="o">.</span><span class="n">Box</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;The flattened observation space of the environment.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            spaces.Box: Flattened obseration space.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_env</span><span class="o">.</span><span class="n">observation_space</span><span class="p">,</span> <span class="n">spaces</span><span class="o">.</span><span class="n">Box</span>
         <span class="p">),</span> <span class="s2">&quot;Only Box spaces are supported for now.&quot;</span>
@@ -344,15 +347,32 @@
         <span class="p">)</span>
 
     <span class="nd">@functools</span><span class="o">.</span><span class="n">partial</span><span class="p">(</span><span class="n">jax</span><span class="o">.</span><span class="n">jit</span><span class="p">,</span> <span class="n">static_argnums</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,))</span>
-    <span class="k">def</span> <span class="nf">__flatten</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obs</span><span class="p">):</span>
-        <span class="c1"># since we have a stack of &lt;n_envs&gt; observations,</span>
+    <span class="k">def</span> <span class="nf">__flatten</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obs</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Flattens a batch of observations.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            obs (jnp.ndarray): The observations to flatten.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            jnp.ndarray: The flattened observations.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Since we have a stack of &lt;n_envs&gt; observations,</span>
         <span class="c1"># we want to keep the first dimension</span>
         <span class="k">return</span> <span class="n">obs</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">obs</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
 
 <div class="viewcode-block" id="FlattenObservationWrapper.reset">
 <a class="viewcode-back" href="../../../../arlbench.core.wrappers.html#arlbench.core.wrappers.FlattenObservationWrapper.reset">[docs]</a>
     <span class="nd">@functools</span><span class="o">.</span><span class="n">partial</span><span class="p">(</span><span class="n">jax</span><span class="o">.</span><span class="n">jit</span><span class="p">,</span> <span class="n">static_argnums</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,))</span>
-    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rng</span><span class="p">):</span>  <span class="c1"># TODO improve typing</span>
+    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rng</span><span class="p">:</span> <span class="n">chex</span><span class="o">.</span><span class="n">PRNGKey</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Calls the reset() function of the environment and flattens the returned observations.</span>
+
+
+<span class="sd">        Args:</span>
+<span class="sd">            rng (chex.PRNGKey): Random number generator key.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            tuple[Any, jnp.ndarray]: Result of the step function but observations are flattened.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">env_state</span><span class="p">,</span> <span class="n">obs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_env</span><span class="o">.</span><span class="n">reset</span><span class="p">(</span><span class="n">rng</span><span class="p">)</span>
 
         <span class="n">obs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__flatten</span><span class="p">(</span><span class="n">obs</span><span class="p">)</span>
@@ -362,7 +382,25 @@
 <div class="viewcode-block" id="FlattenObservationWrapper.step">
 <a class="viewcode-back" href="../../../../arlbench.core.wrappers.html#arlbench.core.wrappers.FlattenObservationWrapper.step">[docs]</a>
     <span class="nd">@functools</span><span class="o">.</span><span class="n">partial</span><span class="p">(</span><span class="n">jax</span><span class="o">.</span><span class="n">jit</span><span class="p">,</span> <span class="n">static_argnums</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,))</span>
-    <span class="k">def</span> <span class="nf">step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">env_state</span><span class="p">,</span> <span class="n">action</span><span class="p">,</span> <span class="n">rng</span><span class="p">):</span>  <span class="c1"># TODO improve typing</span>
+    <span class="k">def</span> <span class="nf">step</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">env_state</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+        <span class="n">action</span><span class="p">:</span>
+        <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">rng</span><span class="p">:</span> <span class="n">chex</span><span class="o">.</span><span class="n">PRNGKey</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="nb">dict</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Calls the step() function of the environment and flattens the returned</span>
+<span class="sd">        observations.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            env_state (Any): The internal environment state.</span>
+<span class="sd">            action (jnp.ndarray): The actions to take.</span>
+<span class="sd">            rng (chex.PRNGKey): Random number generator key.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            tuple[Any, tuple[jnp.ndarray, jnp.ndarray, jnp.ndarray, dict]]: Result of</span>
+<span class="sd">            the step function but observations are flattened.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">env_state</span><span class="p">,</span> <span class="p">(</span><span class="n">obs</span><span class="p">,</span> <span class="n">reward</span><span class="p">,</span> <span class="n">done</span><span class="p">,</span> <span class="n">info</span><span class="p">)</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_env</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">env_state</span><span class="p">,</span> <span class="n">action</span><span class="p">,</span> <span class="n">rng</span><span class="p">)</span>
 
         <span class="n">obs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__flatten</span><span class="p">(</span><span class="n">obs</span><span class="p">)</span>

@@ -28,6 +28,5 @@ arlbench.core.wrappers
    :recursive:
 
    arlbench.core.wrappers.flatten_observation
-   arlbench.core.wrappers.image_extraction
    arlbench.core.wrappers.wrapper
 

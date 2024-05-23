@@ -258,16 +258,6 @@
          arlbench.utils.common
         </a>
        </li>
-       <li class="toctree-l4">
-        <a class="reference internal" href="../../../../api/arlbench.utils.handle_termination.html">
-         arlbench.utils.handle_termination
-        </a>
-       </li>
-       <li class="toctree-l4">
-        <a class="reference internal" href="../../../../api/arlbench.utils.hydra_utils.html">
-         arlbench.utils.hydra_utils
-        </a>
-       </li>
       </ul>
      </li>
     </ul>
@@ -315,9 +305,9 @@
 
 <span class="kn">import</span> <span class="nn">jax</span>
 <span class="kn">import</span> <span class="nn">jax.numpy</span> <span class="k">as</span> <span class="nn">jnp</span>
-<span class="kn">import</span> <span class="nn">gymnax</span>
 
 <span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">gymnax</span>
     <span class="kn">from</span> <span class="nn">chex</span> <span class="kn">import</span> <span class="n">PRNGKey</span>
 
 
@@ -379,7 +369,7 @@
 <span class="sd">            rng (PRNGKey): Random number generator key.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            tuple[Any, Any]:  Returns a tuple containing the environment state as well as the actual return of the step() function. </span>
+<span class="sd">            tuple[Any, Any]:  Returns a tuple containing the environment state as well as the actual return of the step() function.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
 
@@ -412,7 +402,7 @@
 <a class="viewcode-back" href="../../../../arlbench.core.environments.html#arlbench.core.environments.Environment.sample_actions">[docs]</a>
     <span class="nd">@functools</span><span class="o">.</span><span class="n">partial</span><span class="p">(</span><span class="n">jax</span><span class="o">.</span><span class="n">jit</span><span class="p">,</span> <span class="n">static_argnums</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
     <span class="k">def</span> <span class="nf">sample_actions</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rng</span><span class="p">:</span> <span class="n">PRNGKey</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Samples a random action for each environment. </span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Samples a random action for each environment.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            rng (PRNGKey): Random number generator key.</span>
