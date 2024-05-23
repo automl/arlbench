@@ -151,6 +151,7 @@ class DQN(Algorithm):
             track_metrics=track_metrics,
         )
 
+        # For the network, we need the properties of the action space
         action_size, discrete = self.action_type
         network_cls = CNNQ if cnn_policy else MLPQ
         self.network = network_cls(
@@ -169,6 +170,10 @@ class DQN(Algorithm):
             priority_exponent=self.hpo_config["buffer_alpha"],
             device=jax.default_backend(),
         )
+
+        # This is how we can turn the prioritized sampling on/off for dynamic HPO
+        # We always use the prioritized replay buffer, but if "buffer_prio_sampling"
+        # is disabled, we replace the sampling function by the uniform sampling
         if self.hpo_config["buffer_prio_sampling"] is False:
             sample_fn = functools.partial(
                 uniform_sample,
@@ -231,7 +236,6 @@ class DQN(Algorithm):
 
     @staticmethod
     def get_hpo_search_space(seed: int | None = None) -> ConfigurationSpace:
-        # defaults from https://stable-baselines3.readthedocs.io/en/master/modules/dqn.html
         cs = ConfigurationSpace(
             name="DQNConfigSpace",
             seed=seed,
@@ -358,15 +362,18 @@ class DQN(Algorithm):
             DQNState: DQN state.
         """
         rng, reset_rng = jax.random.split(rng)
-
         env_state, obs = self.env.reset(reset_rng)
 
+        # If any of these if not defined, we need a dummy environment transition
+        # to initialize them
         if buffer_state is None or network_params is None or target_params is None:
             dummy_rng = jax.random.PRNGKey(0)
             _action = self.env.sample_actions(dummy_rng)
             _, (_obs, _reward, _done, _) = self.env.step(env_state, _action, dummy_rng)
 
         if buffer_state is None:
+            # This is how transitions will look like during training so we need to pass one
+            # once to the buffer to estimate and allocate the required buffer size
             _timestep = TimeStep(
                 last_obs=_obs[0],
                 obs=_obs[0],

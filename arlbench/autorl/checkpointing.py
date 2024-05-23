@@ -3,8 +3,9 @@ from __future__ import annotations
 import json
 import os
 import warnings
+from collections.abc import Callable
 from datetime import datetime
-from typing import TYPE_CHECKING, Any, Callable
+from typing import TYPE_CHECKING, Any
 
 import jax
 import jax.numpy as jnp
@@ -87,7 +88,7 @@ class Checkpointer:
         """Saves the current state of a AutoRL environment.
 
         Args:
-            algorithm (str): Name of the algorithm. 
+            algorithm (str): Name of the algorithm.
             algorithm_state (AlgorithmState): Current algorithm state.
             autorl_config (dict): AutoRL configuration.
             hp_config (Configuration): Hyperparameter configuration of the algorithm.
@@ -164,7 +165,7 @@ class Checkpointer:
                 # Get actual checkpoint by calling factory function
                 ckpt[key] = algorithm_ckpt[
                     key
-                ]()  
+                ]()
         else:
             # Only use selected checkpoint options
             for key in checkpoint:
@@ -184,7 +185,7 @@ class Checkpointer:
                         # Get actual checkpoint by calling factory function
                         ckpt[algorithm_key] = algorithm_ckpt[
                             algorithm_key
-                        ]()  
+                        ]()
                 if not found_key:
                     warnings.warn(
                         f"Invalid checkpoint for algorithm {algorithm}: {key}. Valid keys are {list(algorithm_ckpt.keys())!s}. Skipping key."
@@ -439,7 +440,7 @@ class Checkpointer:
             PrioritisedTrajectoryBufferState: The buffer state that was loaded from disk.
         """
         # Using the vault we can easily load the data of the buffer
-        # As described in the part of saving the buffer, this does 
+        # As described in the part of saving the buffer, this does
         # not contain the priorities
         v = Vault(
             vault_name="buffer_state_vault",

@@ -6,9 +6,9 @@ from typing import TYPE_CHECKING, Any
 
 import jax
 import jax.numpy as jnp
-import gymnax
 
 if TYPE_CHECKING:
+    import gymnax
     from chex import PRNGKey
 
 
@@ -63,7 +63,7 @@ class Environment(ABC):
             rng (PRNGKey): Random number generator key.
 
         Returns:
-            tuple[Any, Any]:  Returns a tuple containing the environment state as well as the actual return of the step() function. 
+            tuple[Any, Any]:  Returns a tuple containing the environment state as well as the actual return of the step() function.
         """
         raise NotImplementedError
 
@@ -87,7 +87,7 @@ class Environment(ABC):
 
     @functools.partial(jax.jit, static_argnums=0)
     def sample_actions(self, rng: PRNGKey) -> jnp.ndarray:
-        """Samples a random action for each environment. 
+        """Samples a random action for each environment.
 
         Args:
             rng (PRNGKey): Random number generator key.

@@ -23,8 +23,8 @@ class GymnasiumEnv(Environment):
 
     def __init__(
         self, env_name: str, seed: int, env_kwargs: dict[str, Any] | None = None
-    ):        
-        """Creates a gymnasium environment for JAX-based RL training. 
+    ):
+        """Creates a gymnasium environment for JAX-based RL training.
 
         Args:
             env_name (str): Name/id of the brax environment.

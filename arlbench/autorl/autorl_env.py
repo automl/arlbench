@@ -245,7 +245,7 @@ class AutoRLEnv(gymnasium.Env):
         """Instantiated the RL algorithm given the current AutoRL config and hyperparameter configuration.
 
         Returns:
-            Algorithm: RL algorithm instance. 
+            Algorithm: RL algorithm instance.
         """
         return self._algorithm_cls(
             self._hpo_config,
@@ -303,7 +303,7 @@ class AutoRLEnv(gymnasium.Env):
 
         self._algorithm = self._make_algorithm()
 
-        # First, we check if there is a checkpoint to load. If not, we have to check 
+        # First, we check if there is a checkpoint to load. If not, we have to check
         # whether this is the first iteration, i.e., call of env.step(). In that case,
         # we have to initialiaze the algorithm state.
         # Otherwise, we are using the state from previous iteration(s)

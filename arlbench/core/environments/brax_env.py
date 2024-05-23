@@ -20,11 +20,11 @@ if TYPE_CHECKING:
 
 class BraxEnv(Environment):
     """A brax-based RL environment."""
-    
+
     def __init__(
         self, env_name: str, n_envs: int, env_kwargs: dict[str, Any] | None = None
     ):
-        """Creates a brax environment for JAX-based RL training. 
+        """Creates a brax environment for JAX-based RL training.
 
         Args:
             env_name (str): Name/id of the brax environment.

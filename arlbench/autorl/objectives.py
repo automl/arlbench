@@ -20,7 +20,7 @@ if TYPE_CHECKING:
 
 class Objective(ABC):
     """An abstract optimization objective for the AutoRL environment.
-    
+
     It can be wrapped around the training function to calculate the objective.
     We do this be overriding the __new__() function. It allows us to imitate
     the behaviour of a basic function while keeping the advantages of a static class.
@@ -73,7 +73,7 @@ class Objective(ABC):
             other (Objective): Other Objective to compare to.
 
         Returns:
-            bool: Whether this Objective is less than the other Objective. 
+            bool: Whether this Objective is less than the other Objective.
         """
         return self.RANK < other.RANK
 
@@ -109,7 +109,7 @@ class Runtime(Objective):
 
 class RewardMean(Objective):
     """Reward objective for the AutoRL environment. It measures the mean of the last evaluation rewards."""
-    
+
     KEY = "reward_mean"
     RANK = 2
 
@@ -144,7 +144,7 @@ class RewardMean(Objective):
 
 class RewardStd(Objective):
     """Reward objective for the AutoRL environment. It measures the standard deviation of the last evaluation rewards."""
-    
+
     KEY = "reward_std"
     RANK = 2
 
@@ -175,7 +175,7 @@ class RewardStd(Objective):
 
 class Emissions(Objective):
     """Emissions objective for the AutoRL environment. It measures the emissions during the training using code carbon."""
-    
+
     KEY = "emissions"
     RANK = 1
 

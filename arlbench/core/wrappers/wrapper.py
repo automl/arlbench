@@ -10,6 +10,11 @@ class Wrapper:
     """Base class for ARLBench wrappers."""
 
     def __init__(self, env: Environment):
+        """Wraps an ARLBench Environment.
+
+        Args:
+            env (Environment): Environment to wrap
+        """
         self._env = env
 
     # provide proxy access to regular attributes of wrapped object

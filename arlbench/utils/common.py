@@ -7,26 +7,33 @@ import gymnax.environments.spaces as gymnax_spaces
 import jax.numpy as jnp
 import numpy as np
 import yaml
+from ConfigSpace import ConfigurationSpace
+
+CAT_HP_CHOICES = 2
 
 
-def to_gymnasium_space(space):
-    import gym as old_gym
+def save_defaults_to_yaml(
+        hp_config_space: ConfigurationSpace,
+        nas_config_sapce: ConfigurationSpace,
+        algorithm: str
+    ) -> str:
+    """Extracts the default values of the hp_config_space and nas_config_sapce and
+    returns a yaml file.
 
-    if isinstance(space, old_gym.spaces.Box):
-        new_space = gymnasium.spaces.Box(
-            low=space.low, high=space.high, dtype=space.low.dtype
-        )
-    elif isinstance(space, old_gym.spaces.Discrete):
-        new_space = gymnasium.spaces.Discrete(space.n)
-    else:
-        raise NotImplementedError
-    return new_space
+    Args:
+        hp_config_space (ConfigurationSpace): The hyperparameter configuration space
+        of the algorithm.
+        nas_config_sapce (ConfigurationSpace): The neural architecture configuration
+        space of the algorithm.
+        algorithm (str): The name of the algorithm.
 
-
-def save_defaults_to_yaml(hp_config_space, nas_config_sapce, algorithm: str):
+    Returns:
+        str: yaml string.
+    """
     yaml_dict = {"algorithm": algorithm, "hp_config": {}, "nas_config": {}}
 
-    def add_hps(config_space, config_key):
+    def add_hps(config_space: ConfigurationSpace, config_key: str) -> None:
+        """Adds hyperparameter defaults to a dictionary."""
         for hp_name, hp in config_space.items():
             if isinstance(hp, ConfigSpace.UniformIntegerHyperparameter):
                 yaml_dict[config_key][hp_name] = int(hp.default_value)
@@ -49,10 +56,22 @@ def save_defaults_to_yaml(hp_config_space, nas_config_sapce, algorithm: str):
 
 
 def config_space_to_yaml(
-    config_space: ConfigSpace.ConfigurationSpace,
+    config_space: ConfigurationSpace,
     config_key: str = "hp_config",
     seed: int = 0,
-):
+) -> str:
+    """Converts a ConfigSpace object to yaml.
+
+    Args:
+        config_space (ConfigurationSpace): Configuration space object.
+        config_key (str, optional): Key for the hyperparameters.
+        Defaults to "hp_config".
+        seed (int, optional): Configuration space seed to write to yaml. Defaults to 0.
+
+
+    Returns:
+        _type_: _description_
+    """
     yaml_dict = {"seed": seed, "hyperparameters": {}, "conditions": []}
     for hp_name, hp in config_space.items():
         if hp_name == "normalize_observations":
@@ -77,7 +96,7 @@ def config_space_to_yaml(
             }
         elif isinstance(hp, ConfigSpace.CategoricalHyperparameter):
             try:
-                if len(hp.choices) == 2:  # assume bool
+                if len(hp.choices) == CAT_HP_CHOICES:  # assume bool
                     param = {
                         "type": "categorical",
                         "choices": [bool(c) for c in hp.choices],
@@ -89,7 +108,7 @@ def config_space_to_yaml(
                         "choices": [int(c) for c in hp.choices],
                         "default": int(hp.default_value),
                     }
-            except:
+            except TypeError:
                 param = {
                     "type": "categorical",
                     "choices": [str(c) for c in hp.choices],
@@ -115,8 +134,17 @@ def config_space_to_yaml(
 
 
 def config_space_to_gymnasium_space(
-    config_space: ConfigSpace.ConfigurationSpace, seed=None
+    config_space: ConfigurationSpace, seed: int | None = None
 ) -> gymnasium.spaces.Dict:
+    """Converts a configuration space to a gymnasium space.
+
+    Args:
+        config_space (ConfigurationSpace): Configuration space.
+        seed (int | None, optional): Seed for the gymnasium space. Defaults to None.
+
+    Returns:
+        gymnasium.spaces.Dict: Gymnasium space.
+    """
     spaces = {}
 
     for hp_name, hp in config_space._hyperparameters.items():
@@ -139,7 +167,14 @@ def config_space_to_gymnasium_space(
 
 
 def gymnasium_space_to_gymnax_space(space: gym_spaces.Space) -> gymnax_spaces.Space:
-    """Convert Gym space to equivalent Gymnax space."""
+    """Converst a gymnasium space to a gymnax space.
+
+    Args:
+        space (Space): Gymnasium space.
+
+    Returns:
+        gymnax_spaces.Space: Gymnax space.
+    """
     if isinstance(space, gym_spaces.Discrete):
         return gymnax_spaces.Discrete(int(space.n))
     if isinstance(space, gym_spaces.Box):
@@ -164,18 +199,17 @@ def gymnasium_space_to_gymnax_space(space: gym_spaces.Space) -> gymnax_spaces.Sp
     raise NotImplementedError(f"Conversion of {space.__class__.__name__} not supported")
 
 
-def flatten_dict(d):
-    """Flatten a nested dictionary into a tuple containing all items."""
-    values = []
-    for value in d.values():
-        if isinstance(value, dict):
-            values.extend(flatten_dict(value))
-        else:
-            values.append(value)
-    return tuple(values)
+def recursive_concat(dict1: dict, dict2: dict, axis: int = 0) -> dict:
+    """Recursively concatenates two dictionaries value-wise for same keys.
 
+    Args:
+        dict1 (dict): First dictionary.
+        dict2 (dict): Second dictionary.
+        axis (int, optional): Concat axis. Defaults to 0.
 
-def recursive_concat(dict1: dict, dict2: dict, axis: int = 0):
+    Returns:
+        dict: Concatenated dictionary.
+    """
     concat_dict = {}
 
     assert dict1.keys() == dict2.keys(), "Dictionaries have different sets of keys"
@@ -189,7 +223,17 @@ def recursive_concat(dict1: dict, dict2: dict, axis: int = 0):
     return concat_dict
 
 
-def tuple_concat(tuple1: tuple, tuple2: tuple, axis: int = 0):
+def tuple_concat(tuple1: tuple, tuple2: tuple, axis: int = 0) -> tuple:
+    """Concatenates two tuples element-wise.
+
+    Args:
+        tuple1 (tuple): First tuple.
+        tuple2 (tuple): Second tuple.
+        axis (int, optional): Concat axis. Defaults to 0.
+
+    Returns:
+        tuple: Concatenated tuple.
+    """
     assert len(tuple1) == len(tuple2), "Tuples must be of the same length"
 
     return tuple(

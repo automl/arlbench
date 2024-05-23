@@ -3,10 +3,11 @@ from __future__ import annotations
 import warnings
 from typing import TYPE_CHECKING
 
-from arlbench.core.wrappers import Wrapper, FlattenObservationWrapper
+from arlbench.core.wrappers import FlattenObservationWrapper, Wrapper
 
 if TYPE_CHECKING:
     from typing import Any
+
     from .autorl_env import Environment
 
 
