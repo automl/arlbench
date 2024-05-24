@@ -1,55 +1,61 @@
-# Copyright 2024 The Brax Authors.
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
+# This file includes code from brax, licensed under the Apache License 2.0 (http://www.apache.org/licenses/LICENSE-2.0).
 
-"""Utility functions to compute running statistics.
+from typing import Any, Optional, Tuple, Iterable, Mapping, Union
+import dataclasses
 
-This file was taken from acme and modified to simplify dependencies:
-
-https://github.com/deepmind/acme/blob/master/acme/jax/running_statistics.py
-"""
-
-from typing import Any, Optional, Tuple
-
-from brax.training.acme import types
 from flax import struct
 import jax
 import jax.numpy as jnp
 
 
-def _zeros_like(nest: types.Nest, dtype=None) -> types.Nest:
+@dataclasses.dataclass(frozen=True)
+class Array:
+  """Describes a numpy array or scalar shape and dtype.
+
+  Similar to dm_env.specs.Array.
+  """
+  shape: Tuple[int, ...]
+  dtype: jnp.dtype
+
+
+# Define types for nested arrays and tensors.
+NestedArray = jnp.ndarray
+NestedTensor = Any
+
+# pytype: disable=not-supported-yet
+NestedSpec = Union[
+  Array,
+  Iterable['NestedSpec'],
+  Mapping[Any, 'NestedSpec'],
+]
+# pytype: enable=not-supported-yet
+
+Nest = Union[NestedArray, NestedTensor, NestedSpec]
+
+
+def _zeros_like(nest: Nest, dtype=None) -> Nest:
   return jax.tree_util.tree_map(lambda x: jnp.zeros(x.shape, dtype or x.dtype), nest)
 
 
-def _ones_like(nest: types.Nest, dtype=None) -> types.Nest:
+def _ones_like(nest: Nest, dtype=None) -> Nest:
   return jax.tree_util.tree_map(lambda x: jnp.ones(x.shape, dtype or x.dtype), nest)
 
 
 @struct.dataclass
 class NestedMeanStd:
   """A container for running statistics (mean, std) of possibly nested data."""
-  mean: types.Nest
-  std: types.Nest
+  mean: Nest
+  std: Nest
 
 
 @struct.dataclass
 class RunningStatisticsState(NestedMeanStd):
   """Full state of running statistics computation."""
   count: jnp.ndarray
-  summed_variance: types.Nest
+  summed_variance: Nest
 
 
-def init_state(nest: types.Nest) -> RunningStatisticsState:
+def init_state(nest: Nest) -> RunningStatisticsState:
   """Initializes the running statistics for the given nested structure."""
   dtype = jnp.float64 if jax.config.jax_enable_x64 else jnp.float32
 
@@ -62,8 +68,8 @@ def init_state(nest: types.Nest) -> RunningStatisticsState:
       std=_ones_like(nest, dtype=dtype))
 
 
-def _validate_batch_shapes(batch: types.NestedArray,
-                           reference_sample: types.NestedArray,
+def _validate_batch_shapes(batch: NestedArray,
+                           reference_sample: NestedArray,
                            batch_dims: Tuple[int, ...]) -> None:
   """Verifies shapes of the batch leaves against the reference sample.
 
@@ -88,7 +94,7 @@ def _validate_batch_shapes(batch: types.NestedArray,
 
 
 def update(state: RunningStatisticsState,
-           batch: types.Nest,
+           batch: Nest,
            *,
            weights: Optional[jnp.ndarray] = None,
            std_min_value: float = 1e-6,
@@ -195,9 +201,9 @@ def update(state: RunningStatisticsState,
       count=count, mean=mean, summed_variance=summed_variance, std=std)
 
 
-def normalize(batch: types.NestedArray,
+def normalize(batch: NestedArray,
               mean_std: NestedMeanStd,
-              max_abs_value: Optional[float] = None) -> types.NestedArray:
+              max_abs_value: Optional[float] = None) -> NestedArray:
   """Normalizes data using running statistics."""
 
   def normalize_leaf(data: jnp.ndarray, mean: jnp.ndarray,
@@ -214,8 +220,8 @@ def normalize(batch: types.NestedArray,
   return jax.tree_util.tree_map(normalize_leaf, batch, mean_std.mean, mean_std.std)
 
 
-def denormalize(batch: types.NestedArray,
-                mean_std: NestedMeanStd) -> types.NestedArray:
+def denormalize(batch: NestedArray,
+                mean_std: NestedMeanStd) -> NestedArray:
   """Denormalizes values in a nested structure using the given mean/std.
 
   Only values of inexact types are denormalized.

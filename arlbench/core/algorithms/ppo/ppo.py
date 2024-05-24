@@ -16,9 +16,8 @@ from flax.training.train_state import TrainState
 from flax.core.frozen_dict import FrozenDict
 
 from arlbench.core.algorithms.algorithm import Algorithm
-from arlbench.core import running_statistics
-from arlbench.core.running_statistics import RunningStatisticsState
-from arlbench.utils import recursive_concat, tuple_concat
+from arlbench.core.algorithms import running_statistics
+from arlbench.core.algorithms.running_statistics import RunningStatisticsState
 
 from .models import CNNActorCritic, MLPActorCritic
 
