@@ -5,7 +5,6 @@ import functools
 from collections.abc import Callable
 from typing import TYPE_CHECKING, Any, NamedTuple
 
-import flashbax as fbx
 import jax
 import jax.lax
 import jax.numpy as jnp
@@ -14,8 +13,8 @@ import optax
 from ConfigSpace import Categorical, Configuration, ConfigurationSpace, Float, Integer, EqualsCondition
 from flax.training.train_state import TrainState
 
-from arlbench.core import running_statistics
-from arlbench.core.running_statistics import RunningStatisticsState
+from .. import running_statistics
+from arlbench.core.algorithms.running_statistics import RunningStatisticsState
 from arlbench.core.algorithms.algorithm import Algorithm
 from arlbench.core.algorithms.buffers import uniform_sample
 from arlbench.core.algorithms.common import TimeStep
