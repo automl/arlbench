@@ -1,0 +1,11 @@
+# @package _global_
+defaults:
+  - override /hydra/launcher: submitit_local
+
+hydra:
+  launcher:
+    cpus_per_task: 8
+    mem_gb: 6
+    timeout_min: 10000
+    tasks_per_node: 1
+    nodes: 1
