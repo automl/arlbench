@@ -9,11 +9,11 @@ defaults:
 
 hydra:
   sweeper:
-    n_trials: 32
+    n_trials: 301
     budget_variable: autorl.n_total_timesteps
     search_space: ${search_space}
     sweeper_kwargs:
-      min_budget: 10000
+      min_budget: ${divide:${environment.n_total_timesteps},100}
       max_budget: ${environment.n_total_timesteps} 
       optimizer_kwargs:
         smac_facade:
@@ -63,5 +63,5 @@ autorl:
   objectives: ["reward_mean"]
   optimize_objectives: "upper"
   n_steps: 10
-  n_eval_steps: 10
+  n_eval_steps: 1
   n_eval_episodes: 128
