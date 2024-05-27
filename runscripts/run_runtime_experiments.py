@@ -360,16 +360,16 @@ def train_sb3(cfg: DictConfig, logger: logging.Logger):
         # TODO verify to have NatureCNN + one hidden layer
         nas_config = {
             "net_arch": [cfg.nas_config.hidden_size],
-            "activation_fn": nn.relu
+            "activation_fn": nn.ReLU
             if cfg.nas_config.activation == "relu"
-            else nn.tanh,
+            else nn.Tanh,
         }
     else:
         nas_config = {
             "net_arch": [cfg.nas_config.hidden_size, cfg.nas_config.hidden_size],
-            "activation_fn": nn.relu
+            "activation_fn": nn.ReLU
             if cfg.nas_config.activation == "relu"
-            else nn.tanh,
+            else nn.Tanh,
         }
 
     if cfg.algorithm == "dqn":
@@ -381,8 +381,8 @@ def train_sb3(cfg: DictConfig, logger: logging.Logger):
             seed=cfg.seed,
             learning_starts=cfg.hp_config.learning_starts,
             target_update_interval=cfg.hp_config.target_update_interval,
-            exploration_final_eps=cfg.hp_config.epsilon,
-            exploration_initial_eps=cfg.hp_config.epsilon,
+            exploration_final_eps=cfg.hp_config.target_epsilon,
+            exploration_initial_eps=cfg.hp_config.initial_epsilon,
             gradient_steps=cfg.hp_config.gradient_steps,
             buffer_size=cfg.hp_config.buffer_size,
             learning_rate=cfg.hp_config.learning_rate,
