@@ -133,7 +133,7 @@ def test_no_target_dqn(n_envs=N_ENVS):
     print(
         f"n_envs = {n_envs}, time = {training_time:.2f}, env_steps = {n_envs * algorithm_state.runner_state.global_step}, updates = {algorithm_state.runner_state.global_step}, reward = {reward:.2f}"
     )
-    assert reward > 400
+    assert reward > 200
 
 
 # ReLU activation

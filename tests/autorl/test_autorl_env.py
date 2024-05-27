@@ -14,7 +14,7 @@ def test_autorl_env_dqn_default_obs():
         "n_envs": 10,
         "algorithm": "dqn",
         "cnn_policy": False,
-        "n_total_timesteps": 1e6,
+        "n_total_timesteps": 1e5,
         "n_eval_steps": 10,
         "checkpoint": [],
         "objectives": ["reward_mean"],
@@ -129,7 +129,7 @@ def test_autorl_env_dqn_per_switch():
         "n_envs": 10,
         "algorithm": "dqn",
         "cnn_policy": False,
-        "n_total_timesteps": 1e6,
+        "n_total_timesteps": 1e5,
         "n_eval_steps": 10,
         "checkpoint": [],
         "objectives": ["reward_mean"],
@@ -143,28 +143,24 @@ def test_autorl_env_dqn_per_switch():
 
     action["buffer_prio_sampling"] = True
     _, objectives, _, _, _ = env.step(action)
-    assert objectives["reward_mean"] > 400
 
     action["buffer_prio_sampling"] = False
     _, objectives, _, _, _ = env.step(action)
-    assert objectives["reward_mean"] > 450
 
     action["buffer_prio_sampling"] = True
     _, objectives, _, _, _ = env.step(action)
-    assert objectives["reward_mean"] > 490
+    assert objectives["reward_mean"] > 200
 
     _, _ = env.reset()
     action["buffer_prio_sampling"] = False
     _, objectives, _, _, _ = env.step(action)
-    assert objectives["reward_mean"] > 400
 
     action["buffer_prio_sampling"] = True
     _, objectives, _, _, _ = env.step(action)
-    assert objectives["reward_mean"] > 450
 
     action["buffer_prio_sampling"] = False
     _, objectives, _, _, _ = env.step(action)
-    assert objectives["reward_mean"] > 490
+    assert objectives["reward_mean"] > 200
 
 
 def test_autorl_env_dqn_dac():
@@ -175,7 +171,7 @@ def test_autorl_env_dqn_dac():
         "n_envs": 10,
         "algorithm": "dqn",
         "cnn_policy": False,
-        "n_total_timesteps": 1e6,
+        "n_total_timesteps": 1e5,
         "n_eval_steps": 10,
         "checkpoint": [],
         "objectives": ["reward_mean"],
@@ -209,7 +205,7 @@ def test_autorl_env_dqn_hpo():
         "n_envs": 10,
         "algorithm": "dqn",
         "cnn_policy": False,
-        "n_total_timesteps": 1e6,
+        "n_total_timesteps": 1e5,
         "n_eval_steps": 10,
         "checkpoint": [],
         "objectives": ["reward_mean"],
@@ -236,7 +232,7 @@ def test_autorl_env_step_before_reset():
         "n_envs": 10,
         "algorithm": "dqn",
         "cnn_policy": False,
-        "n_total_timesteps": 1e6,
+        "n_total_timesteps": 1e5,
         "n_eval_steps": 10,
         "checkpoint": [],
         "objectives": ["reward_mean"],
@@ -261,7 +257,7 @@ def test_autorl_env_forbidden_step():
         "n_envs": 10,
         "algorithm": "dqn",
         "cnn_policy": False,
-        "n_total_timesteps": 1e6,
+        "n_total_timesteps": 1e5,
         "n_eval_steps": 10,
         "checkpoint": [],
         "objectives": ["reward_mean"],

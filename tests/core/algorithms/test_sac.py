@@ -128,9 +128,3 @@ def test_gradient_steps_sac(n_envs=N_ENVS):
     )
     assert reward > -300
 
-
-if __name__ == "__main__":
-    with warnings.catch_warnings():
-        warnings.simplefilter("ignore")
-        default_sac_continuous(n_envs=1)
-        default_sac_continuous(n_envs=10)

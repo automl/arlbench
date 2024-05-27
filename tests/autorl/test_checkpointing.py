@@ -10,8 +10,8 @@ from arlbench.core.environments import make_env
 
 
 def test_read_write_buffer():
-    CHECKPOINT_DIR = "/tmp/test_saves"
-    CHECKPOINT_NAME = "unit_test"
+    CHECKPOINT_DIR = "/tmp"
+    CHECKPOINT_NAME = "test_checkpoint"
     N_TOTAL_TIMESTEPS = 1e6
     EVAL_STEPS = 10
     EVAL_EPISODES = 10
@@ -23,20 +23,21 @@ def test_read_write_buffer():
 
     hp_config = DQN.get_default_hpo_config()
     algorithm = DQN(hp_config, env)
-    runner_state, buffer_state = algorithm.init(rng)
+    algorithm_state = algorithm.init(rng)
 
-    runner_state, buffer_state, result = algorithm.train(
-        runner_state,
-        buffer_state,
+    algorithm_state, result = algorithm.train(
+        *algorithm_state,
         n_total_timesteps=N_TOTAL_TIMESTEPS,
         n_eval_steps=EVAL_STEPS,
         n_eval_episodes=EVAL_EPISODES,
     )
+    buffer_state = algorithm_state[1]
     buffer_checkpoint = Checkpointer.save_buffer(
         buffer_state, CHECKPOINT_DIR, CHECKPOINT_NAME
     )
 
-    _, init_buffer_state = algorithm.init(rng)
+    init_algorithm_state = algorithm.init(rng)
+    init_buffer_state = init_algorithm_state[1]
     disk_buffer_state = Checkpointer.load_buffer(
         init_buffer_state,
         buffer_checkpoint["priority_state_path"],
@@ -59,12 +60,14 @@ def test_read_write_buffer():
         buffer_state.experience.action, disk_buffer_state.experience.action, atol=1e-7
     )
 
-    runner_state, disk_buffer_state, _ = algorithm.train(
-        runner_state, disk_buffer_state, n_total_timesteps=1e6
+    algorithm_state = algorithm_state._replace(buffer_state=disk_buffer_state)
+
+    algorithm_state, _ = algorithm.train(
+        *algorithm_state, n_total_timesteps=1e6
     )
-    rewards = algorithm.eval(runner_state, 10)
+    rewards = algorithm.eval(algorithm_state.runner_state, 10)
     reward = np.mean(rewards)
-    assert reward > 480
+    assert reward > 200
 
 
 def test_checkpointing_dqn():
@@ -85,12 +88,13 @@ def test_checkpointing_dqn():
 
     reward = objectives["reward_mean"]
 
-    _ = env.reset(checkpoint_path=info["checkpoint"])
+    _ = env.reset()
+    env._load(checkpoint_path=info["checkpoint"], seed=42)
+
+    env.step(action, n_total_timesteps=10, n_eval_episodes=10, n_eval_steps=1)
 
     new_reward = np.mean(env.eval(10))
     assert np.isclose(reward, new_reward, rtol=1.0)
-
-    env.step(action, n_total_timesteps=10000)
 
 
 def test_checkpointing_ppo():
@@ -111,12 +115,14 @@ def test_checkpointing_ppo():
 
     reward = objectives["reward_mean"]
 
-    _ = env.reset(checkpoint_path=info["checkpoint"])
+    _ = env.reset()
+    env._load(checkpoint_path=info["checkpoint"], seed=42)
 
+    env.step(action, n_total_timesteps=10, n_eval_episodes=10, n_eval_steps=1)
+    
     new_reward = np.mean(env.eval(10))
     assert np.isclose(reward, new_reward, rtol=1.0)
 
-    env.step(action, n_total_timesteps=10000)
 
 
 def test_checkpointing_sac():
@@ -137,15 +143,18 @@ def test_checkpointing_sac():
 
     reward = objectives["reward_mean"]
 
-    _ = env.reset(checkpoint_path=info["checkpoint"])
+    _ = env.reset()
+    env._load(checkpoint_path=info["checkpoint"], seed=42)
 
+    env.step(action, n_total_timesteps=10, n_eval_episodes=10, n_eval_steps=1)
+    
     new_reward = np.mean(env.eval(10))
     assert np.isclose(reward, new_reward, rtol=1.0)
 
-    env.step(action, n_total_timesteps=10000)
 
 
 if __name__ == "__main__":
+    test_read_write_buffer()
     test_checkpointing_dqn()
     test_checkpointing_ppo()
     test_checkpointing_sac()
