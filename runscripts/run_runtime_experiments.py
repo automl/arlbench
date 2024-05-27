@@ -6,17 +6,14 @@ import sys
 
 import hydra
 from codecarbon import track_emissions
-import jax
 from arlbench.core.environments import make_env
 from arlbench.core.algorithms import DQN as ARLBDQN
 from arlbench.core.algorithms import PPO as ARLBPPO
 from arlbench.core.algorithms import SAC as ARLBSAC
 import time
-import pandas as pd
 import logging
 import gymnax
 import jax
-import jax.numpy as jnp
 import numpy as np
 import pandas as pd
 from datetime import timedelta

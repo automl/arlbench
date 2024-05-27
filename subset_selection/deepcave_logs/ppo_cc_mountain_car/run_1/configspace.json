@@ -1,0 +1,98 @@
+{
+  "hyperparameters": [
+    {
+      "name": "clip_eps",
+      "type": "uniform_float",
+      "log": false,
+      "lower": 0.0,
+      "upper": 10000000.0,
+      "default": 5000000.0
+    },
+    {
+      "name": "ent_coef",
+      "type": "uniform_float",
+      "log": false,
+      "lower": 0.0,
+      "upper": 10000000.0,
+      "default": 5000000.0
+    },
+    {
+      "name": "gae_lambda",
+      "type": "uniform_float",
+      "log": false,
+      "lower": 0.0,
+      "upper": 10000000.0,
+      "default": 5000000.0
+    },
+    {
+      "name": "learning_rate",
+      "type": "uniform_float",
+      "log": false,
+      "lower": 0.0,
+      "upper": 10000000.0,
+      "default": 5000000.0
+    },
+    {
+      "name": "max_grad_norm",
+      "type": "uniform_float",
+      "log": false,
+      "lower": 0.0,
+      "upper": 10000000.0,
+      "default": 5000000.0
+    },
+    {
+      "name": "minibatch_size",
+      "type": "uniform_float",
+      "log": false,
+      "lower": 0.0,
+      "upper": 10000000.0,
+      "default": 5000000.0
+    },
+    {
+      "name": "n_steps",
+      "type": "uniform_float",
+      "log": false,
+      "lower": 0.0,
+      "upper": 10000000.0,
+      "default": 5000000.0
+    },
+    {
+      "name": "normalize_advantage",
+      "type": "categorical",
+      "choices": [
+        true,
+        false
+      ],
+      "default": true,
+      "weights": null
+    },
+    {
+      "name": "update_epochs",
+      "type": "uniform_float",
+      "log": false,
+      "lower": 0.0,
+      "upper": 10000000.0,
+      "default": 5000000.0
+    },
+    {
+      "name": "vf_clip_eps",
+      "type": "uniform_float",
+      "log": false,
+      "lower": 0.0,
+      "upper": 10000000.0,
+      "default": 5000000.0
+    },
+    {
+      "name": "vf_coef",
+      "type": "uniform_float",
+      "log": false,
+      "lower": 0.0,
+      "upper": 10000000.0,
+      "default": 5000000.0
+    }
+  ],
+  "conditions": [],
+  "forbiddens": [],
+  "python_module_version": "0.6.1",
+  "json_format_version": 0.4
+}
