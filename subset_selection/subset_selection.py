@@ -8,12 +8,12 @@ import itertools
 from parallel_for import parallel_for
 import scipy
 from sklearn.linear_model import LinearRegression
-import seaborn as sns
-import matplotlib.pyplot as plt
+import ast
 
 
 RAW_SOBOL_RESULTS = "results_combined/sobol"
 SUBSET_RESULTS = "subset_selection/results"
+SMAC_RESULTS = "results/smac"
 
 
 def read_arlb_dataset():
@@ -266,6 +266,21 @@ def subset_selection(
         pivot_table.to_csv(os.path.join(SUBSET_RESULTS, f"{algorithm}_{n_subset}_.csv"))
 
     
+def validate_subset():
+    for folder in os.listdir(SMAC_RESULTS):
+        directory = os.path.join(SMAC_RESULTS, folder)
+        if not os.path.isdir(directory):
+            continue
+
+        runhistory_path = os.path.join(directory, "42", "runhistory.csv")
+        if not os.path.isfile(runhistory_path):
+            continue
+
+        runhistory = pd.read_csv(runhistory_path)
+
+        # TODO implement
+
+
 if __name__ == "__main__":
     #subset_selection(n_subset=4, normalization_func=normalize_ranks, error_func=corr_error, fit_intercept=False, positive_weights=True)
     subset_selection(n_subset=4, normalization_func=normalize_min_max, error_func=mse_error, fit_intercept=False, positive_weights=True)
