@@ -14,6 +14,8 @@ import csv
 from hydra_plugins.hyper_smac.hyper_smac import read_additional_configs
 
 OmegaConf.register_new_resolver("read_additional_configs", read_additional_configs, replace=True)
+OmegaConf.register_new_resolver("multiply", lambda x, y: x * y, replace=True)
+OmegaConf.register_new_resolver("divide", lambda x, y: x / y, replace=True)
 
 @hydra.main(version_base=None, config_path="configs", config_name="base")
 @track_emissions(offline=True, country_iso_code="DEU")
