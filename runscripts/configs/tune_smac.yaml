@@ -4,33 +4,41 @@ defaults:
   - /algorithm: dqn
   - /environment: cc_cartpole
   - /search_space: dqn
-  - /experiments: cc_cartpole_dqn_smac
+  - /experiments: cc_cartpole_dqn
   - override hydra/sweeper: HyperSMAC
 
 hydra:
   sweeper:
-    n_trials: 30
+    n_trials: 300
     search_space: ${search_space}
     sweeper_kwargs:
       max_budget: ${environment.n_total_timesteps}
+      warmstart_file: runscripts/configs/initial_design/${experiment_name}.csv
       optimizer_kwargs:
         smac_facade:
           _target_: smac.facade.blackbox_facade.BlackBoxFacade
           _partial_: true
+          overwrite: true
         scenario:
           seed: ${smac_seed}
           n_trials: ${hydra.sweeper.n_trials}
-          deterministic: true
+          deterministic: false
           n_workers: 1
           name: ${experiment_name}
-          # output_directory: results/smac/${algorithm}_${autorl.env_name}/${smac_seed}/smac_output
+          output_directory: results/smac/${algorithm}_${autorl.env_name}/${smac_seed}/smac_output
+        intensifier:
+          _target_: smac.intensifier.Intensifier
+          _partial_: true
+          max_config_calls: 10   # the number of seeds
+          seed: ${smac_seed}
         initial_design:
           _target_: smac.initial_design.sobol_design.SobolInitialDesign
           _partial_: true
           n_configs: 0
-          additional_configs: ${read_additional_configs:runscripts/configs/initial_design/${experiment_name}.csv,${search_space}}
-      seeds: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+          # additional_configs: ${read_additional_configs:runscripts/configs/initial_design/${experiment_name}.csv,${search_space}}
+      # seeds: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
       maximize: true
+      deterministic: false
   run:
     dir: results/smac/${algorithm}_${autorl.env_name}/${smac_seed}/${seed}
   sweep:
