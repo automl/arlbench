@@ -230,16 +230,17 @@ def train_purejaxrl_dqn(cfg: DictConfig, logger: logging.Logger):
     return train_info_df, training_time
 
 
-def train_sbx(cfg: DictConfig, logger: logging.Logger):
+def train_sb3(cfg: DictConfig, logger: logging.Logger):
     from stable_baselines3.common.callbacks import BaseCallback
     from stable_baselines3.common.evaluation import evaluate_policy
-    from stable_baselines3.common.vec_env import VecEnvWrapper, VecMonitor
+    from stable_baselines3.common.vec_env import VecEnvWrapper, VecMonitor, VecNormalize
     from stable_baselines3.common.vec_env.base_vec_env import (
         VecEnvObs,
         VecEnvStepReturn,
     )
-    from sbx import DQN, PPO, SAC
-    from jax import nn
+    from stable_baselines3 import DQN, PPO, SAC
+    #from jax import nn
+    from torch import nn
     import envpool
     from envpool.python.protocol import EnvPool
 
@@ -290,6 +291,7 @@ def train_sbx(cfg: DictConfig, logger: logging.Logger):
             eval_freq,
             n_eval_episodes,
             seed,
+            normalize=False
         ):
             super().__init__(verbose=0)
 
@@ -299,52 +301,12 @@ def train_sbx(cfg: DictConfig, logger: logging.Logger):
             self.return_list = []
             self.step_list = []
             self.rng = jax.random.PRNGKey(seed)
-
-        def _env_episode(self, carry, _):
-            rng, actor_params = carry
-            rng, reset_rng = jax.random.split(rng)
-
-            env_state = self.eval_env.reset(reset_rng)
-
-            initial_state = (env_state, jnp.full((1), 0.0), jnp.full((1), False))
-
-            def cond_fn(carry):
-                _, _, done = carry
-                return jnp.logical_not(jnp.all(done))
-
-            def body_fn(carry):
-                state, ret, done = carry
-                obs = jnp.expand_dims(state.obs, axis=0)
-                action = self.model.policy.actor_state.apply_fn(
-                    actor_params, obs
-                ).mode()
-                state = self.eval_env.step(state, action[0])
-
-                # Count rewards only for envs that are not already done
-                ret += state.reward * ~done
-
-                done = jnp.logical_or(done, jnp.bool(state.done))
-
-                return (state, ret, done)
-
-            final_state = jax.lax.while_loop(cond_fn, body_fn, initial_state)
-            _, returns, _ = final_state
-
-            return (rng, actor_params), returns
-
-        def eval(self, num_eval_episodes):
-            env_episode = jax.jit(self._env_episode, static_argnums=0)
-            (self.rng, _), returns = jax.lax.scan(
-                env_episode,
-                (self.rng, self.model.policy.actor_state.params),
-                None,
-                # with n_envs = n_eval_episodes for eval_env we only need one parallel episode
-                1,  # num_eval_episodes,
-            )
-            return jnp.concat(returns)[:num_eval_episodes]
+            self.normalize = normalize
 
         def _on_step(self) -> bool:
             if self.eval_freq > 0 and self.n_calls % self.eval_freq == 0:
+                if self.normalize:
+                    self.eval_env.obs_rms = self.model.get_vec_normalize_env().obs_rms
                 returns, _ = evaluate_policy(
                     self.model,
                     self.eval_env,
@@ -383,6 +345,10 @@ def train_sbx(cfg: DictConfig, logger: logging.Logger):
         )
     )
 
+    if cfg.normalize_observations:
+        env = VecNormalize(env, training=True, norm_obs=True, norm_reward=False)
+        eval_env = VecNormalize(eval_env, training=False, norm_obs=True, norm_reward=False)
+
     eval_callback = EvalTrainingMetricsCallback(
         eval_env=eval_env,
         eval_freq=cfg.n_total_timesteps // cfg.n_eval_steps // cfg.environment.n_envs,
@@ -394,16 +360,16 @@ def train_sbx(cfg: DictConfig, logger: logging.Logger):
         # TODO verify to have NatureCNN + one hidden layer
         nas_config = {
             "net_arch": [cfg.nas_config.hidden_size],
-            "activation_fn": nn.relu
+            "activation_fn": nn.ReLU
             if cfg.nas_config.activation == "relu"
-            else nn.tanh,
+            else nn.Tanh,
         }
     else:
         nas_config = {
             "net_arch": [cfg.nas_config.hidden_size, cfg.nas_config.hidden_size],
-            "activation_fn": nn.relu
+            "activation_fn": nn.ReLU
             if cfg.nas_config.activation == "relu"
-            else nn.tanh,
+            else nn.Tanh,
         }
 
     if cfg.algorithm == "dqn":
@@ -415,8 +381,8 @@ def train_sbx(cfg: DictConfig, logger: logging.Logger):
             seed=cfg.seed,
             learning_starts=cfg.hp_config.learning_starts,
             target_update_interval=cfg.hp_config.target_update_interval,
-            exploration_final_eps=cfg.hp_config.epsilon,
-            exploration_initial_eps=cfg.hp_config.epsilon,
+            exploration_final_eps=cfg.hp_config.target_epsilon,
+            exploration_initial_eps=cfg.hp_config.initial_epsilon,
             gradient_steps=cfg.hp_config.gradient_steps,
             buffer_size=cfg.hp_config.buffer_size,
             learning_rate=cfg.hp_config.learning_rate,
@@ -523,17 +489,17 @@ def run(cfg: DictConfig, logger: logging.Logger):
             )
 
         train_info_df, training_time = train_purejaxrl(cfg, logger)
-    elif cfg.algorithm_framework == "sbx":
+    elif cfg.algorithm_framework == "sb3":
         if cfg.environment.framework != "envpool":
             raise ValueError(
-                "Only envpool is supported as environment framework for SBX."
+                "Only envpool is supported as environment framework for SB3."
             )
 
-        train_info_df, training_time = train_sbx(cfg, logger)
+        train_info_df, training_time = train_sb3(cfg, logger)
 
         # Do only one evaluation for a fair comparison to purejaxrl
         cfg["n_eval_steps"] = 1
-        _, training_time = train_sbx(cfg, logger)
+        _, training_time = train_sb3(cfg, logger)
     else:
         raise ValueError(
             f"Invalid value for 'algorithm_framework': '{cfg.algorithm_framework}'."
