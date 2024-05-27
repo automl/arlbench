@@ -10,43 +10,36 @@ defaults:
 hydra:
   sweeper:
     n_trials: 32
+    budget_variable: autorl.n_total_timesteps
     search_space: ${search_space}
     sweeper_kwargs:
-      max_budget: ${environment.n_total_timesteps}
-      # warmstart_file: runscripts/configs/initial_design/${experiment_name}.csv
+      min_budget: 10000
+      max_budget: ${environment.n_total_timesteps} 
       optimizer_kwargs:
         smac_facade:
-          _target_: smac.facade.blackbox_facade.BlackBoxFacade
+          _target_: smac.facade.multi_fidelity_facade.MultiFidelityFacade
           _partial_: true
-          overwrite: true
+        intensifier:
+          _target_: smac.facade.multi_fidelity_facade.MultiFidelityFacade.get_intensifier
+          _partial_: true
+          eta: 2
+          n_seeds: 1
         scenario:
           seed: ${smac_seed}
           n_trials: ${hydra.sweeper.n_trials}
-          deterministic: true
+          min_budget: ${hydra.sweeper.sweeper_kwargs.min_budget}
+          max_budget: ${environment.n_total_timesteps}
+          deterministic: false
           n_workers: 1
-          name: ${experiment_name}
-          output_directory: results/smac/${algorithm}_${autorl.env_name}/${smac_seed}/smac_output
-        intensifier:
-          _target_: smac.intensifier.Intensifier
-          _partial_: true
-          max_config_calls: 1   # the number of seeds
-          seed: ${smac_seed}
-        initial_design:
-          _target_: smac.initial_design.sobol_design.SobolInitialDesign
-          _partial_: true
-          n_configs: 0
-          # additional_configs: ${read_additional_configs:runscripts/configs/initial_design/${experiment_name}.csv,${search_space}}
       seeds: [0, 1, 2]
       maximize: true
-      deterministic: true
   run:
-    dir: results/smac/${algorithm}_${autorl.env_name}/${smac_seed}/${seed}
+    dir: results/smac_mf/${algorithm}_${autorl.env_name}/${smac_seed}/${seed}
   sweep:
-    dir: results/smac/${algorithm}_${autorl.env_name}/${smac_seed}/${seed}
+    dir: results/smac_mf/${algorithm}_${autorl.env_name}/${smac_seed}/${seed}
   job:
     chdir: true
 
-experiment_name: ""
 load_checkpoint: ""
 smac_seed: 0
 jax_enable_x64: false
