@@ -8,7 +8,8 @@ import itertools
 from parallel_for import parallel_for
 import scipy
 from sklearn.linear_model import LinearRegression
-import ast
+import seaborn as sns
+import matplotlib.pyplot as plt
 
 
 RAW_SOBOL_RESULTS = "results_combined/sobol"
@@ -202,9 +203,12 @@ def subset_selection(
     dataset = read_arlb_dataset()
     training_data = prepare_dataset(dataset, normalization_func=normalization_func)
 
+    pivot_tables = {}
+    scores = {}
     for algorithm, pivot_table in training_data.items():
         X = pivot_table.to_numpy()
-        y = pivot_table.mean(axis=1).to_numpy()
+        pivot_table["target"] = pivot_table.mean(axis=1)
+        y = pivot_table["target"].to_numpy()
     
         task_correlation = [
             spearman_corr(X[:, task], y) for task in range(X.shape[1])
@@ -229,8 +233,8 @@ def subset_selection(
         subsets, train_scores, val_scores = evaluate_subsets(X_train, y_train, n_subset, "ray", True, False, error_func=error_func)
 
         # best_subset = subsets[np.argmin(val_scores)][0]
-        best_subset_idxs = np.argsort(val_scores)[:5]
-        best_subsets = subsets[best_subset_idxs]
+        best_subset_idxs = np.argsort(val_scores)
+        best_subsets = subsets[best_subset_idxs][:5]
         best_subset = best_subsets[0, 0]
 
         print(f"Tasks chosen for {algorithm}:")
@@ -262,10 +266,18 @@ def subset_selection(
         print(f"Correlation with weights (all): {corr_weighted}")
         print(f"Correlation with weights (test): {test_corr_weighted}")
 
-        pivot_table["Prediction"] = model.predict(X[:, best_subset])
-        pivot_table.to_csv(os.path.join(SUBSET_RESULTS, f"{algorithm}_{n_subset}_.csv"))
+        pivot_table["prediction"] = model.predict(X[:, best_subset])
+        if error_func == mse_error:
+            file_path = f"{algorithm}_{n_subset}_mse.csv"
+        else:
+            file_path = f"{algorithm}_{n_subset}_corr.csv"
 
-    
+        pivot_table.to_csv(os.path.join(SUBSET_RESULTS, file_path))
+        pivot_tables[algorithm] = pivot_table
+        scores[algorithm] = val_scores[0]
+    return pivot_tables
+
+
 def validate_subset():
     for folder in os.listdir(SMAC_RESULTS):
         directory = os.path.join(SMAC_RESULTS, folder)
@@ -282,5 +294,27 @@ def validate_subset():
 
 
 if __name__ == "__main__":
-    #subset_selection(n_subset=4, normalization_func=normalize_ranks, error_func=corr_error, fit_intercept=False, positive_weights=True)
-    subset_selection(n_subset=4, normalization_func=normalize_min_max, error_func=mse_error, fit_intercept=False, positive_weights=True)
+    functions = zip(
+        [normalize_ranks, normalize_min_max, normalize_z_score],
+        [corr_error, mse_error, mse_error],
+        ["Spearman-Correlation", "MSE + MinMaxNormalization", "MSE + z-Normalization"]
+    )
+    results = []
+    for n_subset in range(1, 2):
+        for normalization_func, error_func, strategy in functions:
+            _, scores = subset_selection(n_subset=n_subset, normalization_func=normalization_func, error_func=error_func, fit_intercept=False, positive_weights=True)
+            
+            for algorithm in scores:
+                results += [{
+                    "n_subset": n_subset,
+                    "algorithm": algorithm,
+                    "score": scores[algorithm],
+                    "strategy": strategy,
+                }]
+    
+    df_results = pd.DataFrame(results)
+    for algorithm in ["ppo", "dqn", "sac"]:
+        plt.figure()
+        data = df_results[df_results["algorithm"] == algorithm]
+        ax = sns.lineplot(data=data, x="n_subset", y="score", hue="strategy")
+        plt.show()
