@@ -199,12 +199,13 @@ def subset_selection(
         error_func: Callable,
         fit_intercept: bool,
         positive_weights: bool
-    ):
+    ) -> tuple[dict, dict, dict]:
     dataset = read_arlb_dataset()
     training_data = prepare_dataset(dataset, normalization_func=normalization_func)
 
     pivot_tables = {}
     scores = {}
+    lowest_errors = {}
     for algorithm, pivot_table in training_data.items():
         X = pivot_table.to_numpy()
         pivot_table["target"] = pivot_table.mean(axis=1)
@@ -244,17 +245,25 @@ def subset_selection(
                 f"Task {i}: {env_name}"
             )
 
+        # Use the model to get the test set error
         model = LinearRegression(fit_intercept=fit_intercept, positive=positive_weights)
         model.fit(X_test[:, best_subset], y_test)
-
         y_pred_test = model.predict(X_test[:, best_subset])
         test_error = error_func(y_test, y_pred_test)
 
+        # Now we're getting the error over the whole dataset
         model = LinearRegression(fit_intercept=fit_intercept, positive=positive_weights)
         model.fit(X[:, best_subset], y)
-
         y_pred = model.predict(X[:, best_subset])
         error = error_func(y, y_pred)
+        pivot_table["prediction"] = model.predict(X[:, best_subset])
+
+        # Compute the lower bound using the whole dataset (all environments)
+        model = LinearRegression(fit_intercept=fit_intercept, positive=positive_weights)
+        model.fit(X, y)
+        y_pred = model.predict(X)
+        lowest_error = error_func(y, y_pred)
+        _, lowest_val_error = cross_validate_scores(np.arange(X.shape[1]), X, y, positive_weights=positive_weights, fit_intercept=fit_intercept, error_func=error_func)
 
         corr_unweighted = spearman_corr(
             X[:, best_subsets[0, 0]].mean(axis=1), y
@@ -266,7 +275,6 @@ def subset_selection(
         print(f"Correlation with weights (all): {corr_weighted}")
         print(f"Correlation with weights (test): {test_corr_weighted}")
 
-        pivot_table["prediction"] = model.predict(X[:, best_subset])
         if error_func == mse_error:
             file_path = f"{algorithm}_{n_subset}_mse.csv"
         else:
@@ -274,8 +282,9 @@ def subset_selection(
 
         pivot_table.to_csv(os.path.join(SUBSET_RESULTS, file_path))
         pivot_tables[algorithm] = pivot_table
-        scores[algorithm] = val_scores[0]
-    return pivot_tables
+        scores[algorithm] = val_scores[:5]
+        lowest_errors[algorithm] = lowest_val_error
+    return pivot_tables, scores, lowest_errors
 
 
 def validate_subset():
@@ -293,28 +302,56 @@ def validate_subset():
         # TODO implement
 
 
-if __name__ == "__main__":
+def main():
+    MAX_SIZE = 5
     functions = zip(
         [normalize_ranks, normalize_min_max, normalize_z_score],
         [corr_error, mse_error, mse_error],
         ["Spearman-Correlation", "MSE + MinMaxNormalization", "MSE + z-Normalization"]
     )
     results = []
-    for n_subset in range(1, 2):
-        for normalization_func, error_func, strategy in functions:
-            _, scores = subset_selection(n_subset=n_subset, normalization_func=normalization_func, error_func=error_func, fit_intercept=False, positive_weights=True)
+    for normalization, error, strategy in functions:
+        for cur_n_subset in range(1,MAX_SIZE + 1):
+            _, scores, lowest_errors = subset_selection(
+                n_subset=cur_n_subset,
+                normalization_func=normalization,
+                error_func=error,
+                fit_intercept=False,
+                positive_weights=True
+            )
             
             for algorithm in scores:
-                results += [{
-                    "n_subset": n_subset,
-                    "algorithm": algorithm,
-                    "score": scores[algorithm],
-                    "strategy": strategy,
-                }]
+                for score in scores[algorithm]:
+                    results += [{
+                        "n_subset": cur_n_subset,
+                        "algorithm": algorithm,
+                        "score": score,
+                        "strategy": strategy,
+                    }]
+                    results += [{
+                        "n_subset": cur_n_subset,
+                        "algorithm": algorithm,
+                        "score": lowest_errors[algorithm],
+                        "strategy": f"{strategy}_opt",
+                    }]
     
     df_results = pd.DataFrame(results)
-    for algorithm in ["ppo", "dqn", "sac"]:
-        plt.figure()
+    algorithms = ["ppo", "dqn", "sac"]
+
+    fig, axes = plt.subplots(ncols=len(algorithms), nrows=1, figsize=(10, 3))
+
+    for i, algorithm in enumerate(algorithms):
         data = df_results[df_results["algorithm"] == algorithm]
-        ax = sns.lineplot(data=data, x="n_subset", y="score", hue="strategy")
-        plt.show()
+        sns.lineplot(data=data, x="n_subset", y="score", hue="strategy", ax=axes[i], ci="sd")
+        axes[i].set_title(algorithm)
+        axes[i].legend().set_visible(False)
+        axes[i].set_xticks(np.arange(1, MAX_SIZE + 1))
+
+    axes[-1].legend().set_visible(True)
+    axes[-1].legend(loc="center left", bbox_to_anchor=(1, 0.5))
+
+    plt.tight_layout()
+    plt.show()
+
+if __name__ == "__main__":
+    main()
