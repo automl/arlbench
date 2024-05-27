@@ -9,6 +9,11 @@ from sklearn.linear_model import LinearRegression
 from create_arlbench_dataset import DATA_DIR
 from offline_evaluations import OfflineEvaluations
 from parallel_for import parallel_for
+import seaborn as sns
+import matplotlib.pyplot as plt
+
+
+PLOTS_DIR = "subset_selection/plots"
 
 
 def generate_subsets(n: int, k: int):
@@ -23,7 +28,8 @@ def spearman_corr(x, y):
 
 def error(target, pred):
     # define the error used to compare linear model, here we pick the model with the highest correlation with the target
-    return 1 - spearman_corr(pred, target)
+    # return 1 - spearman_corr(pred, target)
+    return np.mean((pred - target) ** 2)
 
 def fit_and_compute_error(task_subset, train_metrics, train_target):
     X = train_metrics[:, np.array(task_subset)]
@@ -81,7 +87,41 @@ def main(data, higher_is_better):
     metrics = metrics.mean(axis=2)
     
     # Use ranking to normalize across environments
-    metrics = pd.DataFrame(metrics).rank(axis=0, pct=True)
+    metrics = pd.DataFrame(metrics, columns=data.datasets).rank(axis=0, pct=True)
+
+    # optional: create plot for each environment with target
+    metrics_plot = metrics.copy()
+    metrics_plot["average"] = target
+
+    # Calculate the difference between each column and the target
+    metrics_diff = metrics_plot.drop(columns="average").subtract(metrics_plot["average"], axis=0)
+
+    plt.figure(figsize=(8, 6))
+    sns.lineplot(x=np.arange(len(metrics_plot)), y=metrics_plot["average"], marker='o', color='b')
+    plt.axhline(y=0, color='r', linestyle='--')  # Add a horizontal line at y=0 for reference
+    plt.xlabel('Configuration')
+    plt.ylabel('Value')
+    plt.title(f'Target')
+    plt.savefig(os.path.join(PLOTS_DIR, "ppo", f"target.png"))
+
+    # Plot the difference for each column
+    for column in metrics_diff.columns:
+        plt.figure(figsize=(8, 6))
+        sns.lineplot(x=np.arange(len(metrics_plot)), y=metrics_diff[column], marker='o', color='b')
+        plt.axhline(y=0, color='r', linestyle='--')  # Add a horizontal line at y=0 for reference
+        plt.xlabel('Configuration')
+        plt.ylabel('Difference')
+        plt.title(f'Difference between {column} and Target')
+        plt.savefig(os.path.join(PLOTS_DIR, "ppo", f"{column}_vs_target.png"))
+
+    # for column in metrics_plot.columns[:-1]:
+    #     plt.figure(figsize=(8, 6))
+    #     sns.scatterplot(x=metrics_plot[column], y=metrics_plot["average"])
+    #     plt.xlabel(column)
+    #     plt.ylabel("Average")
+    #     plt.title(f"{column} vs Target (Average)")
+    #     plt.tight_layout()
+    #     plt.savefig(os.path.join(PLOTS_DIR, "ppo", f"{column}_vs_target.png"))
 
     # Impute missing values (needed for Atari5 data where some models are partly evaluated), we fill the worse score
     metrics = metrics.fillna(impute_rank_value).values
@@ -127,8 +167,11 @@ def main(data, higher_is_better):
     print("Tasks chosen with Atari5 strategy:")
     for i, task_index in enumerate(task_order):
         dataset_index, seed_index, iteration_index = taskindex_to_tuple[task_index]
+        # print(
+        #     f"Task {i}: {data.datasets[dataset_index]}-seed-{seed_index}-iteration-{iteration_index}"
+        # )
         print(
-            f"Task {i}: {data.datasets[dataset_index]}-seed-{seed_index}-iteration-{iteration_index}"
+            f"Task {i}: {data.datasets[dataset_index]}"
         )
 
     # correlation when taking the average of task selected
