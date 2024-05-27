@@ -4,15 +4,15 @@ from .autorl import AutoRLEnv
 from omegaconf import DictConfig, OmegaConf
 from logging import Logger
 import os
+import numpy as np
+import sys
 
 
 def run_arlbench(cfg: DictConfig, logger: Logger | None = None) -> float | tuple | list:
     """Run ARLBench using the given config and return objective(s)."""
 
     if "load" in cfg and cfg.load:
-        print(f"### ATTEMPTING TO LOAD {cfg.load} ###")
         checkpoint_path = os.path.join(cfg.load, cfg.autorl.checkpoint_name, "default_checkpoint_c_episode_1_step_1")
-        print(f"### CHECKPOINT PATH = {checkpoint_path} ###")
     else:
         checkpoint_path = None
     
@@ -38,6 +38,10 @@ def run_arlbench(cfg: DictConfig, logger: Logger | None = None) -> float | tuple
 
     if "reward_curves" in cfg and cfg.reward_curves:
         return list(info["train_info_df"]["returns"])
+    
+    for k, v in objectives.items():
+        if np.isnan(v):
+            objectives[k] = sys.float_info.min
 
     if len(objectives) == 1:
         return objectives[list(objectives.keys())[0]]
