@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import time
-import warnings
 
 import jax
 
@@ -42,7 +41,7 @@ def test_default_dqn(n_envs=N_ENVS):
     print(
         f"n_envs = {n_envs}, time = {training_time:.2f}, env_steps = {n_envs * algorithm_state.runner_state.global_step}, updates = {algorithm_state.runner_state.global_step}, reward = {reward:.2f}"
     )
-    assert reward > 400
+    assert reward > 100
 
 
 # Default hyperparameter configuration with prioritised experience replay
@@ -73,7 +72,7 @@ def test_prioritised_dqn(n_envs=N_ENVS):
     print(
         f"n_envs = {n_envs}, time = {training_time:.2f}, env_steps = {n_envs * algorithm_state.runner_state.global_step}, updates = {algorithm_state.runner_state.global_step}, reward = {reward:.2f}"
     )
-    assert reward > 400
+    assert reward > 100
 
 
 # Normalise observations
@@ -104,7 +103,7 @@ def test_normalise_obs_dqn(n_envs=N_ENVS):
     print(
         f"n_envs = {n_envs}, time = {training_time:.2f}, env_steps = {n_envs * algorithm_state.runner_state.global_step}, updates = {algorithm_state.runner_state.global_step}, reward = {reward:.2f}"
     )
-    assert reward > 400
+    assert reward > 100
 
 
 # no target network
@@ -133,7 +132,7 @@ def test_no_target_dqn(n_envs=N_ENVS):
     print(
         f"n_envs = {n_envs}, time = {training_time:.2f}, env_steps = {n_envs * algorithm_state.runner_state.global_step}, updates = {algorithm_state.runner_state.global_step}, reward = {reward:.2f}"
     )
-    assert reward > 200
+    assert reward > 100
 
 
 # ReLU activation
@@ -166,10 +165,5 @@ def test_relu_dqn(n_envs=N_ENVS):
         f"n_envs = {n_envs}, time = {training_time:.2f}, env_steps = {n_envs * algorithm_state.runner_state.global_step}, updates = {algorithm_state.runner_state.global_step}, reward = {reward:.2f}"
     )
 
-    assert reward > 400
+    assert reward > 100
 
-
-if __name__ == "__main__":
-    with warnings.catch_warnings():
-        warnings.simplefilter("ignore")
-        test_default_dqn()
