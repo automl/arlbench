@@ -230,7 +230,179 @@ def train_purejaxrl_dqn(cfg: DictConfig, logger: logging.Logger):
     return train_info_df, training_time
 
 
-def train_sb3(cfg: DictConfig, logger: logging.Logger):
+def train_sb3_brax(cfg: DictConfig, logger: logging.Logger):
+    import brax
+    from brax.envs.wrappers.gym import VectorGymWrapper
+    import jax
+    import numpy as np
+    from stable_baselines3.common.callbacks import BaseCallback
+    from stable_baselines3.common.evaluation import evaluate_policy
+    from stable_baselines3.common.vec_env import VecMonitor, VecNormalize
+    from stable_baselines3 import DQN, PPO, SAC
+    from torch import nn
+
+
+    class EvalTrainingMetricsCallback(BaseCallback):
+        def __init__(
+                self,
+                eval_env,
+                eval_freq,
+                n_eval_episodes,
+                seed,
+                normalize=False
+        ):
+            super().__init__(verbose=0)
+
+            self.eval_env = eval_env
+            self.eval_freq = eval_freq
+            self.n_eval_episodes = n_eval_episodes
+            self.return_list = []
+            self.step_list = []
+            self.rng = jax.random.PRNGKey(seed)
+            self.normalize = normalize
+
+        def _on_step(self) -> bool:
+            if self.eval_freq > 0 and self.n_calls % self.eval_freq == 0:
+                if self.normalize:
+                    self.eval_env.obs_rms = self.model.get_vec_normalize_env().obs_rms
+                returns, _ = evaluate_policy(
+                    self.model,
+                    self.eval_env,
+                    n_eval_episodes=self.n_eval_episodes,
+                    return_episode_rewards=True,
+                )
+                self.return_list.append(returns)
+                self.step_list.append(self.n_calls)
+            return True
+
+        def _on_training_end(self) -> None:
+            pass
+
+        def get_returns(self):
+            return np.array(self.step_list), np.array(self.return_list)
+
+    env = VecMonitor(
+        VectorGymWrapper(
+            brax.envs.create(
+                env_name=cfg.environment.name,
+                batch_size=cfg.environment.n_envs,
+                backend="mjx",
+            )
+        )
+    )
+    eval_env = VecMonitor(
+        VectorGymWrapper(
+            brax.envs.create(
+                env_name=cfg.environment.name,
+                batch_size=cfg.n_eval_episodes,
+                backend="mjx",
+            )
+        )
+    )
+
+    if cfg.normalize_observations:
+        env = VecNormalize(env, training=True, norm_obs=True, norm_reward=False)
+        eval_env = VecNormalize(eval_env, training=False, norm_obs=True, norm_reward=False)
+
+    eval_callback = EvalTrainingMetricsCallback(
+        eval_env=eval_env,
+        eval_freq=cfg.n_total_timesteps // cfg.n_eval_steps // cfg.environment.n_envs,
+        n_eval_episodes=cfg.n_eval_episodes,
+        seed=cfg.seed,
+    )
+
+    if cfg.environment.cnn_policy:
+        # TODO verify to have NatureCNN + one hidden layer
+        nas_config = {
+            "net_arch": [cfg.nas_config.hidden_size],
+            "activation_fn": nn.ReLU
+            if cfg.nas_config.activation == "relu"
+            else nn.Tanh,
+        }
+    else:
+        nas_config = {
+            "net_arch": [cfg.nas_config.hidden_size, cfg.nas_config.hidden_size],
+            "activation_fn": nn.ReLU
+            if cfg.nas_config.activation == "relu"
+            else nn.Tanh,
+        }
+
+    if cfg.algorithm == "dqn":
+        model = DQN(
+            "CnnPolicy" if cfg.environment.cnn_policy else "MlpPolicy",
+            env,
+            policy_kwargs=nas_config,
+            verbose=0,
+            seed=cfg.seed,
+            learning_starts=cfg.hp_config.learning_starts,
+            target_update_interval=cfg.hp_config.target_update_interval,
+            exploration_final_eps=cfg.hp_config.target_epsilon,
+            exploration_initial_eps=cfg.hp_config.initial_epsilon,
+            gradient_steps=cfg.hp_config.gradient_steps,
+            buffer_size=cfg.hp_config.buffer_size,
+            learning_rate=cfg.hp_config.learning_rate,
+            batch_size=cfg.hp_config.buffer_batch_size,
+            train_freq=cfg.hp_config.train_freq,
+            tau=cfg.hp_config.tau,
+            gamma=cfg.hp_config.gamma,
+        )
+    elif cfg.algorithm == "ppo":
+        model = PPO(
+            "CnnPolicy" if cfg.environment.cnn_policy else "MlpPolicy",
+            env,
+            policy_kwargs=nas_config,
+            verbose=0,
+            seed=cfg.seed,
+            clip_range=cfg.hp_config.clip_eps,
+            ent_coef=cfg.hp_config.ent_coef,
+            gae_lambda=cfg.hp_config.gae_lambda,
+            gamma=cfg.hp_config.gamma,
+            learning_rate=cfg.hp_config.learning_rate,
+            max_grad_norm=cfg.hp_config.max_grad_norm,
+            batch_size=cfg.hp_config.minibatch_size,
+            n_steps=cfg.hp_config.n_steps,
+            n_epochs=cfg.hp_config.update_epochs,
+            vf_coef=cfg.hp_config.vf_coef,
+        )
+    elif cfg.algorithm == "sac":
+        model = SAC(
+            "CnnPolicy" if cfg.environment.cnn_policy else "MlpPolicy",
+            env,
+            policy_kwargs=nas_config,
+            verbose=0,
+            seed=cfg.seed,
+            batch_size=cfg.hp_config.buffer_batch_size,
+            buffer_size=cfg.hp_config.buffer_size,
+            gamma=cfg.hp_config.gamma,
+            gradient_steps=cfg.hp_config.gradient_steps,
+            learning_starts=cfg.hp_config.learning_starts,
+            learning_rate=cfg.hp_config.learning_rate,
+            train_freq=cfg.hp_config.train_freq,
+        )
+    else:
+        raise ValueError(f"Invalid algorithm: {cfg.algorithm}.")
+
+    logger.info(f"Training started.")
+
+    start = time.time()
+    model.learn(total_timesteps=int(cfg.n_total_timesteps), callback=eval_callback)
+    training_time = time.time() - start
+
+    logger.info(f"Finished in {format_time(training_time)}s.")
+
+    timesteps, returns = eval_callback.get_returns()
+    timesteps *= cfg.environment.n_envs
+    valid_idx = timesteps <= cfg.environment.n_total_timesteps
+    timesteps = timesteps[valid_idx]
+    returns = returns[valid_idx]
+    returns = returns.mean(axis=1)
+
+    train_info_df = pd.DataFrame({"steps": timesteps, "returns": returns})
+
+    return train_info_df, training_time
+
+
+def train_sb3_envpool(cfg: DictConfig, logger: logging.Logger):
     from stable_baselines3.common.callbacks import BaseCallback
     from stable_baselines3.common.evaluation import evaluate_policy
     from stable_baselines3.common.vec_env import VecEnvWrapper, VecMonitor, VecNormalize
@@ -490,16 +662,19 @@ def run(cfg: DictConfig, logger: logging.Logger):
 
         train_info_df, training_time = train_purejaxrl(cfg, logger)
     elif cfg.algorithm_framework == "sb3":
-        if cfg.environment.framework != "envpool":
+        if cfg.environment.framework not in ["envpool", "brax"]:
             raise ValueError(
-                "Only envpool is supported as environment framework for SB3."
+                "Only envpool and brax are supported as environment framework for SB3."
             )
 
-        train_info_df, training_time = train_sb3(cfg, logger)
+        train_info_df, training_time = train_sb3_envpool(cfg, logger)
 
         # Do only one evaluation for a fair comparison to purejaxrl
         cfg["n_eval_steps"] = 1
-        _, training_time = train_sb3(cfg, logger)
+        if cfg.environment.framework == "brax":
+            _, training_time = train_sb3_brax(cfg, logger)
+        else:
+            _, training_time = train_sb3_envpool(cfg, logger)
     else:
         raise ValueError(
             f"Invalid value for 'algorithm_framework': '{cfg.algorithm_framework}'."
