@@ -232,15 +232,94 @@ def train_purejaxrl_dqn(cfg: DictConfig, logger: logging.Logger):
 
 def train_sb3_brax(cfg: DictConfig, logger: logging.Logger):
     import brax
-    from brax.envs.wrappers.gym import VectorGymWrapper
-    import jax
-    import numpy as np
+    from brax.envs.wrappers.torch import TorchWrapper
     from stable_baselines3.common.callbacks import BaseCallback
     from stable_baselines3.common.evaluation import evaluate_policy
     from stable_baselines3.common.vec_env import VecMonitor, VecNormalize
     from stable_baselines3 import DQN, PPO, SAC
     from torch import nn
+    from typing import ClassVar, Optional
 
+    from brax.envs.base import PipelineEnv
+    from brax.io import image
+    import gymnasium
+    from gymnasium import spaces
+    from gymnasium.vector import utils
+    import jax
+    import numpy as np
+
+
+    class VectorGymWrapper(gymnasium.vector.VectorEnv):
+        """A wrapper that converts batched Brax Env to one that follows Gym VectorEnv API."""
+
+        # Flag that prevents `gym.register` from misinterpreting the `_step` and
+        # `_reset` as signs of a deprecated gym Env API.
+        _gym_disable_underscore_compat: ClassVar[bool] = True
+
+        def __init__(self,
+                     env: PipelineEnv,
+                     seed: int = 0,
+                     backend: Optional[str] = None):
+            self._env = env
+            self.metadata = {
+                'render.modes': ['human', 'rgb_array'],
+                'video.frames_per_second': 1 / self._env.dt
+            }
+            if not hasattr(self._env, 'batch_size'):
+                raise ValueError('underlying env must be batched')
+
+            self.num_envs = self._env.batch_size
+            self.seed(seed)
+            self.backend = backend
+            self._state = None
+
+            obs = np.inf * np.ones(self._env.observation_size, dtype='float32')
+            obs_space = spaces.Box(-obs, obs, dtype='float32')
+            self.observation_space = utils.batch_space(obs_space, self.num_envs)
+
+            action = jax.tree_map(np.array, self._env.sys.actuator.ctrl_range)
+            action_space = spaces.Box(action[:, 0], action[:, 1], dtype='float32')
+            self.action_space = utils.batch_space(action_space, self.num_envs)
+
+            def reset(key):
+                key1, key2 = jax.random.split(key)
+                state = self._env.reset(key2)
+                return state, state.obs, key1
+
+            self._reset = jax.jit(reset, backend=self.backend)
+
+            def step(state, action):
+                state = self._env.step(state, action)
+                info = {**state.metrics, **state.info}
+                return state, state.obs, state.reward, state.done, info
+
+            self._step = jax.jit(step, backend=self.backend)
+
+        def reset(self):
+            self._state, obs, self._key = self._reset(self._key)
+            return obs
+
+        def step(self, action):
+            self._state, obs, reward, done, info = self._step(self._state, action)
+            return obs, reward, done, info
+
+        def seed(self, seed: int = 0):
+            self._key = jax.random.PRNGKey(seed)
+
+        def get_attr(self, attr_name: str, indices=None):
+            return [getattr(self.env, attr_name)]
+
+        def set_attr(self, attr_name: str, value, indices=None) -> None:
+            setattr(self.env, attr_name, value)
+
+        def render(self, mode='human'):
+            if mode == 'rgb_array':
+                sys, state = self._env.sys, self._state
+                if state is None:
+                    raise RuntimeError('must call reset or step before rendering')
+                return image.render_array(sys, state.pipeline_state.take(0), 256, 256)
+            else:
+                return super().render(mode=mode)  # just raise an exception
 
     class EvalTrainingMetricsCallback(BaseCallback):
         def __init__(
@@ -281,28 +360,21 @@ def train_sb3_brax(cfg: DictConfig, logger: logging.Logger):
         def get_returns(self):
             return np.array(self.step_list), np.array(self.return_list)
 
-    env = VecMonitor(
-        VectorGymWrapper(
-            brax.envs.create(
-                env_name=cfg.environment.name,
-                batch_size=cfg.environment.n_envs,
-                backend="mjx",
-            )
-        )
-    )
-    eval_env = VecMonitor(
-        VectorGymWrapper(
-            brax.envs.create(
-                env_name=cfg.environment.name,
-                batch_size=cfg.n_eval_episodes,
-                backend="mjx",
-            )
-        )
-    )
+    env = VecMonitor(TorchWrapper(VectorGymWrapper(brax.envs.create(
+            env_name=cfg.environment.name,
+            batch_size=cfg.environment.n_envs,
+            backend="mjx",
+          ))))
+    eval_env = VecMonitor(TorchWrapper(VectorGymWrapper(brax.envs.create(
+                    env_name=cfg.environment.name,
+                    batch_size=cfg.n_eval_episodes,
+                    backend="mjx",
+                ))))
 
-    if cfg.normalize_observations:
-        env = VecNormalize(env, training=True, norm_obs=True, norm_reward=False)
-        eval_env = VecNormalize(eval_env, training=False, norm_obs=True, norm_reward=False)
+    if cfg.hp_config.normalize_observations:
+        #env = VecNormalize(env, training=True, norm_obs=True, norm_reward=False)
+        #eval_env = VecNormalize(eval_env, training=False, norm_obs=True, norm_reward=False)
+        a = 0
 
     eval_callback = EvalTrainingMetricsCallback(
         eval_env=eval_env,
@@ -405,7 +477,7 @@ def train_sb3_brax(cfg: DictConfig, logger: logging.Logger):
 def train_sb3_envpool(cfg: DictConfig, logger: logging.Logger):
     from stable_baselines3.common.callbacks import BaseCallback
     from stable_baselines3.common.evaluation import evaluate_policy
-    from stable_baselines3.common.vec_env import VecEnvWrapper, VecMonitor, VecNormalize
+    from stable_baselines3.common.vec_env import VecEnvWrapper, VecMonitor, VecNormalize, SubprocVecEnv
     from stable_baselines3.common.vec_env.base_vec_env import (
         VecEnvObs,
         VecEnvStepReturn,
@@ -413,8 +485,9 @@ def train_sb3_envpool(cfg: DictConfig, logger: logging.Logger):
     from stable_baselines3 import DQN, PPO, SAC
     #from jax import nn
     from torch import nn
-    import envpool
+    #import envpool
     from envpool.python.protocol import EnvPool
+    import gymnasium
 
     class VecAdapter(VecEnvWrapper):
         """Convert EnvPool object to a Stable-Baselines3 (SB3) VecEnv.
@@ -495,27 +568,31 @@ def train_sb3_envpool(cfg: DictConfig, logger: logging.Logger):
         def get_returns(self):
             return np.array(self.step_list), np.array(self.return_list)
 
-    env = VecMonitor(
-        VecAdapter(
-            envpool.make(
-                cfg.environment.name,
-                env_type="gymnasium",
-                num_envs=cfg.environment.n_envs,
-                seed=cfg.seed,
-                **cfg.environment.kwargs,
+    if cfg.environment.name not in ["Ant-v4"]:
+        env = VecMonitor(
+            VecAdapter(
+                envpool.make(
+                    cfg.environment.name,
+                    env_type="gymnasium",
+                    num_envs=cfg.environment.n_envs,
+                    seed=cfg.seed,
+                    **cfg.environment.kwargs,
+                )
             )
         )
-    )
-    eval_env = VecMonitor(
-        VecAdapter(
-            envpool.make(
-                cfg.environment.name,
-                env_type="gymnasium",
-                num_envs=cfg.n_eval_episodes,
-                seed=cfg.seed,
+        eval_env = VecMonitor(
+            VecAdapter(
+                envpool.make(
+                    cfg.environment.name,
+                    env_type="gymnasium",
+                    num_envs=cfg.n_eval_episodes,
+                    seed=cfg.seed,
+                )
             )
         )
-    )
+    else:
+        env = VecMonitor(SubprocVecEnv([lambda: gymnasium.make(cfg.environment.name, autoreset=True) for _ in range(cfg.environment.n_envs)]))
+        eval_env = VecMonitor(SubprocVecEnv([lambda: gymnasium.make(cfg.environment.name, autoreset=True) for _ in range(cfg.n_eval_episodes)]))
 
     if cfg.normalize_observations:
         env = VecNormalize(env, training=True, norm_obs=True, norm_reward=False)
@@ -622,14 +699,14 @@ def train_sb3_envpool(cfg: DictConfig, logger: logging.Logger):
 @hydra.main(version_base=None, config_path="configs", config_name="runtime_experiments")
 @track_emissions(offline=True, country_iso_code="DEU")
 def main(cfg: DictConfig):
-    logging.basicConfig(filename="job.log", 
-					format="%(asctime)s %(message)s", 
-					filemode="w") 
+    logging.basicConfig(filename="job.log",
+					format="%(asctime)s %(message)s",
+					filemode="w")
     logging.info("Logging configured")
     logging.info(f"JAX devices: {jax.devices()}")
     logging.info(f"JAX default backend: {jax.default_backend()}")
 
-    logger = logging.getLogger() 
+    logger = logging.getLogger()
 
     try:
         run(cfg, logger)
@@ -667,7 +744,10 @@ def run(cfg: DictConfig, logger: logging.Logger):
                 "Only envpool and brax are supported as environment framework for SB3."
             )
 
-        train_info_df, training_time = train_sb3_envpool(cfg, logger)
+        if cfg.environment.framework == "brax":
+            train_info_df, training_time = train_sb3_brax(cfg, logger)
+        else:
+            train_info_df, training_time = train_sb3_envpool(cfg, logger)
 
         # Do only one evaluation for a fair comparison to purejaxrl
         cfg["n_eval_steps"] = 1
@@ -691,4 +771,4 @@ def run(cfg: DictConfig, logger: logging.Logger):
 
 
 if __name__ == "__main__":
-    sys.exit(main())  # pragma: no cover
+    main()
