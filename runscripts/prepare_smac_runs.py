@@ -1,6 +1,7 @@
 import ast
 import os
 import pandas as pd
+import yaml
 
 
 SMAC_RESULTS = "results/smac"
@@ -8,20 +9,27 @@ INCUMBENTS = "runscripts/configs/smac_incumbents"
 
 
 if __name__ == "__main__":
-    for folder in os.listdir(SMAC_RESULTS):
-        directory = os.path.join(SMAC_RESULTS, folder)
+    for experiment in os.listdir(SMAC_RESULTS):
+        directory = os.path.join(SMAC_RESULTS, experiment)
         if not os.path.isdir(directory):
             continue
 
-        runhistory_path = os.path.join(directory, "42", "runhistory.csv")
-        if not os.path.isfile(runhistory_path):
+        incumbent_path = os.path.join(directory, "0", "42", "incumbent.json")
+
+        if not os.path.isfile(incumbent_path):
             continue
 
-        runhistory = pd.read_csv(runhistory_path)
+        with open(incumbent_path, "r") as incumbent_file:
+            incumbent = incumbent_file.readlines()[-1]
 
-    with open('your_file.txt', 'r') as file:
-        last_line = file.readlines()[-1]
+            incumbent = incumbent.replace("true", "True").replace("false", "False")
 
-    last_row_dict = ast.literal_eval(last_line)
+        incumbent_dict = ast.literal_eval(incumbent)
+        incumbent_dict = incumbent_dict["config"] 
 
-    print(last_row_dict)
+        incumbent_yaml = yaml.dump({"hp_config": incumbent_dict}, default_flow_style=False)
+
+        config_path = os.path.join(INCUMBENTS, f"{experiment}.yaml")
+        with open(config_path, "w") as config_file:
+            config_file.write(incumbent_yaml)
+
