@@ -6,7 +6,6 @@ defaults:
   - search_space: dqn
   - /experiments: cc_cartpole_dqn
   - override hydra/sweeper: HyperRS
-  - override search_space/seed: 42
 
 hydra:
   sweeper:
@@ -19,9 +18,9 @@ hydra:
       job_array_size_limit: 100
       seeds: [0, 1, 2]
   run:
-    dir: results/rs/${algorithm}_${autorl.env_name}/${autorl.seed}
+    dir: results/rs/${algorithm}_${autorl.env_name}/${search_space.seed}/${autorl.seed}
   sweep:
-    dir: results/rs/${algorithm}_${autorl.env_name}/${autorl.seed}
+    dir: results/rs/${algorithm}_${autorl.env_name}/${search_space.seed}/${autorl.seed}
   job:
     chdir: true
 
