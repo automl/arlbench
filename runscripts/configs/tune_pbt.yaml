@@ -13,21 +13,22 @@ reward_curves: false
 
 hydra:
   sweeper:
-    budget: 800_000
+    budget: ${multiply:${environment.n_total_timesteps},${hydra.sweeper.sweeper_kwargs.optimizer_kwargs.population_size}}
     budget_variable: autorl.n_total_timesteps
     loading_variable: load
     saving_variable: save
     search_space: ${search_space}
     sweeper_kwargs:
       optimizer_kwargs:
-        population_size: 32
-        config_interval: 1e5
+        population_size: 4
+        config_interval: ${divide:${environment.n_total_timesteps},10}
         seed: ${pbt_seed}
       checkpoint_tf: true
       load_tf: true
       checkpoint_path_typing: ""
       maximize: true
       max_parallelization: 1
+      seeds: [0, 1, 2]
   run:
     dir: results/pbt/${pbt_seed}/${algorithm}_${autorl.env_name}/${autorl.seed}
   sweep:

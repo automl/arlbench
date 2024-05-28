@@ -61,16 +61,3 @@ hyperparameters:
     lower: 1
     default: 10
     log: false
-conditions:
-  - child: hp_config.buffer_epsilon
-    parent: hp_config.buffer_prio_sampling
-    value: true
-    type: EQ
-  - child: hp_config.buffer_alpha
-    parent: hp_config.buffer_prio_sampling
-    value: true
-    type: EQ
-  - child: hp_config.buffer_beta
-    parent: hp_config.buffer_prio_sampling
-    value: true
-    type: EQ
