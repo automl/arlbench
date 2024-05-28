@@ -102,8 +102,14 @@ def train_brax(cfg: DictConfig, logger: logging.Logger):
     from brax.training.agents.ppo import train as ppo_train
     from brax.training.agents.sac import train as sac_train
 
-    env = envs.get_environment(env_name=cfg.environment.name, backend=cfg.environment.backend)
-    eval_env = envs.get_environment(env_name=cfg.environment.name, backend=cfg.environment.backend)
+    env = envs.get_environment(env_name=cfg.environment.name, backend=cfg.environment.kwargs["backend"])
+    eval_env = envs.get_environment(env_name=cfg.environment.name, backend=cfg.environment.kwargs["backend"])
+
+    steps_data, return_data = [], []
+
+    def progress(num_steps, metrics):
+      steps_data.append(num_steps)
+      return_data.append(metrics['eval/episode_reward'])
 
     logger.info("Training started.")
     start = time.time()
@@ -112,18 +118,20 @@ def train_brax(cfg: DictConfig, logger: logging.Logger):
             environment=env,
             eval_env=eval_env,
             num_timesteps=cfg.n_total_timesteps,
-            num_evals=cfg.n_eval_episodes,
+            num_evals=cfg.n_eval_steps,
             normalize_observations=cfg.hp_config.normalize_observations,
             unroll_length=cfg.hp_config.n_steps,
-            num_minibatches=cfg.hp_config.minibatch_size,  # ???
-            num_updates_per_batch=cfg.hp_config.num_updates_per_batch,
+            num_minibatches=cfg.environment.n_envs // cfg.hp_config.minibatch_size,
+            num_updates_per_batch=cfg.hp_config.update_epochs,
             discounting=cfg.hp_config.gamma,
+            episode_length=1000,
             learning_rate=cfg.hp_config.learning_rate,
             entropy_cost=cfg.hp_config.ent_coef,
             num_envs=cfg.environment.n_envs,
             num_eval_envs=cfg.n_eval_episodes,
-            batch_size=cfg.hp_config.minibatch_size,  # ???
+            batch_size=cfg.hp_config.minibatch_size,
             seed=cfg.seed,
+            progress_fn=progress,
         )
     elif cfg.algorithm == "sac":
         train_info = sac_train.train(
@@ -131,38 +139,27 @@ def train_brax(cfg: DictConfig, logger: logging.Logger):
             eval_env=eval_env,
             num_timesteps=cfg.n_total_timesteps,
             num_evals=cfg.n_eval_episodes,
-            reward_scaling=cfg.hp_config.reward_scaling,
+            reward_scaling=cfg.hp_config.reward_scale,
             normalize_observations=cfg.hp_config.normalize_observations,
             discounting=cfg.hp_config.gamma,
             learning_rate=cfg.hp_config.learning_rate,
             num_envs=cfg.environment.n_envs,
             num_eval_envs=cfg.n_eval_episodes,
+            episode_length=1000,
             batch_size=cfg.hp_config.buffer_batch_size,
             grad_updates_per_step=cfg.hp_config.gradient_steps,
             max_replay_size=cfg.hp_config.buffer_size,
             min_replay_size=cfg.hp_config.learning_starts,
             seed=cfg.seed,
+            progress_fn=progress,
         )
     training_time = time.time() - start
     logger.info(f"Finished in {format_time(training_time)}s.")
 
-    import ipdb
-    ipdb.set_trace()
-
-    #timesteps, returns = eval_callback.get_returns()
-    timesteps = train_info["timesteps"]
-    returns = train_info["returns"]
-    timesteps *= cfg.environment.n_envs
-    valid_idx = timesteps <= cfg.environment.n_total_timesteps
-    timesteps = timesteps[valid_idx]
-    returns = returns[valid_idx]
-    returns = returns.mean(axis=1)
-
-    train_info_df = pd.DataFrame({"steps": timesteps, "returns": returns})
+    train_info_df = pd.DataFrame({"steps": steps_data, "returns": return_data})
 
     return train_info_df, training_time
 
-    return train_info_df, train_info["training_time"]
 
 def train_purejaxrl(cfg: DictConfig, logger: logging.Logger):
     # this is a bit hacky but it allows us to access the PureJaxRL submodule
@@ -520,7 +517,7 @@ def train_sb3(cfg: DictConfig, logger: logging.Logger):
 
 
 @hydra.main(version_base=None, config_path="configs", config_name="runtime_experiments")
-@track_emissions(offline=True, country_iso_code="DEU")
+#@track_emissions(offline=True, country_iso_code="DEU")
 def main(cfg: DictConfig):
     logging.basicConfig(filename="job.log",
 					format="%(asctime)s %(message)s",
