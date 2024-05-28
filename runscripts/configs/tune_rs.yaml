@@ -6,6 +6,7 @@ defaults:
   - search_space: dqn
   - /experiments: cc_cartpole_dqn
   - override hydra/sweeper: HyperRS
+  - override search_space/seed: 42
 
 hydra:
   sweeper:
