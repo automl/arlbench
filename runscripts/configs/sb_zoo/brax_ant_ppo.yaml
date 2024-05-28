@@ -6,7 +6,7 @@ defaults:
 # https://huggingface.co/sb3/ppo-Ant-v3
 environment:
   n_envs: 2048
-  n_total_timesteps: 5000000
+  n_total_timesteps: 50000000
 
 hp_config:
   clip_eps: 0.2
@@ -15,8 +15,7 @@ hp_config:
   gamma: 0.99
   learning_rate: 0.0003
   max_grad_norm: 0.5
-  minibatch_size: 2048
-  vf_clip_eps: 0.2
+  minibatch_size: 1028
   n_steps: 5
   vf_coef: 0.5
   update_epochs: 4
