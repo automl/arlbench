@@ -48,5 +48,5 @@ autorl:
   objectives: ["reward_mean"]
   optimize_objectives: "upper"
   n_steps: 10
-  n_eval_steps: 10
+  n_eval_steps: 1
   n_eval_episodes: 128
