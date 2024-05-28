@@ -35,7 +35,7 @@ hydra:
   job:
     chdir: true
 
-pbt_seed: 42
+pbt_seed: 0
 jax_enable_x64: false
 
 algorithm_framework: arlbench
