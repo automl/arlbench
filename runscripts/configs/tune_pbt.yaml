@@ -30,9 +30,9 @@ hydra:
       max_parallelization: 1
       seeds: [0, 1, 2]
   run:
-    dir: results/pbt/${pbt_seed}/${algorithm}_${autorl.env_name}/${autorl.seed}
+    dir: results/pbt/${algorithm}_${autorl.env_name}/${pbt_seed}/${autorl.seed}
   sweep:
-    dir: results/pbt/${pbt_seed}/${algorithm}_${autorl.env_name}/${autorl.seed}
+    dir: results/pbt/${algorithm}_${autorl.env_name}/${pbt_seed}/${autorl.seed}
   job:
     chdir: true
 
@@ -46,7 +46,7 @@ n_eval_episodes: 128
 seed: 42
 
 autorl:
-  seed: 42
+  seed: ${seed}
   env_framework: ${environment.framework}
   env_name: ${environment.name}
   env_kwargs: ${environment.kwargs}
