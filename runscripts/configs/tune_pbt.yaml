@@ -35,13 +35,13 @@ hydra:
   job:
     chdir: true
 
-pbt_seed: 0
+pbt_seed: 42
 jax_enable_x64: false
 
 algorithm_framework: arlbench
 n_total_timesteps: ${environment.n_total_timesteps}
 n_eval_steps: 1
-n_eval_episodes: 18
+n_eval_episodes: 128
 seed: 42
 
 autorl:
@@ -62,5 +62,5 @@ autorl:
   objectives: ["reward_mean"]
   optimize_objectives: "upper"
   n_steps: 10
-  n_eval_steps: 10
+  n_eval_steps: 1
   n_eval_episodes: 128
