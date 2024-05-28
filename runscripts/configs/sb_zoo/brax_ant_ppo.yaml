@@ -15,7 +15,7 @@ hp_config:
   gamma: 0.99
   learning_rate: 0.0003
   max_grad_norm: 0.5
-  minibatch_size: 1028
+  minibatch_size: 1024
   n_steps: 5
   vf_coef: 0.5
   update_epochs: 4
