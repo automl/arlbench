@@ -1,0 +1,19 @@
+# @package _global_
+defaults:
+  - override /environment: cc_continuous_mountain_car    
+  - override /algorithm: sac   
+  - override /search_space: sac_cc_pbt
+
+experiment_name: cc_continuous_mountain_car_sac
+
+environment:
+  n_total_timesteps: 50000
+
+hp_config:
+  train_freq: 1
+  gradient_steps: 1
+  normalize_observations: False
+  buffer_size: ${environment.n_total_timesteps}
+  use_target_network: True
+
+jax_enable_x64: true
