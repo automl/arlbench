@@ -15,7 +15,7 @@ hp_config:
   learning_starts: 8192
   target_update_interval: 1
   train_freq: 1
-  reward_scale: 1.0
+  reward_scale: 0.1
   tau: 0.005
   normalize_observations: True
 
