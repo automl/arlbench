@@ -1,0 +1,1 @@
+Tasks chosen for dqn:Task 0: atari_battle_zoneTask 1: atari_qbertTask 2: atari_this_gameTask 3: box2d_lunar_landerTask 4: cc_cartpoleTask 5: minigrid_empty_randomCorrelation without weights: 0.9349935909174143Correlation with prediction: 0.9298803418803419Validation error: 0.0007081707919605936
