@@ -1,1 +1,0 @@
-Tasks chosen for ppo:Task 0: atari_this_gameTask 1: box2d_lunar_lander_continuousTask 2: brax_antTask 3: cc_acrobotTask 4: cc_continuous_mountain_carTask 5: minigrid_door_keyCorrelation without weights: 0.9569389763779528Correlation with prediction: 0.9488888888888889Validation error: 0.0008069394100142681

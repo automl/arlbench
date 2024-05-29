@@ -1,1 +1,0 @@
-Tasks chosen for ppo:Task 0: box2d_lunar_lander_continuousTask 1: brax_antTask 2: cc_continuous_mountain_carTask 3: minigrid_door_keyTask 4: minigrid_empty_randomCorrelation without weights: 0.9260552096685587Correlation with prediction: 0.9155384615384614Validation error: 0.0011107370210296566
