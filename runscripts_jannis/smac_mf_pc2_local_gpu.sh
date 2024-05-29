@@ -10,21 +10,21 @@ mkdir -p "$directory/log"
 echo "#!/bin/bash
 
 
-#SBATCH --cpus-per-task=32
+#SBATCH --cpus-per-task=16
 #SBATCH --gres=gpu:a100:1
-#SBATCH --mem=64GB
-#SBATCH -J arlb_rs_${1}
+#SBATCH --mem=16GB
+#SBATCH -J smac_mf_${1}
 #SBATCH -A hpc-prf-intexml                              # TODO check for your project
 #SBATCH -t 2-00:00:00                                   # TODO check for your clusters time limit
 #SBATCH --mail-type fail
 #SBATCH --mail-user becktepe@stud.uni-hannover.de       # TODO enter your mail and hope slurm isn't reaching out to you :D
 #SBATCH -p gpu                                       # TODO check for your clusters partition
-#SBATCH --output $directory/log/smac_${1}_%A_%a.out
-#SBATCH --error $directory/log/smac_${1}_%A_%a.err
+#SBATCH --output $directory/log/smac_mf_${1}_%A_%a.out
+#SBATCH --error $directory/log/smac_mf_${1}_%A_%a.err
 #SBATCH --array=1-2
 
 cd ..
-python runscripts/run_arlbench.py -m --config-name=tune_smac "experiments=${1}" "cluster=local" "smac_seed=\$SLURM_ARRAY_TASK_ID" 
+python runscripts/run_arlbench.py -m --config-name=tune_smac_mf "experiments=${1}" "cluster=local" "smac_seed=\$SLURM_ARRAY_TASK_ID" 
 " > $directory/${1}.sh
 echo "Submitting $directory for $1"
 chmod +x $directory/${1}.sh
