@@ -29,7 +29,6 @@ def read_optimizer_results(optimizer: str) -> pd.DataFrame:
     for result_dir in os.listdir(path):
         if os.path.isfile(os.path.join(path, result_dir)):
             continue
-        print(result_dir)
         algorithm = result_dir.split("_")[0]
         environment = result_dir.split("_")[1]
 
