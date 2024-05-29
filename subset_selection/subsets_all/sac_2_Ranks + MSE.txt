@@ -1,0 +1,8 @@
+Tasks chosen for sac:
+Task 0: box2d_lunar_lander_continuous
+Task 1: cc_pendulum
+Correlation without weights: 0.759522065555759
+Correlation with prediction: 0.8472136752136752
+Validation error: 0.0100434849570674
+Weights:
+[0.67015467 0.2873493 ]

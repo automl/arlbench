@@ -1,0 +1,18 @@
+# @package _global_
+defaults:
+  - override /environment: minigrid_empty_random
+  - override /algorithm: dqn
+  - override /search_space: dqn_minigrid_pbt
+
+experiment_name: minigrid_empty_random_dqn
+
+environment:
+  n_total_timesteps: 100000
+  n_envs: 4
+
+hp_config:
+  train_freq: 1
+  gradient_steps: 1
+  normalize_observations: False
+  buffer_size: ${environment.n_total_timesteps}
+  use_target_network: True

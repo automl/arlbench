@@ -1,0 +1,9 @@
+Tasks chosen for dqn:
+Task 0: atari_phoenix
+Task 1: cc_cartpole
+Task 2: minigrid_door_key
+Correlation without weights: 0.8785490672175699
+Correlation with prediction: 0.8844273504273502
+Validation error: 0.1155726495726496
+Weights:
+[0.34318727 0.30065818 0.35037135]

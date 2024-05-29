@@ -3,7 +3,7 @@
 # USAGE run_rs.sh EXPERIMENT      CLUSTER 
 # USAGE run_rs.sh cc_cartpole_dqn local  
 
-directory="smac"
+directory="smac_mf"
 
 mkdir -p "$directory/log"
 

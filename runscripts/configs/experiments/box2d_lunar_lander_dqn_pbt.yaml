@@ -1,0 +1,16 @@
+# @package _global_
+defaults:
+  - override /environment: box2d_lunar_lander
+  - override /algorithm: dqn
+  - override /search_space: dqn_box2d_pbt
+
+environment:
+  n_total_timesteps: 100000
+  n_envs: 4
+
+hp_config:
+  train_freq: 1
+  gradient_steps: 1
+  normalize_observations: False
+  buffer_size: ${environment.n_total_timesteps}
+  use_target_network: True

@@ -8,11 +8,11 @@ dependencies = [
   "codecarbon",
   "memray",
   "pathos",
-  "envpool>=0.8.4",
-  "jax>=0.4.26",
-  "jaxlib>=0.4.26",
+  "envpool==0.8.4",
+  "jax==0.4.26",
+  "jaxlib==0.4.26",
   "flashbax>=0.1.2",
-  "gymnax>=0.0.6",
+  "gymnax==0.0.6",
   "ConfigSpace",
   "distrax",
   "flax",
@@ -27,7 +27,6 @@ dependencies = [
   "tox",
   "twine",
   "bump-my-version",
-  
 ]
 
 requires-python = ">=3.10"

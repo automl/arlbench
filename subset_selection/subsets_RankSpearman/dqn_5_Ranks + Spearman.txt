@@ -1,0 +1,11 @@
+Tasks chosen for dqn:
+Task 0: atari_double_dunk
+Task 1: atari_qbert
+Task 2: atari_this_game
+Task 3: cc_cartpole
+Task 4: minigrid_empty_random
+Correlation without weights: 0.9240233422260783
+Correlation with prediction: 0.9365128205128205
+Validation error: 0.06348717948717952
+Weights:
+[0.21524321 0.12800927 0.15213179 0.32137179 0.16705812]

@@ -1,0 +1,9 @@
+Tasks chosen for dqn:
+Task 0: atari_phoenix
+Task 1: box2d_lunar_lander
+Task 2: minigrid_empty_random
+Correlation without weights: 0.8235842794360007
+Correlation with prediction: 0.7684273504273503
+Validation error: 0.002267069492057732
+Weights:
+[0.21365448 0.27057498 0.2425538 ]

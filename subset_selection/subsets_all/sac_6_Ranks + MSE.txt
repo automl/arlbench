@@ -1,0 +1,12 @@
+Tasks chosen for sac:
+Task 0: box2d_lunar_lander_continuous
+Task 1: brax_ant
+Task 2: brax_hopper
+Task 3: brax_humanoid
+Task 4: cc_continuous_mountain_car
+Task 5: cc_pendulum
+Correlation without weights: 0.9727900109869986
+Correlation with prediction: 0.9790940170940171
+Validation error: 0.000648557898409845
+Weights:
+[0.202706   0.18915712 0.16441626 0.19599581 0.10823406 0.13755799]
