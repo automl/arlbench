@@ -22,7 +22,7 @@ def plot_experiment(env_framework: str, env_name: str, algorithm_frameworks: lis
     runtimes = []
 
     for algorithm_framework in algorithm_frameworks:
-        folder_path = f"results/{dir}/{env_framework}_{env_name}/{algorithm_framework}_{algorithm_name}"
+        folder_path = f"../results/{dir}/{env_framework}_{env_name}/{algorithm_framework}_{algorithm_name}"
         folders = os.listdir(folder_path)
 
         for folder in folders:
@@ -51,9 +51,9 @@ def plot_experiment(env_framework: str, env_name: str, algorithm_frameworks: lis
     runtimes = pd.DataFrame(runtimes)
 
     plt.figure()
-    sns.lineplot(x='steps', y='returns', hue='framework', data=all_data, errorbar='sd')
+    sns.lineplot(x='steps', y='returns', hue='framework', data=all_data, errorbar=('pi', 100), estimator='mean')
     plt.xlabel('Steps')
-    plt.xscale('log')
+    #plt.xscale('log')
     plt.ylabel('Return')
     plt.title(f'{env_framework} {env_name} {algorithm_name.upper()}')
     plt.legend(title='Framework', bbox_to_anchor=(1.05, 1), loc='upper left')
@@ -70,38 +70,44 @@ def plot_experiment(env_framework: str, env_name: str, algorithm_frameworks: lis
 
 
 if __name__ == "__main__":
-    dir_gpu = "runtime_experiments/gpu"
+    dir = "runtime_experiments"
 
     experiments_gpu = [
         {   
-            "env_framework": "gymnax",
-            "env_names": ["CartPole-v1"],
-            "algorithm_frameworks": ["purejaxrl",  "arlbench-prio-buffer", "arlbench-no-prio-buffer"],
+            "env_framework": "envpool",
+            "env_names": ["CartPole-v1", "LunarLander-v2", "Pong-v5"],
+            "algorithm_frameworks": ["arlbench",  "sb3"],
             "algorithm_name": "dqn"
         },
         {   
-            "env_framework": "gymnax",
-            "env_names": ["CartPole-v1"],
-            "algorithm_frameworks": ["purejaxrl",  "arlbench"],
+            "env_framework": "envpool",
+            "env_names": ["CartPole-v1", "Pong-v5", "LunarLander-v2", "LunarLanderContinuous-v2", "Pendulum-v1", "Ant-v4"],
+            "algorithm_frameworks": ["arlbench",  "sb3"],
             "algorithm_name": "ppo"
+        },
+        {
+            "env_framework": "envpool",
+            "env_names": ["Pendulum-v1", "LunarLanderContinuous-v2", "Ant-v4"],
+            "algorithm_frameworks": ["arlbench",  "sb3"],
+            "algorithm_name": "sac"
         },
     ]
 
-    dir_cpu = "runtime_experiments/normal"
+    #dir_cpu = "runtime_experiments/normal"
 
-    experiments_cpu = [
-        {   
-            "env_framework": "gymnax",
-            "env_names": ["CartPole-v1"],
-            "algorithm_frameworks": ["purejaxrl",  "arlbench"],
-            "algorithm_name": "dqn"
-        },
-        {   
-            "env_framework": "gymnax",
-            "env_names": ["CartPole-v1"],
-            "algorithm_frameworks": ["purejaxrl",  "arlbench"],
-            "algorithm_name": "ppo"
-        },
-    ]
+    #experiments_cpu = [
+    #    {
+    #        "env_framework": "gymnax",
+    #        "env_names": ["CartPole-v1"],
+    #        "algorithm_frameworks": ["purejaxrl",  "arlbench"],
+    #        "algorithm_name": "dqn"
+    #    },
+    #    {
+    #        "env_framework": "gymnax",
+    #        "env_names": ["CartPole-v1"],
+    #        "algorithm_frameworks": ["purejaxrl",  "arlbench"],
+    #        "algorithm_name": "ppo"
+    #    },
+    #]
 
-    plot(experiments_cpu, dir_cpu)
+    plot(experiments_gpu, dir)

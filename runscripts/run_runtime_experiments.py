@@ -97,6 +97,70 @@ def train_arlbench(cfg: DictConfig, logger: logging.Logger):
     return train_info_df, training_time
 
 
+def train_brax(cfg: DictConfig, logger: logging.Logger):
+    from brax import envs
+    from brax.training.agents.ppo import train as ppo_train
+    from brax.training.agents.sac import train as sac_train
+
+    env = envs.get_environment(env_name=cfg.environment.name, backend=cfg.environment.kwargs["backend"])
+    eval_env = envs.get_environment(env_name=cfg.environment.name, backend=cfg.environment.kwargs["backend"])
+
+    steps_data, return_data = [], []
+
+    def progress(num_steps, metrics):
+      steps_data.append(num_steps)
+      return_data.append(metrics['eval/episode_reward'])
+
+    logger.info("Training started.")
+    start = time.time()
+    if cfg.algorithm == "ppo":
+        train_info = ppo_train.train(
+            environment=env,
+            eval_env=eval_env,
+            num_timesteps=cfg.n_total_timesteps,
+            num_evals=cfg.n_eval_steps,
+            normalize_observations=cfg.hp_config.normalize_observations,
+            unroll_length=cfg.hp_config.n_steps,
+            num_minibatches=cfg.environment.n_envs // cfg.hp_config.minibatch_size,
+            num_updates_per_batch=cfg.hp_config.update_epochs,
+            discounting=cfg.hp_config.gamma,
+            episode_length=1000,
+            learning_rate=cfg.hp_config.learning_rate,
+            entropy_cost=cfg.hp_config.ent_coef,
+            num_envs=cfg.environment.n_envs,
+            num_eval_envs=cfg.n_eval_episodes,
+            batch_size=cfg.hp_config.minibatch_size,
+            seed=cfg.seed,
+            progress_fn=progress,
+        )
+    elif cfg.algorithm == "sac":
+        train_info = sac_train.train(
+            environment=env,
+            eval_env=eval_env,
+            num_timesteps=cfg.n_total_timesteps,
+            num_evals=cfg.n_eval_episodes,
+            reward_scaling=cfg.hp_config.reward_scale,
+            normalize_observations=cfg.hp_config.normalize_observations,
+            discounting=cfg.hp_config.gamma,
+            learning_rate=cfg.hp_config.learning_rate,
+            num_envs=cfg.environment.n_envs,
+            num_eval_envs=cfg.n_eval_episodes,
+            episode_length=1000,
+            batch_size=cfg.hp_config.buffer_batch_size,
+            grad_updates_per_step=cfg.hp_config.gradient_steps,
+            max_replay_size=cfg.hp_config.buffer_size,
+            min_replay_size=cfg.hp_config.learning_starts,
+            seed=cfg.seed,
+            progress_fn=progress,
+        )
+    training_time = time.time() - start
+    logger.info(f"Finished in {format_time(training_time)}s.")
+
+    train_info_df = pd.DataFrame({"steps": steps_data, "returns": return_data})
+
+    return train_info_df, training_time
+
+
 def train_purejaxrl(cfg: DictConfig, logger: logging.Logger):
     # this is a bit hacky but it allows us to access the PureJaxRL submodule
     root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "../purejaxrl"))
@@ -230,251 +294,7 @@ def train_purejaxrl_dqn(cfg: DictConfig, logger: logging.Logger):
     return train_info_df, training_time
 
 
-def train_sb3_brax(cfg: DictConfig, logger: logging.Logger):
-    import brax
-    from brax.envs.wrappers.torch import TorchWrapper
-    from stable_baselines3.common.callbacks import BaseCallback
-    from stable_baselines3.common.evaluation import evaluate_policy
-    from stable_baselines3.common.vec_env import VecMonitor, VecNormalize
-    from stable_baselines3 import DQN, PPO, SAC
-    from torch import nn
-    from typing import ClassVar, Optional
-
-    from brax.envs.base import PipelineEnv
-    from brax.io import image
-    import gymnasium
-    from gymnasium import spaces
-    from gymnasium.vector import utils
-    import jax
-    import numpy as np
-
-
-    class VectorGymWrapper(gymnasium.vector.VectorEnv):
-        """A wrapper that converts batched Brax Env to one that follows Gym VectorEnv API."""
-
-        # Flag that prevents `gym.register` from misinterpreting the `_step` and
-        # `_reset` as signs of a deprecated gym Env API.
-        _gym_disable_underscore_compat: ClassVar[bool] = True
-
-        def __init__(self,
-                     env: PipelineEnv,
-                     seed: int = 0,
-                     backend: Optional[str] = None):
-            self._env = env
-            self.metadata = {
-                'render.modes': ['human', 'rgb_array'],
-                'video.frames_per_second': 1 / self._env.dt
-            }
-            if not hasattr(self._env, 'batch_size'):
-                raise ValueError('underlying env must be batched')
-
-            self.num_envs = self._env.batch_size
-            self.seed(seed)
-            self.backend = backend
-            self._state = None
-
-            obs = np.inf * np.ones(self._env.observation_size, dtype='float32')
-            obs_space = spaces.Box(-obs, obs, dtype='float32')
-            self.observation_space = utils.batch_space(obs_space, self.num_envs)
-
-            action = jax.tree_map(np.array, self._env.sys.actuator.ctrl_range)
-            action_space = spaces.Box(action[:, 0], action[:, 1], dtype='float32')
-            self.action_space = utils.batch_space(action_space, self.num_envs)
-
-            def reset(key):
-                key1, key2 = jax.random.split(key)
-                state = self._env.reset(key2)
-                return state, state.obs, key1
-
-            self._reset = jax.jit(reset, backend=self.backend)
-
-            def step(state, action):
-                state = self._env.step(state, action)
-                info = {**state.metrics, **state.info}
-                return state, state.obs, state.reward, state.done, info
-
-            self._step = jax.jit(step, backend=self.backend)
-
-        def reset(self):
-            self._state, obs, self._key = self._reset(self._key)
-            return obs
-
-        def step(self, action):
-            self._state, obs, reward, done, info = self._step(self._state, action)
-            return obs, reward, done, info
-
-        def seed(self, seed: int = 0):
-            self._key = jax.random.PRNGKey(seed)
-
-        def get_attr(self, attr_name: str, indices=None):
-            return [getattr(self.env, attr_name)]
-
-        def set_attr(self, attr_name: str, value, indices=None) -> None:
-            setattr(self.env, attr_name, value)
-
-        def render(self, mode='human'):
-            if mode == 'rgb_array':
-                sys, state = self._env.sys, self._state
-                if state is None:
-                    raise RuntimeError('must call reset or step before rendering')
-                return image.render_array(sys, state.pipeline_state.take(0), 256, 256)
-            else:
-                return super().render(mode=mode)  # just raise an exception
-
-    class EvalTrainingMetricsCallback(BaseCallback):
-        def __init__(
-                self,
-                eval_env,
-                eval_freq,
-                n_eval_episodes,
-                seed,
-                normalize=False
-        ):
-            super().__init__(verbose=0)
-
-            self.eval_env = eval_env
-            self.eval_freq = eval_freq
-            self.n_eval_episodes = n_eval_episodes
-            self.return_list = []
-            self.step_list = []
-            self.rng = jax.random.PRNGKey(seed)
-            self.normalize = normalize
-
-        def _on_step(self) -> bool:
-            if self.eval_freq > 0 and self.n_calls % self.eval_freq == 0:
-                if self.normalize:
-                    self.eval_env.obs_rms = self.model.get_vec_normalize_env().obs_rms
-                returns, _ = evaluate_policy(
-                    self.model,
-                    self.eval_env,
-                    n_eval_episodes=self.n_eval_episodes,
-                    return_episode_rewards=True,
-                )
-                self.return_list.append(returns)
-                self.step_list.append(self.n_calls)
-            return True
-
-        def _on_training_end(self) -> None:
-            pass
-
-        def get_returns(self):
-            return np.array(self.step_list), np.array(self.return_list)
-
-    env = VecMonitor(TorchWrapper(VectorGymWrapper(brax.envs.create(
-            env_name=cfg.environment.name,
-            batch_size=cfg.environment.n_envs,
-            backend="mjx",
-          ))))
-    eval_env = VecMonitor(TorchWrapper(VectorGymWrapper(brax.envs.create(
-                    env_name=cfg.environment.name,
-                    batch_size=cfg.n_eval_episodes,
-                    backend="mjx",
-                ))))
-
-    if cfg.hp_config.normalize_observations:
-        #env = VecNormalize(env, training=True, norm_obs=True, norm_reward=False)
-        #eval_env = VecNormalize(eval_env, training=False, norm_obs=True, norm_reward=False)
-        a = 0
-
-    eval_callback = EvalTrainingMetricsCallback(
-        eval_env=eval_env,
-        eval_freq=cfg.n_total_timesteps // cfg.n_eval_steps // cfg.environment.n_envs,
-        n_eval_episodes=cfg.n_eval_episodes,
-        seed=cfg.seed,
-    )
-
-    if cfg.environment.cnn_policy:
-        # TODO verify to have NatureCNN + one hidden layer
-        nas_config = {
-            "net_arch": [cfg.nas_config.hidden_size],
-            "activation_fn": nn.ReLU
-            if cfg.nas_config.activation == "relu"
-            else nn.Tanh,
-        }
-    else:
-        nas_config = {
-            "net_arch": [cfg.nas_config.hidden_size, cfg.nas_config.hidden_size],
-            "activation_fn": nn.ReLU
-            if cfg.nas_config.activation == "relu"
-            else nn.Tanh,
-        }
-
-    if cfg.algorithm == "dqn":
-        model = DQN(
-            "CnnPolicy" if cfg.environment.cnn_policy else "MlpPolicy",
-            env,
-            policy_kwargs=nas_config,
-            verbose=0,
-            seed=cfg.seed,
-            learning_starts=cfg.hp_config.learning_starts,
-            target_update_interval=cfg.hp_config.target_update_interval,
-            exploration_final_eps=cfg.hp_config.target_epsilon,
-            exploration_initial_eps=cfg.hp_config.initial_epsilon,
-            gradient_steps=cfg.hp_config.gradient_steps,
-            buffer_size=cfg.hp_config.buffer_size,
-            learning_rate=cfg.hp_config.learning_rate,
-            batch_size=cfg.hp_config.buffer_batch_size,
-            train_freq=cfg.hp_config.train_freq,
-            tau=cfg.hp_config.tau,
-            gamma=cfg.hp_config.gamma,
-        )
-    elif cfg.algorithm == "ppo":
-        model = PPO(
-            "CnnPolicy" if cfg.environment.cnn_policy else "MlpPolicy",
-            env,
-            policy_kwargs=nas_config,
-            verbose=0,
-            seed=cfg.seed,
-            clip_range=cfg.hp_config.clip_eps,
-            ent_coef=cfg.hp_config.ent_coef,
-            gae_lambda=cfg.hp_config.gae_lambda,
-            gamma=cfg.hp_config.gamma,
-            learning_rate=cfg.hp_config.learning_rate,
-            max_grad_norm=cfg.hp_config.max_grad_norm,
-            batch_size=cfg.hp_config.minibatch_size,
-            n_steps=cfg.hp_config.n_steps,
-            n_epochs=cfg.hp_config.update_epochs,
-            vf_coef=cfg.hp_config.vf_coef,
-        )
-    elif cfg.algorithm == "sac":
-        model = SAC(
-            "CnnPolicy" if cfg.environment.cnn_policy else "MlpPolicy",
-            env,
-            policy_kwargs=nas_config,
-            verbose=0,
-            seed=cfg.seed,
-            batch_size=cfg.hp_config.buffer_batch_size,
-            buffer_size=cfg.hp_config.buffer_size,
-            gamma=cfg.hp_config.gamma,
-            gradient_steps=cfg.hp_config.gradient_steps,
-            learning_starts=cfg.hp_config.learning_starts,
-            learning_rate=cfg.hp_config.learning_rate,
-            train_freq=cfg.hp_config.train_freq,
-        )
-    else:
-        raise ValueError(f"Invalid algorithm: {cfg.algorithm}.")
-
-    logger.info(f"Training started.")
-
-    start = time.time()
-    model.learn(total_timesteps=int(cfg.n_total_timesteps), callback=eval_callback)
-    training_time = time.time() - start
-
-    logger.info(f"Finished in {format_time(training_time)}s.")
-
-    timesteps, returns = eval_callback.get_returns()
-    timesteps *= cfg.environment.n_envs
-    valid_idx = timesteps <= cfg.environment.n_total_timesteps
-    timesteps = timesteps[valid_idx]
-    returns = returns[valid_idx]
-    returns = returns.mean(axis=1)
-
-    train_info_df = pd.DataFrame({"steps": timesteps, "returns": returns})
-
-    return train_info_df, training_time
-
-
-def train_sb3_envpool(cfg: DictConfig, logger: logging.Logger):
+def train_sb3(cfg: DictConfig, logger: logging.Logger):
     from stable_baselines3.common.callbacks import BaseCallback
     from stable_baselines3.common.evaluation import evaluate_policy
     from stable_baselines3.common.vec_env import VecEnvWrapper, VecMonitor, VecNormalize, SubprocVecEnv
@@ -697,7 +517,7 @@ def train_sb3_envpool(cfg: DictConfig, logger: logging.Logger):
 
 
 @hydra.main(version_base=None, config_path="configs", config_name="runtime_experiments")
-@track_emissions(offline=True, country_iso_code="DEU")
+#@track_emissions(offline=True, country_iso_code="DEU")
 def main(cfg: DictConfig):
     logging.basicConfig(filename="job.log",
 					format="%(asctime)s %(message)s",
@@ -725,7 +545,16 @@ def run(cfg: DictConfig, logger: logging.Logger):
     if "algorithm_framework" not in cfg:
         raise ValueError("Key 'algorithm_framework' not in config.")
 
-    if cfg.algorithm_framework == "arlbench":
+    if cfg.algorithm_framework == "brax":
+        if cfg.environment.framework != "brax":
+            raise ValueError(
+                "Only brax is supported as environment framework for Brax."
+            )
+        assert cfg.algorithm in ["ppo", "sac"], "Only PPO and SAC are supported for Brax."
+        train_info_df, _ = train_brax(cfg, logger)
+        cfg["n_eval_steps"] = 1
+        _, training_time = train_brax(cfg, logger)
+    elif cfg.algorithm_framework == "arlbench":
         train_info_df, _ = train_arlbench(cfg, logger)
 
         # Do only one evaluation for a fair comparison to purejaxrl
@@ -744,17 +573,11 @@ def run(cfg: DictConfig, logger: logging.Logger):
                 "Only envpool and brax are supported as environment framework for SB3."
             )
 
-        if cfg.environment.framework == "brax":
-            train_info_df, training_time = train_sb3_brax(cfg, logger)
-        else:
-            train_info_df, training_time = train_sb3_envpool(cfg, logger)
+        train_info_df, training_time = train_sb3(cfg, logger)
 
         # Do only one evaluation for a fair comparison to purejaxrl
         cfg["n_eval_steps"] = 1
-        if cfg.environment.framework == "brax":
-            _, training_time = train_sb3_brax(cfg, logger)
-        else:
-            _, training_time = train_sb3_envpool(cfg, logger)
+        _, training_time = train_sb3(cfg, logger)
     else:
         raise ValueError(
             f"Invalid value for 'algorithm_framework': '{cfg.algorithm_framework}'."
