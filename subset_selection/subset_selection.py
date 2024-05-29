@@ -371,7 +371,7 @@ def plot_method_comparison_single_strategy(method_results: pd.DataFrame, strateg
 
     method_results = method_results[method_results["strategy"].isin(["Optimum", strategy])]
 
-    fig, axes = plt.subplots(ncols=len(algorithms), nrows=1, figsize=(9.5, 2.5), sharey="row")
+    fig, axes = plt.subplots(ncols=len(algorithms), nrows=1, figsize=(7, 2), sharey="row")
 
     for i, algorithm in enumerate(algorithms):
         data = method_results[method_results["algorithm"] == algorithm]
@@ -387,7 +387,7 @@ def plot_method_comparison_single_strategy(method_results: pd.DataFrame, strateg
 
     fig.subplots_adjust(bottom=0.3, wspace=0.33)
 
-    # axes[-1].legend(loc='upper center', bbox_to_anchor=(-0.95, -0.3), ncol=2, fancybox=False, shadow=False, frameon=False)
+    axes[-1].legend(loc='upper center', bbox_to_anchor=(-0.95, -0.3), ncol=2, fancybox=False, shadow=False, frameon=False)
 
     plt.tight_layout()
     path = os.path.join(SUBSET_PLOTS, f"method_comparison_{strategy.replace(' + ', '')}.png")
