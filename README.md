@@ -40,10 +40,16 @@ The ARLBench is a benchmark for HPO in RL - evaluate your HPO methods fast and o
 
 ## Installation
 
-There are currently two different ways to install ARLBench:
+There are currently two different ways to install ARLBench. 
+Whichever you choose, we recommend to create a virtual environment for the installation:
+
+```bash
+conda create -n arlbench python=3.10
+conda activate arlbench
+```
 
 <details>
-<summary>After acceptance: PyPI</summary>
+<summary>PyPI</summary>
 You can install ARLBench using `pip`:
 
 ```bash
@@ -66,11 +72,6 @@ git clone git@github.com:automl/arlbench.git
 cd arlbench
 ```
 
-We recommend to create a virtual environment for the installation:
-```bash
-conda create -n arlbench python=3.10
-```
-
 Then you can install the benchmark. For the base version, use:
 ```bash
 make install
@@ -84,6 +85,8 @@ make install-envpool
 
 > [!CAUTION]
 > Windows is currently not supported and also not tested. We recommend using the Linux subsytem if you're on a Windows machine.
+
+If you want to run the ARLBench on GPU, we recommend you check out the [JAX installation guide](https://jax.readthedocs.io/en/latest/installation.html) to see how you can install the correct version for your GPU setup.
 
 ## Quickstart
 
