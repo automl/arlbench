@@ -43,7 +43,7 @@ The ARLBench is a benchmark for HPO in RL - evaluate your HPO methods fast and o
 There are currently two different ways to install ARLBench:
 
 <details>
-<summary>After acceptance: PyPI</summary>
+<summary>PyPI</summary>
 You can install ARLBench using `pip`:
 
 ```bash
@@ -84,6 +84,8 @@ make install-envpool
 
 > [!CAUTION]
 > Windows is currently not supported and also not tested. We recommend using the Linux subsytem if you're on a Windows machine.
+
+If you want to run the ARLBench on GPU, we recommend you check out the [JAX installation guide](https://jax.readthedocs.io/en/latest/installation.html) to see how you can install the correct version for your GPU setup.
 
 ## Quickstart
 
