@@ -134,11 +134,15 @@ class SAC(Algorithm):
         Args:
             hpo_config (Configuration): Hyperparameter configuration.
             env (Environment | AutoRLWrapper): Training environment.
-            eval_env (Environment | AutoRLWrapper | None, optional): Evaluation environent (otherwise training environment is used for evaluation). Defaults to None.
+            eval_env (Environment | AutoRLWrapper | None, optional): Evaluation environent 
+            (otherwise training environment is used for evaluation). Defaults to None.
             cnn_policy (bool, optional): Use CNN network architecture. Defaults to False.
-            nas_config (Configuration | None, optional): Neural architecture configuration. Defaults to None.
-            track_trajectories (bool, optional):  Track metrics such as loss and gradients during training. Defaults to False.
-            track_metrics (bool, optional): Track trajectories during training. Defaults to False.
+            nas_config (Configuration | None, optional): Neural architecture 
+            configuration. Defaults to None.
+            track_trajectories (bool, optional):  Track metrics such as loss and gradients 
+            during training. Defaults to False.
+            track_metrics (bool, optional): Track trajectories during training. 
+            Defaults to False.
         """
         if nas_config is None:
             nas_config = SAC.get_default_nas_config()
@@ -552,14 +556,14 @@ class SAC(Algorithm):
         ) -> tuple[
             tuple[SACRunnerState, PrioritisedTrajectoryBufferState], SACTrainingResult
         ]:
-            """_summary_.
+            """Performs one iteration of training and evaluation.
 
             Args:
-                carry (tuple[SACRunnerState, PrioritisedTrajectoryBufferState]): _description_
-                _ (None): _description_
+                _runner_state (PPORunnerState): PPO runner state.
+                _ (None): Unused parameter (required for jax.lax.scan).
 
             Returns:
-                tuple[ tuple[SACRunnerState, PrioritisedTrajectoryBufferState], SACTrainingResult ]: _description_
+                tuple[tuple[SACRunnerState, PrioritisedTrajectoryBufferState], SACTrainingResult]: Tuple of SAC runner state and training result.
             """
             runner_state, buffer_state = carry
             (runner_state, buffer_state), (metrics, trajectories) = jax.lax.scan(
@@ -596,17 +600,18 @@ class SAC(Algorithm):
         is_weights: jnp.ndarray,
         rng: chex.PRNGKey,
     ) -> tuple[SACTrainState, jnp.ndarray, jnp.ndarray, FrozenDict, chex.PRNGKey]:
-        """_summary_.
+        """Updates the critic network parameters.
 
         Args:
-            actor_train_state (SACTrainState): _description_
-            critic_train_state (SACTrainState): _description_
-            alpha_train_state (SACTrainState): _description_
-            experience (Transition): _description_
-            rng (chex.PRNGKey): _description_
+            actor_train_state (SACTrainState): Actor train state.
+            critic_train_state (SACTrainState): Critic train state.
+            alpha_train_state (SACTrainState): Alpha train state.
+            experience (Transition): Experience (batch of transitions).
+            rng (chex.PRNGKey): Random number generator key.
 
         Returns:
-            tuple[SACTrainState, jnp.ndarray, jnp.ndarray, FrozenDict, chex.PRNGKey]: _description_
+            tuple[SACTrainState, jnp.ndarray, jnp.ndarray, FrozenDict, chex.PRNGKey]: 
+            Updated training state and metrics.
         """
         rng, action_rng = jax.random.split(rng, 2)
         pi = self.actor_network.apply(actor_train_state.params, experience.obs)
@@ -625,14 +630,14 @@ class SAC(Algorithm):
             + (1 - experience.done) * self.hpo_config["gamma"] * qf_next_target
         )
 
-        def mse_loss(params: FrozenDict):
-            """_summary_.
+        def mse_loss(params: FrozenDict) -> tuple[SACTrainState, jnp.ndarray, jnp.ndarray, jnp.ndarray, chex.PRNGKey]:
+            """Computes the mean squared error.
 
             Args:
-                params (FrozenDict): _description_
+                params (FrozenDict): Critic network parameters.
 
             Returns:
-                _type_: _description_
+                tuple: Loss and metrics.
             """
             q_pred = self.critic_network.apply(
                 params, experience.last_obs, experience.action
@@ -657,14 +662,15 @@ class SAC(Algorithm):
         is_weights: jnp.ndarray,
         rng: chex.PRNGKey,
     ) -> tuple[SACTrainState, jnp.ndarray, jnp.ndarray, FrozenDict, chex.PRNGKey]:
-        """_summary_.
+        """Updates the actor network parameters.
 
         Args:
-            actor_train_state (SACTrainState): _description_
-            critic_train_state (SACTrainState): _description_
-            alpha_train_state (SACTrainState): _description_
-            batch (Transition): _description_
-            rng (chex.PRNGKey): _description_
+            actor_train_state (SACTrainState): Actor train state.
+            critic_train_state (SACTrainState): Critic train state.
+            alpha_train_state (SACTrainState): Alpha train state.
+            experience (TimeStep): Experience (batch of TimeSteps).
+            is_weights (jnp.ndarray): Whether to use weights for PER or not.
+            rng (chex.PRNGKey): Random number generator key.
 
         Returns:
             tuple[SACTrainState, jnp.ndarray, jnp.ndarray, FrozenDict, chex.PRNGKey]: _description_
@@ -676,15 +682,15 @@ class SAC(Algorithm):
             critic_params: FrozenDict,
             alpha_params: FrozenDict,
         ) -> tuple[jnp.ndarray, jnp.ndarray]:
-            """_summary_.
+            """Compute actor loss.
 
             Args:
-                actor_params (FrozenDict): _description_
-                critic_params (FrozenDict): _description_
-                alpha_params (FrozenDict): _description_
+                actor_params (FrozenDict): Actor network parameters.
+                critic_params (FrozenDict): Critic network parameters.
+                alpha_params (FrozenDict): Alpha network parameters.
 
             Returns:
-                tuple[jnp.ndarray, jnp.ndarray]: _description_
+                tuple[jnp.ndarray, jnp.ndarray]: Update training state and metrics. 
             """
             pi = self.actor_network.apply(actor_params, experience.last_obs)
             actor_actions, log_prob = pi.sample_and_log_prob(seed=action_rng)
@@ -710,24 +716,24 @@ class SAC(Algorithm):
     def update_alpha(
         self, alpha_train_state: SACTrainState, entropy: jnp.ndarray
     ) -> tuple[SACTrainState, jnp.ndarray]:
-        """_summary_.
+        """Update alpha network parameters.
 
         Args:
-            alpha_train_state (SACTrainState): _description_
-            entropy (jnp.ndarray): _description_
+            alpha_train_state (SACTrainState): Alpha training state.
+            entropy (jnp.ndarray): Entropy values.
 
         Returns:
-            tuple[SACTrainState, jnp.ndarray]: _description_
+            tuple[SACTrainState, jnp.ndarray]: Updated trainingi state and metrics.
         """
 
         def get_alpha_loss(params: FrozenDict) -> jnp.ndarray:
-            """_summary_.
+            """Compute alpha loss.
 
             Args:
-                params (FrozenDict): _description_
+                params (FrozenDict): Alpha network parameters.
 
             Returns:
-                jnp.ndarray: _description_
+                jnp.ndarray: Alpha loss.
             """
             alpha_value = self.alpha.apply(params)
             return alpha_value * (entropy - self.target_entropy).mean()  # type: ignore[union-attr]
@@ -743,14 +749,15 @@ class SAC(Algorithm):
         tuple[SACRunnerState, PrioritisedTrajectoryBufferState],
         tuple[SACMetrics | None, Transition | None],
     ]:
-        """_summary_.
+        """Perform one update step.
 
         Args:
-            carry (tuple[SACRunnerState, PrioritisedTrajectoryBufferState]): _description_
-            _ (None): _description_
+            carry (tuple[SACRunnerState, PrioritisedTrajectoryBufferState]): Carry for jax.lax.scan().
+            _ (None): Unused parameter.
 
         Returns:
-            tuple[ tuple[SACRunnerState, PrioritisedTrajectoryBufferState], tuple[SACMetrics | None, Transition | None], ]: _description_
+            tuple[ tuple[SACRunnerState, PrioritisedTrajectoryBufferState], 
+            tuple[SACMetrics | None, Transition | None], ]: Updated training state and metrics.
         """
 
         def do_update(
@@ -768,17 +775,18 @@ class SAC(Algorithm):
             PrioritisedTrajectoryBufferState,
             SACMetrics,
         ]:
-            """_summary_.
+            """Perform an update of the algorithm parameters..
 
             Args:
-                rng (chex.PRNGKey): _description_
-                actor_train_state (SACTrainState): _description_
-                critic_train_state (SACTrainState): _description_
-                alpha_train_state (SACTrainState): _description_
-                buffer_state (PrioritisedTrajectoryBufferState): _description_
+                rng (chex.PRNGKey): Random number generator key.
+                actor_train_state (SACTrainState): Actor training state.
+                critic_train_state (SACTrainState): Critic training state.
+                alpha_train_state (SACTrainState): Alpha training state.
+                buffer_state (PrioritisedTrajectoryBufferState): Buffer state.
 
             Returns:
-                tuple[ chex.PRNGKey, SACTrainState, SACTrainState, SACTrainState, PrioritisedTrajectoryBufferState, SACMetrics, ]: _description_
+                tuple[ chex.PRNGKey, SACTrainState, SACTrainState, SACTrainState, 
+                PrioritisedTrajectoryBufferState, SACMetrics]: Updated training states and metrics.
             """
 
             def gradient_step(
@@ -800,14 +808,16 @@ class SAC(Algorithm):
                 ],
                 SACMetrics,
             ]:
-                """_summary_.
+                """Perform a gradient update step.
 
                 Args:
-                    carry (tuple[ chex.PRNGKey, SACTrainState, SACTrainState, SACTrainState, PrioritisedTrajectoryBufferState, ]): _description_
-                    _ (None): _description_
+                    carry (tuple[ chex.PRNGKey, SACTrainState, SACTrainState, 
+                    SACTrainState, PrioritisedTrajectoryBufferState, ]): Carry for jax.lax.scan():
+                    _ (None): Unused parameter.
 
                 Returns:
-                    tuple[ tuple[ chex.PRNGKey, SACTrainState, SACTrainState, SACTrainState, PrioritisedTrajectoryBufferState, ], SACMetrics, ]: _description_
+                    tuple[ tuple[ chex.PRNGKey, SACTrainState, SACTrainState, SACTrainState, 
+                    PrioritisedTrajectoryBufferState, ], SACMetrics, ]: Updated training states and metrics.
                 """
                 (
                     rng,
@@ -924,17 +934,18 @@ class SAC(Algorithm):
             PrioritisedTrajectoryBufferState,
             SACMetrics,
         ]:
-            """_summary_.
+            """Dummy for jax.lax.scan(). Does not perform an update.
 
             Args:
-                rng (chex.PRNGKey): _description_
-                actor_train_state (SACTrainState): _description_
-                critic_train_state (SACTrainState): _description_
-                alpha_train_state (SACTrainState): _description_
-                buffer_state (PrioritisedTrajectoryBufferState): _description_
+                rng (chex.PRNGKey): Random number generator key.
+                actor_train_state (SACTrainState): Actor training state.
+                critic_train_state (SACTrainState): Critic training state.
+                alpha_train_state (SACTrainState): Alpha training state.
+                buffer_state (PrioritisedTrajectoryBufferState): Buffer state.
 
             Returns:
-                tuple[ chex.PRNGKey, SACTrainState, SACTrainState, SACTrainState, PrioritisedTrajectoryBufferState, SACMetrics, ]: _description_
+                tuple[ chex.PRNGKey, SACTrainState, SACTrainState, SACTrainState, 
+                PrioritisedTrajectoryBufferState, SACMetrics]: Input training states and metrics.
             """
             single_loss = jnp.array(
                 [((jnp.array([0]) - jnp.array([0])) ** 2).mean()]
@@ -1060,14 +1071,15 @@ class SAC(Algorithm):
     def _env_step(
         self, carry: tuple[SACRunnerState, PrioritisedTrajectoryBufferState], _: None
     ) -> tuple[tuple[SACRunnerState, PrioritisedTrajectoryBufferState], Transition]:
-        """_summary_.
+        """Take one step in the environment (n_envs steps in total).
 
         Args:
-            carry (tuple[SACRunnerState, PrioritisedTrajectoryBufferState]): _description_
-            _ (None): _description_
+            carry (tuple[SACRunnerState, PrioritisedTrajectoryBufferState]): Carry for jax.lax.scan().
+            _ (None): Unused parameter.
 
         Returns:
-            tuple[tuple[SACRunnerState, PrioritisedTrajectoryBufferState], Transition]: _description_
+            tuple[tuple[SACRunnerState, PrioritisedTrajectoryBufferState], Transition]:
+            Updated carry and collected transitions.
         """
         runner_state, buffer_state = carry
         (
@@ -1110,14 +1122,14 @@ class SAC(Algorithm):
 
         global_step += 1
 
-        def target_update(train_state) -> SACTrainState:
-            """_summary_.
+        def target_update(train_state: SACTrainState) -> SACTrainState:
+            """Update the target network.
 
             Args:
-                train_state (_type_): _description_
+                train_state (SACTrainState): Training state.
 
             Returns:
-                SACTrainState: _description_
+                SACTrainState: Updated training state.
             """
             return train_state.replace(
                 target_params=optax.incremental_update(
@@ -1127,14 +1139,14 @@ class SAC(Algorithm):
                 )
             )
 
-        def dont_target_update(train_state) -> SACTrainState:
-            """_summary_.
+        def dont_target_update(train_state: SACTrainState) -> SACTrainState:
+            """Dummy for jax.lax.scan(). Does not update the target network.
 
             Args:
-                train_state (_type_): _description_
+                train_state (SACTrainState): Training state.
 
             Returns:
-                SACTrainState: _description_
+                SACTrainState: Input training state.
             """
             return train_state
 

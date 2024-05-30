@@ -473,7 +473,7 @@ class DQN(Algorithm):
 
         Args:
             runner_state (DQNRunnerState): DQN runner state.
-            _ (None): Unused parameter (buffer_state in other algorithms).
+            buffer_state (PrioritisedTrajectoryBufferState): Buffer state.
             n_total_timesteps (int, optional): Total number of training timesteps. Update steps = n_total_timesteps // n_envs. Defaults to 1000000.
             n_eval_steps (int, optional): Number of evaluation steps during training. Defaults to 100.
             n_eval_episodes (int, optional): Number of evaluation episodes per evaluation during training. Defaults to 10.
@@ -584,16 +584,16 @@ class DQN(Algorithm):
         n_total_timesteps: int,
     ) -> tuple[
         tuple[DQNRunnerState, PrioritisedTrajectoryBufferState],
-        tuple[DQNMetrics | None, Transition | None],
+        tuple[DQNMetrics | None, Transition | None]
     ]:
-        """_summary_.
+        """Performs one iteration of updating including environment steps.
 
         Args:
             carry (tuple[DQNRunnerState, PrioritisedTrajectoryBufferState]): _description_
-            _ (_type_): _description_
+            n_total_timesteps (int): Number of environment steps to take.
 
         Returns:
-            tuple[ tuple[DQNRunnerState, PrioritisedTrajectoryBufferState], tuple[DQNMetrics | None, Transition | None], ]: _description_
+            tuple[tuple[DQNRunnerState, PrioritisedTrajectoryBufferState], tuple[DQNMetrics | None, Transition | None]]: Updated runner state, recorded transitionsa and metrics if specified.
         """
         runner_state, buffer_state = carry
         (rng, train_state, normalizer_state, env_state, last_obs, global_step) = (
@@ -623,6 +623,15 @@ class DQN(Algorithm):
             ],
             tuple[jnp.ndarray, jnp.ndarray, jnp.ndarray, jnp.ndarray, dict],
         ]:
+            """Takes one environment step (n_envs timesteps).
+
+            Args:
+                carry (tuple[chex.PRNGKey, DQNTrainState, RunningStatisticsState, jnp.ndarray, Any, int, PrioritisedTrajectoryBufferState]): Carry for jax.lax.scan().
+                _ (None): Unused parameter.
+
+            Returns:
+                tuple[ tuple[ chex.PRNGKey, DQNTrainState, RunningStatisticsState, jnp.ndarray, Any, int, PrioritisedTrajectoryBufferState, ], tuple[jnp.ndarray, jnp.ndarray, jnp.ndarray, jnp.ndarray, dict], ]: _description_
+            """
             (
                 rng,
                 train_state,
@@ -633,27 +642,27 @@ class DQN(Algorithm):
                 buffer_state,
             ) = carry
 
-            def random_action(rng: chex.PRNGKey, _) -> jnp.ndarray:
-                """_summary_.
+            def random_action(rng: chex.PRNGKey, _: jnp.ndarray) -> jnp.ndarray:
+                """Takes a random action.
 
                 Args:
-                    rng (chex.PRNGKey): _description_
-                    _ (_type_): _description_
+                    rng (chex.PRNGKey): Random number generator key.
+                    _ (jnp.ndarray): Observation(s), not used here.
 
                 Returns:
-                    jnp.ndarray: _description_
+                    jnp.ndarray: Action(s).
                 """
                 return self.env.sample_actions(rng)
 
             def greedy_action(_: chex.PRNGKey, obs: jnp.ndarray) -> jnp.ndarray:
-                """_summary_.
+                """Takes a greedy action.
 
                 Args:
-                    _ (chex.PRNGKey): _description_
-                    obs (jnp.ndarray): _description_
+                    _ (chex.PRNGKey): Random number generator key, not used here.
+                    obs (jnp.ndarray): Observation(s).
 
                 Returns:
-                    jnp.ndarray: _description_
+                    jnp.ndarray: Action(s).
                 """
                 if self.hpo_config["normalize_observations"]:
                     q_values = self.network.apply(
@@ -693,14 +702,14 @@ class DQN(Algorithm):
 
             global_step += 1
 
-            def target_update(train_state) -> DQNTrainState:
-                """_summary_.
+            def target_update(train_state: DQNTrainState) -> DQNTrainState:
+                """Update the target network.
 
                 Args:
-                    train_state (_type_): _description_
+                    train_state (DQNTrainState): DQN train state.
 
                 Returns:
-                    DQNTrainState: _description_
+                    DQNTrainState:  DQN train state with updated target network.
                 """
                 return train_state.replace(
                     target_params=optax.incremental_update(
@@ -710,14 +719,15 @@ class DQN(Algorithm):
                     )
                 )
 
-            def dont_target_update(train_state) -> DQNTrainState:
-                """_summary_.
+            def dont_target_update(train_state: DQNTrainState) -> DQNTrainState:
+                """Dummy function for jax.lax.cond(). Same interface as target_update()
+                but this function does not change the network.
 
                 Args:
-                    train_state (_type_): _description_
+                    train_state (DQNTrainState): DQN train state.
 
                 Returns:
-                    DQNTrainState: _description_
+                    DQNTrainState: DQN train state (same as input).
                 """
                 return train_state
 
@@ -762,15 +772,16 @@ class DQN(Algorithm):
         ) -> tuple[
             chex.PRNGKey, DQNTrainState, PrioritisedTrajectoryBufferState, DQNMetrics
         ]:
-            """_summary_.
+            """Update the training state, i.e., the network parameters..
 
             Args:
-                rng (chex.PRNGKey): _description_
-                train_state (DQNTrainState): _description_
-                buffer_state (PrioritisedTrajectoryBufferState): _description_
+                rng (chex.PRNGKey): Random number generator key.
+                train_state (DQNTrainState): DQN training state.
+                buffer_state (PrioritisedTrajectoryBufferState): Buffer state.
 
             Returns:
-                tuple[ chex.PRNGKey, DQNTrainState, PrioritisedTrajectoryBufferState, DQNMetrics ]: _description_
+                tuple[chex.PRNGKey, DQNTrainState, PrioritisedTrajectoryBufferState, DQNMetrics]: 
+                Random number generator key, training state, buffer state, and metrics.
             """
 
             def gradient_step(
@@ -782,14 +793,14 @@ class DQN(Algorithm):
                 tuple[chex.PRNGKey, DQNTrainState, PrioritisedTrajectoryBufferState],
                 DQNMetrics,
             ]:
-                """_summary_.
+                """Perform one gradient step and return the metrics..
 
                 Args:
-                    carry (tuple[ chex.PRNGKey, DQNTrainState, PrioritisedTrajectoryBufferState ]): _description_
-                    _ (None): _description_
+                    carry (tuple[ chex.PRNGKey, DQNTrainState, PrioritisedTrajectoryBufferState ]): Carry for jax.lax.scan().
+                    _ (None): Unused parameter.
 
                 Returns:
-                    tuple[ tuple[chex.PRNGKey, DQNTrainState, PrioritisedTrajectoryBufferState], DQNMetrics, ]: _description_
+                    tuple[ tuple[chex.PRNGKey, DQNTrainState, PrioritisedTrajectoryBufferState], DQNMetrics, ]: Updated carry and metrics.
                 """
                 rng, train_state, buffer_state = carry
                 rng, batch_sample_rng = jax.random.split(rng)
@@ -855,15 +866,16 @@ class DQN(Algorithm):
             PrioritisedTrajectoryBufferState,
             DQNMetrics,
         ]:
-            """_summary_.
+            """Dummy function for jax.lax.cond(). Does not update the network.
 
             Args:
-                rng (chex.PRNGKey): _description_
-                train_state (DQNTrainState): _description_
-                buffer_state (PrioritisedTrajectoryBufferState): _description_
+                rng (chex.PRNGKey): Random number generator key.
+                train_state (DQNTrainState): DQN train state.
+                normalizer_state (RunningStatisticsState): Normalizer state for observation normalization.
+                buffer_state (PrioritisedTrajectoryBufferState): Buffer state.
 
             Returns:
-                tuple[ chex.PRNGKey, DQNTrainState, PrioritisedTrajectoryBufferState, DQNMetrics ]: _description_
+                tuple[chex.PRNGKey, DQNTrainState, RunningStatisticsState, PrioritisedTrajectoryBufferState, DQNMetrics]: Input parameters and dummy metrics.
             """
             if self.track_metrics:
                 loss = jnp.array(
