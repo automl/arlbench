@@ -9,7 +9,8 @@ Either way, you will likely want to first create a virtual environment to instal
     conda create -n arlbench python=3.10
     conda activate arlbench
 
-### 1. Using PyPI
+1. Using PyPI
+-------------
 
 This is the simplest way to install ARLBench. Just run the following command:
 
@@ -17,7 +18,8 @@ This is the simplest way to install ARLBench. Just run the following command:
 
     pip install arlbench
 
-### 2. Downloading from GitHub
+2. Downloading from GitHub
+--------------------------
 
 This is the best way to install the latest version of ARLBench. First, clone the repository:
 
