@@ -2,7 +2,6 @@ Advanced Configuration Options
 ==============================
 
 .. toctree::
-   :hidden:
    :maxdepth: 2
 
 
