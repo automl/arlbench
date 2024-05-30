@@ -40,7 +40,13 @@ The ARLBench is a benchmark for HPO in RL - evaluate your HPO methods fast and o
 
 ## Installation
 
-There are currently two different ways to install ARLBench:
+There are currently two different ways to install ARLBench. 
+Whichever you choose, we recommend to create a virtual environment for the installation:
+
+```bash
+conda create -n arlbench python=3.10
+conda activate arlbench
+```
 
 <details>
 <summary>PyPI</summary>
@@ -64,11 +70,6 @@ First, you need to clone the ARLBench reopsitory:
 ```bash
 git clone git@github.com:automl/arlbench.git
 cd arlbench
-```
-
-We recommend to create a virtual environment for the installation:
-```bash
-conda create -n arlbench python=3.10
 ```
 
 Then you can install the benchmark. For the base version, use:
