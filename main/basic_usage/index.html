@@ -5,7 +5,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Basic Usage &#8212; arlbench Documentation 0.1.0 documentation</title>
+    <title>Benchmarking AutoRL Methods &#8212; arlbench Documentation 0.1.0 documentation</title>
     
   <link href="../_static/css/theme.css" rel="stylesheet">
   <link href="../_static/css/index.ac9c05f7c49ca1e1f876c6e36360ea26.css" rel="stylesheet">
@@ -32,7 +32,7 @@
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Advanced Usage" href="../advanced_usage/index.html" />
+    <link rel="next" title="Advanced Configuration Options" href="../advanced_usage/index.html" />
     <link rel="prev" title="Installation" href="../installation.html" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="docsearch:language" content="en">
@@ -128,11 +128,16 @@
    Installation
   </a>
  </li>
- <li class="toctree-l1 current active has-children">
+ <li class="toctree-l1 current active">
   <a class="current reference internal" href="#">
-   Basic Usage
+   Benchmarking AutoRL Methods
   </a>
-  <input checked="" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" type="checkbox"/>
+ </li>
+ <li class="toctree-l1 has-children">
+  <a class="reference internal" href="../advanced_usage/index.html">
+   Advanced Configuration Options
+  </a>
+  <input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" type="checkbox"/>
   <label for="toctree-checkbox-1">
    <i class="fas fa-chevron-down">
    </i>
@@ -141,28 +146,11 @@
   </ul>
  </li>
  <li class="toctree-l1 has-children">
-  <a class="reference internal" href="../advanced_usage/index.html">
-   Advanced Usage
-  </a>
-  <input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" type="checkbox"/>
-  <label for="toctree-checkbox-2">
-   <i class="fas fa-chevron-down">
-   </i>
-  </label>
-  <ul class="simple">
-  </ul>
- </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="../commands.html">
-   Helpful Commands
-  </a>
- </li>
- <li class="toctree-l1 has-children">
   <a class="reference internal" href="../api.html">
    API References
   </a>
-  <input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" type="checkbox"/>
-  <label for="toctree-checkbox-3">
+  <input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" type="checkbox"/>
+  <label for="toctree-checkbox-2">
    <i class="fas fa-chevron-down">
    </i>
   </label>
@@ -171,8 +159,8 @@
     <a class="reference internal" href="../api/arlbench.html">
      arlbench
     </a>
-    <input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" type="checkbox"/>
-    <label for="toctree-checkbox-4">
+    <input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" type="checkbox"/>
+    <label for="toctree-checkbox-3">
      <i class="fas fa-chevron-down">
      </i>
     </label>
@@ -186,8 +174,8 @@
       <a class="reference internal" href="../api/arlbench.autorl.html">
        arlbench.autorl
       </a>
-      <input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" type="checkbox"/>
-      <label for="toctree-checkbox-5">
+      <input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" type="checkbox"/>
+      <label for="toctree-checkbox-4">
        <i class="fas fa-chevron-down">
        </i>
       </label>
@@ -218,8 +206,8 @@
       <a class="reference internal" href="../api/arlbench.core.html">
        arlbench.core
       </a>
-      <input class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" type="checkbox"/>
-      <label for="toctree-checkbox-6">
+      <input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" type="checkbox"/>
+      <label for="toctree-checkbox-5">
        <i class="fas fa-chevron-down">
        </i>
       </label>
@@ -250,8 +238,8 @@
       <a class="reference internal" href="../api/arlbench.utils.html">
        arlbench.utils
       </a>
-      <input class="toctree-checkbox" id="toctree-checkbox-7" name="toctree-checkbox-7" type="checkbox"/>
-      <label for="toctree-checkbox-7">
+      <input class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" type="checkbox"/>
+      <label for="toctree-checkbox-6">
        <i class="fas fa-chevron-down">
        </i>
       </label>
@@ -313,14 +301,18 @@
               
               <div>
                 
-  <section id="basic-usage">
-<h1>Basic Usage<a class="headerlink" href="#basic-usage" title="Link to this heading">¶</a></h1>
-<div class="toctree-wrapper compound">
-</div>
-<div class="admonition warning">
-<p class="admonition-title">Warning</p>
-<p>This page is under construction.</p>
-</div>
+  <section id="benchmarking-autorl-methods">
+<h1>Benchmarking AutoRL Methods<a class="headerlink" href="#benchmarking-autorl-methods" title="Link to this heading">¶</a></h1>
+<p>ARLBench provides an basis for benchmarking different AutoRL methods. This section of the documentation focuses on the prominent aspect of black-box hyperparameter optimization, since it’s the simplest usecase of ARLBench.
+We discuss the structure of ARLBenchmark, the currently supported objectives, the environment subsets and search spaces we provide and the seeding of the experiments in their own subpages.
+The most important question, however, is how to actually use ARLBench in your experiments. This is the workflow we propose:</p>
+<ol class="arabic simple">
+<li><p>Decide which RL algorithms you choose as your HPO targets. In the best case, you will use all three: PPO, DQN and SAC.</p></li>
+<li><p>Decide which AutoRL methods you want to benchmark.</p></li>
+<li><p>Decide which objectives you want to optimize for. We provide a variety of objectives you can select one or more from.</p></li>
+<li><p>Use the pre-defined search spaces to run your AutoRL method for several runs. If there is a good reason to deviate from these search spaces, please report this alongside your results.</p></li>
+<li><p>Evaluate the best found configuration on the environment test seeds and report this result.</p></li>
+</ol>
 </section>
 
 
@@ -339,7 +331,7 @@
     <a class='right-next' id="next-link" href="../advanced_usage/index.html" title="next page">
     <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">Advanced Usage</p>
+        <p class="prev-next-title">Advanced Configuration Options</p>
     </div>
     <i class="fas fa-angle-right"></i>
     </a>

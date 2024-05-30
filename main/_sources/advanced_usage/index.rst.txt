@@ -1,5 +1,5 @@
-Advanced Usage
-==============
+Advanced Configuration Options
+==============================
 
 .. toctree::
    :hidden:
