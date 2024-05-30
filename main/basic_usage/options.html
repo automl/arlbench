@@ -301,6 +301,31 @@
                 
   <section id="arlbench-options">
 <h1>ARLBench Options<a class="headerlink" href="#arlbench-options" title="Link to this heading">¶</a></h1>
+<p>A given training run in ARLBench can be configured on two levels: the lower one is the configuration that happens via the AutoRL tool we benchmark while the upper level decides the setting we test the AutoRL tool in.
+The high level configuration takes place via the ‘autorl’ keys in the configuration file. These are the available options:</p>
+<ul class="simple">
+<li><p><strong>seed</strong>: The seed for the random number generator</p></li>
+<li><p><strong>env_framework</strong>: Environment framework to use. Currently supported: gymnax, envpool, brax, xland</p></li>
+<li><p><strong>env_name</strong>: The name of the environment to use</p></li>
+<li><p><strong>env_kwargs</strong>: Additional keyword arguments for the environment</p></li>
+<li><p><strong>eval_env_kwargs</strong>: Additional keyword arguments for the evaluation environment</p></li>
+<li><p><strong>n_envs</strong>: Number of environments to use in parallel</p></li>
+<li><p><strong>algorithm</strong>: The algorithm to use. Currently supported: dqn, ppo, sac</p></li>
+<li><p><strong>cnn_policy</strong>: Whether to use a CNN policy</p></li>
+<li><p><strong>deterministic_eval</strong>: Whether to use deterministic evaluation. This diables exploration behaviors in evaluation.</p></li>
+<li><p><strong>nas_config</strong>: Configuration for architecture</p></li>
+<li><p><strong>checkpoint</strong>: A list of elements the checkpoint should contain</p></li>
+<li><p><strong>checkpoint_name</strong>: The name of the checkpoint</p></li>
+<li><p><strong>checkpoint_dir</strong>: The directory to save the checkpoint in</p></li>
+<li><p><strong>objectives</strong>: The objectives to optimize for. Currently supported: reward_mean, reward_std, runtime, emissions</p></li>
+<li><p><strong>optimize_objectives</strong>: Whether to maximize or minimize the objectives</p></li>
+<li><p><strong>state_features</strong>: The features of the RL algorithm’s state to return</p></li>
+<li><p><strong>n_steps</strong>: The number of steps in the configuration schedule. Using 1 will result in a static configuration</p></li>
+<li><p><strong>n_total_timesteps</strong>: The total number of timesteps to train in each schedule interval</p></li>
+<li><p><strong>n_eval_steps</strong>: The number of steps to evaluate the agent for</p></li>
+<li><p><strong>n_eval_episodes</strong>: The number of episodes to evaluate the agent for</p></li>
+</ul>
+<p>The low level configuration options can be found in the ‘hp_config’ key set, containing the configurable hyperparameters and architecture of each algorithm. Please refer to the search space overview for more information.</p>
 </section>
 
 

@@ -301,6 +301,12 @@
                 
   <section id="the-arlbench-subsets">
 <h1>The ARLBench Subsets<a class="headerlink" href="#the-arlbench-subsets" title="Link to this heading">¶</a></h1>
+<p>We analyzed the hyperparameter landscapes of PPO, DQN and SAC on 20 environments to select a subset which allows for efficient benchmarking of AutoRL algorithms. These are the resulting subsets:</p>
+<a class="reference internal image-reference" href="basic_usage/path/subsets.png"><img alt="Alternative text" src="basic_usage/path/subsets.png" style="width: 800px;" />
+</a>
+<p>We strongly recommend you focus your benchmarking on these exact environments to ensure you cover the space total landscape of RL behaviors well.
+The data generated for selecting these environments is available on <a class="reference external" href="https://huggingface.co/datasets/autorl-org/arlbench">HuggingFace</a> for you to use in your experiments.
+For more information how the subset selection was done, please refer to our paper.</p>
 </section>
 
 
