@@ -20,7 +20,7 @@ echo "#!/bin/bash
 #SBATCH -p normal                                       # TODO check for your clusters partition
 #SBATCH --output $directory/log/smac_mf_${1}_%A_%a.out
 #SBATCH --error $directory/log/smac_mf_${1}_%A_%a.err
-#SBATCH --array=0-2
+#SBATCH --array=1-2
 
 cd ..
 python runscripts/run_arlbench.py -m --config-name=tune_smac_mf "experiments=${1}" "cluster=local" "smac_seed=\$SLURM_ARRAY_TASK_ID" 

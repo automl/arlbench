@@ -21,11 +21,11 @@ echo "#!/bin/bash
 #SBATCH -p gpu                                       # TODO check for your clusters partition
 #SBATCH --output $directory/log/pbt_${1}_%A_%a.out
 #SBATCH --error $directory/log/pbt_${1}_%A_%a.err
-#SBATCH --array=1-2
+#SBATCH --array=0-2
 
 
 cd ..
-python runscripts/run_arlbench.py -m --config-name=tune_pbt "experiments=${1}" "cluster=local" "pbt_seed=\$SLURM_ARRAY_TASK_ID"
+python runscripts/run_arlbench.py -m --config-name=tune_pbt "experiments=${1}" "cluster=local" "pbt_seed=\$SLURM_ARRAY_TASK_ID" "search_space.seed=\$SLURM_ARRAY_TASK_ID" 
 " > $directory/${1}.sh
 echo "Submitting $directory for $1"
 chmod +x $directory/${1}.sh

@@ -15,5 +15,5 @@
 
 
 cd ..
-python runscripts/run_arlbench.py -m --config-name=tune_pbt experiments=cc_continuous_mountain_car_sac_pbt cluster=local pbt_seed=$SLURM_ARRAY_TASK_ID
+python runscripts/run_arlbench.py -m --config-name=tune_pbt experiments=cc_continuous_mountain_car_sac_pbt cluster=local pbt_seed=$SLURM_ARRAY_TASK_ID search_space.seed=$SLURM_ARRAY_TASK_ID 
 
