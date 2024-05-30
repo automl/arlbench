@@ -20,7 +20,7 @@ echo "#!/bin/bash
 #SBATCH -p normal                                       # TODO check for your clusters partition
 #SBATCH --output $directory/log/pbt_${1}_%A_%a.out
 #SBATCH --error $directory/log/pbt_${1}_%A_%a.err
-#SBATCH --array=1-2
+#SBATCH --array=0-2
 
 
 cd ..

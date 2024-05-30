@@ -1,0 +1,7 @@
+Tasks chosen for dqn:
+Task 0: atari_qbert
+Correlation without weights: 0.8360694672294369
+Correlation with prediction: 0.8034125360660804
+Validation error: 0.19658746393391963
+Weights:
+[0.83369402]

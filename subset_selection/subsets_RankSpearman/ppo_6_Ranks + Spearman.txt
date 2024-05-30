@@ -1,0 +1,12 @@
+Tasks chosen for ppo:
+Task 0: atari_battle_zone
+Task 1: atari_qbert
+Task 2: box2d_lunar_lander
+Task 3: brax_humanoid
+Task 4: cc_mountain_car
+Task 5: minigrid_empty_random
+Correlation without weights: 0.976401834230624
+Correlation with prediction: 0.9756581196581197
+Validation error: 0.02434188034188034
+Weights:
+[0.15485257 0.15319383 0.13033993 0.21088008 0.19776904 0.1487746 ]

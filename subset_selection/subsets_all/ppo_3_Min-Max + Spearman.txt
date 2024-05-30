@@ -1,0 +1,9 @@
+Tasks chosen for ppo:
+Task 0: atari_qbert
+Task 1: brax_ant
+Task 2: minigrid_unlock
+Correlation without weights: 0.9156461728621131
+Correlation with prediction: 0.9166837606837606
+Validation error: 0.08331623931623937
+Weights:
+[0.28035449 0.49090329 0.24476968]

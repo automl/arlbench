@@ -1,0 +1,11 @@
+Tasks chosen for ppo:
+Task 0: atari_double_dunk
+Task 1: atari_this_game
+Task 2: brax_halfcheetah
+Task 3: cc_cartpole
+Task 4: minigrid_empty_random
+Correlation without weights: 0.9572308185314045
+Correlation with prediction: 0.9526324786324787
+Validation error: 0.047367521367521384
+Weights:
+[0.17619886 0.1166883  0.31982496 0.11803569 0.12040524]

@@ -1,0 +1,12 @@
+Tasks chosen for ppo:
+Task 0: box2d_lunar_lander_continuous
+Task 1: brax_humanoid
+Task 2: cc_acrobot
+Task 3: cc_cartpole
+Task 4: minigrid_door_key
+Task 5: minigrid_four_rooms
+Correlation without weights: 0.9511250228895807
+Correlation with prediction: 0.9608376068376069
+Validation error: 0.039162393162393186
+Weights:
+[0.08377811 0.23923914 0.11002876 0.1218148  0.07022225 0.20235336]
