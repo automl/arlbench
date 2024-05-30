@@ -1367,7 +1367,7 @@
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>runner_state</strong> (<a class="reference internal" href="#arlbench.core.algorithms.dqn.dqn.DQNRunnerState" title="arlbench.core.algorithms.dqn.dqn.DQNRunnerState"><em>DQNRunnerState</em></a>) – DQN runner state.</p></li>
-<li><p><strong>_</strong> (<em>None</em>) – Unused parameter (buffer_state in other algorithms).</p></li>
+<li><p><strong>buffer_state</strong> (<em>PrioritisedTrajectoryBufferState</em>) – Buffer state.</p></li>
 <li><p><strong>n_total_timesteps</strong> (<em>int</em><em>, </em><em>optional</em>) – Total number of training timesteps. Update steps = n_total_timesteps // n_envs. Defaults to 1000000.</p></li>
 <li><p><strong>n_eval_steps</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of evaluation steps during training. Defaults to 100.</p></li>
 <li><p><strong>n_eval_episodes</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of evaluation episodes per evaluation during training. Defaults to 10.</p></li>
@@ -1923,7 +1923,7 @@ another module inside the other module’s <code class="docutils literal notrans
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>runner_state</strong> (<a class="reference internal" href="#arlbench.core.algorithms.dqn.DQNRunnerState" title="arlbench.core.algorithms.dqn.DQNRunnerState"><em>DQNRunnerState</em></a>) – DQN runner state.</p></li>
-<li><p><strong>_</strong> (<em>None</em>) – Unused parameter (buffer_state in other algorithms).</p></li>
+<li><p><strong>buffer_state</strong> (<em>PrioritisedTrajectoryBufferState</em>) – Buffer state.</p></li>
 <li><p><strong>n_total_timesteps</strong> (<em>int</em><em>, </em><em>optional</em>) – Total number of training timesteps. Update steps = n_total_timesteps // n_envs. Defaults to 1000000.</p></li>
 <li><p><strong>n_eval_steps</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of evaluation steps during training. Defaults to 100.</p></li>
 <li><p><strong>n_eval_episodes</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of evaluation episodes per evaluation during training. Defaults to 10.</p></li>

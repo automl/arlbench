@@ -2328,7 +2328,7 @@ The buffer.</p>
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>runner_state</strong> (<a class="reference internal" href="arlbench.core.algorithms.dqn.html#arlbench.core.algorithms.dqn.DQNRunnerState" title="arlbench.core.algorithms.dqn.DQNRunnerState"><em>DQNRunnerState</em></a>) – DQN runner state.</p></li>
-<li><p><strong>_</strong> (<em>None</em>) – Unused parameter (buffer_state in other algorithms).</p></li>
+<li><p><strong>buffer_state</strong> (<em>PrioritisedTrajectoryBufferState</em>) – Buffer state.</p></li>
 <li><p><strong>n_total_timesteps</strong> (<em>int</em><em>, </em><em>optional</em>) – Total number of training timesteps. Update steps = n_total_timesteps // n_envs. Defaults to 1000000.</p></li>
 <li><p><strong>n_eval_steps</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of evaluation steps during training. Defaults to 100.</p></li>
 <li><p><strong>n_eval_episodes</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of evaluation episodes per evaluation during training. Defaults to 10.</p></li>
@@ -2744,15 +2744,16 @@ The buffer.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="arlbench.core.algorithms.SAC.update_actor">
 <span class="sig-name descname"><span class="pre">update_actor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">actor_train_state</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">critic_train_state</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha_train_state</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">experience</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">is_weights</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rng</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/arlbench/core/algorithms/sac/sac.html#SAC.update_actor"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.core.algorithms.SAC.update_actor" title="Link to this definition">¶</a></dt>
-<dd><p>_summary_.</p>
+<dd><p>Updates the actor network parameters.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>actor_train_state</strong> (<a class="reference internal" href="arlbench.core.algorithms.sac.html#arlbench.core.algorithms.sac.sac.SACTrainState" title="arlbench.core.algorithms.sac.sac.SACTrainState"><em>SACTrainState</em></a>) – _description_</p></li>
-<li><p><strong>critic_train_state</strong> (<a class="reference internal" href="arlbench.core.algorithms.sac.html#arlbench.core.algorithms.sac.sac.SACTrainState" title="arlbench.core.algorithms.sac.sac.SACTrainState"><em>SACTrainState</em></a>) – _description_</p></li>
-<li><p><strong>alpha_train_state</strong> (<a class="reference internal" href="arlbench.core.algorithms.sac.html#arlbench.core.algorithms.sac.sac.SACTrainState" title="arlbench.core.algorithms.sac.sac.SACTrainState"><em>SACTrainState</em></a>) – _description_</p></li>
-<li><p><strong>batch</strong> (<a class="reference internal" href="arlbench.core.algorithms.dqn.html#arlbench.core.algorithms.dqn.dqn.Transition" title="arlbench.core.algorithms.dqn.dqn.Transition"><em>Transition</em></a>) – _description_</p></li>
-<li><p><strong>rng</strong> (<em>chex.PRNGKey</em>) – _description_</p></li>
+<li><p><strong>actor_train_state</strong> (<a class="reference internal" href="arlbench.core.algorithms.sac.html#arlbench.core.algorithms.sac.sac.SACTrainState" title="arlbench.core.algorithms.sac.sac.SACTrainState"><em>SACTrainState</em></a>) – Actor train state.</p></li>
+<li><p><strong>critic_train_state</strong> (<a class="reference internal" href="arlbench.core.algorithms.sac.html#arlbench.core.algorithms.sac.sac.SACTrainState" title="arlbench.core.algorithms.sac.sac.SACTrainState"><em>SACTrainState</em></a>) – Critic train state.</p></li>
+<li><p><strong>alpha_train_state</strong> (<a class="reference internal" href="arlbench.core.algorithms.sac.html#arlbench.core.algorithms.sac.sac.SACTrainState" title="arlbench.core.algorithms.sac.sac.SACTrainState"><em>SACTrainState</em></a>) – Alpha train state.</p></li>
+<li><p><strong>experience</strong> (<a class="reference internal" href="#arlbench.core.algorithms.common.TimeStep" title="arlbench.core.algorithms.common.TimeStep"><em>TimeStep</em></a>) – Experience (batch of TimeSteps).</p></li>
+<li><p><strong>is_weights</strong> (<em>jnp.ndarray</em>) – Whether to use weights for PER or not.</p></li>
+<li><p><strong>rng</strong> (<em>chex.PRNGKey</em>) – Random number generator key.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -2767,16 +2768,16 @@ The buffer.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="arlbench.core.algorithms.SAC.update_alpha">
 <span class="sig-name descname"><span class="pre">update_alpha</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">alpha_train_state</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">entropy</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/arlbench/core/algorithms/sac/sac.html#SAC.update_alpha"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.core.algorithms.SAC.update_alpha" title="Link to this definition">¶</a></dt>
-<dd><p>_summary_.</p>
+<dd><p>Update alpha network parameters.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>alpha_train_state</strong> (<a class="reference internal" href="arlbench.core.algorithms.sac.html#arlbench.core.algorithms.sac.sac.SACTrainState" title="arlbench.core.algorithms.sac.sac.SACTrainState"><em>SACTrainState</em></a>) – _description_</p></li>
-<li><p><strong>entropy</strong> (<em>jnp.ndarray</em>) – _description_</p></li>
+<li><p><strong>alpha_train_state</strong> (<a class="reference internal" href="arlbench.core.algorithms.sac.html#arlbench.core.algorithms.sac.sac.SACTrainState" title="arlbench.core.algorithms.sac.sac.SACTrainState"><em>SACTrainState</em></a>) – Alpha training state.</p></li>
+<li><p><strong>entropy</strong> (<em>jnp.ndarray</em>) – Entropy values.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>_description_</p>
+<dd class="field-even"><p>Updated trainingi state and metrics.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>tuple[<a class="reference internal" href="arlbench.core.algorithms.sac.html#arlbench.core.algorithms.sac.sac.SACTrainState" title="arlbench.core.algorithms.sac.sac.SACTrainState">SACTrainState</a>, jnp.ndarray]</p>
@@ -2787,19 +2788,19 @@ The buffer.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="arlbench.core.algorithms.SAC.update_critic">
 <span class="sig-name descname"><span class="pre">update_critic</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">actor_train_state</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">critic_train_state</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha_train_state</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">experience</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">is_weights</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rng</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/arlbench/core/algorithms/sac/sac.html#SAC.update_critic"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.core.algorithms.SAC.update_critic" title="Link to this definition">¶</a></dt>
-<dd><p>_summary_.</p>
+<dd><p>Updates the critic network parameters.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>actor_train_state</strong> (<a class="reference internal" href="arlbench.core.algorithms.sac.html#arlbench.core.algorithms.sac.sac.SACTrainState" title="arlbench.core.algorithms.sac.sac.SACTrainState"><em>SACTrainState</em></a>) – _description_</p></li>
-<li><p><strong>critic_train_state</strong> (<a class="reference internal" href="arlbench.core.algorithms.sac.html#arlbench.core.algorithms.sac.sac.SACTrainState" title="arlbench.core.algorithms.sac.sac.SACTrainState"><em>SACTrainState</em></a>) – _description_</p></li>
-<li><p><strong>alpha_train_state</strong> (<a class="reference internal" href="arlbench.core.algorithms.sac.html#arlbench.core.algorithms.sac.sac.SACTrainState" title="arlbench.core.algorithms.sac.sac.SACTrainState"><em>SACTrainState</em></a>) – _description_</p></li>
-<li><p><strong>experience</strong> (<a class="reference internal" href="arlbench.core.algorithms.dqn.html#arlbench.core.algorithms.dqn.dqn.Transition" title="arlbench.core.algorithms.dqn.dqn.Transition"><em>Transition</em></a>) – _description_</p></li>
-<li><p><strong>rng</strong> (<em>chex.PRNGKey</em>) – _description_</p></li>
+<li><p><strong>actor_train_state</strong> (<a class="reference internal" href="arlbench.core.algorithms.sac.html#arlbench.core.algorithms.sac.sac.SACTrainState" title="arlbench.core.algorithms.sac.sac.SACTrainState"><em>SACTrainState</em></a>) – Actor train state.</p></li>
+<li><p><strong>critic_train_state</strong> (<a class="reference internal" href="arlbench.core.algorithms.sac.html#arlbench.core.algorithms.sac.sac.SACTrainState" title="arlbench.core.algorithms.sac.sac.SACTrainState"><em>SACTrainState</em></a>) – Critic train state.</p></li>
+<li><p><strong>alpha_train_state</strong> (<a class="reference internal" href="arlbench.core.algorithms.sac.html#arlbench.core.algorithms.sac.sac.SACTrainState" title="arlbench.core.algorithms.sac.sac.SACTrainState"><em>SACTrainState</em></a>) – Alpha train state.</p></li>
+<li><p><strong>experience</strong> (<a class="reference internal" href="arlbench.core.algorithms.dqn.html#arlbench.core.algorithms.dqn.dqn.Transition" title="arlbench.core.algorithms.dqn.dqn.Transition"><em>Transition</em></a>) – Experience (batch of transitions).</p></li>
+<li><p><strong>rng</strong> (<em>chex.PRNGKey</em>) – Random number generator key.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>_description_</p>
+<dd class="field-even"><p>Updated training state and metrics.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>tuple[<a class="reference internal" href="arlbench.core.algorithms.sac.html#arlbench.core.algorithms.sac.sac.SACTrainState" title="arlbench.core.algorithms.sac.sac.SACTrainState">SACTrainState</a>, jnp.ndarray, jnp.ndarray, FrozenDict, chex.PRNGKey]</p>

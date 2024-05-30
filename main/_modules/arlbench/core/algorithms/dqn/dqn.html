@@ -821,7 +821,7 @@
 
 <span class="sd">        Args:</span>
 <span class="sd">            runner_state (DQNRunnerState): DQN runner state.</span>
-<span class="sd">            _ (None): Unused parameter (buffer_state in other algorithms).</span>
+<span class="sd">            buffer_state (PrioritisedTrajectoryBufferState): Buffer state.</span>
 <span class="sd">            n_total_timesteps (int, optional): Total number of training timesteps. Update steps = n_total_timesteps // n_envs. Defaults to 1000000.</span>
 <span class="sd">            n_eval_steps (int, optional): Number of evaluation steps during training. Defaults to 100.</span>
 <span class="sd">            n_eval_episodes (int, optional): Number of evaluation episodes per evaluation during training. Defaults to 10.</span>
@@ -936,16 +936,16 @@
         <span class="n">n_total_timesteps</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span>
         <span class="nb">tuple</span><span class="p">[</span><span class="n">DQNRunnerState</span><span class="p">,</span> <span class="n">PrioritisedTrajectoryBufferState</span><span class="p">],</span>
-        <span class="nb">tuple</span><span class="p">[</span><span class="n">DQNMetrics</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="n">Transition</span> <span class="o">|</span> <span class="kc">None</span><span class="p">],</span>
+        <span class="nb">tuple</span><span class="p">[</span><span class="n">DQNMetrics</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="n">Transition</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]</span>
     <span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;_summary_.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Performs one iteration of updating including environment steps.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            carry (tuple[DQNRunnerState, PrioritisedTrajectoryBufferState]): _description_</span>
-<span class="sd">            _ (_type_): _description_</span>
+<span class="sd">            n_total_timesteps (int): Number of environment steps to take.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            tuple[ tuple[DQNRunnerState, PrioritisedTrajectoryBufferState], tuple[DQNMetrics | None, Transition | None], ]: _description_</span>
+<span class="sd">            tuple[tuple[DQNRunnerState, PrioritisedTrajectoryBufferState], tuple[DQNMetrics | None, Transition | None]]: Updated runner state, recorded transitionsa and metrics if specified.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">runner_state</span><span class="p">,</span> <span class="n">buffer_state</span> <span class="o">=</span> <span class="n">carry</span>
         <span class="p">(</span><span class="n">rng</span><span class="p">,</span> <span class="n">train_state</span><span class="p">,</span> <span class="n">normalizer_state</span><span class="p">,</span> <span class="n">env_state</span><span class="p">,</span> <span class="n">last_obs</span><span class="p">,</span> <span class="n">global_step</span><span class="p">)</span> <span class="o">=</span> <span class="p">(</span>
@@ -975,6 +975,15 @@
             <span class="p">],</span>
             <span class="nb">tuple</span><span class="p">[</span><span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="nb">dict</span><span class="p">],</span>
         <span class="p">]:</span>
+<span class="w">            </span><span class="sd">&quot;&quot;&quot;Takes one environment step (n_envs timesteps).</span>
+
+<span class="sd">            Args:</span>
+<span class="sd">                carry (tuple[chex.PRNGKey, DQNTrainState, RunningStatisticsState, jnp.ndarray, Any, int, PrioritisedTrajectoryBufferState]): Carry for jax.lax.scan().</span>
+<span class="sd">                _ (None): Unused parameter.</span>
+
+<span class="sd">            Returns:</span>
+<span class="sd">                tuple[ tuple[ chex.PRNGKey, DQNTrainState, RunningStatisticsState, jnp.ndarray, Any, int, PrioritisedTrajectoryBufferState, ], tuple[jnp.ndarray, jnp.ndarray, jnp.ndarray, jnp.ndarray, dict], ]: _description_</span>
+<span class="sd">            &quot;&quot;&quot;</span>
             <span class="p">(</span>
                 <span class="n">rng</span><span class="p">,</span>
                 <span class="n">train_state</span><span class="p">,</span>
@@ -985,27 +994,27 @@
                 <span class="n">buffer_state</span><span class="p">,</span>
             <span class="p">)</span> <span class="o">=</span> <span class="n">carry</span>
 
-            <span class="k">def</span> <span class="nf">random_action</span><span class="p">(</span><span class="n">rng</span><span class="p">:</span> <span class="n">chex</span><span class="o">.</span><span class="n">PRNGKey</span><span class="p">,</span> <span class="n">_</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">                </span><span class="sd">&quot;&quot;&quot;_summary_.</span>
+            <span class="k">def</span> <span class="nf">random_action</span><span class="p">(</span><span class="n">rng</span><span class="p">:</span> <span class="n">chex</span><span class="o">.</span><span class="n">PRNGKey</span><span class="p">,</span> <span class="n">_</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">                </span><span class="sd">&quot;&quot;&quot;Takes a random action.</span>
 
 <span class="sd">                Args:</span>
-<span class="sd">                    rng (chex.PRNGKey): _description_</span>
-<span class="sd">                    _ (_type_): _description_</span>
+<span class="sd">                    rng (chex.PRNGKey): Random number generator key.</span>
+<span class="sd">                    _ (jnp.ndarray): Observation(s), not used here.</span>
 
 <span class="sd">                Returns:</span>
-<span class="sd">                    jnp.ndarray: _description_</span>
+<span class="sd">                    jnp.ndarray: Action(s).</span>
 <span class="sd">                &quot;&quot;&quot;</span>
                 <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">env</span><span class="o">.</span><span class="n">sample_actions</span><span class="p">(</span><span class="n">rng</span><span class="p">)</span>
 
             <span class="k">def</span> <span class="nf">greedy_action</span><span class="p">(</span><span class="n">_</span><span class="p">:</span> <span class="n">chex</span><span class="o">.</span><span class="n">PRNGKey</span><span class="p">,</span> <span class="n">obs</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">                </span><span class="sd">&quot;&quot;&quot;_summary_.</span>
+<span class="w">                </span><span class="sd">&quot;&quot;&quot;Takes a greedy action.</span>
 
 <span class="sd">                Args:</span>
-<span class="sd">                    _ (chex.PRNGKey): _description_</span>
-<span class="sd">                    obs (jnp.ndarray): _description_</span>
+<span class="sd">                    _ (chex.PRNGKey): Random number generator key, not used here.</span>
+<span class="sd">                    obs (jnp.ndarray): Observation(s).</span>
 
 <span class="sd">                Returns:</span>
-<span class="sd">                    jnp.ndarray: _description_</span>
+<span class="sd">                    jnp.ndarray: Action(s).</span>
 <span class="sd">                &quot;&quot;&quot;</span>
                 <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">hpo_config</span><span class="p">[</span><span class="s2">&quot;normalize_observations&quot;</span><span class="p">]:</span>
                     <span class="n">q_values</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">network</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span>
@@ -1045,14 +1054,14 @@
 
             <span class="n">global_step</span> <span class="o">+=</span> <span class="mi">1</span>
 
-            <span class="k">def</span> <span class="nf">target_update</span><span class="p">(</span><span class="n">train_state</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DQNTrainState</span><span class="p">:</span>
-<span class="w">                </span><span class="sd">&quot;&quot;&quot;_summary_.</span>
+            <span class="k">def</span> <span class="nf">target_update</span><span class="p">(</span><span class="n">train_state</span><span class="p">:</span> <span class="n">DQNTrainState</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DQNTrainState</span><span class="p">:</span>
+<span class="w">                </span><span class="sd">&quot;&quot;&quot;Update the target network.</span>
 
 <span class="sd">                Args:</span>
-<span class="sd">                    train_state (_type_): _description_</span>
+<span class="sd">                    train_state (DQNTrainState): DQN train state.</span>
 
 <span class="sd">                Returns:</span>
-<span class="sd">                    DQNTrainState: _description_</span>
+<span class="sd">                    DQNTrainState:  DQN train state with updated target network.</span>
 <span class="sd">                &quot;&quot;&quot;</span>
                 <span class="k">return</span> <span class="n">train_state</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span>
                     <span class="n">target_params</span><span class="o">=</span><span class="n">optax</span><span class="o">.</span><span class="n">incremental_update</span><span class="p">(</span>
@@ -1062,14 +1071,15 @@
                     <span class="p">)</span>
                 <span class="p">)</span>
 
-            <span class="k">def</span> <span class="nf">dont_target_update</span><span class="p">(</span><span class="n">train_state</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DQNTrainState</span><span class="p">:</span>
-<span class="w">                </span><span class="sd">&quot;&quot;&quot;_summary_.</span>
+            <span class="k">def</span> <span class="nf">dont_target_update</span><span class="p">(</span><span class="n">train_state</span><span class="p">:</span> <span class="n">DQNTrainState</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DQNTrainState</span><span class="p">:</span>
+<span class="w">                </span><span class="sd">&quot;&quot;&quot;Dummy function for jax.lax.cond(). Same interface as target_update()</span>
+<span class="sd">                but this function does not change the network.</span>
 
 <span class="sd">                Args:</span>
-<span class="sd">                    train_state (_type_): _description_</span>
+<span class="sd">                    train_state (DQNTrainState): DQN train state.</span>
 
 <span class="sd">                Returns:</span>
-<span class="sd">                    DQNTrainState: _description_</span>
+<span class="sd">                    DQNTrainState: DQN train state (same as input).</span>
 <span class="sd">                &quot;&quot;&quot;</span>
                 <span class="k">return</span> <span class="n">train_state</span>
 
@@ -1114,15 +1124,16 @@
         <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span>
             <span class="n">chex</span><span class="o">.</span><span class="n">PRNGKey</span><span class="p">,</span> <span class="n">DQNTrainState</span><span class="p">,</span> <span class="n">PrioritisedTrajectoryBufferState</span><span class="p">,</span> <span class="n">DQNMetrics</span>
         <span class="p">]:</span>
-<span class="w">            </span><span class="sd">&quot;&quot;&quot;_summary_.</span>
+<span class="w">            </span><span class="sd">&quot;&quot;&quot;Update the training state, i.e., the network parameters..</span>
 
 <span class="sd">            Args:</span>
-<span class="sd">                rng (chex.PRNGKey): _description_</span>
-<span class="sd">                train_state (DQNTrainState): _description_</span>
-<span class="sd">                buffer_state (PrioritisedTrajectoryBufferState): _description_</span>
+<span class="sd">                rng (chex.PRNGKey): Random number generator key.</span>
+<span class="sd">                train_state (DQNTrainState): DQN training state.</span>
+<span class="sd">                buffer_state (PrioritisedTrajectoryBufferState): Buffer state.</span>
 
 <span class="sd">            Returns:</span>
-<span class="sd">                tuple[ chex.PRNGKey, DQNTrainState, PrioritisedTrajectoryBufferState, DQNMetrics ]: _description_</span>
+<span class="sd">                tuple[chex.PRNGKey, DQNTrainState, PrioritisedTrajectoryBufferState, DQNMetrics]: </span>
+<span class="sd">                Random number generator key, training state, buffer state, and metrics.</span>
 <span class="sd">            &quot;&quot;&quot;</span>
 
             <span class="k">def</span> <span class="nf">gradient_step</span><span class="p">(</span>
@@ -1134,14 +1145,14 @@
                 <span class="nb">tuple</span><span class="p">[</span><span class="n">chex</span><span class="o">.</span><span class="n">PRNGKey</span><span class="p">,</span> <span class="n">DQNTrainState</span><span class="p">,</span> <span class="n">PrioritisedTrajectoryBufferState</span><span class="p">],</span>
                 <span class="n">DQNMetrics</span><span class="p">,</span>
             <span class="p">]:</span>
-<span class="w">                </span><span class="sd">&quot;&quot;&quot;_summary_.</span>
+<span class="w">                </span><span class="sd">&quot;&quot;&quot;Perform one gradient step and return the metrics..</span>
 
 <span class="sd">                Args:</span>
-<span class="sd">                    carry (tuple[ chex.PRNGKey, DQNTrainState, PrioritisedTrajectoryBufferState ]): _description_</span>
-<span class="sd">                    _ (None): _description_</span>
+<span class="sd">                    carry (tuple[ chex.PRNGKey, DQNTrainState, PrioritisedTrajectoryBufferState ]): Carry for jax.lax.scan().</span>
+<span class="sd">                    _ (None): Unused parameter.</span>
 
 <span class="sd">                Returns:</span>
-<span class="sd">                    tuple[ tuple[chex.PRNGKey, DQNTrainState, PrioritisedTrajectoryBufferState], DQNMetrics, ]: _description_</span>
+<span class="sd">                    tuple[ tuple[chex.PRNGKey, DQNTrainState, PrioritisedTrajectoryBufferState], DQNMetrics, ]: Updated carry and metrics.</span>
 <span class="sd">                &quot;&quot;&quot;</span>
                 <span class="n">rng</span><span class="p">,</span> <span class="n">train_state</span><span class="p">,</span> <span class="n">buffer_state</span> <span class="o">=</span> <span class="n">carry</span>
                 <span class="n">rng</span><span class="p">,</span> <span class="n">batch_sample_rng</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">rng</span><span class="p">)</span>
@@ -1207,15 +1218,16 @@
             <span class="n">PrioritisedTrajectoryBufferState</span><span class="p">,</span>
             <span class="n">DQNMetrics</span><span class="p">,</span>
         <span class="p">]:</span>
-<span class="w">            </span><span class="sd">&quot;&quot;&quot;_summary_.</span>
+<span class="w">            </span><span class="sd">&quot;&quot;&quot;Dummy function for jax.lax.cond(). Does not update the network.</span>
 
 <span class="sd">            Args:</span>
-<span class="sd">                rng (chex.PRNGKey): _description_</span>
-<span class="sd">                train_state (DQNTrainState): _description_</span>
-<span class="sd">                buffer_state (PrioritisedTrajectoryBufferState): _description_</span>
+<span class="sd">                rng (chex.PRNGKey): Random number generator key.</span>
+<span class="sd">                train_state (DQNTrainState): DQN train state.</span>
+<span class="sd">                normalizer_state (RunningStatisticsState): Normalizer state for observation normalization.</span>
+<span class="sd">                buffer_state (PrioritisedTrajectoryBufferState): Buffer state.</span>
 
 <span class="sd">            Returns:</span>
-<span class="sd">                tuple[ chex.PRNGKey, DQNTrainState, PrioritisedTrajectoryBufferState, DQNMetrics ]: _description_</span>
+<span class="sd">                tuple[chex.PRNGKey, DQNTrainState, RunningStatisticsState, PrioritisedTrajectoryBufferState, DQNMetrics]: Input parameters and dummy metrics.</span>
 <span class="sd">            &quot;&quot;&quot;</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">track_metrics</span><span class="p">:</span>
                 <span class="n">loss</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>

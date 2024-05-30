@@ -456,11 +456,15 @@
 <span class="sd">        Args:</span>
 <span class="sd">            hpo_config (Configuration): Hyperparameter configuration.</span>
 <span class="sd">            env (Environment | AutoRLWrapper): Training environment.</span>
-<span class="sd">            eval_env (Environment | AutoRLWrapper | None, optional): Evaluation environent (otherwise training environment is used for evaluation). Defaults to None.</span>
+<span class="sd">            eval_env (Environment | AutoRLWrapper | None, optional): Evaluation environent </span>
+<span class="sd">            (otherwise training environment is used for evaluation). Defaults to None.</span>
 <span class="sd">            cnn_policy (bool, optional): Use CNN network architecture. Defaults to False.</span>
-<span class="sd">            nas_config (Configuration | None, optional): Neural architecture configuration. Defaults to None.</span>
-<span class="sd">            track_trajectories (bool, optional):  Track metrics such as loss and gradients during training. Defaults to False.</span>
-<span class="sd">            track_metrics (bool, optional): Track trajectories during training. Defaults to False.</span>
+<span class="sd">            nas_config (Configuration | None, optional): Neural architecture </span>
+<span class="sd">            configuration. Defaults to None.</span>
+<span class="sd">            track_trajectories (bool, optional):  Track metrics such as loss and gradients </span>
+<span class="sd">            during training. Defaults to False.</span>
+<span class="sd">            track_metrics (bool, optional): Track trajectories during training. </span>
+<span class="sd">            Defaults to False.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">nas_config</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">nas_config</span> <span class="o">=</span> <span class="n">SAC</span><span class="o">.</span><span class="n">get_default_nas_config</span><span class="p">()</span>
@@ -900,14 +904,14 @@
         <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span>
             <span class="nb">tuple</span><span class="p">[</span><span class="n">SACRunnerState</span><span class="p">,</span> <span class="n">PrioritisedTrajectoryBufferState</span><span class="p">],</span> <span class="n">SACTrainingResult</span>
         <span class="p">]:</span>
-<span class="w">            </span><span class="sd">&quot;&quot;&quot;_summary_.</span>
+<span class="w">            </span><span class="sd">&quot;&quot;&quot;Performs one iteration of training and evaluation.</span>
 
 <span class="sd">            Args:</span>
-<span class="sd">                carry (tuple[SACRunnerState, PrioritisedTrajectoryBufferState]): _description_</span>
-<span class="sd">                _ (None): _description_</span>
+<span class="sd">                _runner_state (PPORunnerState): PPO runner state.</span>
+<span class="sd">                _ (None): Unused parameter (required for jax.lax.scan).</span>
 
 <span class="sd">            Returns:</span>
-<span class="sd">                tuple[ tuple[SACRunnerState, PrioritisedTrajectoryBufferState], SACTrainingResult ]: _description_</span>
+<span class="sd">                tuple[tuple[SACRunnerState, PrioritisedTrajectoryBufferState], SACTrainingResult]: Tuple of SAC runner state and training result.</span>
 <span class="sd">            &quot;&quot;&quot;</span>
             <span class="n">runner_state</span><span class="p">,</span> <span class="n">buffer_state</span> <span class="o">=</span> <span class="n">carry</span>
             <span class="p">(</span><span class="n">runner_state</span><span class="p">,</span> <span class="n">buffer_state</span><span class="p">),</span> <span class="p">(</span><span class="n">metrics</span><span class="p">,</span> <span class="n">trajectories</span><span class="p">)</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">lax</span><span class="o">.</span><span class="n">scan</span><span class="p">(</span>
@@ -947,17 +951,18 @@
         <span class="n">is_weights</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
         <span class="n">rng</span><span class="p">:</span> <span class="n">chex</span><span class="o">.</span><span class="n">PRNGKey</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">SACTrainState</span><span class="p">,</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">FrozenDict</span><span class="p">,</span> <span class="n">chex</span><span class="o">.</span><span class="n">PRNGKey</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;_summary_.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Updates the critic network parameters.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            actor_train_state (SACTrainState): _description_</span>
-<span class="sd">            critic_train_state (SACTrainState): _description_</span>
-<span class="sd">            alpha_train_state (SACTrainState): _description_</span>
-<span class="sd">            experience (Transition): _description_</span>
-<span class="sd">            rng (chex.PRNGKey): _description_</span>
+<span class="sd">            actor_train_state (SACTrainState): Actor train state.</span>
+<span class="sd">            critic_train_state (SACTrainState): Critic train state.</span>
+<span class="sd">            alpha_train_state (SACTrainState): Alpha train state.</span>
+<span class="sd">            experience (Transition): Experience (batch of transitions).</span>
+<span class="sd">            rng (chex.PRNGKey): Random number generator key.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            tuple[SACTrainState, jnp.ndarray, jnp.ndarray, FrozenDict, chex.PRNGKey]: _description_</span>
+<span class="sd">            tuple[SACTrainState, jnp.ndarray, jnp.ndarray, FrozenDict, chex.PRNGKey]: </span>
+<span class="sd">            Updated training state and metrics.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">rng</span><span class="p">,</span> <span class="n">action_rng</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">rng</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
         <span class="n">pi</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">actor_network</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">actor_train_state</span><span class="o">.</span><span class="n">params</span><span class="p">,</span> <span class="n">experience</span><span class="o">.</span><span class="n">obs</span><span class="p">)</span>
@@ -976,14 +981,14 @@
             <span class="o">+</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">experience</span><span class="o">.</span><span class="n">done</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">hpo_config</span><span class="p">[</span><span class="s2">&quot;gamma&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="n">qf_next_target</span>
         <span class="p">)</span>
 
-        <span class="k">def</span> <span class="nf">mse_loss</span><span class="p">(</span><span class="n">params</span><span class="p">:</span> <span class="n">FrozenDict</span><span class="p">):</span>
-<span class="w">            </span><span class="sd">&quot;&quot;&quot;_summary_.</span>
+        <span class="k">def</span> <span class="nf">mse_loss</span><span class="p">(</span><span class="n">params</span><span class="p">:</span> <span class="n">FrozenDict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">SACTrainState</span><span class="p">,</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">chex</span><span class="o">.</span><span class="n">PRNGKey</span><span class="p">]:</span>
+<span class="w">            </span><span class="sd">&quot;&quot;&quot;Computes the mean squared error.</span>
 
 <span class="sd">            Args:</span>
-<span class="sd">                params (FrozenDict): _description_</span>
+<span class="sd">                params (FrozenDict): Critic network parameters.</span>
 
 <span class="sd">            Returns:</span>
-<span class="sd">                _type_: _description_</span>
+<span class="sd">                tuple: Loss and metrics.</span>
 <span class="sd">            &quot;&quot;&quot;</span>
             <span class="n">q_pred</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">critic_network</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span>
                 <span class="n">params</span><span class="p">,</span> <span class="n">experience</span><span class="o">.</span><span class="n">last_obs</span><span class="p">,</span> <span class="n">experience</span><span class="o">.</span><span class="n">action</span>
@@ -1011,14 +1016,15 @@
         <span class="n">is_weights</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
         <span class="n">rng</span><span class="p">:</span> <span class="n">chex</span><span class="o">.</span><span class="n">PRNGKey</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">SACTrainState</span><span class="p">,</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">FrozenDict</span><span class="p">,</span> <span class="n">chex</span><span class="o">.</span><span class="n">PRNGKey</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;_summary_.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Updates the actor network parameters.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            actor_train_state (SACTrainState): _description_</span>
-<span class="sd">            critic_train_state (SACTrainState): _description_</span>
-<span class="sd">            alpha_train_state (SACTrainState): _description_</span>
-<span class="sd">            batch (Transition): _description_</span>
-<span class="sd">            rng (chex.PRNGKey): _description_</span>
+<span class="sd">            actor_train_state (SACTrainState): Actor train state.</span>
+<span class="sd">            critic_train_state (SACTrainState): Critic train state.</span>
+<span class="sd">            alpha_train_state (SACTrainState): Alpha train state.</span>
+<span class="sd">            experience (TimeStep): Experience (batch of TimeSteps).</span>
+<span class="sd">            is_weights (jnp.ndarray): Whether to use weights for PER or not.</span>
+<span class="sd">            rng (chex.PRNGKey): Random number generator key.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            tuple[SACTrainState, jnp.ndarray, jnp.ndarray, FrozenDict, chex.PRNGKey]: _description_</span>
@@ -1030,15 +1036,15 @@
             <span class="n">critic_params</span><span class="p">:</span> <span class="n">FrozenDict</span><span class="p">,</span>
             <span class="n">alpha_params</span><span class="p">:</span> <span class="n">FrozenDict</span><span class="p">,</span>
         <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
-<span class="w">            </span><span class="sd">&quot;&quot;&quot;_summary_.</span>
+<span class="w">            </span><span class="sd">&quot;&quot;&quot;Compute actor loss.</span>
 
 <span class="sd">            Args:</span>
-<span class="sd">                actor_params (FrozenDict): _description_</span>
-<span class="sd">                critic_params (FrozenDict): _description_</span>
-<span class="sd">                alpha_params (FrozenDict): _description_</span>
+<span class="sd">                actor_params (FrozenDict): Actor network parameters.</span>
+<span class="sd">                critic_params (FrozenDict): Critic network parameters.</span>
+<span class="sd">                alpha_params (FrozenDict): Alpha network parameters.</span>
 
 <span class="sd">            Returns:</span>
-<span class="sd">                tuple[jnp.ndarray, jnp.ndarray]: _description_</span>
+<span class="sd">                tuple[jnp.ndarray, jnp.ndarray]: Update training state and metrics. </span>
 <span class="sd">            &quot;&quot;&quot;</span>
             <span class="n">pi</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">actor_network</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">actor_params</span><span class="p">,</span> <span class="n">experience</span><span class="o">.</span><span class="n">last_obs</span><span class="p">)</span>
             <span class="n">actor_actions</span><span class="p">,</span> <span class="n">log_prob</span> <span class="o">=</span> <span class="n">pi</span><span class="o">.</span><span class="n">sample_and_log_prob</span><span class="p">(</span><span class="n">seed</span><span class="o">=</span><span class="n">action_rng</span><span class="p">)</span>
@@ -1067,24 +1073,24 @@
     <span class="k">def</span> <span class="nf">update_alpha</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">alpha_train_state</span><span class="p">:</span> <span class="n">SACTrainState</span><span class="p">,</span> <span class="n">entropy</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">SACTrainState</span><span class="p">,</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;_summary_.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Update alpha network parameters.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            alpha_train_state (SACTrainState): _description_</span>
-<span class="sd">            entropy (jnp.ndarray): _description_</span>
+<span class="sd">            alpha_train_state (SACTrainState): Alpha training state.</span>
+<span class="sd">            entropy (jnp.ndarray): Entropy values.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            tuple[SACTrainState, jnp.ndarray]: _description_</span>
+<span class="sd">            tuple[SACTrainState, jnp.ndarray]: Updated trainingi state and metrics.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="k">def</span> <span class="nf">get_alpha_loss</span><span class="p">(</span><span class="n">params</span><span class="p">:</span> <span class="n">FrozenDict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">            </span><span class="sd">&quot;&quot;&quot;_summary_.</span>
+<span class="w">            </span><span class="sd">&quot;&quot;&quot;Compute alpha loss.</span>
 
 <span class="sd">            Args:</span>
-<span class="sd">                params (FrozenDict): _description_</span>
+<span class="sd">                params (FrozenDict): Alpha network parameters.</span>
 
 <span class="sd">            Returns:</span>
-<span class="sd">                jnp.ndarray: _description_</span>
+<span class="sd">                jnp.ndarray: Alpha loss.</span>
 <span class="sd">            &quot;&quot;&quot;</span>
             <span class="n">alpha_value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">alpha</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">params</span><span class="p">)</span>
             <span class="k">return</span> <span class="n">alpha_value</span> <span class="o">*</span> <span class="p">(</span><span class="n">entropy</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">target_entropy</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>  <span class="c1"># type: ignore[union-attr]</span>
@@ -1101,14 +1107,15 @@
         <span class="nb">tuple</span><span class="p">[</span><span class="n">SACRunnerState</span><span class="p">,</span> <span class="n">PrioritisedTrajectoryBufferState</span><span class="p">],</span>
         <span class="nb">tuple</span><span class="p">[</span><span class="n">SACMetrics</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="n">Transition</span> <span class="o">|</span> <span class="kc">None</span><span class="p">],</span>
     <span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;_summary_.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Perform one update step.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            carry (tuple[SACRunnerState, PrioritisedTrajectoryBufferState]): _description_</span>
-<span class="sd">            _ (None): _description_</span>
+<span class="sd">            carry (tuple[SACRunnerState, PrioritisedTrajectoryBufferState]): Carry for jax.lax.scan().</span>
+<span class="sd">            _ (None): Unused parameter.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            tuple[ tuple[SACRunnerState, PrioritisedTrajectoryBufferState], tuple[SACMetrics | None, Transition | None], ]: _description_</span>
+<span class="sd">            tuple[ tuple[SACRunnerState, PrioritisedTrajectoryBufferState], </span>
+<span class="sd">            tuple[SACMetrics | None, Transition | None], ]: Updated training state and metrics.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="k">def</span> <span class="nf">do_update</span><span class="p">(</span>
@@ -1126,17 +1133,18 @@
             <span class="n">PrioritisedTrajectoryBufferState</span><span class="p">,</span>
             <span class="n">SACMetrics</span><span class="p">,</span>
         <span class="p">]:</span>
-<span class="w">            </span><span class="sd">&quot;&quot;&quot;_summary_.</span>
+<span class="w">            </span><span class="sd">&quot;&quot;&quot;Perform an update of the algorithm parameters..</span>
 
 <span class="sd">            Args:</span>
-<span class="sd">                rng (chex.PRNGKey): _description_</span>
-<span class="sd">                actor_train_state (SACTrainState): _description_</span>
-<span class="sd">                critic_train_state (SACTrainState): _description_</span>
-<span class="sd">                alpha_train_state (SACTrainState): _description_</span>
-<span class="sd">                buffer_state (PrioritisedTrajectoryBufferState): _description_</span>
+<span class="sd">                rng (chex.PRNGKey): Random number generator key.</span>
+<span class="sd">                actor_train_state (SACTrainState): Actor training state.</span>
+<span class="sd">                critic_train_state (SACTrainState): Critic training state.</span>
+<span class="sd">                alpha_train_state (SACTrainState): Alpha training state.</span>
+<span class="sd">                buffer_state (PrioritisedTrajectoryBufferState): Buffer state.</span>
 
 <span class="sd">            Returns:</span>
-<span class="sd">                tuple[ chex.PRNGKey, SACTrainState, SACTrainState, SACTrainState, PrioritisedTrajectoryBufferState, SACMetrics, ]: _description_</span>
+<span class="sd">                tuple[ chex.PRNGKey, SACTrainState, SACTrainState, SACTrainState, </span>
+<span class="sd">                PrioritisedTrajectoryBufferState, SACMetrics]: Updated training states and metrics.</span>
 <span class="sd">            &quot;&quot;&quot;</span>
 
             <span class="k">def</span> <span class="nf">gradient_step</span><span class="p">(</span>
@@ -1158,14 +1166,16 @@
                 <span class="p">],</span>
                 <span class="n">SACMetrics</span><span class="p">,</span>
             <span class="p">]:</span>
-<span class="w">                </span><span class="sd">&quot;&quot;&quot;_summary_.</span>
+<span class="w">                </span><span class="sd">&quot;&quot;&quot;Perform a gradient update step.</span>
 
 <span class="sd">                Args:</span>
-<span class="sd">                    carry (tuple[ chex.PRNGKey, SACTrainState, SACTrainState, SACTrainState, PrioritisedTrajectoryBufferState, ]): _description_</span>
-<span class="sd">                    _ (None): _description_</span>
+<span class="sd">                    carry (tuple[ chex.PRNGKey, SACTrainState, SACTrainState, </span>
+<span class="sd">                    SACTrainState, PrioritisedTrajectoryBufferState, ]): Carry for jax.lax.scan():</span>
+<span class="sd">                    _ (None): Unused parameter.</span>
 
 <span class="sd">                Returns:</span>
-<span class="sd">                    tuple[ tuple[ chex.PRNGKey, SACTrainState, SACTrainState, SACTrainState, PrioritisedTrajectoryBufferState, ], SACMetrics, ]: _description_</span>
+<span class="sd">                    tuple[ tuple[ chex.PRNGKey, SACTrainState, SACTrainState, SACTrainState, </span>
+<span class="sd">                    PrioritisedTrajectoryBufferState, ], SACMetrics, ]: Updated training states and metrics.</span>
 <span class="sd">                &quot;&quot;&quot;</span>
                 <span class="p">(</span>
                     <span class="n">rng</span><span class="p">,</span>
@@ -1282,17 +1292,18 @@
             <span class="n">PrioritisedTrajectoryBufferState</span><span class="p">,</span>
             <span class="n">SACMetrics</span><span class="p">,</span>
         <span class="p">]:</span>
-<span class="w">            </span><span class="sd">&quot;&quot;&quot;_summary_.</span>
+<span class="w">            </span><span class="sd">&quot;&quot;&quot;Dummy for jax.lax.scan(). Does not perform an update.</span>
 
 <span class="sd">            Args:</span>
-<span class="sd">                rng (chex.PRNGKey): _description_</span>
-<span class="sd">                actor_train_state (SACTrainState): _description_</span>
-<span class="sd">                critic_train_state (SACTrainState): _description_</span>
-<span class="sd">                alpha_train_state (SACTrainState): _description_</span>
-<span class="sd">                buffer_state (PrioritisedTrajectoryBufferState): _description_</span>
+<span class="sd">                rng (chex.PRNGKey): Random number generator key.</span>
+<span class="sd">                actor_train_state (SACTrainState): Actor training state.</span>
+<span class="sd">                critic_train_state (SACTrainState): Critic training state.</span>
+<span class="sd">                alpha_train_state (SACTrainState): Alpha training state.</span>
+<span class="sd">                buffer_state (PrioritisedTrajectoryBufferState): Buffer state.</span>
 
 <span class="sd">            Returns:</span>
-<span class="sd">                tuple[ chex.PRNGKey, SACTrainState, SACTrainState, SACTrainState, PrioritisedTrajectoryBufferState, SACMetrics, ]: _description_</span>
+<span class="sd">                tuple[ chex.PRNGKey, SACTrainState, SACTrainState, SACTrainState, </span>
+<span class="sd">                PrioritisedTrajectoryBufferState, SACMetrics]: Input training states and metrics.</span>
 <span class="sd">            &quot;&quot;&quot;</span>
             <span class="n">single_loss</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
                 <span class="p">[((</span><span class="n">jnp</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">0</span><span class="p">])</span> <span class="o">-</span> <span class="n">jnp</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">0</span><span class="p">]))</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()]</span>
@@ -1418,14 +1429,15 @@
     <span class="k">def</span> <span class="nf">_env_step</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">carry</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">SACRunnerState</span><span class="p">,</span> <span class="n">PrioritisedTrajectoryBufferState</span><span class="p">],</span> <span class="n">_</span><span class="p">:</span> <span class="kc">None</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="n">SACRunnerState</span><span class="p">,</span> <span class="n">PrioritisedTrajectoryBufferState</span><span class="p">],</span> <span class="n">Transition</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;_summary_.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Take one step in the environment (n_envs steps in total).</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            carry (tuple[SACRunnerState, PrioritisedTrajectoryBufferState]): _description_</span>
-<span class="sd">            _ (None): _description_</span>
+<span class="sd">            carry (tuple[SACRunnerState, PrioritisedTrajectoryBufferState]): Carry for jax.lax.scan().</span>
+<span class="sd">            _ (None): Unused parameter.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            tuple[tuple[SACRunnerState, PrioritisedTrajectoryBufferState], Transition]: _description_</span>
+<span class="sd">            tuple[tuple[SACRunnerState, PrioritisedTrajectoryBufferState], Transition]:</span>
+<span class="sd">            Updated carry and collected transitions.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">runner_state</span><span class="p">,</span> <span class="n">buffer_state</span> <span class="o">=</span> <span class="n">carry</span>
         <span class="p">(</span>
@@ -1468,14 +1480,14 @@
 
         <span class="n">global_step</span> <span class="o">+=</span> <span class="mi">1</span>
 
-        <span class="k">def</span> <span class="nf">target_update</span><span class="p">(</span><span class="n">train_state</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SACTrainState</span><span class="p">:</span>
-<span class="w">            </span><span class="sd">&quot;&quot;&quot;_summary_.</span>
+        <span class="k">def</span> <span class="nf">target_update</span><span class="p">(</span><span class="n">train_state</span><span class="p">:</span> <span class="n">SACTrainState</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SACTrainState</span><span class="p">:</span>
+<span class="w">            </span><span class="sd">&quot;&quot;&quot;Update the target network.</span>
 
 <span class="sd">            Args:</span>
-<span class="sd">                train_state (_type_): _description_</span>
+<span class="sd">                train_state (SACTrainState): Training state.</span>
 
 <span class="sd">            Returns:</span>
-<span class="sd">                SACTrainState: _description_</span>
+<span class="sd">                SACTrainState: Updated training state.</span>
 <span class="sd">            &quot;&quot;&quot;</span>
             <span class="k">return</span> <span class="n">train_state</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span>
                 <span class="n">target_params</span><span class="o">=</span><span class="n">optax</span><span class="o">.</span><span class="n">incremental_update</span><span class="p">(</span>
@@ -1485,14 +1497,14 @@
                 <span class="p">)</span>
             <span class="p">)</span>
 
-        <span class="k">def</span> <span class="nf">dont_target_update</span><span class="p">(</span><span class="n">train_state</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SACTrainState</span><span class="p">:</span>
-<span class="w">            </span><span class="sd">&quot;&quot;&quot;_summary_.</span>
+        <span class="k">def</span> <span class="nf">dont_target_update</span><span class="p">(</span><span class="n">train_state</span><span class="p">:</span> <span class="n">SACTrainState</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SACTrainState</span><span class="p">:</span>
+<span class="w">            </span><span class="sd">&quot;&quot;&quot;Dummy for jax.lax.scan(). Does not update the target network.</span>
 
 <span class="sd">            Args:</span>
-<span class="sd">                train_state (_type_): _description_</span>
+<span class="sd">                train_state (SACTrainState): Training state.</span>
 
 <span class="sd">            Returns:</span>
-<span class="sd">                SACTrainState: _description_</span>
+<span class="sd">                SACTrainState: Input training state.</span>
 <span class="sd">            &quot;&quot;&quot;</span>
             <span class="k">return</span> <span class="n">train_state</span>
 

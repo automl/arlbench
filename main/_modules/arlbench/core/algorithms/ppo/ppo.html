@@ -995,11 +995,14 @@
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;One epoch of network updates using minibatches of the current transition batch.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            update_state (tuple[PPOTrainState, Transition, jnp.ndarray, jnp.ndarray, chex.PRNGKey]): (train_state, transition_batch, advantages, targets, rng) Current update state.</span>
+<span class="sd">            update_state (tuple[PPOTrainState, Transition, jnp.ndarray, jnp.ndarray, chex.PRNGKey]): </span>
+<span class="sd">            (train_state, transition_batch, advantages, targets, rng) Current update state.</span>
 <span class="sd">            _ (None): Unused parameter (required for jax.lax.scan).</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            tuple[tuple[PPOTrainState, Transition, jnp.ndarray, jnp.ndarray, chex.PRNGKey], tuple[tuple | None, tuple | None]]: Tuple of (train_state, transition_batch, advantages, targets, rng) and (loss, grads) if tracked.</span>
+<span class="sd">            tuple[tuple[PPOTrainState, Transition, jnp.ndarray, jnp.ndarray, chex.PRNGKey],</span>
+<span class="sd">            tuple[tuple | None, tuple | None]]: Tuple of (train_state, transition_batch, </span>
+<span class="sd">            advantages, targets, rng) and (loss, grads) if tracked.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">train_state</span><span class="p">,</span> <span class="n">traj_batch</span><span class="p">,</span> <span class="n">advantages</span><span class="p">,</span> <span class="n">targets</span><span class="p">,</span> <span class="n">rng</span> <span class="o">=</span> <span class="n">update_state</span>
         <span class="n">rng</span><span class="p">,</span> <span class="n">_rng</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">rng</span><span class="p">)</span>
@@ -1061,10 +1064,12 @@
 
 <span class="sd">        Args:</span>
 <span class="sd">            train_state (PPOTrainState): PPO training state.</span>
-<span class="sd">            batch_info (tuple[jnp.ndarray, jnp.ndarray, jnp.ndarray]): Minibatch of transitions, advantages and targets.</span>
+<span class="sd">            batch_info (tuple[jnp.ndarray, jnp.ndarray, jnp.ndarray]): </span>
+<span class="sd">            Minibatch of transitions, advantages and targets.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            tuple[PPOTrainState, tuple[tuple | None, tuple | None]]: Tuple of PPO train state and (loss, grads) if tracked.</span>
+<span class="sd">            tuple[PPOTrainState, tuple[tuple | None, tuple | None]]: </span>
+<span class="sd">            Tuple of PPO train state and (loss, grads) if tracked.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">traj_batch</span><span class="p">,</span> <span class="n">advantages</span><span class="p">,</span> <span class="n">targets</span> <span class="o">=</span> <span class="n">batch_info</span>
 
@@ -1093,7 +1098,8 @@
 <span class="sd">            targets (jnp.ndarray): Targets.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            tuple[jnp.ndarray, tuple[jnp.ndarray, jnp.ndarray, jnp.ndarray]]: Tuple of (total_loss, (value_loss, actor_loss, entropy)).</span>
+<span class="sd">            tuple[jnp.ndarray, tuple[jnp.ndarray, jnp.ndarray, jnp.ndarray]]: </span>
+<span class="sd">            Tuple of (total_loss, (value_loss, actor_loss, entropy)).</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># Rerun network</span>
         <span class="n">pi</span><span class="p">,</span> <span class="n">value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">network</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="n">traj_batch</span><span class="o">.</span><span class="n">obs</span><span class="p">)</span>
