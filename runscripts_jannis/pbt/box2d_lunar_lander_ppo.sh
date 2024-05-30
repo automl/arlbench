@@ -15,5 +15,5 @@
 
 
 cd ..
-python runscripts/run_arlbench.py -m --config-name=tune_pbt experiments=box2d_lunar_lander_ppo cluster=local pbt_seed=$SLURM_ARRAY_TASK_ID
+python runscripts/run_arlbench.py -m --config-name=tune_pbt experiments=box2d_lunar_lander_ppo cluster=local pbt_seed=$SLURM_ARRAY_TASK_ID search_space.seed=$SLURM_ARRAY_TASK_ID 
 

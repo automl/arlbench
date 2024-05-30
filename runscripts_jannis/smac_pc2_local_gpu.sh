@@ -3,7 +3,7 @@
 # USAGE run_rs.sh EXPERIMENT      
 # USAGE run_rs.sh cc_cartpole_dqn  
 
-directory="sobol"
+directory="smac"
 
 mkdir -p "$directory/log"
 
@@ -13,7 +13,7 @@ echo "#!/bin/bash
 #SBATCH --cpus-per-task=32
 #SBATCH --gres=gpu:a100:1
 #SBATCH --mem=64GB
-#SBATCH -J arlb_rs_${1}
+#SBATCH -J smac_${1}
 #SBATCH -A hpc-prf-intexml                              # TODO check for your project
 #SBATCH -t 2-00:00:00                                   # TODO check for your clusters time limit
 #SBATCH --mail-type fail

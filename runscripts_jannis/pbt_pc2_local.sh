@@ -24,7 +24,7 @@ echo "#!/bin/bash
 
 
 cd ..
-python runscripts/run_arlbench.py -m --config-name=tune_pbt "experiments=${1}" "cluster=local" "pbt_seed=\$SLURM_ARRAY_TASK_ID"
+python runscripts/run_arlbench.py -m --config-name=tune_pbt "experiments=${1}" "cluster=local" "pbt_seed=\$SLURM_ARRAY_TASK_ID" "search_space.seed=\$SLURM_ARRAY_TASK_ID" 
 " > $directory/${1}.sh
 echo "Submitting $directory for $1"
 chmod +x $directory/${1}.sh
