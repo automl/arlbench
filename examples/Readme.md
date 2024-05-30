@@ -159,7 +159,7 @@ As you can see, most of the defaults are decided by the environment and algorith
 In the current config, we do a single training interval consisting of the total number of environment steps suggested for our target domain. If we want to instead run a schedule of length 10 with each schedule segment taking 10e4 steps, we can change the configuration like this:
 
 ```bash
-python run_heuristic_schedule.py autorl.n_steps=10 autorl.total_timesteps=10000
+python run_heuristic_schedule.py autorl.n_steps=10 autorl.n_total_timesteps=10000
 ```
 
 ## 3. Reactive Schedules
@@ -170,4 +170,10 @@ Lastly, we can also adjust the hyperparameters based on algorithm statistics. In
 python run_reactive_schedule.py
 ```
 
-To actually configure to w
+To actually configure to what information ARLBench returns about the RL algorithm's internal state, we can use the 'state' features key - in this case, we want to add the gradient norm and variance like this:
+
+```bash
+python run_reactive_schedule.py "autorl.state_features=['grad_info']"
+```
+
+Now we can build a schedule that takes the gradient information into account.
