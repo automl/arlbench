@@ -9,6 +9,7 @@ import logging
 import sys
 import traceback
 from typing import TYPE_CHECKING
+import json
 
 import hydra
 import jax
@@ -27,7 +28,11 @@ def run(cfg: DictConfig, logger: logging.Logger):
 
     # Reset environment and run for 10 steps
     _ = env.reset()
+
+    rewards = []
+    epsilons = []
     for _ in range(10):
+        epsilons.append(cfg.hp_config.initial_epsilon)
         # The objectives are configured to return the mean reward
         _, objectives, _, _, _ = env.step(cfg.hp_config)
         if objectives["reward_mean"] > 30 and cfg.hp_config.initial_epsilon > 0.7:
@@ -35,8 +40,12 @@ def run(cfg: DictConfig, logger: logging.Logger):
             cfg.hp_config.target_epsilon = 0.7
             cfg.hp_config.initial_epsilon = 0.7
             logger.info("Agent reached performance threshold, decreasing epsilon to 0.7")
+        rewards.append(float(objectives["reward_mean"]))
 
     logger.info(f"Training finished with a total reward of {objectives['reward_mean']}")
+    output = {"rewards": rewards, "epsilons": epsilons}
+    with open("output.json", "w") as f:
+        json.dump(output, f)
 
 @hydra.main(version_base=None, config_path="configs", config_name="epsilon_heuristic")
 def execute(cfg: DictConfig):

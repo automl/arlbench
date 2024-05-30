@@ -4,9 +4,9 @@ defaults:
 
 hydra:
   run:
-    dir: results/${algorithm}_${environment.name}/${autorl.seed}
+    dir: results/reactive_schedule_${algorithm}_${environment.name}/${autorl.seed}
   sweep:
-    dir: results/${algorithm}_${environment.name}/${autorl.seed}
+    dir: results/reactive_schedule_${algorithm}_${environment.name}/${autorl.seed}
   job:
     chdir: true
 

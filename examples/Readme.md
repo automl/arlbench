@@ -6,10 +6,17 @@ We provide three different categories of examples:
 3. Running a reactive schedule based on the gradient history
 
 We use 'hydra' as a command line interface for these experiments, you'll find the corresponding configurations (including some variations on the algorithms and environments) in the 'configs' directory.
+The "hypersweeper_tuning" and "schedules" notebooks can help you run these examples and inspect their results.
 
 ## 1. Black-Box HPO
 
-We use the 'hypersweeper' package to demonstrate how ARLBench can be used for black-box HPO. Since it's hydra-based, we simply set up a script which takes a configuration, runs it and returns the evaluation reward at the end. You can try a single run like this:
+We use the 'hypersweeper' package to demonstrate how ARLBench can be used for black-box HPO. Since it's hydra-based, we simply set up a script which takes a configuration, runs it and returns the evaluation reward at the end. First, use pip to install the hypersweeper:
+
+```bash
+pip install hypersweeper
+```
+
+You can try a single run of arlbench first:
 
 ```bash
 python run_arlbench.py
