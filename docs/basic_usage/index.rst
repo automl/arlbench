@@ -9,6 +9,7 @@ Benchmarking AutoRL Methods
    seeding
 
 
+
 ARLBench provides an basis for benchmarking different AutoRL methods. This section of the documentation focuses on the prominent aspect of black-box hyperparameter optimization, since it's the simplest usecase of ARLBench.
 We discuss the structure of ARLBenchmark, the currently supported objectives, the environment subsets and search spaces we provide and the seeding of the experiments in their own subpages. 
 The most important question, however, is how to actually use ARLBench in your experiments. This is the workflow we propose:
