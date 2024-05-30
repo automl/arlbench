@@ -20,7 +20,7 @@
 <div align="center">
     <h3>
       <a href="#features">Features</a> |
-      <a href="#setup">Setup</a> |
+      <a href="#installation">Installation</a> |
       <a href="#quickstart">Quickstart</a> |
       <a href="#cite-us">Cite Us</a>
     </h3>
