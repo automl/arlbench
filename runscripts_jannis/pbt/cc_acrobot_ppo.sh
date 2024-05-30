@@ -3,16 +3,17 @@
 
 #SBATCH --cpus-per-task=64
 #SBATCH --mem=128GB
-#SBATCH -J rs_cc_acrobot_dqn
+#SBATCH -J pbt_cc_acrobot_ppo
 #SBATCH -A hpc-prf-intexml                              # TODO check for your project
 #SBATCH -t 7-00:00:00                                   # TODO check for your clusters time limit
 #SBATCH --mail-type fail
 #SBATCH --mail-user becktepe@stud.uni-hannover.de       # TODO enter your mail and hope slurm isn't reaching out to you :D
 #SBATCH -p normal                                       # TODO check for your clusters partition
-#SBATCH --output sobol/log/arlb_rs_cc_acrobot_dqn_%A.out
-#SBATCH --error sobol/log/arlb_rs_cc_acrobot_dqn_%A.err
+#SBATCH --output pbt/log/pbt_cc_acrobot_ppo_%A_%a.out
+#SBATCH --error pbt/log/pbt_cc_acrobot_ppo_%A_%a.err
+#SBATCH --array=0-2
 
 
 cd ..
-python runscripts/run_arlbench.py -m --config-name=tune_rs experiments=cc_acrobot_dqn cluster=local search_space.seed=42 
+python runscripts/run_arlbench.py -m --config-name=tune_pbt experiments=cc_acrobot_ppo cluster=local pbt_seed=$SLURM_ARRAY_TASK_ID
 

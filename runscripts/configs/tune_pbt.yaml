@@ -20,7 +20,7 @@ hydra:
     search_space: ${search_space}
     sweeper_kwargs:
       optimizer_kwargs:
-        population_size: 4
+        population_size: 32
         config_interval: ${divide:${environment.n_total_timesteps},10}
         seed: ${pbt_seed}
       checkpoint_tf: true
