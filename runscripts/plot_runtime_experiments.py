@@ -29,7 +29,7 @@ def plot_experiment(env_framework: str, env_name: str, algorithm_frameworks: lis
             eval_path = os.path.join(folder_path, folder, "evaluation.csv")
             if os.path.exists(eval_path):
                 data = pd.read_csv(eval_path)
-                data['id'] = folder 
+                data['id'] = folder
                 data['framework'] = algorithm_framework
                 all_data = pd.concat([all_data, data])
 
@@ -50,23 +50,23 @@ def plot_experiment(env_framework: str, env_name: str, algorithm_frameworks: lis
 
     runtimes = pd.DataFrame(runtimes)
 
-    plt.figure()
-    sns.lineplot(x='steps', y='returns', hue='framework', data=all_data, errorbar=('pi', 100), estimator='mean')
-    plt.xlabel('Steps')
-    #plt.xscale('log')
-    plt.ylabel('Return')
-    plt.title(f'{env_framework} {env_name} {algorithm_name.upper()}')
-    plt.legend(title='Framework', bbox_to_anchor=(1.05, 1), loc='upper left')
+    fig, axes = plt.subplots(nrows=1, ncols=2, figsize=(15, 7))
+
+    sns.lineplot(ax=axes[0], x='steps', y='returns', hue='framework', data=all_data, errorbar=('pi', 100), estimator='mean')
+    axes[0].set_xlabel('Steps')
+    #axes[0].set_xscale('log')
+    axes[0].set_ylabel('Return')
+    axes[0].set_title(f'{env_framework} {env_name} {algorithm_name.upper()}')
+    axes[0].legend(title='Framework', loc='lower right')
+
+    sns.boxplot(ax=axes[1], x='framework', y='runtime', data=runtimes)
+    axes[1].set_xlabel('Framework')
+    axes[1].set_ylabel('Runtime')
+    axes[1].set_title(f'{env_framework} {env_name} {algorithm_name.upper()}')
+
     plt.tight_layout()
     plt.savefig(f'plots/{dir}/{env_framework}_{env_name}/{algorithm_name}.png')
-
-    plt.figure()
-    sns.boxplot(x='framework', y='runtime', data=runtimes)
-    plt.xlabel('Framework')
-    plt.ylabel('Runtime')
-    plt.title(f'{env_framework} {env_name} {algorithm_name.upper()}')
-    plt.tight_layout()
-    plt.savefig(f'plots/{dir}/{env_framework}_{env_name}/{algorithm_name}_runtime.png')
+    plt.close()
 
 
 if __name__ == "__main__":
@@ -89,6 +89,18 @@ if __name__ == "__main__":
             "env_framework": "envpool",
             "env_names": ["Pendulum-v1", "LunarLanderContinuous-v2", "Ant-v4"],
             "algorithm_frameworks": ["arlbench",  "sb3"],
+            "algorithm_name": "sac"
+        },
+        {
+            "env_framework": "brax",
+            "env_names": ["ant"],
+            "algorithm_frameworks": ["arlbench",  "brax"],
+            "algorithm_name": "ppo"
+        },
+        {
+            "env_framework": "brax",
+            "env_names": ["ant"],
+            "algorithm_frameworks": ["arlbench",  "brax"],
             "algorithm_name": "sac"
         },
     ]
