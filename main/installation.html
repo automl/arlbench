@@ -315,9 +315,34 @@
                 
   <section id="installation">
 <h1>Installation<a class="headerlink" href="#installation" title="Link to this heading">¶</a></h1>
-<div class="admonition warning">
-<p class="admonition-title">Warning</p>
-<p>This page is under construction.</p>
+<p>There are two ways you can install ARLBench: PyPI and GitHub. The first one is the simplest way to install ARLBench, while the second one is the best way to install the latest version of ARLBench.
+Either way, you will likely want to first create a virtual environment to install ARLBench into. This can be done by running the following command:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>conda<span class="w"> </span>create<span class="w"> </span>-n<span class="w"> </span>arlbench<span class="w"> </span><span class="nv">python</span><span class="o">=</span><span class="m">3</span>.10
+conda<span class="w"> </span>activate<span class="w"> </span>arlbench
+</pre></div>
+</div>
+<ol class="arabic simple">
+<li><p>Using PyPI</p></li>
+</ol>
+<p>This is the simplest way to install ARLBench. Just run the following command:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>arlbench
+</pre></div>
+</div>
+<ol class="arabic simple" start="2">
+<li><p>Downloading from GitHub</p></li>
+</ol>
+<p>This is the best way to install the latest version of ARLBench. First, clone the repository:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git<span class="w"> </span>clone<span class="w"> </span>git@github.com:automl/arlbench.git
+<span class="nb">cd</span><span class="w"> </span>arlbench
+</pre></div>
+</div>
+<p>Then, install the package:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>make<span class="w"> </span>install
+</pre></div>
+</div>
+<p>If you are on a Linux system and would like to use envpool environments, you can instead use:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>make<span class="w"> </span>install-envpool
+</pre></div>
 </div>
 </section>
 
