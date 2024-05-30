@@ -11,8 +11,14 @@ The most important question, however, is how to actually use ARLBench in your ex
 4. Use the pre-defined search spaces to run your AutoRL method for several runs. If there is a good reason to deviate from these search spaces, please report this alongside your results.
 5. Evaluate the best found configuration on the environment test seeds and report this result.
 
+
+In-depth Information on:
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
 .. toctree::
    :maxdepth: 2
+
    objectives
    env_subsets
    seeding
+   options

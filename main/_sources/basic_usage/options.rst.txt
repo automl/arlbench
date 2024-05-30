@@ -1,5 +1,5 @@
-ARLBench Options
-================
+Options for ARLBench 
+====================
 
 A given training run in ARLBench can be configured on two levels: the lower one is the configuration that happens via the AutoRL tool we benchmark while the upper level decides the setting we test the AutoRL tool in.
 The high level configuration takes place via the 'autorl' keys in the configuration file. These are the available options:
