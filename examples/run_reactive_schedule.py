@@ -9,6 +9,7 @@ import logging
 import sys
 import traceback
 from typing import TYPE_CHECKING
+import json
 
 import hydra
 import jax
@@ -32,16 +33,15 @@ def run(cfg: DictConfig, logger: logging.Logger):
 
     # define a tolerance for the gradient norm
     tolerance = 1e-4
+    rewards = []
+    lrs = []
     for i in range(100):
-
+        lrs.append(cfg.hp_config.learning_rate)
         # Statistics here contain the number of steps and gradient information
         statistics, objectives, te, tr, _ = env.step(cfg.hp_config)
         grad_norm, _ = statistics["grad_info"]
 
         # If grad norm doesn't change much, spike the learning rate
-        if last_grad_norm is not None:
-            print(i)
-            print(abs(grad_norm - last_grad_norm))
         if last_grad_norm is not None and abs(grad_norm - last_grad_norm) < tolerance:
             last_lr = cfg.hp_config.learning_rate
             cfg.hp_config.learning_rate *= 10
@@ -54,7 +54,12 @@ def run(cfg: DictConfig, logger: logging.Logger):
             spiked = False
             logger.info(f"Resetting learning rate to {cfg.hp_config.learning_rate}")
         last_grad_norm = grad_norm
+        rewards.append(float(objectives["reward_mean"]))
+
     logger.info(f"Training finished with a total reward of {objectives['reward_mean']}")
+    output = {"rewards": rewards, "lr": lrs}
+    with open("output.json", "w") as f:
+        json.dump(output, f)
 
 
 @hydra.main(version_base=None, config_path="configs", config_name="gradient_lr")
