@@ -3,7 +3,7 @@ The ARLBench Subsets
 
 We analyzed the hyperparameter landscapes of PPO, DQN and SAC on 20 environments to select a subset which allows for efficient benchmarking of AutoRL algorithms. These are the resulting subsets:
 
-.. image:: path/subsets.png
+.. image:: ../images/subsets.png
   :width: 800
   :alt: Environment subsets for PPO, DQN and SAC
 

@@ -7,7 +7,7 @@ options = {
     "copyright": __copyright__,
     "author": __author__,
     "version": __version__,
-    "name": __name__,
+    "name": "ARLBench",
     "html_theme_options": {
         "github_url": "https://github.com/automl/ARLBench",
         "twitter_url": "https://twitter.com/automl_org?lang=de",
