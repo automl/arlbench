@@ -1,0 +1,21 @@
+# @package _global_
+defaults:
+  - override /environment: brax_hopper
+  - override /algorithm: sac
+  - override /search_space: sac_brax_pbt
+
+environment:
+  n_envs: 64
+  n_total_timesteps: 5000000
+
+hp_config:
+  gradient_steps: 8
+  target_update_interval: 1
+  train_freq: 1
+  normalize_observations: True
+  buffer_size: 1000000
+  use_target_network: True
+
+nas_config:
+  activation: relu
+  hidden_size: 256
