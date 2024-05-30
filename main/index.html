@@ -304,7 +304,15 @@
 <h1>Home<a class="headerlink" href="#home" title="Link to this heading">¶</a></h1>
 <div class="toctree-wrapper compound">
 </div>
-<p>Lorem ipsum dolor.</p>
+<p>Welcome to ARLBench, your pathway into efficient AutoRL!
+We offer lightning-fast implementations of PPO, DQN and SAC that are highly configurable as well as a subset of environments which will give you a representative result of your AutoRL method across the RL landscape.
+This documentation, in combination with our examples, should provide you with a starting point to get your AutoRL method up and running in no time.</p>
+<a class="reference internal image-reference" href="path/structure.png"><img alt="ARLBench overview figure" src="path/structure.png" style="width: 800px;" />
+</a>
+<p>You will interact with ARLBench through the <cite>AutoRL Environment</cite> class, which is the main entry point for all the functionalities that ARLBench offers.
+It works similarly to a gymnasium environment: you can use ‘reset’ to start a fresh run and then ‘step’ to take one configuration step.
+Between steps, you can change your configuration to allow for flexible schedules.
+Additionally, the AutoRL Environment can also return information about the RL algorithm’s internal state so you can build and learn reactive schedules as well.</p>
 </section>
 
 
