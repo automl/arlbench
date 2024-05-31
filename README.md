@@ -38,6 +38,12 @@ The ARLBench is a benchmark for HPO in RL - evaluate your HPO methods fast and o
 - **Compatible with many different environment domains via Gymnax, XLand and EnvPool**
 - **Representative benchmark set of HPO settings** 
 
+<p align="center">
+    <a href="./docs/images/subsets.png">
+        <img src="./docs/images/subsets.png" alt="ARLBench Subsets" width="80%"/>
+    </a>
+</p>
+
 ## Installation
 
 There are currently two different ways to install ARLBench. 
@@ -84,32 +90,37 @@ make install-envpool
 </details>
 
 > [!CAUTION]
-> Windows is currently not supported and also not tested. We recommend using the Linux subsytem if you're on a Windows machine.
+> Windows is currently not supported and also not tested. We recommend using the [Linux subsytem](https://en.wikipedia.org/wiki/Windows_Subsystem_for_Linux) if you're on a Windows machine.
 
 If you want to run the ARLBench on GPU, we recommend you check out the [JAX installation guide](https://jax.readthedocs.io/en/latest/installation.html) to see how you can install the correct version for your GPU setup.
 
 ## Quickstart
 
-Here are the two ways you can use ARLBench: via the command line or as an environment. To see them in action, take a look at our [examples](https://github.com/automl/arlbench/tree/main/examples).
+Here are the two ways you can use ARLBench: via the command line or as an environment. To see them in action, take a look at our [examples](https://github.com/automl/arlbench/tree/main/examples). 
 
 ### Use the CLI
 
-We provide a command line script for black-box configuration in ARLBench. Simply run:
+We provide a command line script for black-box configuration in ARLBench which will also save the results in a 'results' directory. To execute one run of DQN on CartPole, simply run:
 ```bash
 python run_arlbench.py
 ```
 
-You can use the hydra command line syntax to override some of the configuration like this:
+You can use the [hydra](https://hydra.cc/) command line syntax to override some of the configuration like this to change to PPO:
 ```bash
 python run_arlbench.py algorithm=ppo
 ```
 
-Or run multiple different versions after one another:
+Or run multiple different seeds after one another:
 ```bash
 python run_arlbench.py -m autorl.seed=0,1,2,3,4
 ```
 
-We recommend you create your own custom config files if using the CLI. Our [examples](https://github.com/automl/arlbench/tree/main/examples) can show you how these can look.
+All hyperparamters to adapt are in the 'hpo_config' and architecture settings in the 'nas_config', so to run a grid of different configurations for 5 seeds each , you can do this:
+```bash
+python run_arlbench.py -m autorl.seed=0,1,2,3,4 nas_config.hidden_size=8,16,32 hp_config.learning_rate=0.001,0.01
+```
+
+We recommend you create your own custom config files if using the CLI (for more information on this, checkout [Hydra's guide to config files](https://hydra.cc/docs/tutorials/basic/your_first_app/config_file/)). Our [examples](https://github.com/automl/arlbench/tree/main/examples) can show you how these can look.
 
 ### Use the AutoRL environment
 
