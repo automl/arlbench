@@ -6,7 +6,7 @@ We provide three different categories of examples:
 3. Running a reactive schedule based on the gradient history
 
 We use 'hydra' as a command line interface for these experiments, you'll find the corresponding configurations (including some variations on the algorithms and environments) in the 'configs' directory.
-The "hypersweeper_tuning" and "schedules" notebooks can help you run these examples and inspect their results.
+The "hypersweeper_tuning" and "schedules" notebooks can help you run these examples and inspect their results in an interactive way.
 
 ## 1. Black-Box HPO
 
@@ -16,15 +16,16 @@ We use the [Hypersweeper](https://github.com/automl/hypersweeper/) package to de
 pip install hypersweeper
 ```
 
-You can try a single run of arlbench first:
+You can try a single run of arlbench first using DQN on CartPole:
 
 ```bash
 python run_arlbench.py
 ```
 
-To use random search instead, you need to choose the "random_search" config and use the "--multirun" flag:
+To use random search instead, you should install hypersweeper, choose the "random_search" config and use the "--multirun" flag which is a signal to hydra to engage the sweeper:
 
 ```bash
+pip install hypersweeper
 python run_arlbench.py --config-name=random_search --multirun
 ```
 
