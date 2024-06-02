@@ -94,8 +94,8 @@ OPTIMIZER_SEEDS = {
 }
 
 SUBSETS = {
-    "ppo": ["LunarLander-v2", "MiniGrid-EmptyRandom-5x5", "BattleZone-v5", "halfcheetah", "MountainCarContinuous-v0"],
-    "dqn": ["Acrobot-v1", "MiniGrid-DoorKey-5x5", "QBert-v5", "DoubleDunk-5"],
+    "ppo": ["LunarLander-v2", "halfcheetah", "BattleZone-v5", "MiniGrid-EmptyRandom-5x5", "MiniGrid-FourRooms-5x5"],
+    "dqn": ["Acrobot-v1", "MiniGrid-DoorKey-5x5", "BattleZone-v5", "MiniGrid-FourRooms-5x5"],
     "sac": ["BipedalWalker-v3", "halfcheetah", "MountainCarContinuous-v0", "Pendulum-v1"],
 }
 
@@ -198,17 +198,18 @@ def read_optimizer_data_per_algorithm():
 def validate(algorithm: str, method: str = "rank"):
     min_scores, max_scores = read_min_max_scores()
     optimizer_data = read_optimizer_data_per_algorithm()
-    algorithm = "ppo"
     overall_data = optimizer_data[algorithm]
     subset = SUBSETS[algorithm]
 
     # Rename columns
     overall_data["optimizer"] = overall_data["optimizer"].replace(OPTIMIZER_NAMES)
+    subset_data = overall_data[overall_data["environment"].isin(subset)]
 
-    # For now, we just take a random subset
-    # subset = np.random.choice(np.unique(overall_data["environment"]))
     if method == "rank":
-        overall_data["normalized_score"] = overall_data.groupby(["algorithm", "environment"])[
+        overall_data.loc[:, "normalized_score"] = overall_data.groupby(["algorithm", "environment"])[
+            "score"
+        ].rank(ascending=False)
+        subset_data.loc[:, "normalized_score"] = subset_data.groupby(["algorithm", "environment"])[
             "score"
         ].rank(ascending=False)
     else:
@@ -219,9 +220,9 @@ def validate(algorithm: str, method: str = "rank"):
             return normalized_score
 
         # Apply min-max normalization
-        overall_data["normalized_score"] = overall_data.apply(min_max_normalize, axis=1)
+        overall_data.loc[:, "normalized_score"] = overall_data.apply(min_max_normalize, axis=1)
+        subset_data.loc[:, "normalized_score"] = subset_data.apply(min_max_normalize, axis=1)
     
-    subset_data = overall_data[overall_data["environment"].isin(subset)]
 
     return overall_data, subset_data
 
