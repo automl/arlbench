@@ -58,7 +58,7 @@ def plot_experiment(env_framework: str, env_name: str, algorithm_frameworks: lis
 
     runtimes = pd.DataFrame(runtimes)
 
-    fig, axes = plt.subplots(nrows=1, ncols=2, figsize=(9.5, 2.5), gridspec_kw={"width_ratios": [2, 1]})
+    fig, axes = plt.subplots(nrows=1, ncols=2, figsize=(8, 2.5), gridspec_kw={"width_ratios": [2, 1]})
 
     sns.lineplot(ax=axes[0], x="steps", y="returns", hue="framework", data=all_data, errorbar=("ci", 95), estimator="mean")
     axes[0].set_xlabel("Steps")
