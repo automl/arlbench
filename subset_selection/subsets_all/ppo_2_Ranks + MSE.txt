@@ -2,7 +2,7 @@ Tasks chosen for ppo:
 Task 0: atari_qbert
 Task 1: cc_mountain_car
 Correlation without weights: 0.8133437102412294
-Correlation with prediction: 0.8641880341880341
-Validation error: 0.006009686477700619
+Correlation with prediction: 0.8881133980959417
+Validation error: 0.0058717126684617515
 Weights:
 [0.62760708 0.35430046]

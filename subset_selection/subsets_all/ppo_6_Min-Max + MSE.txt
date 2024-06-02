@@ -3,10 +3,10 @@ Task 0: atari_battle_zone
 Task 1: box2d_lunar_lander
 Task 2: brax_ant
 Task 3: cc_acrobot
-Task 4: minigrid_empty_random
-Task 5: minigrid_four_rooms
-Correlation without weights: 0.9226446621497892
-Correlation with prediction: 0.9433333333333331
-Validation error: 0.0008198162350279307
+Task 4: minigrid_door_key
+Task 5: minigrid_empty_random
+Correlation without weights: 0.9463697125068669
+Correlation with prediction: 0.9532991452991452
+Validation error: 0.0007914329918176317
 Weights:
-[0.07699355 0.19675544 0.18245712 0.08100214 0.11202892 0.13707266]
+[0.10981305 0.17221311 0.21311055 0.07900333 0.06404793 0.1002282 ]

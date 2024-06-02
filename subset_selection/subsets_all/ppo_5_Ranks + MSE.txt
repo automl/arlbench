@@ -5,7 +5,7 @@ Task 2: brax_humanoid
 Task 3: cc_mountain_car
 Task 4: minigrid_empty_random
 Correlation without weights: 0.963064488358275
-Correlation with prediction: 0.9446153846153844
-Validation error: 0.0016032114282827099
+Correlation with prediction: 0.9604957264957263
+Validation error: 0.0015415838688262109
 Weights:
 [0.18244759 0.18987808 0.25396405 0.15679664 0.21325953]

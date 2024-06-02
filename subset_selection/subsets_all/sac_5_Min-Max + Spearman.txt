@@ -3,9 +3,9 @@ Task 0: box2d_lunar_lander_continuous
 Task 1: brax_halfcheetah
 Task 2: brax_hopper
 Task 3: brax_humanoid
-Task 4: cc_continuous_mountain_car
-Correlation without weights: 0.9688701702984801
-Correlation with prediction: 0.9696410256410257
-Validation error: 0.030358974358974455
+Task 4: cc_pendulum
+Correlation without weights: 0.9661405878044312
+Correlation with prediction: 0.9695042735042737
+Validation error: 0.030495726495726495
 Weights:
-[0.20766555 0.2068947  0.11856106 0.1233171  0.17370694]
+[0.34576013 0.15035515 0.10583901 0.13549065 0.21856597]

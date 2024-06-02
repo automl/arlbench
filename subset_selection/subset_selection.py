@@ -2,8 +2,8 @@ import pandas as pd
 import os
 import numpy as np
 import pandas as pd
-from typing import Callable, List, Any
-from sklearn.model_selection import train_test_split, KFold
+from typing import Callable, Any
+from sklearn.model_selection import KFold
 import itertools
 from parallel_for import parallel_for
 import scipy
@@ -15,7 +15,6 @@ import matplotlib.pyplot as plt
 RAW_SOBOL_RESULTS = "results_combined/sobol"
 SUBSET_RESULTS = "subset_selection/results"
 SUBSET_PLOTS = "subset_selection/plots"
-SMAC_RESULTS = "results/smac"
 SUBSETS_ALL = "subset_selection/subsets_all"
 
 
@@ -157,7 +156,7 @@ def fit_and_compute_error(
 
 
 def cross_validate_scores(task_subset, X, y, error_func: Callable, k: int = 5) -> tuple[float, float, float]:
-    kf = KFold(n_splits=k, shuffle=True)
+    kf = KFold(n_splits=k, shuffle=True, random_state=42)
     train_scores = []
     val_scores = []
     val_correlations = []
@@ -395,7 +394,8 @@ def plot_method_comparison_single_strategy(method_results: pd.DataFrame, strateg
     plt.show()
 
 if __name__ == "__main__":
-    # get_method_comparison(6)
+    get_method_comparison(6)
+
     data = pd.read_csv(os.path.join(SUBSET_RESULTS, "method_comparison.csv"))
     plot_method_comparison(data)
     plot_method_comparison_corr(data)

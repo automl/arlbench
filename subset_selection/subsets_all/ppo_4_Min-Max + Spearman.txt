@@ -1,10 +1,10 @@
 Tasks chosen for ppo:
-Task 0: brax_halfcheetah
-Task 1: cc_cartpole
-Task 2: minigrid_door_key
-Task 3: minigrid_four_rooms
-Correlation without weights: 0.9281667734847098
-Correlation with prediction: 0.9362735042735043
-Validation error: 0.06372649572649583
+Task 0: atari_battle_zone
+Task 1: brax_ant
+Task 2: cc_cartpole
+Task 3: minigrid_door_key
+Correlation without weights: 0.9342096227797106
+Correlation with prediction: 0.9314529914529913
+Validation error: 0.06854700854700864
 Weights:
-[0.33972748 0.19509866 0.06298902 0.2153648 ]
+[0.11809933 0.36141272 0.16132782 0.09875651]

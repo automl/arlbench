@@ -3,7 +3,7 @@ Task 0: box2d_bipedal_walker
 Task 1: brax_halfcheetah
 Task 2: cc_continuous_mountain_car
 Correlation without weights: 0.9327603300119558
-Correlation with prediction: 0.9434529914529914
-Validation error: 0.05654700854700863
+Correlation with prediction: 0.9342393162393161
+Validation error: 0.06576068376068378
 Weights:
 [0.36550088 0.38389724 0.23595058]

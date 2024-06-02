@@ -5,7 +5,7 @@ Task 2: cc_continuous_mountain_car
 Task 3: minigrid_door_key
 Task 4: minigrid_empty_random
 Correlation without weights: 0.9260552096685587
-Correlation with prediction: 0.9195555555555555
-Validation error: 0.001098726628955709
+Correlation with prediction: 0.9242905982905982
+Validation error: 0.00111724569641117
 Weights:
 [0.16863379 0.23773197 0.11575488 0.10139795 0.09554967]

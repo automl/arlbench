@@ -4,7 +4,7 @@ Task 1: atari_qbert
 Task 2: brax_humanoid
 Task 3: cc_mountain_car
 Correlation without weights: 0.9364721708682824
-Correlation with prediction: 0.9561538461538461
-Validation error: 0.0022869157035046274
+Correlation with prediction: 0.9541538461538461
+Validation error: 0.0023258523194383605
 Weights:
 [0.12817183 0.37640072 0.18412324 0.304728  ]

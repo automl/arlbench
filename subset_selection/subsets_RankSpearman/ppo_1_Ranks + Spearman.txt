@@ -1,7 +1,7 @@
 Tasks chosen for ppo:
 Task 0: atari_qbert
 Correlation without weights: 0.9078967322723996
-Correlation with prediction: 0.9156215787672334
-Validation error: 0.0843784212327667
+Correlation with prediction: 0.871773975210463
+Validation error: 0.12822602478953707
 Weights:
 [0.88348791]

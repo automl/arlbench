@@ -1,8 +1,8 @@
 Tasks chosen for dqn:
 Task 0: atari_qbert
 Task 1: minigrid_empty_random
-Correlation without weights: 0.8218308506068494
-Correlation with prediction: 0.8474792392700541
-Validation error: 0.1525207607299458
+Correlation without weights: 0.8557393520695261
+Correlation with prediction: 0.8879255477840214
+Validation error: 0.1120744522159787
 Weights:
-[0.48658819 0.42352688]
+[0.51962433 0.39787048]

@@ -1,7 +1,7 @@
 Tasks chosen for ppo:
 Task 0: brax_ant
 Correlation without weights: 0.5730284356297383
-Correlation with prediction: 0.5816051708470831
-Validation error: 0.00978232802806982
+Correlation with prediction: 0.5804173253714874
+Validation error: 0.009777096439342816
 Weights:
 [0.52679602]

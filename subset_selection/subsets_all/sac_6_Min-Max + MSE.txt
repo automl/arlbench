@@ -6,7 +6,7 @@ Task 3: brax_hopper
 Task 4: brax_humanoid
 Task 5: cc_continuous_mountain_car
 Correlation without weights: 0.9847440944881889
-Correlation with prediction: 0.9798803418803418
-Validation error: 0.0007878781837413942
+Correlation with prediction: 0.9739658119658119
+Validation error: 0.0008548212195380982
 Weights:
 [0.1440592  0.16152908 0.14472664 0.17036343 0.13651224 0.20877663]
