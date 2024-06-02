@@ -5,6 +5,14 @@ import matplotlib.pyplot as plt
 import re
 
 
+def capitalize(s: str) -> str:
+    return s[0].upper() + s[1:]
+
+
+def format_framework(s: str) -> str:
+    return "ARLBench" if s == "arlbench" else "SB3"
+
+
 def plot(experiments: list[dict], dir: str):
     for experiment in experiments:
         for env_name in experiment["env_names"]:
@@ -22,50 +30,51 @@ def plot_experiment(env_framework: str, env_name: str, algorithm_frameworks: lis
     runtimes = []
 
     for algorithm_framework in algorithm_frameworks:
-        folder_path = f"../results/{dir}/{env_framework}_{env_name}/{algorithm_framework}_{algorithm_name}"
+        folder_path = f"results/{dir}/{env_framework}_{env_name}/{algorithm_framework}_{algorithm_name}"
         folders = os.listdir(folder_path)
 
         for folder in folders:
             eval_path = os.path.join(folder_path, folder, "evaluation.csv")
             if os.path.exists(eval_path):
                 data = pd.read_csv(eval_path)
-                data['id'] = folder
-                data['framework'] = algorithm_framework
+                data["id"] = folder
+                data["framework"] = format_framework(algorithm_framework)
                 all_data = pd.concat([all_data, data])
 
             info_path = os.path.join(folder_path, folder, "info")
             if os.path.exists(info_path):
-                with open(info_path, 'r') as f:
+                with open(info_path, "r") as f:
                     info_data = f.read()
 
-                    time_pattern = r'time:\s*(\d+\.\d+)'
+                    time_pattern = r"time:\s*(\d+\.\d+)"
                     matches = re.search(time_pattern, info_data)
                     if matches:
                         time_value = float(matches.group(1))
                         runtimes += [{
-                            "framework": algorithm_framework,
+                            "framework": format_framework(algorithm_framework),
                             "id": folder,
                             "runtime": time_value
                         }]
 
     runtimes = pd.DataFrame(runtimes)
 
-    fig, axes = plt.subplots(nrows=1, ncols=2, figsize=(15, 7))
+    fig, axes = plt.subplots(nrows=1, ncols=2, figsize=(9.5, 2.5), gridspec_kw={"width_ratios": [2, 1]})
 
-    sns.lineplot(ax=axes[0], x='steps', y='returns', hue='framework', data=all_data, errorbar=('pi', 100), estimator='mean')
-    axes[0].set_xlabel('Steps')
-    #axes[0].set_xscale('log')
-    axes[0].set_ylabel('Return')
-    axes[0].set_title(f'{env_framework} {env_name} {algorithm_name.upper()}')
-    axes[0].legend(title='Framework', loc='lower right')
+    sns.lineplot(ax=axes[0], x="steps", y="returns", hue="framework", data=all_data, errorbar=("ci", 95), estimator="mean")
+    axes[0].set_xlabel("Steps")
+    #axes[0].set_xscale("log")
+    axes[0].set_ylabel("Evaluation Return")
+    axes[0].legend(loc="upper center", bbox_to_anchor=(0.5, -0.25), ncol=2, fancybox=False, shadow=False, frameon=False)
 
-    sns.boxplot(ax=axes[1], x='framework', y='runtime', data=runtimes)
-    axes[1].set_xlabel('Framework')
-    axes[1].set_ylabel('Runtime')
-    axes[1].set_title(f'{env_framework} {env_name} {algorithm_name.upper()}')
 
+    sns.boxplot(ax=axes[1], x="framework", y="runtime", data=runtimes)
+    axes[1].set_xlabel("Framework")
+    axes[1].set_ylabel("Runtime [s]")
+    axes[1].set_ylim(0, None)
+    plt.suptitle(f"{algorithm_name.upper()} on {capitalize(env_name)} ({capitalize(env_framework)})", y=0.95)
+    fig.subplots_adjust(bottom=0.65)
     plt.tight_layout()
-    plt.savefig(f'plots/{dir}/{env_framework}_{env_name}/{algorithm_name}.png')
+    plt.savefig(f"plots/{dir}/{env_framework}_{env_name}/{algorithm_name}.png", dpi=500)
     plt.close()
 
 
