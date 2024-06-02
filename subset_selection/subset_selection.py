@@ -385,7 +385,7 @@ def plot_method_comparison_single_strategy(method_results: pd.DataFrame, strateg
     axes[-1].legend().set_visible(True)
     axes[0].set_ylabel("Spearman Correlation")
 
-    fig.subplots_adjust(bottom=0.3, wspace=0.33)
+    fig.subplots_adjust(bottom=0.305, wspace=0.33)
 
     axes[-1].legend(loc='upper center', bbox_to_anchor=(-0.95, -0.3), ncol=2, fancybox=False, shadow=False, frameon=False)
 
@@ -395,7 +395,7 @@ def plot_method_comparison_single_strategy(method_results: pd.DataFrame, strateg
     plt.show()
 
 if __name__ == "__main__":
-    #get_method_comparison(6)
+    # get_method_comparison(6)
     data = pd.read_csv(os.path.join(SUBSET_RESULTS, "method_comparison.csv"))
     plot_method_comparison(data)
     plot_method_comparison_corr(data)
