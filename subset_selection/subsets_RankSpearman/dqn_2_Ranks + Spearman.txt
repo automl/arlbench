@@ -1,8 +1,8 @@
 Tasks chosen for dqn:
-Task 0: atari_qbert
-Task 1: minigrid_empty_random
-Correlation without weights: 0.8557393520695261
-Correlation with prediction: 0.8879255477840214
-Validation error: 0.1120744522159787
+Task 0: atari_double_dunk
+Task 1: cc_acrobot
+Correlation without weights: 0.8833410356314357
+Correlation with prediction: 0.8632247423338807
+Validation error: 0.13677525766611914
 Weights:
-[0.51962433 0.39787048]
+[0.489394   0.44752074]

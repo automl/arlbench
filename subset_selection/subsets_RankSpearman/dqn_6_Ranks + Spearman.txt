@@ -1,12 +1,12 @@
 Tasks chosen for dqn:
-Task 0: atari_phoenix
-Task 1: atari_qbert
+Task 0: atari_battle_zone
+Task 1: atari_this_game
 Task 2: box2d_lunar_lander
-Task 3: cc_mountain_car
-Task 4: minigrid_empty_random
+Task 3: cc_acrobot
+Task 4: minigrid_door_key
 Task 5: minigrid_four_rooms
-Correlation without weights: 0.946550022178727
-Correlation with prediction: 0.9662197781334558
-Validation error: 0.03378022186654404
+Correlation without weights: 0.9634197636056134
+Correlation with prediction: 0.9622679715533856
+Validation error: 0.037732028446614496
 Weights:
-[0.19443383 0.19534863 0.12465145 0.18202601 0.17017225 0.12749526]
+[0.19073832 0.12343704 0.1560254  0.19240495 0.21704953 0.109905  ]

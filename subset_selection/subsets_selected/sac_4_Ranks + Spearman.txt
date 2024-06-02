@@ -4,7 +4,7 @@ Task 1: brax_halfcheetah
 Task 2: cc_continuous_mountain_car
 Task 3: cc_pendulum
 Correlation without weights: 0.9133572147958249
-Correlation with prediction: 0.9618803418803419
-Validation error: 0.03811965811965816
+Correlation with prediction: 0.9562051282051283
+Validation error: 0.043794871794871806
 Weights:
 [0.35797678 0.322538   0.17745508 0.14122835]
