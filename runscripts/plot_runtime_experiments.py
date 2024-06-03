@@ -5,6 +5,8 @@ import matplotlib.pyplot as plt
 import re
 
 
+RUNTIMES_DIR = "results_combined/runtime_comparisons"
+
 def capitalize(s: str) -> str:
     return s[0].upper() + s[1:]
 
@@ -57,6 +59,8 @@ def plot_experiment(env_framework: str, env_name: str, algorithm_frameworks: lis
                         }]
 
     runtimes = pd.DataFrame(runtimes)
+    runtimes_path = os.path.join(RUNTIMES_DIR, f"{env_framework}_{env_name}_{algorithm_name}.csv")
+    runtimes.to_csv(runtimes_path, index=False)
 
     fig, axes = plt.subplots(nrows=1, ncols=2, figsize=(8, 2.5), gridspec_kw={"width_ratios": [2, 1]})
 
@@ -75,7 +79,7 @@ def plot_experiment(env_framework: str, env_name: str, algorithm_frameworks: lis
     fig.subplots_adjust(bottom=0.65)
     plt.tight_layout()
     plt.savefig(f"plots/{dir}/{env_framework}_{env_name}/{algorithm_name}.png", dpi=500)
-    plt.close()
+    plt.close()        
 
 
 if __name__ == "__main__":
