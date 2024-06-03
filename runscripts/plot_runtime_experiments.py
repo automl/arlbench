@@ -4,6 +4,8 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 import re
 
+sns.set_style("whitegrid")
+sns.set_palette("colorblind")
 
 RUNTIMES_DIR = "results_combined/runtime_comparisons"
 
