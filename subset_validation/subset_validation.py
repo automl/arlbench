@@ -8,6 +8,10 @@ import numpy as np
 from collections import defaultdict
 
 
+sns.set_style("whitegrid")
+sns.set_palette("colorblind")
+
+
 EXPERIMENT_TO_ENV = {
     "brax_halfcheetah": "halfcheetah",
     "procgen_heist_easy": "HeistEasy-v0",
@@ -228,7 +232,7 @@ def validate(algorithm: str, method: str = "rank"):
 
 
 def plot_subset_vs_overall(overall_data, subset_data, method: str):
-    fig, axes = plt.subplots(1, 2, figsize=(9, 2.5), sharey=True)
+    fig, axes = plt.subplots(1, 2, figsize=(8, 2.5), sharey=True)
 
     sns.boxplot(x='optimizer', y='normalized_score', data=subset_data, ax=axes[0], showmeans=True, meanline=True)
     axes[0].set_title('Subset')
@@ -237,7 +241,10 @@ def plot_subset_vs_overall(overall_data, subset_data, method: str):
     axes[1].set_title('All Environments')
 
     for ax in axes:
-        ax.set_ylabel('Normalized Score')
+        if method == "rank":
+            ax.set_ylabel('Average Rank')
+        else:
+            ax.set_ylabel('Normalized Score')
         ax.set_xlabel('Optimizer')
 
     plt.tight_layout()

@@ -394,7 +394,9 @@ def plot_method_comparison_single_strategy(method_results: pd.DataFrame, strateg
     plt.show()
 
 if __name__ == "__main__":
-    get_method_comparison(6)
+    sns.set_style("whitegrid")
+    sns.set_palette("colorblind")
+    # get_method_comparison(6)
 
     data = pd.read_csv(os.path.join(SUBSET_RESULTS, "method_comparison.csv"))
     plot_method_comparison(data)
