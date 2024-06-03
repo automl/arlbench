@@ -207,7 +207,7 @@ def plot_runtime_comparisons():
     sns.set_style('whitegrid')
 
     # Plot
-    fig, axes = plt.subplots(1, 3, figsize=(10, 2.5), sharey=True)
+    fig, axes = plt.subplots(1, 3, figsize=(8, 2.5))
 
     fig.subplots_adjust(top=0.85)
 
@@ -230,8 +230,12 @@ def plot_runtime_comparisons():
         )
         plot.on(axes[i]).show()
         axes[i].set_title(algorithm.upper())
-        axes[i].set_ylabel("")
         axes[i].set_xlabel("Total Runtime [min]")
+        if i == 0:
+            axes[i].set_ylabel("Environment Set")
+        else:
+            axes[i].set_ylabel("")
+            axes[i].set_yticklabels([])
 
     for l in fig.legends:
         l.set_visible(False)
