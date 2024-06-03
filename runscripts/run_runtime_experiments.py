@@ -306,48 +306,8 @@ def train_sb3(cfg: DictConfig, logger: logging.Logger):
     #from jax import nn
     from torch import nn
     #import envpool
-    from envpool.python.protocol import EnvPool
     import gymnasium
 
-    class VecAdapter(VecEnvWrapper):
-        """Convert EnvPool object to a Stable-Baselines3 (SB3) VecEnv.
-
-        :param venv: The envpool object.
-        """
-
-        def __init__(self, venv: EnvPool):
-            # Retrieve the number of environments from the config
-            venv.num_envs = venv.spec.config.num_envs
-            super().__init__(venv=venv)
-
-        def step_async(self, actions: np.ndarray) -> None:
-            self.actions = actions
-
-        def reset(self) -> VecEnvObs:
-            return self.venv.reset()[0]
-
-        def seed(self, seed: int | None = None) -> None:
-            # You can only seed EnvPool env by calling envpool.make()
-            pass
-
-        def step_wait(self) -> VecEnvStepReturn:
-            obs, rewards, terms, truncs, info_dict = self.venv.step(self.actions)
-            dones = terms + truncs
-            infos = []
-            # Convert dict to list of dict
-            # and add terminal observation
-            for i in range(self.num_envs):
-                infos.append(
-                    {
-                        key: info_dict[key][i]
-                        for key in info_dict
-                        if isinstance(info_dict[key], np.ndarray)
-                    }
-                )
-                if dones[i]:
-                    infos[i]["terminal_observation"] = obs[i]
-                    obs[i] = self.venv.reset(np.array([i]))[0]
-            return obs, rewards, dones, infos
 
     class EvalTrainingMetricsCallback(BaseCallback):
         def __init__(
@@ -388,7 +348,48 @@ def train_sb3(cfg: DictConfig, logger: logging.Logger):
         def get_returns(self):
             return np.array(self.step_list), np.array(self.return_list)
 
-    if cfg.environment.name not in ["Ant-v4"]:
+    if cfg.environment.framework in ["envpool"]:
+        from envpool.python.protocol import EnvPool
+        class VecAdapter(VecEnvWrapper):
+            """Convert EnvPool object to a Stable-Baselines3 (SB3) VecEnv.
+
+            :param venv: The envpool object.
+            """
+
+            def __init__(self, venv: EnvPool):
+                # Retrieve the number of environments from the config
+                venv.num_envs = venv.spec.config.num_envs
+                super().__init__(venv=venv)
+
+            def step_async(self, actions: np.ndarray) -> None:
+                self.actions = actions
+
+            def reset(self) -> VecEnvObs:
+                return self.venv.reset()[0]
+
+            def seed(self, seed: int | None = None) -> None:
+                # You can only seed EnvPool env by calling envpool.make()
+                pass
+
+            def step_wait(self) -> VecEnvStepReturn:
+                obs, rewards, terms, truncs, info_dict = self.venv.step(self.actions)
+                dones = terms + truncs
+                infos = []
+                # Convert dict to list of dict
+                # and add terminal observation
+                for i in range(self.num_envs):
+                    infos.append(
+                        {
+                            key: info_dict[key][i]
+                            for key in info_dict
+                            if isinstance(info_dict[key], np.ndarray)
+                        }
+                    )
+                    if dones[i]:
+                        infos[i]["terminal_observation"] = obs[i]
+                        obs[i] = self.venv.reset(np.array([i]))[0]
+                return obs, rewards, dones, infos
+
         env = VecMonitor(
             VecAdapter(
                 envpool.make(
@@ -410,11 +411,18 @@ def train_sb3(cfg: DictConfig, logger: logging.Logger):
                 )
             )
         )
-    else:
-        env = VecMonitor(SubprocVecEnv([lambda: gymnasium.make(cfg.environment.name, autoreset=True) for _ in range(cfg.environment.n_envs)]))
-        eval_env = VecMonitor(SubprocVecEnv([lambda: gymnasium.make(cfg.environment.name, autoreset=True) for _ in range(cfg.n_eval_episodes)]))
+    elif cfg.environment.framework in ["xland"]:
+        from minigrid.wrappers import FlatObsWrapper
+        env = VecMonitor(SubprocVecEnv(
+                [lambda: FlatObsWrapper(gymnasium.make(cfg.environment.name, autoreset=True)) for
+                 _ in range(cfg.environment.n_envs)]
+        ))
+        eval_env = VecMonitor(SubprocVecEnv(
+                [lambda: FlatObsWrapper(gymnasium.make(cfg.environment.name, autoreset=True)) for _
+                 in range(cfg.n_eval_episodes)]
+        ))
 
-    if cfg.normalize_observations:
+    if cfg.hp_config.normalize_observations:
         env = VecNormalize(env, training=True, norm_obs=True, norm_reward=False)
         eval_env = VecNormalize(eval_env, training=False, norm_obs=True, norm_reward=False)
 
@@ -568,9 +576,9 @@ def run(cfg: DictConfig, logger: logging.Logger):
 
         train_info_df, training_time = train_purejaxrl(cfg, logger)
     elif cfg.algorithm_framework == "sb3":
-        if cfg.environment.framework not in ["envpool", "brax"]:
+        if cfg.environment.framework not in ["envpool", "xland"]:
             raise ValueError(
-                "Only envpool and brax are supported as environment framework for SB3."
+                "Only envpool and minigrid are supported as environment framework for SB3."
             )
 
         train_info_df, training_time = train_sb3(cfg, logger)
