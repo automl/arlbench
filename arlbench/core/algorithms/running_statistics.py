@@ -1,5 +1,5 @@
-# This file includes code from brax, licensed under the Apache License 2.0 (http://www.apache.org/licenses/LICENSE-2.0).
-
+# This file includes code from brax (https://github.com/google/brax)
+# Licensed under the Apache License 2.0 (http://www.apache.org/licenses/LICENSE-2.0).
 from typing import Any, Optional, Tuple, Iterable, Mapping, Union
 import dataclasses
 
