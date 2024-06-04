@@ -23,7 +23,6 @@ hydra:
         population_size: 32
         config_interval: ${divide:${environment.n_total_timesteps},10}
         seed: ${pbt_seed}
-        self_destruct: true
       checkpoint_tf: true
       load_tf: true
       checkpoint_path_typing: ""
