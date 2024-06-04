@@ -49,6 +49,10 @@ def aggregate_runhistories(approach: str):
                                 data.at[row["run_id"], "member_id"] = member_id
                                 data.at[row["run_id"], "iteration"] = iteration
                                 data.at[row["run_id"], "budget"] = row["budget"] * (iteration + 1)
+                        elif approach == "smac_mf":
+                            max_budget = data["budget"].max()
+                            max_budget_idx = data[data["budget"] == max_budget].index.max()
+                            data = data.iloc[:max_budget_idx + 1, :]
                         all_data.append(data)
 
                     # remove directories > 255 because we had to many random runs
