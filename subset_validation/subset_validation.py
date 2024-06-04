@@ -175,12 +175,11 @@ def read_optimizer_results(optimizer: str) -> pd.DataFrame:
                     "environment": environment,
                     "score": score,
                     "optimizer": optimizer,
-                    "seed": seed,
+                    "seed": seed - 42 if seed >= 42 else seed,
                 }
             ]
     scores = pd.DataFrame(scores)
     scores.to_csv(os.path.join(path, "combined.csv"), index=False)
-    scores = scores.groupby(["algorithm", "environment"])["score"].mean().reset_index()
     return scores
 
 
@@ -211,10 +210,10 @@ def validate(algorithm: str, method: str = "rank"):
     subset_data = overall_data[overall_data["environment"].isin(subset)]
 
     if method == "rank":
-        overall_data.loc[:, "normalized_score"] = overall_data.groupby(["algorithm", "environment"])[
+        overall_data.loc[:, "normalized_score"] = overall_data.groupby(["algorithm", "environment", "seed"])[
             "score"
         ].rank(ascending=False)
-        subset_data.loc[:, "normalized_score"] = subset_data.groupby(["algorithm", "environment"])[
+        subset_data.loc[:, "normalized_score"] = subset_data.groupby(["algorithm", "environment", "seed"])[
             "score"
         ].rank(ascending=False)
     else:
