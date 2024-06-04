@@ -345,8 +345,9 @@
 <span class="kn">import</span> <span class="nn">jax.numpy</span> <span class="k">as</span> <span class="nn">jnp</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">orbax.checkpoint</span> <span class="k">as</span> <span class="nn">ocp</span>
-<span class="kn">from</span> <span class="nn">flashbax.buffers.prioritised_trajectory_buffer</span> <span class="kn">import</span> \
-    <span class="n">PrioritisedTrajectoryBufferState</span>
+<span class="kn">from</span> <span class="nn">flashbax.buffers.prioritised_trajectory_buffer</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">PrioritisedTrajectoryBufferState</span><span class="p">,</span>
+<span class="p">)</span>
 <span class="kn">from</span> <span class="nn">flashbax.buffers.sum_tree</span> <span class="kn">import</span> <span class="n">SumTreeState</span>
 <span class="kn">from</span> <span class="nn">flashbax.vault</span> <span class="kn">import</span> <span class="n">Vault</span>
 <span class="kn">from</span> <span class="nn">flax.core.frozen_dict</span> <span class="kn">import</span> <span class="n">FrozenDict</span>

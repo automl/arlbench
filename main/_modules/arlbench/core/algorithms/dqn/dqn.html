@@ -344,23 +344,31 @@
 <span class="kn">import</span> <span class="nn">jax.numpy</span> <span class="k">as</span> <span class="nn">jnp</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">optax</span>
-<span class="kn">from</span> <span class="nn">ConfigSpace</span> <span class="kn">import</span> <span class="p">(</span><span class="n">Categorical</span><span class="p">,</span> <span class="n">Configuration</span><span class="p">,</span> <span class="n">ConfigurationSpace</span><span class="p">,</span>
-                         <span class="n">EqualsCondition</span><span class="p">,</span> <span class="n">Float</span><span class="p">,</span> <span class="n">Integer</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">ConfigSpace</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">Categorical</span><span class="p">,</span>
+    <span class="n">Configuration</span><span class="p">,</span>
+    <span class="n">ConfigurationSpace</span><span class="p">,</span>
+    <span class="n">EqualsCondition</span><span class="p">,</span>
+    <span class="n">Float</span><span class="p">,</span>
+    <span class="n">Integer</span><span class="p">,</span>
+<span class="p">)</span>
 <span class="kn">from</span> <span class="nn">flax.training.train_state</span> <span class="kn">import</span> <span class="n">TrainState</span>
 
 <span class="kn">from</span> <span class="nn">arlbench.core</span> <span class="kn">import</span> <span class="n">running_statistics</span>
 <span class="kn">from</span> <span class="nn">arlbench.core.algorithms.algorithm</span> <span class="kn">import</span> <span class="n">Algorithm</span>
 <span class="kn">from</span> <span class="nn">arlbench.core.algorithms.buffers</span> <span class="kn">import</span> <span class="n">uniform_sample</span>
 <span class="kn">from</span> <span class="nn">arlbench.core.algorithms.common</span> <span class="kn">import</span> <span class="n">TimeStep</span>
-<span class="kn">from</span> <span class="nn">arlbench.core.algorithms.prioritised_item_buffer</span> <span class="kn">import</span> \
-    <span class="n">make_prioritised_item_buffer</span>
+<span class="kn">from</span> <span class="nn">arlbench.core.algorithms.prioritised_item_buffer</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">make_prioritised_item_buffer</span><span class="p">,</span>
+<span class="p">)</span>
 
 <span class="kn">from</span> <span class="nn">.models</span> <span class="kn">import</span> <span class="n">CNNQ</span><span class="p">,</span> <span class="n">MLPQ</span>
 
 <span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
     <span class="kn">import</span> <span class="nn">chex</span>
-    <span class="kn">from</span> <span class="nn">flashbax.buffers.prioritised_trajectory_buffer</span> <span class="kn">import</span> \
-        <span class="n">PrioritisedTrajectoryBufferState</span>
+    <span class="kn">from</span> <span class="nn">flashbax.buffers.prioritised_trajectory_buffer</span> <span class="kn">import</span> <span class="p">(</span>
+        <span class="n">PrioritisedTrajectoryBufferState</span><span class="p">,</span>
+    <span class="p">)</span>
     <span class="kn">from</span> <span class="nn">flax.core.frozen_dict</span> <span class="kn">import</span> <span class="n">FrozenDict</span>
 
     <span class="kn">from</span> <span class="nn">arlbench.core.environments</span> <span class="kn">import</span> <span class="n">Environment</span>
@@ -1167,7 +1175,7 @@
 <span class="sd">                buffer_state (PrioritisedTrajectoryBufferState): Buffer state.</span>
 
 <span class="sd">            Returns:</span>
-<span class="sd">                tuple[chex.PRNGKey, DQNTrainState, PrioritisedTrajectoryBufferState, DQNMetrics]: </span>
+<span class="sd">                tuple[chex.PRNGKey, DQNTrainState, PrioritisedTrajectoryBufferState, DQNMetrics]:</span>
 <span class="sd">                Random number generator key, training state, buffer state, and metrics.</span>
 <span class="sd">            &quot;&quot;&quot;</span>
 

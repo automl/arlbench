@@ -344,24 +344,38 @@
 <span class="kn">import</span> <span class="nn">jax.numpy</span> <span class="k">as</span> <span class="nn">jnp</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">optax</span>
-<span class="kn">from</span> <span class="nn">ConfigSpace</span> <span class="kn">import</span> <span class="p">(</span><span class="n">Categorical</span><span class="p">,</span> <span class="n">Configuration</span><span class="p">,</span> <span class="n">ConfigurationSpace</span><span class="p">,</span>
-                         <span class="n">EqualsCondition</span><span class="p">,</span> <span class="n">Float</span><span class="p">,</span> <span class="n">Integer</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">ConfigSpace</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">Categorical</span><span class="p">,</span>
+    <span class="n">Configuration</span><span class="p">,</span>
+    <span class="n">ConfigurationSpace</span><span class="p">,</span>
+    <span class="n">EqualsCondition</span><span class="p">,</span>
+    <span class="n">Float</span><span class="p">,</span>
+    <span class="n">Integer</span><span class="p">,</span>
+<span class="p">)</span>
 <span class="kn">from</span> <span class="nn">flax.training.train_state</span> <span class="kn">import</span> <span class="n">TrainState</span>
 
 <span class="kn">from</span> <span class="nn">arlbench.core</span> <span class="kn">import</span> <span class="n">running_statistics</span>
 <span class="kn">from</span> <span class="nn">arlbench.core.algorithms.algorithm</span> <span class="kn">import</span> <span class="n">Algorithm</span>
 <span class="kn">from</span> <span class="nn">arlbench.core.algorithms.buffers</span> <span class="kn">import</span> <span class="n">uniform_sample</span>
 <span class="kn">from</span> <span class="nn">arlbench.core.algorithms.common</span> <span class="kn">import</span> <span class="n">TimeStep</span>
-<span class="kn">from</span> <span class="nn">arlbench.core.algorithms.prioritised_item_buffer</span> <span class="kn">import</span> \
-    <span class="n">make_prioritised_item_buffer</span>
+<span class="kn">from</span> <span class="nn">arlbench.core.algorithms.prioritised_item_buffer</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">make_prioritised_item_buffer</span><span class="p">,</span>
+<span class="p">)</span>
 
-<span class="kn">from</span> <span class="nn">.models</span> <span class="kn">import</span> <span class="p">(</span><span class="n">AlphaCoef</span><span class="p">,</span> <span class="n">SACCNNActor</span><span class="p">,</span> <span class="n">SACCNNCritic</span><span class="p">,</span> <span class="n">SACMLPActor</span><span class="p">,</span>
-                     <span class="n">SACMLPCritic</span><span class="p">,</span> <span class="n">SACVectorCritic</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">.models</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">AlphaCoef</span><span class="p">,</span>
+    <span class="n">SACCNNActor</span><span class="p">,</span>
+    <span class="n">SACCNNCritic</span><span class="p">,</span>
+    <span class="n">SACMLPActor</span><span class="p">,</span>
+    <span class="n">SACMLPCritic</span><span class="p">,</span>
+    <span class="n">SACVectorCritic</span><span class="p">,</span>
+<span class="p">)</span>
 
 <span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
     <span class="kn">import</span> <span class="nn">chex</span>
-    <span class="kn">from</span> <span class="nn">flashbax.buffers.prioritised_trajectory_buffer</span> <span class="kn">import</span> \
-        <span class="n">PrioritisedTrajectoryBufferState</span>
+    <span class="kn">from</span> <span class="nn">flashbax.buffers.prioritised_trajectory_buffer</span> <span class="kn">import</span> <span class="p">(</span>
+        <span class="n">PrioritisedTrajectoryBufferState</span><span class="p">,</span>
+    <span class="p">)</span>
     <span class="kn">from</span> <span class="nn">flax.core.frozen_dict</span> <span class="kn">import</span> <span class="n">FrozenDict</span>
 
     <span class="kn">from</span> <span class="nn">arlbench.core.environments</span> <span class="kn">import</span> <span class="n">Environment</span>
@@ -491,14 +505,14 @@
 <span class="sd">        Args:</span>
 <span class="sd">            hpo_config (Configuration): Hyperparameter configuration.</span>
 <span class="sd">            env (Environment | AutoRLWrapper): Training environment.</span>
-<span class="sd">            eval_env (Environment | AutoRLWrapper | None, optional): Evaluation environent </span>
+<span class="sd">            eval_env (Environment | AutoRLWrapper | None, optional): Evaluation environent</span>
 <span class="sd">            (otherwise training environment is used for evaluation). Defaults to None.</span>
 <span class="sd">            cnn_policy (bool, optional): Use CNN network architecture. Defaults to False.</span>
-<span class="sd">            nas_config (Configuration | None, optional): Neural architecture </span>
+<span class="sd">            nas_config (Configuration | None, optional): Neural architecture</span>
 <span class="sd">            configuration. Defaults to None.</span>
-<span class="sd">            track_trajectories (bool, optional):  Track metrics such as loss and gradients </span>
+<span class="sd">            track_trajectories (bool, optional):  Track metrics such as loss and gradients</span>
 <span class="sd">            during training. Defaults to False.</span>
-<span class="sd">            track_metrics (bool, optional): Track trajectories during training. </span>
+<span class="sd">            track_metrics (bool, optional): Track trajectories during training.</span>
 <span class="sd">            Defaults to False.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">nas_config</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -996,7 +1010,7 @@
 <span class="sd">            rng (chex.PRNGKey): Random number generator key.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            tuple[SACTrainState, jnp.ndarray, jnp.ndarray, FrozenDict, chex.PRNGKey]: </span>
+<span class="sd">            tuple[SACTrainState, jnp.ndarray, jnp.ndarray, FrozenDict, chex.PRNGKey]:</span>
 <span class="sd">            Updated training state and metrics.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">rng</span><span class="p">,</span> <span class="n">action_rng</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">rng</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
@@ -1079,7 +1093,7 @@
 <span class="sd">                alpha_params (FrozenDict): Alpha network parameters.</span>
 
 <span class="sd">            Returns:</span>
-<span class="sd">                tuple[jnp.ndarray, jnp.ndarray]: Update training state and metrics. </span>
+<span class="sd">                tuple[jnp.ndarray, jnp.ndarray]: Update training state and metrics.</span>
 <span class="sd">            &quot;&quot;&quot;</span>
             <span class="n">pi</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">actor_network</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">actor_params</span><span class="p">,</span> <span class="n">experience</span><span class="o">.</span><span class="n">last_obs</span><span class="p">)</span>
             <span class="n">actor_actions</span><span class="p">,</span> <span class="n">log_prob</span> <span class="o">=</span> <span class="n">pi</span><span class="o">.</span><span class="n">sample_and_log_prob</span><span class="p">(</span><span class="n">seed</span><span class="o">=</span><span class="n">action_rng</span><span class="p">)</span>
@@ -1149,7 +1163,7 @@
 <span class="sd">            _ (None): Unused parameter.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            tuple[ tuple[SACRunnerState, PrioritisedTrajectoryBufferState], </span>
+<span class="sd">            tuple[ tuple[SACRunnerState, PrioritisedTrajectoryBufferState],</span>
 <span class="sd">            tuple[SACMetrics | None, Transition | None], ]: Updated training state and metrics.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
@@ -1178,7 +1192,7 @@
 <span class="sd">                buffer_state (PrioritisedTrajectoryBufferState): Buffer state.</span>
 
 <span class="sd">            Returns:</span>
-<span class="sd">                tuple[ chex.PRNGKey, SACTrainState, SACTrainState, SACTrainState, </span>
+<span class="sd">                tuple[ chex.PRNGKey, SACTrainState, SACTrainState, SACTrainState,</span>
 <span class="sd">                PrioritisedTrajectoryBufferState, SACMetrics]: Updated training states and metrics.</span>
 <span class="sd">            &quot;&quot;&quot;</span>
 
@@ -1204,12 +1218,12 @@
 <span class="w">                </span><span class="sd">&quot;&quot;&quot;Perform a gradient update step.</span>
 
 <span class="sd">                Args:</span>
-<span class="sd">                    carry (tuple[ chex.PRNGKey, SACTrainState, SACTrainState, </span>
+<span class="sd">                    carry (tuple[ chex.PRNGKey, SACTrainState, SACTrainState,</span>
 <span class="sd">                    SACTrainState, PrioritisedTrajectoryBufferState, ]): Carry for jax.lax.scan():</span>
 <span class="sd">                    _ (None): Unused parameter.</span>
 
 <span class="sd">                Returns:</span>
-<span class="sd">                    tuple[ tuple[ chex.PRNGKey, SACTrainState, SACTrainState, SACTrainState, </span>
+<span class="sd">                    tuple[ tuple[ chex.PRNGKey, SACTrainState, SACTrainState, SACTrainState,</span>
 <span class="sd">                    PrioritisedTrajectoryBufferState, ], SACMetrics, ]: Updated training states and metrics.</span>
 <span class="sd">                &quot;&quot;&quot;</span>
                 <span class="p">(</span>
@@ -1337,7 +1351,7 @@
 <span class="sd">                buffer_state (PrioritisedTrajectoryBufferState): Buffer state.</span>
 
 <span class="sd">            Returns:</span>
-<span class="sd">                tuple[ chex.PRNGKey, SACTrainState, SACTrainState, SACTrainState, </span>
+<span class="sd">                tuple[ chex.PRNGKey, SACTrainState, SACTrainState, SACTrainState,</span>
 <span class="sd">                PrioritisedTrajectoryBufferState, SACMetrics]: Input training states and metrics.</span>
 <span class="sd">            &quot;&quot;&quot;</span>
             <span class="n">single_loss</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>

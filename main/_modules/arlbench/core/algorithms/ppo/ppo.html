@@ -344,8 +344,7 @@
 <span class="kn">import</span> <span class="nn">jax.numpy</span> <span class="k">as</span> <span class="nn">jnp</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">optax</span>
-<span class="kn">from</span> <span class="nn">ConfigSpace</span> <span class="kn">import</span> <span class="p">(</span><span class="n">Categorical</span><span class="p">,</span> <span class="n">Configuration</span><span class="p">,</span> <span class="n">ConfigurationSpace</span><span class="p">,</span> <span class="n">Float</span><span class="p">,</span>
-                         <span class="n">Integer</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">ConfigSpace</span> <span class="kn">import</span> <span class="n">Categorical</span><span class="p">,</span> <span class="n">Configuration</span><span class="p">,</span> <span class="n">ConfigurationSpace</span><span class="p">,</span> <span class="n">Float</span><span class="p">,</span> <span class="n">Integer</span>
 <span class="kn">from</span> <span class="nn">flax.training.train_state</span> <span class="kn">import</span> <span class="n">TrainState</span>
 
 <span class="kn">from</span> <span class="nn">arlbench.core</span> <span class="kn">import</span> <span class="n">running_statistics</span>
@@ -1030,13 +1029,13 @@
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;One epoch of network updates using minibatches of the current transition batch.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            update_state (tuple[PPOTrainState, Transition, jnp.ndarray, jnp.ndarray, chex.PRNGKey]): </span>
+<span class="sd">            update_state (tuple[PPOTrainState, Transition, jnp.ndarray, jnp.ndarray, chex.PRNGKey]):</span>
 <span class="sd">            (train_state, transition_batch, advantages, targets, rng) Current update state.</span>
 <span class="sd">            _ (None): Unused parameter (required for jax.lax.scan).</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            tuple[tuple[PPOTrainState, Transition, jnp.ndarray, jnp.ndarray, chex.PRNGKey],</span>
-<span class="sd">            tuple[tuple | None, tuple | None]]: Tuple of (train_state, transition_batch, </span>
+<span class="sd">            tuple[tuple | None, tuple | None]]: Tuple of (train_state, transition_batch,</span>
 <span class="sd">            advantages, targets, rng) and (loss, grads) if tracked.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">train_state</span><span class="p">,</span> <span class="n">traj_batch</span><span class="p">,</span> <span class="n">advantages</span><span class="p">,</span> <span class="n">targets</span><span class="p">,</span> <span class="n">rng</span> <span class="o">=</span> <span class="n">update_state</span>
@@ -1099,11 +1098,11 @@
 
 <span class="sd">        Args:</span>
 <span class="sd">            train_state (PPOTrainState): PPO training state.</span>
-<span class="sd">            batch_info (tuple[jnp.ndarray, jnp.ndarray, jnp.ndarray]): </span>
+<span class="sd">            batch_info (tuple[jnp.ndarray, jnp.ndarray, jnp.ndarray]):</span>
 <span class="sd">            Minibatch of transitions, advantages and targets.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            tuple[PPOTrainState, tuple[tuple | None, tuple | None]]: </span>
+<span class="sd">            tuple[PPOTrainState, tuple[tuple | None, tuple | None]]:</span>
 <span class="sd">            Tuple of PPO train state and (loss, grads) if tracked.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">traj_batch</span><span class="p">,</span> <span class="n">advantages</span><span class="p">,</span> <span class="n">targets</span> <span class="o">=</span> <span class="n">batch_info</span>
@@ -1133,7 +1132,7 @@
 <span class="sd">            targets (jnp.ndarray): Targets.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            tuple[jnp.ndarray, tuple[jnp.ndarray, jnp.ndarray, jnp.ndarray]]: </span>
+<span class="sd">            tuple[jnp.ndarray, tuple[jnp.ndarray, jnp.ndarray, jnp.ndarray]]:</span>
 <span class="sd">            Tuple of (total_loss, (value_loss, actor_loss, entropy)).</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># Rerun network</span>
