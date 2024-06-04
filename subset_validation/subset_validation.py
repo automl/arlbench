@@ -203,7 +203,7 @@ def read_optimizer_data_per_algorithm():
 def validate(algorithm: str, method: str = "rank"):
     min_scores, max_scores = read_min_max_scores()
     optimizer_data = read_optimizer_data_per_algorithm()
-    overall_data = optimizer_data[algorithm]
+    overall_data = optimizer_data[algorithm].copy()
     subset = SUBSETS[algorithm]
 
     # Rename columns
@@ -259,6 +259,7 @@ def plot_subset_vs_overall_combined(method: str):
     
     for i, algorithm in enumerate(["ppo", "dqn", "sac"]):
         overall_data, subset_data = validate(algorithm, method) 
+        print(subset_data)
 
         sns.boxplot(
             x="optimizer", 
@@ -269,7 +270,7 @@ def plot_subset_vs_overall_combined(method: str):
             meanline=True, 
             hue_order=hue_order, 
             legend="full" if i == 0 else None,
-            meanprops={"color":"white"},
+            meanprops={"color":"gray"},
             order=hue_order
         )
 
@@ -284,7 +285,7 @@ def plot_subset_vs_overall_combined(method: str):
             showmeans=True, 
             meanline=True, 
             hue_order=hue_order,
-            meanprops={"color":"white"},
+            meanprops={"color":"gray"},
             order=hue_order
         )
         axes[2 * i + 1].set_title(f"{algorithm.upper()}: All")
