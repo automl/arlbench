@@ -12,7 +12,7 @@ hydra:
   job:
     chdir: true
 
-jax_enable_x64: true
+jax_enable_x64: false
 load_checkpoint: ""
 hpo_method: "default_method"
 
