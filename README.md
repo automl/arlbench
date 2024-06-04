@@ -10,10 +10,10 @@
 <div align="center">
     
 <!--- [![PyPI Version](https://img.shields.io/pypi/v/arlbench.svg)](https://pypi.python.org/pypi/arlbench) -->
+![Python](https://img.shields.io/badge/Python-3.10-3776AB)
+![License](https://img.shields.io/badge/License-BSD3-orange)
 [![Test](https://github.com/automl/arlbench/actions/workflows/pytest.yaml/badge.svg)](https://github.com/automl/arlbench/actions/workflows/pytest.yaml)
 [![Doc Status](https://github.com/automl/arlbench/actions/workflows/docs.yaml/badge.svg)](https://github.com/automl/arlbench/actions/workflows/docs.yaml)
-[![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
-[![Commitizen friendly](https://img.shields.io/badge/commitizen-friendly-brightgreen.svg)](http://commitizen.github.io/cz-cli/)
     
 </div>
 
@@ -54,6 +54,9 @@ conda create -n arlbench python=3.10
 conda activate arlbench
 ```
 
+The instructions below will help you install the default version of ARLBench with the CPU version of JAX. 
+If you want to run the ARLBench on GPU, we recommend you check out the [JAX installation guide](https://jax.readthedocs.io/en/latest/installation.html) to see how you can install the correct version for your GPU setup before proceeding.
+
 <details>
 <summary>PyPI</summary>
 You can install ARLBench using `pip`:
@@ -91,8 +94,6 @@ make install-envpool
 
 > [!CAUTION]
 > Windows is currently not supported and also not tested. We recommend using the [Linux subsytem](https://en.wikipedia.org/wiki/Windows_Subsystem_for_Linux) if you're on a Windows machine.
-
-If you want to run the ARLBench on GPU, we recommend you check out the [JAX installation guide](https://jax.readthedocs.io/en/latest/installation.html) to see how you can install the correct version for your GPU setup.
 
 ## Quickstart
 
