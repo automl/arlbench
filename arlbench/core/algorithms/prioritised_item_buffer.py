@@ -20,9 +20,12 @@ from flashbax import utils
 from flashbax.buffers.item_buffer import validate_item_buffer_args
 from flashbax.buffers.prioritised_flat_buffer import validate_priority_exponent
 from flashbax.buffers.prioritised_trajectory_buffer import (
-    PrioritisedTrajectoryBuffer, PrioritisedTrajectoryBufferSample,
-    PrioritisedTrajectoryBufferState, make_prioritised_trajectory_buffer,
-    validate_device)
+    PrioritisedTrajectoryBuffer,
+    PrioritisedTrajectoryBufferSample,
+    PrioritisedTrajectoryBufferState,
+    make_prioritised_trajectory_buffer,
+    validate_device,
+)
 from flashbax.utils import add_dim_to_args
 
 if TYPE_CHECKING:

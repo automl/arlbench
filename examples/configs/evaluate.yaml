@@ -1,0 +1,38 @@
+defaults:
+  - _self_
+  - /algorithm: dqn
+  - /environment: cc_cartpole
+  - /incumbent: dqn_acrobot_my_optimizer
+
+hydra:
+  run:
+    dir: evaluation/${hpo_method}/${algorithm}_${environment.name}/${autorl.seed}
+  sweep:
+    dir: evaluation/${hpo_method}/${algorithm}_${environment.name}/${autorl.seed}
+  job:
+    chdir: true
+
+jax_enable_x64: true
+load_checkpoint: ""
+hpo_method: "default_method"
+
+autorl:
+  seed: 100 # We use this as the first test seed
+  env_framework: ${environment.framework}
+  env_name: ${environment.name}
+  env_kwargs: ${environment.kwargs}
+  eval_env_kwargs: ${environment.eval_kwargs}
+  n_envs: ${environment.n_envs}
+  algorithm: ${algorithm}
+  cnn_policy: ${environment.cnn_policy}
+  nas_config: ${nas_config}
+  n_total_timesteps: ${environment.n_total_timesteps}
+  checkpoint: []
+  checkpoint_name: "default_checkpoint"
+  checkpoint_dir: "/tmp"
+  state_features: []
+  objectives: ["reward_mean"]
+  optimize_objectives: "upper"
+  n_steps: 1
+  n_eval_steps: 100
+  n_eval_episodes: 10

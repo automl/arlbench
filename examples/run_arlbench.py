@@ -5,7 +5,6 @@ from __future__ import annotations
 import warnings
 
 warnings.filterwarnings("ignore")
-import csv
 import logging
 import sys
 import traceback
@@ -40,18 +39,6 @@ def execute(cfg: DictConfig):
 
 def run(cfg: DictConfig, logger: logging.Logger):
     """Console script for arlbench."""
-    # check if file done exists and if so, return
-    try:
-        with open("./done.txt") as f:
-            logger.info("Job already done, returning.")
-
-        with open("./performance.csv") as pf:
-            csvreader = csv.reader(pf)
-            performance = next(csvreader)
-            return float(performance[0])
-    except FileNotFoundError:
-        pass
-
     objectives = run_arlbench(cfg, logger=logger)
 
     with open("./performance.csv", "w+") as f:

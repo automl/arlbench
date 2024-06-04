@@ -1,9 +1,14 @@
 # ARLBench Examples
 
 We provide three different categories of examples:
-1. Examples for black-box hyperparameter tuning using the 'hypersweeper' package. 
+
+1. Examples for black-box hyperparameter tuning using the 'hypersweeper' package.
 2. Running a schedule based on a reward heuristic
 3. Running a reactive schedule based on the gradient history
+
+Additionally, we provide instructions on how to evaluate an incumbent on ARLBench:
+
+4. Evaluating a HPO result
 
 We use 'hydra' as a command line interface for these experiments, you'll find the corresponding configurations (including some variations on the algorithms and environments) in the 'configs' directory.
 The "hypersweeper_tuning" and "schedules" notebooks can help you run these examples and inspect their results in an interactive way.
@@ -72,6 +77,7 @@ python run_arlbench.py --config-name=smac -m environment=cc_cartpole algorithm=p
 ```
 
 The search space specification works very similarly via a yaml file, 'configs/search_space/cc_ppo.yaml' contains:
+
 ```yaml
 seed: 0
 hyperparameters:
@@ -82,7 +88,7 @@ hyperparameters:
     log: true
   hp_config.ent_coef:
     type: uniform_float
-    upper: 0.5 
+    upper: 0.5
     lower: 0.0
     log: false
   hp_config.minibatch_size:
@@ -121,7 +127,6 @@ hyperparameters:
 
 This config sets a seed for the search space as well as lists the hyperparameters to configure with the values they can take. This way we can configure the full HPO setting with only yaml files to make the process easy to follow and simple to document for others.
 
-
 ## 2. Heuristic Schedules
 
 We can also use ARLBench to dynamically change the hyperparameter config. We provide a simple example for this in 'run_heuristic_schedule.py': as soon as the agent improves over a certain reward threshold, we decrease the exploration epsilon in DQN a bit. This is likely not the best approach in practice, so feel free to play around with this idea! To see the result, run:
@@ -155,7 +160,7 @@ autorl:
   n_eval_episodes: 10
 ```
 
-As you can see, most of the defaults are decided by the environment and algorithm we choose. For dynamic execution, we are interested in the 'n_steps' and 'n_total_timesteps' keys. 
+As you can see, most of the defaults are decided by the environment and algorithm we choose. For dynamic execution, we are interested in the 'n_steps' and 'n_total_timesteps' keys.
 'n_steps' decides how many steps should be taken in the AutoRL Environment - in other words, how many schedule intervals we'd like to have. The 'n_total_timesteps' key then decides the length of each interval.
 In the current config, we do a single training interval consisting of the total number of environment steps suggested for our target domain. If we want to instead run a schedule of length 10 with each schedule segment taking 10e4 steps, we can change the configuration like this:
 
@@ -178,3 +183,12 @@ python run_reactive_schedule.py "autorl.state_features=['grad_info']"
 ```
 
 Now we can build a schedule that takes the gradient information into account.
+
+## 4. Evaluation
+
+### PPO
+
+```bash
+python run_arlbench.py --config-name=evaluate -m "autorl.seed=100,101,102" "+incumbent=glob(*)"
+
+```

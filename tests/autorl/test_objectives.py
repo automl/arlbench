@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import numpy as np
-
 from arlbench import AutoRLEnv
 from arlbench.core.algorithms import DQN
 
@@ -102,7 +101,7 @@ def test_autorl_env_dqn_multi_objective():
     reward = np.mean(rewards)
 
     assert np.abs(objectives["reward_mean"] - reward) < 5
-    assert objectives["runtime"] < 0 
+    assert objectives["runtime"] < 0
     assert objectives["emissions"] < 0
 
 

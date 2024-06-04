@@ -11,8 +11,9 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 import orbax.checkpoint as ocp
-from flashbax.buffers.prioritised_trajectory_buffer import \
-    PrioritisedTrajectoryBufferState
+from flashbax.buffers.prioritised_trajectory_buffer import (
+    PrioritisedTrajectoryBufferState,
+)
 from flashbax.buffers.sum_tree import SumTreeState
 from flashbax.vault import Vault
 from flax.core.frozen_dict import FrozenDict

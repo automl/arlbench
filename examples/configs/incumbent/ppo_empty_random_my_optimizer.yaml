@@ -1,0 +1,19 @@
+# @package _global_
+defaults:
+  - override /environment: xland_empty_random
+  - override /algorithm: ppo
+
+hpo_method: my_optimizer
+
+hp_config:
+  clip_eps: 0.177
+  ent_coef: 0.01
+  gae_lambda: 0.93
+  gamma: 0.99876
+  learning_rate: 0.000322
+  max_grad_norm: 0.881
+  minibatch_size: 64
+  normalize_advantage: true
+  normalize_observations: false
+  vf_clip_eps: 0.211
+  vf_coef: 0.5245

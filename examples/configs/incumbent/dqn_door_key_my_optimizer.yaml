@@ -1,0 +1,19 @@
+# @package _global_
+defaults:
+  - override /environment: xland_door_key
+  - override /algorithm: dqn
+
+hpo_method: my_optimizer
+
+hp_config:
+  buffer_batch_size: 64
+  buffer_size: 100000
+  buffer_prio_sampling: false
+  initial_epsilon: 0.64
+  target_epsilon: 0.112
+  gamma: 0.99
+  gradient_steps: 1
+  learning_rate: 0.0023
+  learning_starts: 1032
+  use_target_network: true
+  target_update_interval: 10

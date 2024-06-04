@@ -3,7 +3,6 @@ from __future__ import annotations
 import time
 
 import jax
-
 from arlbench.core.algorithms import DQN
 from arlbench.core.environments import make_env
 

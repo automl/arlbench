@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import jax
 import numpy as np
-
 from arlbench.autorl import AutoRLEnv
 from arlbench.autorl.checkpointing import Checkpointer
 from arlbench.core.algorithms import DQN
@@ -119,7 +118,7 @@ def test_checkpointing_ppo():
     env._load(checkpoint_path=info["checkpoint"], seed=42)
 
     env.step(action, n_total_timesteps=10, n_eval_episodes=10, n_eval_steps=1)
-    
+
     new_reward = np.mean(env.eval(10))
     assert np.isclose(reward, new_reward, rtol=1.0)
 
@@ -147,7 +146,7 @@ def test_checkpointing_sac():
     env._load(checkpoint_path=info["checkpoint"], seed=42)
 
     env.step(action, n_total_timesteps=10, n_eval_episodes=10, n_eval_steps=1)
-    
+
     new_reward = np.mean(env.eval(10))
     assert np.isclose(reward, new_reward, rtol=1.0)
 

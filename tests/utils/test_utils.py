@@ -2,9 +2,8 @@ from __future__ import annotations
 
 import gymnasium
 import numpy as np
-from ConfigSpace import Categorical, ConfigurationSpace, Float, Integer
-
 from arlbench.utils import config_space_to_gymnasium_space
+from ConfigSpace import Categorical, ConfigurationSpace, Float, Integer
 
 
 def test_config_space_to_gymnasium_space():
