@@ -10,3 +10,5 @@ We analyzed the hyperparameter landscapes of PPO, DQN and SAC on 20 environments
 We strongly recommend you focus your benchmarking on these exact environments to ensure you cover the space total landscape of RL behaviors well. 
 The data generated for selecting these environments is available on `HuggingFace <https://huggingface.co/datasets/autorl-org/arlbench>`_ for you to use in your experiments.
 For more information how the subset selection was done, please refer to our paper.
+
+For more information on how to evaluate your method on these subsets, please refer to the examples in our GitHub repository.
