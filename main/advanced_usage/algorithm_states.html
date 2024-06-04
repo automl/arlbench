@@ -350,7 +350,9 @@
                 
   <section id="using-the-arlbench-states">
 <h1>Using the ARLBench States<a class="headerlink" href="#using-the-arlbench-states" title="Link to this heading">¶</a></h1>
-<p>In addition to providing different objectives, ARLBench also provides insights into the target algorithms’ internal states.</p>
+<p>In addition to providing different objectives, ARLBench also provides insights into the target algorithms’ internal states. This is done using so called <cite>StateFeatures</cite>.
+As of now, we implement the <cite>GradInfo</cite> state feature which returns the norm the gradients observed during training.</p>
+<p>The used state features can be defined using the <cite>state_features</cite> key in the config passed to the AutoRL Environment. Please include <cite>grad_info</cite> in this list if you want to use this state feature for your approach.</p>
 </section>
 
 

@@ -350,7 +350,10 @@
                 
   <section id="considerations-for-seeding">
 <h1>Considerations for Seeding<a class="headerlink" href="#considerations-for-seeding" title="Link to this heading">¶</a></h1>
-<p>Seeding is important both on the level of RL algorithms as well as the AutoRL level.</p>
+<p>Seeding is important both on the level of RL algorithms as well as the AutoRL level. In general, we propose to use three different random seeds for training, validation, and testing.
+For training and validation, ARLBench takes care of the seeding. When you pass a seed to the AutoRL Environment, it uses this seed for training but <cite>seed + 1</cite> for the validation during training.
+We recommend to use seeds <cite>0</cite> - <cite>9</cite> for training and validation, i.e., by passing them to the AutoRL Environment for the tuning process.</p>
+<p>When it comes to testing HPO methods, we provide a evaluation script in our examples. We propose to use seeds <cite>100, 101, …</cite> here to make sure the method is tested on a different set of random seeds.</p>
 </section>
 
 

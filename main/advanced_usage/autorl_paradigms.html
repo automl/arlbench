@@ -326,9 +326,34 @@
               
               <div class="toc-item">
                 
+<div class="tocsection onthispage pt-5 pb-3">
+    <i class="fas fa-list"></i> On this page
+</div>
 
 <nav id="bd-toc-nav">
-    
+    <ul class="visible nav section-nav flex-column">
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#hyperparameter-optimization-hpo">
+   Hyperparameter Optimization (HPO)
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#dynamic-algorithm-configuration-dac">
+   Dynamic Algorithm Configuration (DAC)
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#neural-architecture-search-nas">
+   Neural Architecture Search (NAS)
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#meta-gradients">
+   Meta-Gradients
+  </a>
+ </li>
+</ul>
+
 </nav>
               </div>
               
@@ -350,7 +375,25 @@
                 
   <section id="arlbench-and-different-autorl-paradigms">
 <h1>ARLBench and Different AutoRL Paradigms<a class="headerlink" href="#arlbench-and-different-autorl-paradigms" title="Link to this heading">¶</a></h1>
-<p>TODO: relationship to other AutoRL paradigms</p>
+<p>In this chapter, we elaborate on the relationship between ARLBench in various AutoRL Paradigms.</p>
+<section id="hyperparameter-optimization-hpo">
+<h2>Hyperparameter Optimization (HPO)<a class="headerlink" href="#hyperparameter-optimization-hpo" title="Link to this heading">¶</a></h2>
+<p>(Static) Hyperparameter optimization is one of the core use cases of ARLBench. As stated in our examples, ARLBench supports all kinds of black-box optimizers to perform hyperparameter optimization for RL.</p>
+</section>
+<section id="dynamic-algorithm-configuration-dac">
+<h2>Dynamic Algorithm Configuration (DAC)<a class="headerlink" href="#dynamic-algorithm-configuration-dac" title="Link to this heading">¶</a></h2>
+<p>When it comes to dynamic approaches, ARLBench supports different kinds of optimization techniques that adapt the current hyperparameter configuration during training. As stated in the examples,
+this can be done using the CLI or the AutoRL Environment. Using checkpointing, trainings can be continued seamlessly which allows for flexible dynamic approaches.</p>
+</section>
+<section id="neural-architecture-search-nas">
+<h2>Neural Architecture Search (NAS)<a class="headerlink" href="#neural-architecture-search-nas" title="Link to this heading">¶</a></h2>
+<p>In addition to HPO, ARLBench supports NAS approaches that set the size of hidden layers and activation functions. However, as of now this is limited to these two architecture hyperparameters.
+In the future, ARLBench could be extended by more powerful search space interfaces for NAS.</p>
+</section>
+<section id="meta-gradients">
+<h2>Meta-Gradients<a class="headerlink" href="#meta-gradients" title="Link to this heading">¶</a></h2>
+<p>As of now, ARLBench does not include meta-gradient based approaches for AutoRL. However, we allow for reactive dynamic approaches that use the gradient informatio during training to select the next hyperparameter configuration as stated in our examples.</p>
+</section>
 </section>
 
 

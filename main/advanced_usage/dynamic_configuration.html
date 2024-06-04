@@ -350,7 +350,12 @@
                 
   <section id="dynamic-configuration-in-arlbench">
 <h1>Dynamic Configuration in ARLBench<a class="headerlink" href="#dynamic-configuration-in-arlbench" title="Link to this heading">¶</a></h1>
-<p>How to dynamic?</p>
+<p>In addition to static approaches, which run the whole training given a fixed configuration, ARLBench supports dynamic configuration approaches.
+These methods, in contrast, can adapt the current hyperparameter configuration during training.
+To do this, you can use the CLI or the AutoRL Environment as shown in our examples.</p>
+<p>When using the CLI, you have to pass a checkpoint path for the current training state. Then, the training is proceeded using the given configuration.</p>
+<p>For the AutoRL Environment, you can set <cite>n_steps</cite> to the number of configuration updates you want to perform during training.
+By adjusting the number of training steps (<cite>n_total_timesteps</cite>) accordingly and calling the <cite>step()</cite> function multiple times to perform dynamic configuration.</p>
 </section>
 
 
