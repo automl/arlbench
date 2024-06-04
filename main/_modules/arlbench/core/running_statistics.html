@@ -332,55 +332,59 @@
               <div>
                 
   <h1>Source code for arlbench.core.running_statistics</h1><div class="highlight"><pre>
-<span></span><span class="c1"># Copyright 2024 The Brax Authors.</span>
-<span class="c1">#</span>
-<span class="c1"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
-<span class="c1"># you may not use this file except in compliance with the License.</span>
-<span class="c1"># You may obtain a copy of the License at</span>
-<span class="c1">#</span>
-<span class="c1">#     http://www.apache.org/licenses/LICENSE-2.0</span>
-<span class="c1">#</span>
-<span class="c1"># Unless required by applicable law or agreed to in writing, software</span>
-<span class="c1"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
-<span class="c1"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
-<span class="c1"># See the License for the specific language governing permissions and</span>
-<span class="c1"># limitations under the License.</span>
+<span></span><span class="c1"># This file includes code from brax (https://github.com/google/brax)</span>
+<span class="c1"># Licensed under the Apache License 2.0 (http://www.apache.org/licenses/LICENSE-2.0).</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">,</span> <span class="n">Union</span>
+<span class="kn">import</span> <span class="nn">dataclasses</span>
 
-<span class="sd">&quot;&quot;&quot;Utility functions to compute running statistics.</span>
-
-<span class="sd">This file was taken from acme and modified to simplify dependencies:</span>
-
-<span class="sd">https://github.com/deepmind/acme/blob/master/acme/jax/running_statistics.py</span>
-<span class="sd">&quot;&quot;&quot;</span>
-
-<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
-
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">TYPE_CHECKING</span>
-
+<span class="kn">from</span> <span class="nn">flax</span> <span class="kn">import</span> <span class="n">struct</span>
 <span class="kn">import</span> <span class="nn">jax</span>
 <span class="kn">import</span> <span class="nn">jax.numpy</span> <span class="k">as</span> <span class="nn">jnp</span>
-<span class="kn">from</span> <span class="nn">flax</span> <span class="kn">import</span> <span class="n">struct</span>
-
-<span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
-    <span class="kn">from</span> <span class="nn">brax.training.acme</span> <span class="kn">import</span> <span class="n">types</span>
 
 
-<span class="k">def</span> <span class="nf">_zeros_like</span><span class="p">(</span><span class="n">nest</span><span class="p">:</span> <span class="n">types</span><span class="o">.</span><span class="n">Nest</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">types</span><span class="o">.</span><span class="n">Nest</span><span class="p">:</span>
-    <span class="k">return</span> <span class="n">jax</span><span class="o">.</span><span class="n">tree_util</span><span class="o">.</span><span class="n">tree_map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">dtype</span> <span class="ow">or</span> <span class="n">x</span><span class="o">.</span><span class="n">dtype</span><span class="p">),</span> <span class="n">nest</span><span class="p">)</span>
+<div class="viewcode-block" id="Array">
+<a class="viewcode-back" href="../../../arlbench.core.html#arlbench.core.running_statistics.Array">[docs]</a>
+<span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">class</span> <span class="nc">Array</span><span class="p">:</span>
+<span class="w">  </span><span class="sd">&quot;&quot;&quot;Describes a numpy array or scalar shape and dtype.</span>
+
+<span class="sd">  Similar to dm_env.specs.Array.</span>
+<span class="sd">  &quot;&quot;&quot;</span>
+  <span class="n">shape</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span>
+  <span class="n">dtype</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">dtype</span></div>
 
 
-<span class="k">def</span> <span class="nf">_ones_like</span><span class="p">(</span><span class="n">nest</span><span class="p">:</span> <span class="n">types</span><span class="o">.</span><span class="n">Nest</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">types</span><span class="o">.</span><span class="n">Nest</span><span class="p">:</span>
-    <span class="k">return</span> <span class="n">jax</span><span class="o">.</span><span class="n">tree_util</span><span class="o">.</span><span class="n">tree_map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">dtype</span> <span class="ow">or</span> <span class="n">x</span><span class="o">.</span><span class="n">dtype</span><span class="p">),</span> <span class="n">nest</span><span class="p">)</span>
+
+<span class="c1"># Define types for nested arrays and tensors.</span>
+<span class="n">NestedArray</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span>
+<span class="n">NestedTensor</span> <span class="o">=</span> <span class="n">Any</span>
+
+<span class="c1"># pytype: disable=not-supported-yet</span>
+<span class="n">NestedSpec</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span>
+  <span class="n">Array</span><span class="p">,</span>
+  <span class="n">Iterable</span><span class="p">[</span><span class="s1">&#39;NestedSpec&#39;</span><span class="p">],</span>
+  <span class="n">Mapping</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="s1">&#39;NestedSpec&#39;</span><span class="p">],</span>
+<span class="p">]</span>
+<span class="c1"># pytype: enable=not-supported-yet</span>
+
+<span class="n">Nest</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="n">NestedArray</span><span class="p">,</span> <span class="n">NestedTensor</span><span class="p">,</span> <span class="n">NestedSpec</span><span class="p">]</span>
+
+
+<span class="k">def</span> <span class="nf">_zeros_like</span><span class="p">(</span><span class="n">nest</span><span class="p">:</span> <span class="n">Nest</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Nest</span><span class="p">:</span>
+  <span class="k">return</span> <span class="n">jax</span><span class="o">.</span><span class="n">tree_util</span><span class="o">.</span><span class="n">tree_map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">dtype</span> <span class="ow">or</span> <span class="n">x</span><span class="o">.</span><span class="n">dtype</span><span class="p">),</span> <span class="n">nest</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">_ones_like</span><span class="p">(</span><span class="n">nest</span><span class="p">:</span> <span class="n">Nest</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Nest</span><span class="p">:</span>
+  <span class="k">return</span> <span class="n">jax</span><span class="o">.</span><span class="n">tree_util</span><span class="o">.</span><span class="n">tree_map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">dtype</span> <span class="ow">or</span> <span class="n">x</span><span class="o">.</span><span class="n">dtype</span><span class="p">),</span> <span class="n">nest</span><span class="p">)</span>
 
 
 <div class="viewcode-block" id="NestedMeanStd">
 <a class="viewcode-back" href="../../../arlbench.core.html#arlbench.core.running_statistics.NestedMeanStd">[docs]</a>
 <span class="nd">@struct</span><span class="o">.</span><span class="n">dataclass</span>
 <span class="k">class</span> <span class="nc">NestedMeanStd</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;A container for running statistics (mean, std) of possibly nested data.&quot;&quot;&quot;</span>
-
-    <span class="n">mean</span><span class="p">:</span> <span class="n">types</span><span class="o">.</span><span class="n">Nest</span>
-    <span class="n">std</span><span class="p">:</span> <span class="n">types</span><span class="o">.</span><span class="n">Nest</span></div>
+<span class="w">  </span><span class="sd">&quot;&quot;&quot;A container for running statistics (mean, std) of possibly nested data.&quot;&quot;&quot;</span>
+  <span class="n">mean</span><span class="p">:</span> <span class="n">Nest</span>
+  <span class="n">std</span><span class="p">:</span> <span class="n">Nest</span></div>
 
 
 
@@ -388,223 +392,213 @@
 <a class="viewcode-back" href="../../../arlbench.core.html#arlbench.core.running_statistics.RunningStatisticsState">[docs]</a>
 <span class="nd">@struct</span><span class="o">.</span><span class="n">dataclass</span>
 <span class="k">class</span> <span class="nc">RunningStatisticsState</span><span class="p">(</span><span class="n">NestedMeanStd</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Full state of running statistics computation.&quot;&quot;&quot;</span>
-
-    <span class="n">count</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span>
-    <span class="n">summed_variance</span><span class="p">:</span> <span class="n">types</span><span class="o">.</span><span class="n">Nest</span></div>
+<span class="w">  </span><span class="sd">&quot;&quot;&quot;Full state of running statistics computation.&quot;&quot;&quot;</span>
+  <span class="n">count</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span>
+  <span class="n">summed_variance</span><span class="p">:</span> <span class="n">Nest</span></div>
 
 
 
 <div class="viewcode-block" id="init_state">
 <a class="viewcode-back" href="../../../arlbench.core.html#arlbench.core.running_statistics.init_state">[docs]</a>
-<span class="k">def</span> <span class="nf">init_state</span><span class="p">(</span><span class="n">nest</span><span class="p">:</span> <span class="n">types</span><span class="o">.</span><span class="n">Nest</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RunningStatisticsState</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Initializes the running statistics for the given nested structure.&quot;&quot;&quot;</span>
-    <span class="n">dtype</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">float64</span> <span class="k">if</span> <span class="n">jax</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">jax_enable_x64</span> <span class="k">else</span> <span class="n">jnp</span><span class="o">.</span><span class="n">float32</span>
+<span class="k">def</span> <span class="nf">init_state</span><span class="p">(</span><span class="n">nest</span><span class="p">:</span> <span class="n">Nest</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RunningStatisticsState</span><span class="p">:</span>
+<span class="w">  </span><span class="sd">&quot;&quot;&quot;Initializes the running statistics for the given nested structure.&quot;&quot;&quot;</span>
+  <span class="n">dtype</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">float64</span> <span class="k">if</span> <span class="n">jax</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">jax_enable_x64</span> <span class="k">else</span> <span class="n">jnp</span><span class="o">.</span><span class="n">float32</span>
 
-    <span class="k">return</span> <span class="n">RunningStatisticsState</span><span class="p">(</span>
-        <span class="n">count</span><span class="o">=</span><span class="n">jnp</span><span class="o">.</span><span class="n">zeros</span><span class="p">((),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">),</span>
-        <span class="n">mean</span><span class="o">=</span><span class="n">_zeros_like</span><span class="p">(</span><span class="n">nest</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">),</span>
-        <span class="n">summed_variance</span><span class="o">=</span><span class="n">_zeros_like</span><span class="p">(</span><span class="n">nest</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">),</span>
-        <span class="c1"># Initialize with ones to make sure normalization works correctly</span>
-        <span class="c1"># in the initial state.</span>
-        <span class="n">std</span><span class="o">=</span><span class="n">_ones_like</span><span class="p">(</span><span class="n">nest</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">),</span>
-    <span class="p">)</span></div>
-
+  <span class="k">return</span> <span class="n">RunningStatisticsState</span><span class="p">(</span>
+      <span class="n">count</span><span class="o">=</span><span class="n">jnp</span><span class="o">.</span><span class="n">zeros</span><span class="p">((),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">),</span>
+      <span class="n">mean</span><span class="o">=</span><span class="n">_zeros_like</span><span class="p">(</span><span class="n">nest</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">),</span>
+      <span class="n">summed_variance</span><span class="o">=</span><span class="n">_zeros_like</span><span class="p">(</span><span class="n">nest</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">),</span>
+      <span class="c1"># Initialize with ones to make sure normalization works correctly</span>
+      <span class="c1"># in the initial state.</span>
+      <span class="n">std</span><span class="o">=</span><span class="n">_ones_like</span><span class="p">(</span><span class="n">nest</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">))</span></div>
 
 
-<span class="k">def</span> <span class="nf">_validate_batch_shapes</span><span class="p">(</span>
-    <span class="n">batch</span><span class="p">:</span> <span class="n">types</span><span class="o">.</span><span class="n">NestedArray</span><span class="p">,</span>
-    <span class="n">reference_sample</span><span class="p">:</span> <span class="n">types</span><span class="o">.</span><span class="n">NestedArray</span><span class="p">,</span>
-    <span class="n">batch_dims</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Verifies shapes of the batch leaves against the reference sample.</span>
 
-<span class="sd">    Checks that batch dimensions are the same in all leaves in the batch.</span>
-<span class="sd">    Checks that non-batch dimensions for all leaves in the batch are the same</span>
-<span class="sd">    as in the reference sample.</span>
+<span class="k">def</span> <span class="nf">_validate_batch_shapes</span><span class="p">(</span><span class="n">batch</span><span class="p">:</span> <span class="n">NestedArray</span><span class="p">,</span>
+                           <span class="n">reference_sample</span><span class="p">:</span> <span class="n">NestedArray</span><span class="p">,</span>
+                           <span class="n">batch_dims</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">  </span><span class="sd">&quot;&quot;&quot;Verifies shapes of the batch leaves against the reference sample.</span>
 
-<span class="sd">    Arguments:</span>
-<span class="sd">      batch: the nested batch of data to be verified.</span>
-<span class="sd">      reference_sample: the nested array to check non-batch dimensions.</span>
-<span class="sd">      batch_dims: a Tuple of indices of batch dimensions in the batch shape.</span>
+<span class="sd">  Checks that batch dimensions are the same in all leaves in the batch.</span>
+<span class="sd">  Checks that non-batch dimensions for all leaves in the batch are the same</span>
+<span class="sd">  as in the reference sample.</span>
 
-<span class="sd">    Returns:</span>
-<span class="sd">      None.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">  Arguments:</span>
+<span class="sd">    batch: the nested batch of data to be verified.</span>
+<span class="sd">    reference_sample: the nested array to check non-batch dimensions.</span>
+<span class="sd">    batch_dims: a Tuple of indices of batch dimensions in the batch shape.</span>
 
-    <span class="k">def</span> <span class="nf">validate_node_shape</span><span class="p">(</span><span class="n">reference_sample</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">batch</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">expected_shape</span> <span class="o">=</span> <span class="n">batch_dims</span> <span class="o">+</span> <span class="n">reference_sample</span><span class="o">.</span><span class="n">shape</span>
-        <span class="k">assert</span> <span class="n">batch</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="n">expected_shape</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">batch</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2"> != </span><span class="si">{</span><span class="n">expected_shape</span><span class="si">}</span><span class="s2">&quot;</span>
+<span class="sd">  Returns:</span>
+<span class="sd">    None.</span>
+<span class="sd">  &quot;&quot;&quot;</span>
+  <span class="k">def</span> <span class="nf">validate_node_shape</span><span class="p">(</span><span class="n">reference_sample</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+                          <span class="n">batch</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="n">expected_shape</span> <span class="o">=</span> <span class="n">batch_dims</span> <span class="o">+</span> <span class="n">reference_sample</span><span class="o">.</span><span class="n">shape</span>
+    <span class="k">assert</span> <span class="n">batch</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="n">expected_shape</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">batch</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s1"> != </span><span class="si">{</span><span class="n">expected_shape</span><span class="si">}</span><span class="s1">&#39;</span>
 
-    <span class="n">jax</span><span class="o">.</span><span class="n">tree_util</span><span class="o">.</span><span class="n">tree_map</span><span class="p">(</span><span class="n">validate_node_shape</span><span class="p">,</span> <span class="n">reference_sample</span><span class="p">,</span> <span class="n">batch</span><span class="p">)</span>
+  <span class="n">jax</span><span class="o">.</span><span class="n">tree_util</span><span class="o">.</span><span class="n">tree_map</span><span class="p">(</span><span class="n">validate_node_shape</span><span class="p">,</span> <span class="n">reference_sample</span><span class="p">,</span> <span class="n">batch</span><span class="p">)</span>
 
 
 <div class="viewcode-block" id="update">
 <a class="viewcode-back" href="../../../arlbench.core.html#arlbench.core.running_statistics.update">[docs]</a>
-<span class="k">def</span> <span class="nf">update</span><span class="p">(</span>
-    <span class="n">state</span><span class="p">:</span> <span class="n">RunningStatisticsState</span><span class="p">,</span>
-    <span class="n">batch</span><span class="p">:</span> <span class="n">types</span><span class="o">.</span><span class="n">Nest</span><span class="p">,</span>
-    <span class="o">*</span><span class="p">,</span>
-    <span class="n">weights</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">std_min_value</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1e-6</span><span class="p">,</span>
-    <span class="n">std_max_value</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1e6</span><span class="p">,</span>
-    <span class="n">pmap_axis_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">validate_shapes</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RunningStatisticsState</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Updates the running statistics with the given batch of data.</span>
+<span class="k">def</span> <span class="nf">update</span><span class="p">(</span><span class="n">state</span><span class="p">:</span> <span class="n">RunningStatisticsState</span><span class="p">,</span>
+           <span class="n">batch</span><span class="p">:</span> <span class="n">Nest</span><span class="p">,</span>
+           <span class="o">*</span><span class="p">,</span>
+           <span class="n">weights</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+           <span class="n">std_min_value</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1e-6</span><span class="p">,</span>
+           <span class="n">std_max_value</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1e6</span><span class="p">,</span>
+           <span class="n">pmap_axis_name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+           <span class="n">validate_shapes</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RunningStatisticsState</span><span class="p">:</span>
+<span class="w">  </span><span class="sd">&quot;&quot;&quot;Updates the running statistics with the given batch of data.</span>
 
-<span class="sd">    Note: data batch and state elements (mean, etc.) must have the same structure.</span>
+<span class="sd">  Note: data batch and state elements (mean, etc.) must have the same structure.</span>
 
-<span class="sd">    Note: by default will use int32 for counts and float32 for accumulated</span>
-<span class="sd">    variance. This results in an integer overflow after 2^31 data points and</span>
-<span class="sd">    degrading precision after 2^24 batch updates or even earlier if variance</span>
-<span class="sd">    updates have large dynamic range.</span>
-<span class="sd">    To improve precision, consider setting jax_enable_x64 to True, see</span>
-<span class="sd">    https://jax.readthedocs.io/en/latest/notebooks/Common_Gotchas_in_JAX.html#double-64bit-precision</span>
+<span class="sd">  Note: by default will use int32 for counts and float32 for accumulated</span>
+<span class="sd">  variance. This results in an integer overflow after 2^31 data points and</span>
+<span class="sd">  degrading precision after 2^24 batch updates or even earlier if variance</span>
+<span class="sd">  updates have large dynamic range.</span>
+<span class="sd">  To improve precision, consider setting jax_enable_x64 to True, see</span>
+<span class="sd">  https://jax.readthedocs.io/en/latest/notebooks/Common_Gotchas_in_JAX.html#double-64bit-precision</span>
 
-<span class="sd">    Arguments:</span>
-<span class="sd">      state: The running statistics before the update.</span>
-<span class="sd">      batch: The data to be used to update the running statistics.</span>
-<span class="sd">      weights: Weights of the batch data. Should match the batch dimensions.</span>
-<span class="sd">        Passing a weight of 2. should be equivalent to updating on the</span>
-<span class="sd">        corresponding data point twice.</span>
-<span class="sd">      std_min_value: Minimum value for the standard deviation.</span>
-<span class="sd">      std_max_value: Maximum value for the standard deviation.</span>
-<span class="sd">      pmap_axis_name: Name of the pmapped axis, if any.</span>
-<span class="sd">      validate_shapes: If true, the shapes of all leaves of the batch will be</span>
-<span class="sd">        validated. Enabled by default. Doesn&#39;t impact performance when jitted.</span>
+<span class="sd">  Arguments:</span>
+<span class="sd">    state: The running statistics before the update.</span>
+<span class="sd">    batch: The data to be used to update the running statistics.</span>
+<span class="sd">    weights: Weights of the batch data. Should match the batch dimensions.</span>
+<span class="sd">      Passing a weight of 2. should be equivalent to updating on the</span>
+<span class="sd">      corresponding data point twice.</span>
+<span class="sd">    std_min_value: Minimum value for the standard deviation.</span>
+<span class="sd">    std_max_value: Maximum value for the standard deviation.</span>
+<span class="sd">    pmap_axis_name: Name of the pmapped axis, if any.</span>
+<span class="sd">    validate_shapes: If true, the shapes of all leaves of the batch will be</span>
+<span class="sd">      validated. Enabled by default. Doesn&#39;t impact performance when jitted.</span>
 
-<span class="sd">    Returns:</span>
-<span class="sd">      Updated running statistics.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="c1"># We require exactly the same structure to avoid issues when flattened</span>
-    <span class="c1"># batch and state have different order of elements.</span>
-    <span class="k">assert</span> <span class="n">jax</span><span class="o">.</span><span class="n">tree_util</span><span class="o">.</span><span class="n">tree_structure</span><span class="p">(</span><span class="n">batch</span><span class="p">)</span> <span class="o">==</span> <span class="n">jax</span><span class="o">.</span><span class="n">tree_util</span><span class="o">.</span><span class="n">tree_structure</span><span class="p">(</span>
-        <span class="n">state</span><span class="o">.</span><span class="n">mean</span>
-    <span class="p">)</span>
-    <span class="n">batch_shape</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">tree_util</span><span class="o">.</span><span class="n">tree_leaves</span><span class="p">(</span><span class="n">batch</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span>
-    <span class="c1"># We assume the batch dimensions always go first.</span>
-    <span class="n">batch_dims</span> <span class="o">=</span> <span class="n">batch_shape</span><span class="p">[</span>
-        <span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">batch_shape</span><span class="p">)</span> <span class="o">-</span> <span class="n">jax</span><span class="o">.</span><span class="n">tree_util</span><span class="o">.</span><span class="n">tree_leaves</span><span class="p">(</span><span class="n">state</span><span class="o">.</span><span class="n">mean</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">ndim</span>
-    <span class="p">]</span>
-    <span class="n">batch_axis</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">batch_dims</span><span class="p">))</span>
-    <span class="k">if</span> <span class="n">weights</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">step_increment</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="n">jnp</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">batch_dims</span><span class="p">))</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">step_increment</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">weights</span><span class="p">)</span>
+<span class="sd">  Returns:</span>
+<span class="sd">    Updated running statistics.</span>
+<span class="sd">  &quot;&quot;&quot;</span>
+  <span class="c1"># We require exactly the same structure to avoid issues when flattened</span>
+  <span class="c1"># batch and state have different order of elements.</span>
+  <span class="k">assert</span> <span class="n">jax</span><span class="o">.</span><span class="n">tree_util</span><span class="o">.</span><span class="n">tree_structure</span><span class="p">(</span><span class="n">batch</span><span class="p">)</span> <span class="o">==</span> <span class="n">jax</span><span class="o">.</span><span class="n">tree_util</span><span class="o">.</span><span class="n">tree_structure</span><span class="p">(</span><span class="n">state</span><span class="o">.</span><span class="n">mean</span><span class="p">)</span>
+  <span class="n">batch_shape</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">tree_util</span><span class="o">.</span><span class="n">tree_leaves</span><span class="p">(</span><span class="n">batch</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span>
+  <span class="c1"># We assume the batch dimensions always go first.</span>
+  <span class="n">batch_dims</span> <span class="o">=</span> <span class="n">batch_shape</span><span class="p">[:</span><span class="nb">len</span><span class="p">(</span><span class="n">batch_shape</span><span class="p">)</span> <span class="o">-</span>
+                           <span class="n">jax</span><span class="o">.</span><span class="n">tree_util</span><span class="o">.</span><span class="n">tree_leaves</span><span class="p">(</span><span class="n">state</span><span class="o">.</span><span class="n">mean</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">ndim</span><span class="p">]</span>
+  <span class="n">batch_axis</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">batch_dims</span><span class="p">))</span>
+  <span class="k">if</span> <span class="n">weights</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="n">step_increment</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="n">jnp</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">batch_dims</span><span class="p">))</span>
+  <span class="k">else</span><span class="p">:</span>
+    <span class="n">step_increment</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">weights</span><span class="p">)</span>
+  <span class="k">if</span> <span class="n">pmap_axis_name</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="n">step_increment</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">lax</span><span class="o">.</span><span class="n">psum</span><span class="p">(</span><span class="n">step_increment</span><span class="p">,</span> <span class="n">axis_name</span><span class="o">=</span><span class="n">pmap_axis_name</span><span class="p">)</span>
+  <span class="n">count</span> <span class="o">=</span> <span class="n">state</span><span class="o">.</span><span class="n">count</span> <span class="o">+</span> <span class="n">step_increment</span>
+
+  <span class="c1"># Validation is important. If the shapes don&#39;t match exactly, but are</span>
+  <span class="c1"># compatible, arrays will be silently broadcasted resulting in incorrect</span>
+  <span class="c1"># statistics.</span>
+  <span class="k">if</span> <span class="n">validate_shapes</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">weights</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+      <span class="k">if</span> <span class="n">weights</span><span class="o">.</span><span class="n">shape</span> <span class="o">!=</span> <span class="n">batch_dims</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">weights</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s1"> != </span><span class="si">{</span><span class="n">batch_dims</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+    <span class="n">_validate_batch_shapes</span><span class="p">(</span><span class="n">batch</span><span class="p">,</span> <span class="n">state</span><span class="o">.</span><span class="n">mean</span><span class="p">,</span> <span class="n">batch_dims</span><span class="p">)</span>
+
+  <span class="k">def</span> <span class="nf">_compute_node_statistics</span><span class="p">(</span>
+      <span class="n">mean</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">summed_variance</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+      <span class="n">batch</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
+    <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">mean</span><span class="p">,</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">),</span> <span class="nb">type</span><span class="p">(</span><span class="n">mean</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">summed_variance</span><span class="p">,</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">),</span> <span class="nb">type</span><span class="p">(</span><span class="n">summed_variance</span><span class="p">)</span>
+    <span class="c1"># The mean and the sum of past variances are updated with Welford&#39;s</span>
+    <span class="c1"># algorithm using batches (see https://stackoverflow.com/q/56402955).</span>
+    <span class="n">diff_to_old_mean</span> <span class="o">=</span> <span class="n">batch</span> <span class="o">-</span> <span class="n">mean</span>
+    <span class="k">if</span> <span class="n">weights</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+      <span class="n">expanded_weights</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span>
+          <span class="n">weights</span><span class="p">,</span>
+          <span class="nb">list</span><span class="p">(</span><span class="n">weights</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">+</span> <span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="n">batch</span><span class="o">.</span><span class="n">ndim</span> <span class="o">-</span> <span class="n">weights</span><span class="o">.</span><span class="n">ndim</span><span class="p">))</span>
+      <span class="n">diff_to_old_mean</span> <span class="o">=</span> <span class="n">diff_to_old_mean</span> <span class="o">*</span> <span class="n">expanded_weights</span>
+    <span class="n">mean_update</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">diff_to_old_mean</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="n">batch_axis</span><span class="p">)</span> <span class="o">/</span> <span class="n">count</span>
     <span class="k">if</span> <span class="n">pmap_axis_name</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">step_increment</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">lax</span><span class="o">.</span><span class="n">psum</span><span class="p">(</span><span class="n">step_increment</span><span class="p">,</span> <span class="n">axis_name</span><span class="o">=</span><span class="n">pmap_axis_name</span><span class="p">)</span>
-    <span class="n">count</span> <span class="o">=</span> <span class="n">state</span><span class="o">.</span><span class="n">count</span> <span class="o">+</span> <span class="n">step_increment</span>
+      <span class="n">mean_update</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">lax</span><span class="o">.</span><span class="n">psum</span><span class="p">(</span>
+          <span class="n">mean_update</span><span class="p">,</span> <span class="n">axis_name</span><span class="o">=</span><span class="n">pmap_axis_name</span><span class="p">)</span>
+    <span class="n">mean</span> <span class="o">=</span> <span class="n">mean</span> <span class="o">+</span> <span class="n">mean_update</span>
 
-    <span class="c1"># Validation is important. If the shapes don&#39;t match exactly, but are</span>
-    <span class="c1"># compatible, arrays will be silently broadcasted resulting in incorrect</span>
-    <span class="c1"># statistics.</span>
-    <span class="k">if</span> <span class="n">validate_shapes</span><span class="p">:</span>
-        <span class="k">if</span> <span class="n">weights</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">weights</span><span class="o">.</span><span class="n">shape</span> <span class="o">!=</span> <span class="n">batch_dims</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">weights</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2"> != </span><span class="si">{</span><span class="n">batch_dims</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-        <span class="n">_validate_batch_shapes</span><span class="p">(</span><span class="n">batch</span><span class="p">,</span> <span class="n">state</span><span class="o">.</span><span class="n">mean</span><span class="p">,</span> <span class="n">batch_dims</span><span class="p">)</span>
+    <span class="n">diff_to_new_mean</span> <span class="o">=</span> <span class="n">batch</span> <span class="o">-</span> <span class="n">mean</span>
+    <span class="n">variance_update</span> <span class="o">=</span> <span class="n">diff_to_old_mean</span> <span class="o">*</span> <span class="n">diff_to_new_mean</span>
+    <span class="n">variance_update</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">variance_update</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="n">batch_axis</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">pmap_axis_name</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+      <span class="n">variance_update</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">lax</span><span class="o">.</span><span class="n">psum</span><span class="p">(</span><span class="n">variance_update</span><span class="p">,</span> <span class="n">axis_name</span><span class="o">=</span><span class="n">pmap_axis_name</span><span class="p">)</span>
+    <span class="n">summed_variance</span> <span class="o">=</span> <span class="n">summed_variance</span> <span class="o">+</span> <span class="n">variance_update</span>
+    <span class="k">return</span> <span class="n">mean</span><span class="p">,</span> <span class="n">summed_variance</span>
 
-    <span class="k">def</span> <span class="nf">_compute_node_statistics</span><span class="p">(</span>
-        <span class="n">mean</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">summed_variance</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">batch</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
-        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">mean</span><span class="p">,</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">),</span> <span class="nb">type</span><span class="p">(</span><span class="n">mean</span><span class="p">)</span>
-        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">summed_variance</span><span class="p">,</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">),</span> <span class="nb">type</span><span class="p">(</span><span class="n">summed_variance</span><span class="p">)</span>
-        <span class="c1"># The mean and the sum of past variances are updated with Welford&#39;s</span>
-        <span class="c1"># algorithm using batches (see https://stackoverflow.com/q/56402955).</span>
-        <span class="n">diff_to_old_mean</span> <span class="o">=</span> <span class="n">batch</span> <span class="o">-</span> <span class="n">mean</span>
-        <span class="k">if</span> <span class="n">weights</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">expanded_weights</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span>
-                <span class="n">weights</span><span class="p">,</span> <span class="nb">list</span><span class="p">(</span><span class="n">weights</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">+</span> <span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="n">batch</span><span class="o">.</span><span class="n">ndim</span> <span class="o">-</span> <span class="n">weights</span><span class="o">.</span><span class="n">ndim</span><span class="p">)</span>
-            <span class="p">)</span>
-            <span class="n">diff_to_old_mean</span> <span class="o">=</span> <span class="n">diff_to_old_mean</span> <span class="o">*</span> <span class="n">expanded_weights</span>
-        <span class="n">mean_update</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">diff_to_old_mean</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="n">batch_axis</span><span class="p">)</span> <span class="o">/</span> <span class="n">count</span>
-        <span class="k">if</span> <span class="n">pmap_axis_name</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">mean_update</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">lax</span><span class="o">.</span><span class="n">psum</span><span class="p">(</span><span class="n">mean_update</span><span class="p">,</span> <span class="n">axis_name</span><span class="o">=</span><span class="n">pmap_axis_name</span><span class="p">)</span>
-        <span class="n">mean</span> <span class="o">=</span> <span class="n">mean</span> <span class="o">+</span> <span class="n">mean_update</span>
+  <span class="n">updated_stats</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">tree_util</span><span class="o">.</span><span class="n">tree_map</span><span class="p">(</span><span class="n">_compute_node_statistics</span><span class="p">,</span> <span class="n">state</span><span class="o">.</span><span class="n">mean</span><span class="p">,</span>
+                                         <span class="n">state</span><span class="o">.</span><span class="n">summed_variance</span><span class="p">,</span> <span class="n">batch</span><span class="p">)</span>
+  <span class="c1"># Extract `mean` and `summed_variance` from `updated_stats` nest.</span>
+  <span class="n">mean</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">tree_util</span><span class="o">.</span><span class="n">tree_map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">_</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">state</span><span class="o">.</span><span class="n">mean</span><span class="p">,</span> <span class="n">updated_stats</span><span class="p">)</span>
+  <span class="n">summed_variance</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">tree_util</span><span class="o">.</span><span class="n">tree_map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">_</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">state</span><span class="o">.</span><span class="n">mean</span><span class="p">,</span>
+                                           <span class="n">updated_stats</span><span class="p">)</span>
 
-        <span class="n">diff_to_new_mean</span> <span class="o">=</span> <span class="n">batch</span> <span class="o">-</span> <span class="n">mean</span>
-        <span class="n">variance_update</span> <span class="o">=</span> <span class="n">diff_to_old_mean</span> <span class="o">*</span> <span class="n">diff_to_new_mean</span>
-        <span class="n">variance_update</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">variance_update</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="n">batch_axis</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">pmap_axis_name</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">variance_update</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">lax</span><span class="o">.</span><span class="n">psum</span><span class="p">(</span><span class="n">variance_update</span><span class="p">,</span> <span class="n">axis_name</span><span class="o">=</span><span class="n">pmap_axis_name</span><span class="p">)</span>
-        <span class="n">summed_variance</span> <span class="o">=</span> <span class="n">summed_variance</span> <span class="o">+</span> <span class="n">variance_update</span>
-        <span class="k">return</span> <span class="n">mean</span><span class="p">,</span> <span class="n">summed_variance</span>
+  <span class="k">def</span> <span class="nf">compute_std</span><span class="p">(</span><span class="n">summed_variance</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+                  <span class="n">std</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+    <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">summed_variance</span><span class="p">,</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span>
+    <span class="c1"># Summed variance can get negative due to rounding errors.</span>
+    <span class="n">summed_variance</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">summed_variance</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="n">std</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">summed_variance</span> <span class="o">/</span> <span class="n">count</span><span class="p">)</span>
+    <span class="n">std</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">std</span><span class="p">,</span> <span class="n">std_min_value</span><span class="p">,</span> <span class="n">std_max_value</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">std</span>
 
-    <span class="n">updated_stats</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">tree_util</span><span class="o">.</span><span class="n">tree_map</span><span class="p">(</span>
-        <span class="n">_compute_node_statistics</span><span class="p">,</span> <span class="n">state</span><span class="o">.</span><span class="n">mean</span><span class="p">,</span> <span class="n">state</span><span class="o">.</span><span class="n">summed_variance</span><span class="p">,</span> <span class="n">batch</span>
-    <span class="p">)</span>
-    <span class="c1"># Extract `mean` and `summed_variance` from `updated_stats` nest.</span>
-    <span class="n">mean</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">tree_util</span><span class="o">.</span><span class="n">tree_map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">_</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">state</span><span class="o">.</span><span class="n">mean</span><span class="p">,</span> <span class="n">updated_stats</span><span class="p">)</span>
-    <span class="n">summed_variance</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">tree_util</span><span class="o">.</span><span class="n">tree_map</span><span class="p">(</span>
-        <span class="k">lambda</span> <span class="n">_</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">state</span><span class="o">.</span><span class="n">mean</span><span class="p">,</span> <span class="n">updated_stats</span>
-    <span class="p">)</span>
+  <span class="n">std</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">tree_util</span><span class="o">.</span><span class="n">tree_map</span><span class="p">(</span><span class="n">compute_std</span><span class="p">,</span> <span class="n">summed_variance</span><span class="p">,</span> <span class="n">state</span><span class="o">.</span><span class="n">std</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">compute_std</span><span class="p">(</span><span class="n">summed_variance</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">std</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">summed_variance</span><span class="p">,</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span>
-        <span class="c1"># Summed variance can get negative due to rounding errors.</span>
-        <span class="n">summed_variance</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">summed_variance</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
-        <span class="n">std</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">summed_variance</span> <span class="o">/</span> <span class="n">count</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">jnp</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">std</span><span class="p">,</span> <span class="n">std_min_value</span><span class="p">,</span> <span class="n">std_max_value</span><span class="p">)</span>
-
-    <span class="n">std</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">tree_util</span><span class="o">.</span><span class="n">tree_map</span><span class="p">(</span><span class="n">compute_std</span><span class="p">,</span> <span class="n">summed_variance</span><span class="p">,</span> <span class="n">state</span><span class="o">.</span><span class="n">std</span><span class="p">)</span>
-
-    <span class="k">return</span> <span class="n">RunningStatisticsState</span><span class="p">(</span>
-        <span class="n">count</span><span class="o">=</span><span class="n">count</span><span class="p">,</span> <span class="n">mean</span><span class="o">=</span><span class="n">mean</span><span class="p">,</span> <span class="n">summed_variance</span><span class="o">=</span><span class="n">summed_variance</span><span class="p">,</span> <span class="n">std</span><span class="o">=</span><span class="n">std</span>
-    <span class="p">)</span></div>
+  <span class="k">return</span> <span class="n">RunningStatisticsState</span><span class="p">(</span>
+      <span class="n">count</span><span class="o">=</span><span class="n">count</span><span class="p">,</span> <span class="n">mean</span><span class="o">=</span><span class="n">mean</span><span class="p">,</span> <span class="n">summed_variance</span><span class="o">=</span><span class="n">summed_variance</span><span class="p">,</span> <span class="n">std</span><span class="o">=</span><span class="n">std</span><span class="p">)</span></div>
 
 
 
 <div class="viewcode-block" id="normalize">
 <a class="viewcode-back" href="../../../arlbench.core.html#arlbench.core.running_statistics.normalize">[docs]</a>
-<span class="k">def</span> <span class="nf">normalize</span><span class="p">(</span>
-    <span class="n">batch</span><span class="p">:</span> <span class="n">types</span><span class="o">.</span><span class="n">NestedArray</span><span class="p">,</span>
-    <span class="n">mean_std</span><span class="p">:</span> <span class="n">NestedMeanStd</span><span class="p">,</span>
-    <span class="n">max_abs_value</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">types</span><span class="o">.</span><span class="n">NestedArray</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Normalizes data using running statistics.&quot;&quot;&quot;</span>
+<span class="k">def</span> <span class="nf">normalize</span><span class="p">(</span><span class="n">batch</span><span class="p">:</span> <span class="n">NestedArray</span><span class="p">,</span>
+              <span class="n">mean_std</span><span class="p">:</span> <span class="n">NestedMeanStd</span><span class="p">,</span>
+              <span class="n">max_abs_value</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NestedArray</span><span class="p">:</span>
+<span class="w">  </span><span class="sd">&quot;&quot;&quot;Normalizes data using running statistics.&quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="nf">normalize_leaf</span><span class="p">(</span>
-        <span class="n">data</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">mean</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">std</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-        <span class="c1"># Only normalize inexact</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">jnp</span><span class="o">.</span><span class="n">issubdtype</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="n">jnp</span><span class="o">.</span><span class="n">inexact</span><span class="p">):</span>
-            <span class="k">return</span> <span class="n">data</span>
-        <span class="n">data</span> <span class="o">=</span> <span class="p">(</span><span class="n">data</span> <span class="o">-</span> <span class="n">mean</span><span class="p">)</span> <span class="o">/</span> <span class="n">std</span>
-        <span class="k">if</span> <span class="n">max_abs_value</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="c1"># TODO: remove pylint directive</span>
-            <span class="n">data</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="o">-</span><span class="n">max_abs_value</span><span class="p">,</span> <span class="o">+</span><span class="n">max_abs_value</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">data</span>
+  <span class="k">def</span> <span class="nf">normalize_leaf</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">mean</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+                     <span class="n">std</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+    <span class="c1"># Only normalize inexact</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">jnp</span><span class="o">.</span><span class="n">issubdtype</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="n">jnp</span><span class="o">.</span><span class="n">inexact</span><span class="p">):</span>
+      <span class="k">return</span> <span class="n">data</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="p">(</span><span class="n">data</span> <span class="o">-</span> <span class="n">mean</span><span class="p">)</span> <span class="o">/</span> <span class="n">std</span>
+    <span class="k">if</span> <span class="n">max_abs_value</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+      <span class="c1"># TODO: remove pylint directive</span>
+      <span class="n">data</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="o">-</span><span class="n">max_abs_value</span><span class="p">,</span> <span class="o">+</span><span class="n">max_abs_value</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">data</span>
 
-    <span class="k">return</span> <span class="n">jax</span><span class="o">.</span><span class="n">tree_util</span><span class="o">.</span><span class="n">tree_map</span><span class="p">(</span><span class="n">normalize_leaf</span><span class="p">,</span> <span class="n">batch</span><span class="p">,</span> <span class="n">mean_std</span><span class="o">.</span><span class="n">mean</span><span class="p">,</span> <span class="n">mean_std</span><span class="o">.</span><span class="n">std</span><span class="p">)</span></div>
+  <span class="k">return</span> <span class="n">jax</span><span class="o">.</span><span class="n">tree_util</span><span class="o">.</span><span class="n">tree_map</span><span class="p">(</span><span class="n">normalize_leaf</span><span class="p">,</span> <span class="n">batch</span><span class="p">,</span> <span class="n">mean_std</span><span class="o">.</span><span class="n">mean</span><span class="p">,</span> <span class="n">mean_std</span><span class="o">.</span><span class="n">std</span><span class="p">)</span></div>
 
 
 
 <div class="viewcode-block" id="denormalize">
 <a class="viewcode-back" href="../../../arlbench.core.html#arlbench.core.running_statistics.denormalize">[docs]</a>
-<span class="k">def</span> <span class="nf">denormalize</span><span class="p">(</span><span class="n">batch</span><span class="p">:</span> <span class="n">types</span><span class="o">.</span><span class="n">NestedArray</span><span class="p">,</span> <span class="n">mean_std</span><span class="p">:</span> <span class="n">NestedMeanStd</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">types</span><span class="o">.</span><span class="n">NestedArray</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Denormalizes values in a nested structure using the given mean/std.</span>
+<span class="k">def</span> <span class="nf">denormalize</span><span class="p">(</span><span class="n">batch</span><span class="p">:</span> <span class="n">NestedArray</span><span class="p">,</span>
+                <span class="n">mean_std</span><span class="p">:</span> <span class="n">NestedMeanStd</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NestedArray</span><span class="p">:</span>
+<span class="w">  </span><span class="sd">&quot;&quot;&quot;Denormalizes values in a nested structure using the given mean/std.</span>
 
-<span class="sd">    Only values of inexact types are denormalized.</span>
-<span class="sd">    See https://numpy.org/doc/stable/_images/dtype-hierarchy.png for Numpy type</span>
-<span class="sd">    hierarchy.</span>
+<span class="sd">  Only values of inexact types are denormalized.</span>
+<span class="sd">  See https://numpy.org/doc/stable/_images/dtype-hierarchy.png for Numpy type</span>
+<span class="sd">  hierarchy.</span>
 
-<span class="sd">    Args:</span>
-<span class="sd">      batch: a nested structure containing batch of data.</span>
-<span class="sd">      mean_std: mean and standard deviation used for denormalization.</span>
+<span class="sd">  Args:</span>
+<span class="sd">    batch: a nested structure containing batch of data.</span>
+<span class="sd">    mean_std: mean and standard deviation used for denormalization.</span>
 
-<span class="sd">    Returns:</span>
-<span class="sd">      Nested structure with denormalized values.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">  Returns:</span>
+<span class="sd">    Nested structure with denormalized values.</span>
+<span class="sd">  &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="nf">denormalize_leaf</span><span class="p">(</span>
-        <span class="n">data</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">mean</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">std</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-        <span class="c1"># Only denormalize inexact</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">jnp</span><span class="o">.</span><span class="n">issubdtype</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="n">jnp</span><span class="o">.</span><span class="n">inexact</span><span class="p">):</span>
-            <span class="k">return</span> <span class="n">data</span>
-        <span class="k">return</span> <span class="n">data</span> <span class="o">*</span> <span class="n">std</span> <span class="o">+</span> <span class="n">mean</span>
+  <span class="k">def</span> <span class="nf">denormalize_leaf</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">mean</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+                       <span class="n">std</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+    <span class="c1"># Only denormalize inexact</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">jnp</span><span class="o">.</span><span class="n">issubdtype</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="n">jnp</span><span class="o">.</span><span class="n">inexact</span><span class="p">):</span>
+      <span class="k">return</span> <span class="n">data</span>
+    <span class="k">return</span> <span class="n">data</span> <span class="o">*</span> <span class="n">std</span> <span class="o">+</span> <span class="n">mean</span>
 
-    <span class="k">return</span> <span class="n">jax</span><span class="o">.</span><span class="n">tree_util</span><span class="o">.</span><span class="n">tree_map</span><span class="p">(</span><span class="n">denormalize_leaf</span><span class="p">,</span> <span class="n">batch</span><span class="p">,</span> <span class="n">mean_std</span><span class="o">.</span><span class="n">mean</span><span class="p">,</span> <span class="n">mean_std</span><span class="o">.</span><span class="n">std</span><span class="p">)</span></div>
+  <span class="k">return</span> <span class="n">jax</span><span class="o">.</span><span class="n">tree_util</span><span class="o">.</span><span class="n">tree_map</span><span class="p">(</span><span class="n">denormalize_leaf</span><span class="p">,</span> <span class="n">batch</span><span class="p">,</span> <span class="n">mean_std</span><span class="o">.</span><span class="n">mean</span><span class="p">,</span> <span class="n">mean_std</span><span class="o">.</span><span class="n">std</span><span class="p">)</span></div>
+
 
 </pre></div>
 

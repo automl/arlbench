@@ -333,6 +333,15 @@
 <nav id="bd-toc-nav">
     <ul class="visible nav section-nav flex-column">
  <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#arlbench.core.running_statistics.Array">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     Array
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
   <a class="reference internal nav-link" href="#arlbench.core.running_statistics.NestedMeanStd">
    <code class="docutils literal notranslate">
     <span class="pre">
@@ -431,9 +440,6 @@
                 
   <section id="module-arlbench.core.running_statistics">
 <span id="arlbench-core-running-statistics"></span><h1>arlbench.core.running_statistics<a class="headerlink" href="#module-arlbench.core.running_statistics" title="Link to this heading">¶</a></h1>
-<p>Utility functions to compute running statistics.</p>
-<p>This file was taken from acme and modified to simplify dependencies:</p>
-<p><a class="reference external" href="https://github.com/deepmind/acme/blob/master/acme/jax/running_statistics.py">https://github.com/deepmind/acme/blob/master/acme/jax/running_statistics.py</a></p>
 <p class="rubric">Functions</p>
 <table class="autosummary longtable table autosummary">
 <tbody>
@@ -454,14 +460,25 @@
 <p class="rubric">Classes</p>
 <table class="autosummary longtable table autosummary">
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="../arlbench.core.html#arlbench.core.running_statistics.NestedMeanStd" title="arlbench.core.running_statistics.NestedMeanStd"><code class="xref py py-obj docutils literal notranslate"><span class="pre">NestedMeanStd</span></code></a>(mean, std)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="../arlbench.core.html#arlbench.core.running_statistics.Array" title="arlbench.core.running_statistics.Array"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Array</span></code></a>(shape, dtype)</p></td>
+<td><p>Describes a numpy array or scalar shape and dtype.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="../arlbench.core.html#arlbench.core.running_statistics.NestedMeanStd" title="arlbench.core.running_statistics.NestedMeanStd"><code class="xref py py-obj docutils literal notranslate"><span class="pre">NestedMeanStd</span></code></a>(mean, std)</p></td>
 <td><p>A container for running statistics (mean, std) of possibly nested data.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="../arlbench.core.html#arlbench.core.running_statistics.RunningStatisticsState" title="arlbench.core.running_statistics.RunningStatisticsState"><code class="xref py py-obj docutils literal notranslate"><span class="pre">RunningStatisticsState</span></code></a>(mean, std, count, ...)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="../arlbench.core.html#arlbench.core.running_statistics.RunningStatisticsState" title="arlbench.core.running_statistics.RunningStatisticsState"><code class="xref py py-obj docutils literal notranslate"><span class="pre">RunningStatisticsState</span></code></a>(mean, std, count, ...)</p></td>
 <td><p>Full state of running statistics computation.</p></td>
 </tr>
 </tbody>
 </table>
+<dl class="py class">
+<dt class="sig sig-object py" id="arlbench.core.running_statistics.Array">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">arlbench.core.running_statistics.</span></span><span class="sig-name descname"><span class="pre">Array</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">shape</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dtype</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arlbench/core/running_statistics.html#Array"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.core.running_statistics.Array" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Describes a numpy array or scalar shape and dtype.</p>
+<p>Similar to dm_env.specs.Array.</p>
+</dd></dl>
+
 <dl class="py class">
 <dt class="sig sig-object py" id="arlbench.core.running_statistics.NestedMeanStd">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">arlbench.core.running_statistics.</span></span><span class="sig-name descname"><span class="pre">NestedMeanStd</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mean</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">std</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arlbench/core/running_statistics.html#NestedMeanStd"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.core.running_statistics.NestedMeanStd" title="Link to this definition">¶</a></dt>
@@ -517,7 +534,7 @@ hierarchy.</p>
 <dd><p>Initializes the running statistics for the given nested structure.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type">RunningStatisticsState</span></p>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference internal" href="../arlbench.core.html#arlbench.core.running_statistics.RunningStatisticsState" title="arlbench.core.running_statistics.RunningStatisticsState"><code class="xref py py-class docutils literal notranslate"><span class="pre">RunningStatisticsState</span></code></a></span></p>
 </dd>
 </dl>
 </dd></dl>
@@ -547,20 +564,20 @@ To improve precision, consider setting jax_enable_x64 to True, see
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>state</strong> (<span class="sphinx_autodoc_typehints-type">RunningStatisticsState</span>) – The running statistics before the update.</p></li>
-<li><p><strong>batch</strong> (<span class="sphinx_autodoc_typehints-type">types.Nest</span>) – The data to be used to update the running statistics.</p></li>
-<li><p><strong>weights</strong> (<span class="sphinx_autodoc_typehints-type">jnp.ndarray | None</span>) – Weights of the batch data. Should match the batch dimensions.
+<li><p><strong>state</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference internal" href="../arlbench.core.html#arlbench.core.running_statistics.RunningStatisticsState" title="arlbench.core.running_statistics.RunningStatisticsState"><code class="xref py py-class docutils literal notranslate"><span class="pre">RunningStatisticsState</span></code></a></span>) – The running statistics before the update.</p></li>
+<li><p><strong>batch</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Array</span></code>, <code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code>, <a class="reference internal" href="../arlbench.core.html#arlbench.core.running_statistics.Array" title="arlbench.core.running_statistics.Array"><code class="xref py py-class docutils literal notranslate"><span class="pre">Array</span></code></a>, <code class="xref py py-class docutils literal notranslate"><span class="pre">Iterable</span></code>[<code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<a class="reference internal" href="../arlbench.core.html#arlbench.core.running_statistics.Array" title="arlbench.core.running_statistics.Array"><code class="xref py py-class docutils literal notranslate"><span class="pre">Array</span></code></a>, <code class="xref py py-class docutils literal notranslate"><span class="pre">Iterable</span></code>[NestedSpec], <code class="xref py py-class docutils literal notranslate"><span class="pre">Mapping</span></code>[<code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code>, NestedSpec]]], <code class="xref py py-class docutils literal notranslate"><span class="pre">Mapping</span></code>[<code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code>, <code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<a class="reference internal" href="../arlbench.core.html#arlbench.core.running_statistics.Array" title="arlbench.core.running_statistics.Array"><code class="xref py py-class docutils literal notranslate"><span class="pre">Array</span></code></a>, <code class="xref py py-class docutils literal notranslate"><span class="pre">Iterable</span></code>[NestedSpec], <code class="xref py py-class docutils literal notranslate"><span class="pre">Mapping</span></code>[<code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code>, NestedSpec]]]]</span>) – The data to be used to update the running statistics.</p></li>
+<li><p><strong>weights</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Array</span></code>]</span>) – Weights of the batch data. Should match the batch dimensions.
 Passing a weight of 2. should be equivalent to updating on the
 corresponding data point twice.</p></li>
-<li><p><strong>std_min_value</strong> (<span class="sphinx_autodoc_typehints-type">float</span>) – Minimum value for the standard deviation.</p></li>
-<li><p><strong>std_max_value</strong> (<span class="sphinx_autodoc_typehints-type">float</span>) – Maximum value for the standard deviation.</p></li>
-<li><p><strong>pmap_axis_name</strong> (<span class="sphinx_autodoc_typehints-type">str | None</span>) – Name of the pmapped axis, if any.</p></li>
-<li><p><strong>validate_shapes</strong> (<span class="sphinx_autodoc_typehints-type">bool</span>) – If true, the shapes of all leaves of the batch will be
+<li><p><strong>std_min_value</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></span>) – Minimum value for the standard deviation.</p></li>
+<li><p><strong>std_max_value</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></span>) – Maximum value for the standard deviation.</p></li>
+<li><p><strong>pmap_axis_name</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>]</span>) – Name of the pmapped axis, if any.</p></li>
+<li><p><strong>validate_shapes</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></span>) – If true, the shapes of all leaves of the batch will be
 validated. Enabled by default. Doesn’t impact performance when jitted.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type">RunningStatisticsState</span></p>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference internal" href="../arlbench.core.html#arlbench.core.running_statistics.RunningStatisticsState" title="arlbench.core.running_statistics.RunningStatisticsState"><code class="xref py py-class docutils literal notranslate"><span class="pre">RunningStatisticsState</span></code></a></span></p>
 </dd>
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p>Updated running statistics.</p>
