@@ -173,7 +173,7 @@ def plot_runtime_comparisons():
         result[algorithm][category][row["algorithm_framework"]] = runtime
 
     all_runtimes = []
-    for set_name, env_categories in zip(["All", "Subset"], [ENV_CATEGORIES, SUBSET_CATEGORIES]):
+    for set_name, env_categories in zip(["full set", "subset"], [ENV_CATEGORIES, SUBSET_CATEGORIES]):
         for algorithm, categories in env_categories.items():        
             for category in categories:
                 total_runtime_arlb = 0
@@ -186,8 +186,8 @@ def plot_runtime_comparisons():
                         total_runtime_arlb += result[algorithm][category]["ARLBench"]
                     total_runtime_sb3 += result[algorithm][category]["SB3"]
             
-                all_runtimes.append({"algorithm": algorithm, "category": category, "set": f"{set_name} (ARLBench)", "runtime": total_runtime_arlb })
-                all_runtimes.append({"algorithm": algorithm, "category": category, "set": f"{set_name} (SB3)", "runtime": total_runtime_sb3 })
+                all_runtimes.append({"algorithm": algorithm, "category": category, "set": f"ARLBench on {set_name}", "runtime": total_runtime_arlb })
+                all_runtimes.append({"algorithm": algorithm, "category": category, "set": f"SB3 on {set_name}", "runtime": total_runtime_sb3 })
 
     all_runtimes = pd.DataFrame(all_runtimes)
     all_runtimes = all_runtimes.groupby(["algorithm", "set", "category"]).sum().reset_index()
@@ -203,7 +203,7 @@ def plot_runtime_comparisons():
 
     fig.subplots_adjust(top=0.85)
 
-    set_order = ["All (SB3)", "All (ARLBench)", "Subset (SB3)", "Subset (ARLBench)"]
+    set_order = ["SB3 on full set", "ARLBench on full set", "SB3 on subset", "ARLBench on subset"]
     hue_order = ["Atari", "Box2D", "Classic Control", "XLand", "MuJoCo"]
 
     all_combinations = pd.MultiIndex.from_product([all_runtimes["algorithm"].unique(), all_runtimes["set"].unique(), hue_order], names=["algorithm", "set", "category"])
@@ -217,7 +217,7 @@ def plot_runtime_comparisons():
     for i, algorithm in enumerate(env_categories.keys()):
         runtime_data = all_runtimes[all_runtimes["algorithm"] == algorithm]
         print(f"### {algorithm.upper()} ###")
-        print(runtime_data.groupby(["algorithm", "set"]).sum())
+        print(runtime_data.groupby(["algorithm", "set"]).sum()["runtime"].sum())
 
         plot = (
             so.Plot(
@@ -270,6 +270,7 @@ def compute_total_runtime():
     runtimes["total_runtime"] /= 3600   # to hours
 
     print(runtimes)
+    print(runtimes.to_latex(index=False))
     total_runtimes = runtimes.groupby(['platform'])['runtime'].sum().reset_index()
     print(total_runtimes)
 
@@ -277,5 +278,5 @@ def compute_total_runtime():
 
 if __name__ == "__main__":
     plot_runtime_comparisons()
-    # compute_total_runtime()
+    #compute_total_runtime()
     
