@@ -12,4 +12,4 @@ The following objectives are available at the moment:
 - reward_mean: the mean evaluation reward across a number of evaluation episodes
 - reward_std: the standard deviation of the evaluation rewards across a number of evaluation episodes
 - runtime: the runtime of the training process
-- emissions: the CO2 emissions of the training process
+- emissions: the CO2 emissions of the training process, tracked using `CodeCarbon <https://github.com/mlco2/codecarbon>`_ (which does not currently support ARM)

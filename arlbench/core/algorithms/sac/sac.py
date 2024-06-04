@@ -10,24 +10,38 @@ import jax.lax
 import jax.numpy as jnp
 import numpy as np
 import optax
-from ConfigSpace import (Categorical, Configuration, ConfigurationSpace,
-                         EqualsCondition, Float, Integer)
+from ConfigSpace import (
+    Categorical,
+    Configuration,
+    ConfigurationSpace,
+    EqualsCondition,
+    Float,
+    Integer,
+)
 from flax.training.train_state import TrainState
 
 from arlbench.core import running_statistics
 from arlbench.core.algorithms.algorithm import Algorithm
 from arlbench.core.algorithms.buffers import uniform_sample
 from arlbench.core.algorithms.common import TimeStep
-from arlbench.core.algorithms.prioritised_item_buffer import \
-    make_prioritised_item_buffer
+from arlbench.core.algorithms.prioritised_item_buffer import (
+    make_prioritised_item_buffer,
+)
 
-from .models import (AlphaCoef, SACCNNActor, SACCNNCritic, SACMLPActor,
-                     SACMLPCritic, SACVectorCritic)
+from .models import (
+    AlphaCoef,
+    SACCNNActor,
+    SACCNNCritic,
+    SACMLPActor,
+    SACMLPCritic,
+    SACVectorCritic,
+)
 
 if TYPE_CHECKING:
     import chex
-    from flashbax.buffers.prioritised_trajectory_buffer import \
-        PrioritisedTrajectoryBufferState
+    from flashbax.buffers.prioritised_trajectory_buffer import (
+        PrioritisedTrajectoryBufferState,
+    )
     from flax.core.frozen_dict import FrozenDict
 
     from arlbench.core.environments import Environment
@@ -134,14 +148,14 @@ class SAC(Algorithm):
         Args:
             hpo_config (Configuration): Hyperparameter configuration.
             env (Environment | AutoRLWrapper): Training environment.
-            eval_env (Environment | AutoRLWrapper | None, optional): Evaluation environent 
+            eval_env (Environment | AutoRLWrapper | None, optional): Evaluation environent
             (otherwise training environment is used for evaluation). Defaults to None.
             cnn_policy (bool, optional): Use CNN network architecture. Defaults to False.
-            nas_config (Configuration | None, optional): Neural architecture 
+            nas_config (Configuration | None, optional): Neural architecture
             configuration. Defaults to None.
-            track_trajectories (bool, optional):  Track metrics such as loss and gradients 
+            track_trajectories (bool, optional):  Track metrics such as loss and gradients
             during training. Defaults to False.
-            track_metrics (bool, optional): Track trajectories during training. 
+            track_metrics (bool, optional): Track trajectories during training.
             Defaults to False.
         """
         if nas_config is None:
@@ -610,7 +624,7 @@ class SAC(Algorithm):
             rng (chex.PRNGKey): Random number generator key.
 
         Returns:
-            tuple[SACTrainState, jnp.ndarray, jnp.ndarray, FrozenDict, chex.PRNGKey]: 
+            tuple[SACTrainState, jnp.ndarray, jnp.ndarray, FrozenDict, chex.PRNGKey]:
             Updated training state and metrics.
         """
         rng, action_rng = jax.random.split(rng, 2)
@@ -690,7 +704,7 @@ class SAC(Algorithm):
                 alpha_params (FrozenDict): Alpha network parameters.
 
             Returns:
-                tuple[jnp.ndarray, jnp.ndarray]: Update training state and metrics. 
+                tuple[jnp.ndarray, jnp.ndarray]: Update training state and metrics.
             """
             pi = self.actor_network.apply(actor_params, experience.last_obs)
             actor_actions, log_prob = pi.sample_and_log_prob(seed=action_rng)
@@ -756,7 +770,7 @@ class SAC(Algorithm):
             _ (None): Unused parameter.
 
         Returns:
-            tuple[ tuple[SACRunnerState, PrioritisedTrajectoryBufferState], 
+            tuple[ tuple[SACRunnerState, PrioritisedTrajectoryBufferState],
             tuple[SACMetrics | None, Transition | None], ]: Updated training state and metrics.
         """
 
@@ -785,7 +799,7 @@ class SAC(Algorithm):
                 buffer_state (PrioritisedTrajectoryBufferState): Buffer state.
 
             Returns:
-                tuple[ chex.PRNGKey, SACTrainState, SACTrainState, SACTrainState, 
+                tuple[ chex.PRNGKey, SACTrainState, SACTrainState, SACTrainState,
                 PrioritisedTrajectoryBufferState, SACMetrics]: Updated training states and metrics.
             """
 
@@ -811,12 +825,12 @@ class SAC(Algorithm):
                 """Perform a gradient update step.
 
                 Args:
-                    carry (tuple[ chex.PRNGKey, SACTrainState, SACTrainState, 
+                    carry (tuple[ chex.PRNGKey, SACTrainState, SACTrainState,
                     SACTrainState, PrioritisedTrajectoryBufferState, ]): Carry for jax.lax.scan():
                     _ (None): Unused parameter.
 
                 Returns:
-                    tuple[ tuple[ chex.PRNGKey, SACTrainState, SACTrainState, SACTrainState, 
+                    tuple[ tuple[ chex.PRNGKey, SACTrainState, SACTrainState, SACTrainState,
                     PrioritisedTrajectoryBufferState, ], SACMetrics, ]: Updated training states and metrics.
                 """
                 (
@@ -944,7 +958,7 @@ class SAC(Algorithm):
                 buffer_state (PrioritisedTrajectoryBufferState): Buffer state.
 
             Returns:
-                tuple[ chex.PRNGKey, SACTrainState, SACTrainState, SACTrainState, 
+                tuple[ chex.PRNGKey, SACTrainState, SACTrainState, SACTrainState,
                 PrioritisedTrajectoryBufferState, SACMetrics]: Input training states and metrics.
             """
             single_loss = jnp.array(

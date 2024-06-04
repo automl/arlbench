@@ -10,8 +10,7 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 import optax
-from ConfigSpace import (Categorical, Configuration, ConfigurationSpace, Float,
-                         Integer)
+from ConfigSpace import Categorical, Configuration, ConfigurationSpace, Float, Integer
 from flax.training.train_state import TrainState
 
 from arlbench.core import running_statistics
@@ -646,13 +645,13 @@ class PPO(Algorithm):
         """One epoch of network updates using minibatches of the current transition batch.
 
         Args:
-            update_state (tuple[PPOTrainState, Transition, jnp.ndarray, jnp.ndarray, chex.PRNGKey]): 
+            update_state (tuple[PPOTrainState, Transition, jnp.ndarray, jnp.ndarray, chex.PRNGKey]):
             (train_state, transition_batch, advantages, targets, rng) Current update state.
             _ (None): Unused parameter (required for jax.lax.scan).
 
         Returns:
             tuple[tuple[PPOTrainState, Transition, jnp.ndarray, jnp.ndarray, chex.PRNGKey],
-            tuple[tuple | None, tuple | None]]: Tuple of (train_state, transition_batch, 
+            tuple[tuple | None, tuple | None]]: Tuple of (train_state, transition_batch,
             advantages, targets, rng) and (loss, grads) if tracked.
         """
         train_state, traj_batch, advantages, targets, rng = update_state
@@ -715,11 +714,11 @@ class PPO(Algorithm):
 
         Args:
             train_state (PPOTrainState): PPO training state.
-            batch_info (tuple[jnp.ndarray, jnp.ndarray, jnp.ndarray]): 
+            batch_info (tuple[jnp.ndarray, jnp.ndarray, jnp.ndarray]):
             Minibatch of transitions, advantages and targets.
 
         Returns:
-            tuple[PPOTrainState, tuple[tuple | None, tuple | None]]: 
+            tuple[PPOTrainState, tuple[tuple | None, tuple | None]]:
             Tuple of PPO train state and (loss, grads) if tracked.
         """
         traj_batch, advantages, targets = batch_info
@@ -749,7 +748,7 @@ class PPO(Algorithm):
             targets (jnp.ndarray): Targets.
 
         Returns:
-            tuple[jnp.ndarray, tuple[jnp.ndarray, jnp.ndarray, jnp.ndarray]]: 
+            tuple[jnp.ndarray, tuple[jnp.ndarray, jnp.ndarray, jnp.ndarray]]:
             Tuple of (total_loss, (value_loss, actor_loss, entropy)).
         """
         # Rerun network

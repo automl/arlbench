@@ -5,11 +5,11 @@ from __future__ import annotations
 import warnings
 
 warnings.filterwarnings("ignore")
+import json
 import logging
 import sys
 import traceback
 from typing import TYPE_CHECKING
-import json
 
 import hydra
 import jax

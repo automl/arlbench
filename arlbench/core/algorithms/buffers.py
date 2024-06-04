@@ -8,9 +8,12 @@ import jax.numpy as jnp
 from flashbax import utils
 from flashbax.buffers import sum_tree
 from flashbax.buffers.prioritised_trajectory_buffer import (
-    Experience, PrioritisedTrajectoryBufferSample,
-    PrioritisedTrajectoryBufferState, _get_sample_trajectories,
-    get_invalid_indices)
+    Experience,
+    PrioritisedTrajectoryBufferSample,
+    PrioritisedTrajectoryBufferState,
+    _get_sample_trajectories,
+    get_invalid_indices,
+)
 from flashbax.buffers.trajectory_buffer import calculate_uniform_item_indices
 
 if TYPE_CHECKING:

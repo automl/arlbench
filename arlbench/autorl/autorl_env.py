@@ -9,8 +9,15 @@ import jax
 import numpy as np
 import pandas as pd
 
-from arlbench.core.algorithms import (DQN, PPO, SAC, Algorithm, AlgorithmState,
-                                      TrainResult, TrainReturnT)
+from arlbench.core.algorithms import (
+    DQN,
+    PPO,
+    SAC,
+    Algorithm,
+    AlgorithmState,
+    TrainResult,
+    TrainReturnT,
+)
 from arlbench.core.environments import make_env
 from arlbench.utils import config_space_to_gymnasium_space
 

@@ -5,11 +5,11 @@ from __future__ import annotations
 import warnings
 
 warnings.filterwarnings("ignore")
+import json
 import logging
 import sys
 import traceback
 from typing import TYPE_CHECKING
-import json
 
 import hydra
 import jax
@@ -35,7 +35,7 @@ def run(cfg: DictConfig, logger: logging.Logger):
     tolerance = 1e-4
     rewards = []
     lrs = []
-    for i in range(100):
+    for _i in range(100):
         lrs.append(cfg.hp_config.learning_rate)
         # Statistics here contain the number of steps and gradient information
         statistics, objectives, te, tr, _ = env.step(cfg.hp_config)

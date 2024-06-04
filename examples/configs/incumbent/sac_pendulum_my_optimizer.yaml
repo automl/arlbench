@@ -1,0 +1,18 @@
+# @package _global_
+defaults:
+  - override /environment: cc_pendulum
+  - override /algorithm: sac
+
+hpo_method: my_optimizer
+
+hp_config:
+  buffer_batch_size: 256
+  buffer_size: 100000
+  buffer_prio_sampling: false
+  gamma: 0.99
+  learning_rate: 0.0023
+  learning_starts: 1032
+  use_target_network: true
+  target_update_interval: 10
+  tau: 0.52
+  reward_scale: 2.32
