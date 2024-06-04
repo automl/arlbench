@@ -99,8 +99,8 @@ OPTIMIZER_SEEDS = {
 }
 
 SUBSETS = {
-    "ppo": ["LunarLander-v2", "halfcheetah", "BattleZone-v5", "MiniGrid-EmptyRandom-5x5", "MiniGrid-FourRooms-5x5"],
-    "dqn": ["Acrobot-v1", "MiniGrid-DoorKey-5x5", "BattleZone-v5", "MiniGrid-FourRooms-5x5"],
+    "ppo": ["LunarLander-v2", "halfcheetah", "BattleZone-v5", "MiniGrid-EmptyRandom-5x5", "MiniGrid-FourRooms"],
+    "dqn": ["Acrobot-v1", "MiniGrid-DoorKey-5x5", "BattleZone-v5", "MiniGrid-FourRooms"],
     "sac": ["BipedalWalker-v3", "halfcheetah", "MountainCarContinuous-v0", "Pendulum-v1"],
 }
 
@@ -255,7 +255,7 @@ def plot_subset_vs_overall(overall_data, subset_data, method: str):
 def plot_subset_vs_overall_combined(method: str):
     fig, axes = plt.subplots(1, 6, figsize=(8, 2.5), sharey=True)
 
-    hue_order = ["RS", "SMAC BO", "SMAC + HB", "PBT"]
+    hue_order = ["RS", "SMAC", "SMAC + HB", "PBT"]
     
     for i, algorithm in enumerate(["ppo", "dqn", "sac"]):
         overall_data, subset_data = validate(algorithm, method) 
@@ -269,7 +269,8 @@ def plot_subset_vs_overall_combined(method: str):
             meanline=True, 
             hue_order=hue_order, 
             legend="full" if i == 0 else None,
-            meanprops={"color":"white"}
+            meanprops={"color":"white"},
+            order=hue_order
         )
 
         axes[2 * i].set_title(f"{algorithm.upper()}: Subset")
@@ -283,7 +284,8 @@ def plot_subset_vs_overall_combined(method: str):
             showmeans=True, 
             meanline=True, 
             hue_order=hue_order,
-            meanprops={"color":"white"}
+            meanprops={"color":"white"},
+            order=hue_order
         )
         axes[2 * i + 1].set_title(f"{algorithm.upper()}: All")
 
