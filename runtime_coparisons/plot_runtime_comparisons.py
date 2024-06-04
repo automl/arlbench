@@ -17,15 +17,23 @@ RESULTS_COMBINED_DIR = "results_combined"
 
 RUNTIMES_DIR = "results_combined/runtime_comparisons"
 
+GPU_ENVS = ["ant", "halfcheetah", "hopper", "humanoid", "BattleZone-v5", "DoubleDunk-v5", "NameThisGame-v5", "QBert-v5", "Phoenix-v5"]
+ATARI_ENVS = ["BattleZone-v5", "DoubleDunk-v5", "NameThisGame-v5", "QBert-v5", "Phoenix-v5"]
+
+N_SOBOL_RUNS = 256 * 10         # 256 * 10 seeds
+N_SOBOL_RUNS_ATARI = 128 * 10   # 128 * 10 seeds
+
+N_OPT_RUNS = 4 * 3 * 32 * 4     # 4 optimizers * 3 optimizer seeds * 32 * 3 RL seeds
+
 ENV_CATEGORIES = {
     "ppo": [
         "Atari", "Atari", "Atari", "Atari", "Atari", "Box2D", "Box2D", "MuJoCo", "MuJoCo", "MuJoCo", "MuJoCo",
         "Classic Control", "Classic Control", "Classic Control", "Classic Control", "Classic Control",
-        "Minigrid", "Minigrid", "Minigrid", "Minigrid"
+        "XLand", "XLand", "XLand", "XLand"
         ],
     "dqn": [
         "Atari", "Atari", "Atari", "Atari", "Atari", "Box2D", "Classic Control", "Classic Control", "Classic Control", 
-        "Minigrid", "Minigrid", "Minigrid", "Minigrid"
+        "XLand", "XLand", "XLand", "XLand"
     ],
     "sac": [
         "Box2D", "Box2D", "MuJoCo", "MuJoCo", "MuJoCo", "MuJoCo",
@@ -34,8 +42,8 @@ ENV_CATEGORIES = {
 }
 
 SUBSET_CATEGORIES = {
-    "ppo": ["Box2D", "MuJoCo", "Atari", "Minigrid", "Minigrid"],
-    "dqn": ["Classic Control", "Minigrid", "Atari", "Minigrid"],
+    "ppo": ["Box2D", "MuJoCo", "Atari", "XLand", "XLand"],
+    "dqn": ["Classic Control", "XLand", "Atari", "XLand"],
     "sac": ["Box2D", "MuJoCo", "Classic Control", "Classic Control"],
 }
 
@@ -46,7 +54,8 @@ CATEGORY = {
     "LunarLander-v2": "Box2D",
     "LunarLanderContinuous-v2": "Box2D",
     "Pendulum-v1": "Classic Control",
-    "Pong-v5": "Atari"
+    "Pong-v5": "Atari",
+    "MiniGrid-DoorKey-5x5": "XLand"
 }
 
 
@@ -75,6 +84,10 @@ def extract_training_runtime(arlbench_log_path: str) -> float:
 
 
 def read_arlbench_runtimes(approach: str) -> pd.DataFrame:
+    runtime_data_path = os.path.join(RESULTS_COMBINED_DIR, approach, "runtimes.csv")
+    if os.path.isfile(runtime_data_path):
+        return pd.read_csv(runtime_data_path)
+
     runtime_data = []
 
     approach_path = os.path.join(RESULTS_DIR, approach)
@@ -91,6 +104,9 @@ def read_arlbench_runtimes(approach: str) -> pd.DataFrame:
 
             for run_seed in os.listdir(approach_seed_path):
                 run_seed_path = os.path.join(approach_seed_path, run_seed)
+                if not os.path.isdir(run_seed_path):
+                    continue
+
                 for run_id in os.listdir(run_seed_path):
                     run_path = os.path.join(run_seed_path, run_id)
                     log_file_path = os.path.join(run_path, "run_arlbench.log")
@@ -113,7 +129,9 @@ def read_arlbench_runtimes(approach: str) -> pd.DataFrame:
                         "runtime": runtime
                     }]
 
-    return pd.DataFrame(runtime_data)
+    runtime_data = pd.DataFrame(runtime_data)
+    runtime_data.to_csv(runtime_data_path, index=False)
+    return runtime_data
 
 
 def plot_runtime_comparisons():
@@ -186,7 +204,7 @@ def plot_runtime_comparisons():
     fig.subplots_adjust(top=0.85)
 
     set_order = ["All (SB3)", "All (ARLBench)", "Subset (SB3)", "Subset (ARLBench)"]
-    hue_order = ["Atari", "Box2D", "Classic Control", "Minigrid", "MuJoCo"]
+    hue_order = ["Atari", "Box2D", "Classic Control", "XLand", "MuJoCo"]
 
     all_combinations = pd.MultiIndex.from_product([all_runtimes["algorithm"].unique(), all_runtimes["set"].unique(), hue_order], names=["algorithm", "set", "category"])
     all_runtimes = all_runtimes.set_index(["algorithm", "set", "category"]).reindex(all_combinations).reset_index()
@@ -236,10 +254,28 @@ def plot_runtime_comparisons():
     plt.close()
     
 
+def compute_total_runtime():
+    # We use the random search data for the runtimes
+    runtimes = read_arlbench_runtimes("rs")
+
+    runtimes["platform"] = "cpu"
+    runtimes.loc[runtimes["environment"].isin(GPU_ENVS), "platform"] = "gpu"
+
+    runtimes = runtimes.groupby(['algorithm', 'environment', 'platform'])['runtime'].mean().reset_index()
+
+    runtimes["n_runs"] = N_SOBOL_RUNS + N_OPT_RUNS
+    runtimes.loc[runtimes["environment"].isin(ATARI_ENVS), "n_runs"] = N_SOBOL_RUNS_ATARI + N_OPT_RUNS
+
+    runtimes["total_runtime"] = runtimes["n_runs"] * runtimes["runtime"]
+    runtimes["total_runtime"] /= 3600   # to hours
+
+    print(runtimes)
+    total_runtimes = runtimes.groupby(['platform'])['runtime'].sum().reset_index()
+    print(total_runtimes)
+
 
 
 if __name__ == "__main__":
-    # plot_runtime_comparisons()
-    approach = "rs"
-    data = read_arlbench_runtimes(approach)
-    print(data)
+    plot_runtime_comparisons()
+    # compute_total_runtime()
+    
