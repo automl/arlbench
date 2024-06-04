@@ -59,13 +59,13 @@ def extract_training_runtime(arlbench_log_path: str) -> float:
 
     for line in lines:
         if "Training started" in line:
-            start_match = re.search(r'\[(.*?)\]', line)
+            start_match = re.search(r"\[(.*?)\]", line)
             if start_match:
-                start_time = datetime.strptime(start_match.group(1), '%Y-%m-%d %H:%M:%S,%f')
+                start_time = datetime.strptime(start_match.group(1), "%Y-%m-%d %H:%M:%S,%f")
         elif "Training finished" in line:
-            end_match = re.search(r'\[(.*?)\]', line)
+            end_match = re.search(r"\[(.*?)\]", line)
             if end_match:
-                end_time = datetime.strptime(end_match.group(1), '%Y-%m-%d %H:%M:%S,%f')
+                end_time = datetime.strptime(end_match.group(1), "%Y-%m-%d %H:%M:%S,%f")
 
         if start_time and end_time:
             runtime = (end_time - start_time).total_seconds()
@@ -165,20 +165,22 @@ def plot_runtime_comparisons():
             }]
 
     runtime_data = pd.DataFrame(runtime_results)
+    
+    print(runtime_data)
 
     result = {}
     for index, row in runtime_data.iterrows():
-        algorithm = row['algorithm']
-        category = row['category']
-        runtime = row['runtime']
+        algorithm = row["algorithm"]
+        category = row["category"]
+        runtime = row["runtime"]
         
         if algorithm not in result:
             result[algorithm] = {}
         
         if category not in result[algorithm]:
-            result[algorithm][category] = {'ARLBench': None, 'SB3': None}
+            result[algorithm][category] = {"ARLBench": None, "SB3": None}
     
-        result[algorithm][category][row['algorithm_framework']] = runtime
+        result[algorithm][category][row["algorithm_framework"]] = runtime
 
     all_runtimes = []
     for set_name, env_categories in zip(["All", "Subset"], [ENV_CATEGORIES, SUBSET_CATEGORIES]):
@@ -194,45 +196,61 @@ def plot_runtime_comparisons():
                         total_runtime_arlb += result[algorithm][category]["ARLBench"]
                     total_runtime_sb3 += result[algorithm][category]["SB3"]
             
-                all_runtimes.append({'algorithm': algorithm, "category": category, "set": f"{set_name} ARLBench", "runtime": total_runtime_arlb })
-                all_runtimes.append({'algorithm': algorithm, "category": category, "set": f"{set_name} SB3", "runtime": total_runtime_sb3 })
+                all_runtimes.append({"algorithm": algorithm, "category": category, "set": f"{set_name} (ARLBench)", "runtime": total_runtime_arlb })
+                all_runtimes.append({"algorithm": algorithm, "category": category, "set": f"{set_name} (SB3)", "runtime": total_runtime_sb3 })
 
     all_runtimes = pd.DataFrame(all_runtimes)
     all_runtimes = all_runtimes.groupby(["algorithm", "set", "category"]).sum().reset_index()
 
     # Fill missing values with zeros
-    all_runtimes['runtime'] = all_runtimes['runtime'].fillna(0)
+    all_runtimes["runtime"] = all_runtimes["runtime"].fillna(0)
 
     # Set seaborn style
-    sns.set_style('whitegrid')
+    sns.set_style("whitegrid")
 
     # Plot
     fig, axes = plt.subplots(1, 3, figsize=(8, 2.5))
 
     fig.subplots_adjust(top=0.85)
 
-    set_order = ["All SB3", "All ARLBench", "Subset SB3", "Subset ARLBench"]
+    set_order = ["All (SB3)", "All (ARLBench)", "Subset (SB3)", "Subset (ARLBench)"]
     hue_order = ["Atari", "Box2D", "Classic Control", "Minigrid", "MuJoCo"]
-    category_cumsum = all_runtimes.groupby('category')['runtime'].sum().sort_values(ascending=False).index
 
-    all_combinations = pd.MultiIndex.from_product([all_runtimes['algorithm'].unique(), all_runtimes['set'].unique(), hue_order], names=['algorithm', 'set', 'category'])
-    all_runtimes = all_runtimes.set_index(['algorithm', 'set', 'category']).reindex(all_combinations).reset_index()
-    all_runtimes['runtime'] = all_runtimes['runtime'].fillna(0)
+    all_combinations = pd.MultiIndex.from_product([all_runtimes["algorithm"].unique(), all_runtimes["set"].unique(), hue_order], names=["algorithm", "set", "category"])
+    all_runtimes = all_runtimes.set_index(["algorithm", "set", "category"]).reindex(all_combinations).reset_index()
+    all_runtimes["runtime"] = all_runtimes["runtime"].fillna(0)
 
-    all_runtimes['runtime'] /= 60.
+    print(all_runtimes)
 
-    runtime_data = all_runtimes[all_runtimes["algorithm"] == "ppo"]
+    all_runtimes["runtime"] /= 3600
     
     for i, algorithm in enumerate(env_categories.keys()):
         runtime_data = all_runtimes[all_runtimes["algorithm"] == algorithm]
+        print(f"### {algorithm.upper()} ###")
+        print(runtime_data.groupby(["algorithm", "set"]).sum())
+
         plot = (
-            so.Plot(runtime_data, x="runtime", y="set", color="category").add(so.Bar(), so.Agg("sum"), so.Norm(func="sum", by=["x"]), so.Stack()).scale(color=so.Nominal(order=hue_order), y=so.Nominal(order=set_order))
+            so.Plot(
+                runtime_data,
+                x="runtime",
+                y="set",
+                color="category",
+            ).add(
+                so.Bar(),
+                so.Agg("sum"),
+                so.Norm(func="sum", by=["x"]),
+                so.Stack()
+            ).scale(
+                color="colorblind",
+                y=so.Nominal(order=set_order),
+            )
         )
         plot.on(axes[i]).show()
+
         axes[i].set_title(algorithm.upper())
-        axes[i].set_xlabel("Total Runtime [min]")
+        axes[i].set_xlabel("Total Runtime [h]")
         if i == 0:
-            axes[i].set_ylabel("Environment Set")
+            axes[i].set_ylabel("Environments")
         else:
             axes[i].set_ylabel("")
             axes[i].set_yticklabels([])
@@ -240,10 +258,10 @@ def plot_runtime_comparisons():
     for l in fig.legends:
         l.set_visible(False)
     legend = fig.legends[0]
-    fig.legend(legend.legend_handles, [t.get_text() for t in legend.texts], loc='upper center', bbox_to_anchor=(0.5, 0.105), ncol=5, fancybox=False, shadow=False, frameon=False)
-    #plt.suptitle('Total Runtimes for Each Environment Category', y=.95)
-    plt.tight_layout(pad=2)
+    fig.legend(legend.legend_handles, [t.get_text() for t in legend.texts], loc="upper center", bbox_to_anchor=(0.5, 0.105), ncol=5, fancybox=False, shadow=False, frameon=False)
+    plt.tight_layout(pad=1.3)
     plt.savefig("plots/runtime_experiments/set_comparison.png", dpi=500)
+    plt.close()
     
 
 

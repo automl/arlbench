@@ -85,9 +85,9 @@ def plot_experiment(env_framework: str, env_name: str, algorithm_frameworks: lis
 
 
 if __name__ == "__main__":
-    dir = "runtime_experiments"
+    directory = "runtime_experiments"
 
-    experiments_gpu = [
+    experiments = [
         {   
             "env_framework": "envpool",
             "env_names": ["CartPole-v1", "LunarLander-v2", "Pong-v5"],
@@ -120,21 +120,4 @@ if __name__ == "__main__":
         },
     ]
 
-    #dir_cpu = "runtime_experiments/normal"
-
-    #experiments_cpu = [
-    #    {
-    #        "env_framework": "gymnax",
-    #        "env_names": ["CartPole-v1"],
-    #        "algorithm_frameworks": ["purejaxrl",  "arlbench"],
-    #        "algorithm_name": "dqn"
-    #    },
-    #    {
-    #        "env_framework": "gymnax",
-    #        "env_names": ["CartPole-v1"],
-    #        "algorithm_frameworks": ["purejaxrl",  "arlbench"],
-    #        "algorithm_name": "ppo"
-    #    },
-    #]
-
-    plot(experiments_gpu, dir)
+    plot(experiments, directory)
