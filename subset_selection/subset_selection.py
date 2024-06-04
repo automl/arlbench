@@ -11,10 +11,12 @@ from sklearn.linear_model import LinearRegression
 import seaborn as sns
 import matplotlib.pyplot as plt
 
+sns.set_style("whitegrid")
+sns.set_palette("colorblind")
 
 RAW_SOBOL_RESULTS = "results_combined/sobol"
 SUBSET_RESULTS = "subset_selection/results"
-SUBSET_PLOTS = "subset_selection/plots"
+SUBSET_PLOTS = "plots/subset_selection"
 SUBSETS_ALL = "subset_selection/subsets_all"
 
 

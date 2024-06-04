@@ -7,9 +7,10 @@ import matplotlib.pyplot as plt
 import numpy as np
 from collections import defaultdict
 
-
 sns.set_style("whitegrid")
 sns.set_palette("colorblind")
+
+SUBSET_PLOTS = "plots/subset_validation"
 
 
 EXPERIMENT_TO_ENV = {
@@ -84,8 +85,8 @@ OPTIMIZER_RESULTS = {
 }
 
 OPTIMIZER_NAMES = {
-    "SMAC_BO": "SMAC BO",
-    "SMAC_MultiFidelity": "SMAC with HB",
+    "SMAC_BO": "SMAC",
+    "SMAC_MultiFidelity": "SMAC + HB",
     "RandomSearch": "RS",
     "PBT": "PBT",
 }
@@ -114,7 +115,7 @@ def read_min_max_scores():
 
         result_raw = pd.read_csv(result_path)
 
-        # We don't need the particular hyperparameter configuration
+        # We don"t need the particular hyperparameter configuration
         result_filtered = result_raw[["run_id", "performance", "seed"]]
 
         # Match desired format
@@ -234,26 +235,86 @@ def validate(algorithm: str, method: str = "rank"):
 def plot_subset_vs_overall(overall_data, subset_data, method: str):
     fig, axes = plt.subplots(1, 2, figsize=(8, 2.5), sharey=True)
 
-    sns.boxplot(x='optimizer', y='normalized_score', data=subset_data, ax=axes[0], showmeans=True, meanline=True)
-    axes[0].set_title('Subset')
+    sns.boxplot(x="optimizer", y="normalized_score", data=subset_data, ax=axes[0], showmeans=True, meanline=True)
+    axes[0].set_title("Subset")
 
-    sns.boxplot(x='optimizer', y='normalized_score', data=overall_data, ax=axes[1], showmeans=True, meanline=True)
-    axes[1].set_title('All Environments')
+    sns.boxplot(x="optimizer", y="normalized_score", data=overall_data, ax=axes[1], showmeans=True, meanline=True)
+    axes[1].set_title("All Environments")
 
     for ax in axes:
         if method == "rank":
-            ax.set_ylabel('Average Rank')
+            ax.set_ylabel("Average Rank")
         else:
-            ax.set_ylabel('Normalized Score')
-        ax.set_xlabel('Optimizer')
+            ax.set_ylabel("Normalized Score")
+        ax.set_xlabel("Optimizer")
 
     plt.tight_layout()
-    plt.savefig(f"subset_validation/plots/{method}_{algorithm}_comparison.png", dpi=500)
+    plt.savefig(os.path.join(SUBSET_PLOTS, f"{method}_{algorithm}_comparison.png"), dpi=500)
+
+
+def plot_subset_vs_overall_combined(method: str):
+    fig, axes = plt.subplots(1, 6, figsize=(8, 2.5), sharey=True)
+
+    hue_order = ["RS", "SMAC BO", "SMAC + HB", "PBT"]
+    
+    for i, algorithm in enumerate(["ppo", "dqn", "sac"]):
+        overall_data, subset_data = validate(algorithm, method) 
+
+        sns.boxplot(
+            x="optimizer", 
+            y="normalized_score", 
+            data=subset_data, 
+            hue="optimizer", ax=axes[2 * i], 
+            showmeans=True, 
+            meanline=True, 
+            hue_order=hue_order, 
+            legend="full" if i == 0 else None,
+            meanprops={"color":"white"}
+        )
+
+        axes[2 * i].set_title(f"{algorithm.upper()}: Subset")
+
+        g = sns.boxplot(
+            x="optimizer", 
+            y="normalized_score", 
+            data=overall_data, 
+            hue="optimizer", 
+            ax=axes[2 * i + 1], 
+            showmeans=True, 
+            meanline=True, 
+            hue_order=hue_order,
+            meanprops={"color":"white"}
+        )
+        axes[2 * i + 1].set_title(f"{algorithm.upper()}: All")
+
+        if i == 0:
+            label = "Average Rank" if method == "rank" else "Normalized Score"
+        else:
+            lablel = ""
+        
+        axes[2 * i].set_ylabel(label)
+        axes[2 * i + 1].set_ylabel("")
+
+        axes[2 * i].set_xlabel("")
+        axes[2 * i + 1].set_xlabel("")
+
+        axes[2 * i].set_xticks([])
+        axes[2 * i + 1].set_xticks([])
+
+    axes[0].legend().set_visible(False)
+    
+    # fig.subplots_adjust(bottom=0.305)
+    handles, labels = axes[0].get_legend_handles_labels()   
+    fig.subplots_adjust(bottom=0.305, wspace=0.166)
+
+    fig.legend(loc='upper center', bbox_to_anchor=(0.5, 0.1), ncol=4, fancybox=False, shadow=False, frameon=False)
+
+    plt.tight_layout(pad=1.3)
+    plt.savefig(os.path.join(SUBSET_PLOTS, f"{method}_comparison_combined.png"), dpi=500)
+
 
 if __name__ == "__main__":
     for method in ["rank", "min_max"]:
-        for algorithm in ["ppo", "dqn", "sac"]:
-            overall_data, subset_data = validate(algorithm, method) 
-            plot_subset_vs_overall(overall_data, subset_data, method)
+        plot_subset_vs_overall_combined(method)
 
 
