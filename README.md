@@ -36,7 +36,7 @@ The ARLBench is a benchmark for HPO in RL - evaluate your HPO methods fast and o
 
 - **Lightning-fast JAX-Based implementations of DQN, PPO, and SAC**
 - **Compatible with many different environment domains via Gymnax, XLand and EnvPool**
-- **Representative benchmark set of HPO settings** 
+- **Representative benchmark set of HPO settings**
 
 <p align="center">
     <a href="./docs/images/subsets.png">
@@ -46,7 +46,7 @@ The ARLBench is a benchmark for HPO in RL - evaluate your HPO methods fast and o
 
 ## Installation
 
-There are currently two different ways to install ARLBench. 
+There are currently two different ways to install ARLBench.
 Whichever you choose, we recommend to create a virtual environment for the installation:
 
 ```bash
@@ -54,7 +54,7 @@ conda create -n arlbench python=3.10
 conda activate arlbench
 ```
 
-The instructions below will help you install the default version of ARLBench with the CPU version of JAX. 
+The instructions below will help you install the default version of ARLBench with the CPU version of JAX.
 If you want to run the ARLBench on GPU, we recommend you check out the [JAX installation guide](https://jax.readthedocs.io/en/latest/installation.html) to see how you can install the correct version for your GPU setup before proceeding.
 
 <details>
@@ -66,6 +66,7 @@ pip install arlbench
 ```
 
 If you want to use envpool environments (not currently supported for Mac!), instead choose:
+
 ```bash
 pip install arlbench[envpool]
 ```
@@ -82,14 +83,17 @@ cd arlbench
 ```
 
 Then you can install the benchmark. For the base version, use:
+
 ```bash
 make install
 ```
+
 For the envpool functionality (not available on Mac!), instead use:
 
 ```bash
 make install-envpool
 ```
+
 </details>
 
 > [!CAUTION]
@@ -97,26 +101,30 @@ make install-envpool
 
 ## Quickstart
 
-Here are the two ways you can use ARLBench: via the command line or as an environment. To see them in action, take a look at our [examples](https://github.com/automl/arlbench/tree/main/examples). 
+Here are the two ways you can use ARLBench: via the command line or as an environment. To see them in action, take a look at our [examples](https://github.com/automl/arlbench/tree/main/examples).
 
 ### Use the CLI
 
 We provide a command line script for black-box configuration in ARLBench which will also save the results in a 'results' directory. To execute one run of DQN on CartPole, simply run:
+
 ```bash
 python run_arlbench.py
 ```
 
 You can use the [hydra](https://hydra.cc/) command line syntax to override some of the configuration like this to change to PPO:
+
 ```bash
 python run_arlbench.py algorithm=ppo
 ```
 
 Or run multiple different seeds after one another:
+
 ```bash
 python run_arlbench.py -m autorl.seed=0,1,2,3,4
 ```
 
 All hyperparamters to adapt are in the 'hpo_config' and architecture settings in the 'nas_config', so to run a grid of different configurations for 5 seeds each , you can do this:
+
 ```bash
 python run_arlbench.py -m autorl.seed=0,1,2,3,4 nas_config.hidden_size=8,16,32 hp_config.learning_rate=0.001,0.01
 ```
@@ -148,7 +156,7 @@ If you use ARLBench in your work, please cite us:
 
 ```bibtex
 @misc{beckdierkes24,
-  author    = {J. Becktepe and J. Dierkes and C. Benjamins and D. Salinas and A. Mohan and R. Rajan and T. Eimer and F. Hutter and H. Hoos and M. Lindauer},
+  author    = {J. Becktepe and J. Dierkes and C. Benjamins and D. Salinas and A. Mohan and R. Rajan and F. Hutter and H. Hoos and M. Lindauer and T. Eimer},
   title     = {ARLBench},
   year      = {2024},
   url = {https://github.com/automl/arlbench},

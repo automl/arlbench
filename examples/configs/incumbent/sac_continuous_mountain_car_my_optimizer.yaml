@@ -16,3 +16,5 @@ hp_config:
   target_update_interval: 10
   tau: 0.52
   reward_scale: 2.32
+
+jax_enable_x64: true

@@ -186,9 +186,52 @@ Now we can build a schedule that takes the gradient information into account.
 
 ## 4. Evaluation
 
-### PPO
+### Evaluation of Static Approaches
+
+You can use ARLBench to evaluate your benchmark method. We recommend running your method on the proposed subset of environments for each algorithm. After that, you need to store the final hyperparameter configurations for the environments and algorithms. This is how the configuration for DQN on Acrobot-v1 might look like:
+
+```yaml
+# @package _global_
+defaults:
+  - override /environment: cc_acrobot
+  - override /algorithm: dqn
+
+hpo_method: my_optimizer
+
+hp_config:
+  buffer_batch_size: 64
+  buffer_size: 100000
+  buffer_prio_sampling: false
+  initial_epsilon: 0.64
+  target_epsilon: 0.112
+  gamma: 0.99
+  gradient_steps: 1
+  learning_rate: 0.0023
+  learning_starts: 1032
+  use_target_network: true
+  target_update_interval: 10
+```
+
+You should replace `my_optimizer` with the name of your method to make sure the results are stored in the right directory. You can then set your incumbent configuration for the algorithm/environment accordingly.
+
+As soon as you have stored all your incumbents (in this example in the `incumbent` directory in `configs`), you can run the evaluation script:
 
 ```bash
-python run_arlbench.py --config-name=evaluate -m "autorl.seed=100,101,102" "+incumbent=glob(*)"
-
+python run_arlbench.py --config-name=evaluate -m "autorl.seed=100,101,102" "incumbent=glob(*)"
 ```
+
+The command will evaluate all configurations on the three test seeds `100,101,102`. Make sure not to use these during the design or tuning of your methods as this will invalidate the evaluation results.
+
+The final evaluation results are stored in the `evaluation` directory for each algorithm and environment.
+
+To run the evaluation only for a single algorithm, e.g. PPO, you can adapt the `incumbent` argument:
+
+```bash
+python run_arlbench.py --config-name=evaluate -m "autorl.seed=100,101,102" "incumbent=glob(ppo*)"
+```
+
+The same can be done for single combinations of environments and algorithms.
+
+### Evaluation of Dynamic Approaches
+
+When it comes to dynamic HPO methods, you cannot simply return the incumbent but have to evaluate the whole method. For this case, we recommend to use the Hypersweeper or AutoRL Environment as shown in the examples above. Make sure to set the seed of the AutoRL Environment accordingly (`100, 101, 102, ...`).
