@@ -116,34 +116,6 @@ def read_arlbench_runtimes(approach: str) -> pd.DataFrame:
     return pd.DataFrame(runtime_data)
 
 
-def fetch_cleanrl_runtimes(algorithms, environments):
-    import wandb
-    api = wandb.Api()
-
-    data = []
-
-    runs = api.runs(path="openrlbenchmark/cleanrl")
-    for run in runs:
-        algorithm = run.config["exp_name"]
-        if not ("ppo" in algorithm or "dqn" in algorithm or "sac" in algorithm):
-            continue
-
-        environment = run.config["env_id"]
-        summary = run.summary
-
-        if not "_runtime" in summary:
-            continue
-
-        data += [{
-            "algorithm": algorithm,
-            "environment": environment,
-            "seed": run.config["seed"],
-            "runtime": summary["_runtime"]
-        }]
-
-    return pd.DataFrame(data)
-
-
 def plot_runtime_comparisons():
     runtime_results = []
 
@@ -267,26 +239,7 @@ def plot_runtime_comparisons():
 
 
 if __name__ == "__main__":
-    # ALGORITHMS = [
-    #     "dqn_atari",
-    #     "dqn_atari_jax",
-    #     "dqn_jax",
-    #     "ppo",
-    #     "ppo_atari",
-    #     "ppo_atari_envpool",
-    #     "ppo_atari_envpool_xla_jax",
-    #     "ppo_atari_envpool_xla_jax_scan",
-    #     "ppo_continuous_action",
-    #     "ppo_continuous_action_envpool_xla_jax_scan",
-    #     "sac_continuous_action",
-    #     "sac_continuous_action_jax",
-    #     "sac_jax"
-    # ] 
-    # #approach = "rs"
-    # #data = read_arlbench_runtimes(approach)
-    # #data.to_csv(os.path.join(RESULTS_COMBINED_DIR, approach, "runtimes.csv"))
-    # # data = pd.read_csv(os.path.join(RESULTS_COMBINED_DIR, approach, "runtimes.csv"))
-    # data = fetch_cleanrl_runtimes([], ["CartPole-v1"])
-    # print(np.unique(data["algorithm"]))
-
-    plot_runtime_comparisons()
+    # plot_runtime_comparisons()
+    approach = "rs"
+    data = read_arlbench_runtimes(approach)
+    print(data)
