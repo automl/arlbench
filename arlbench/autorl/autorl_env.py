@@ -66,10 +66,11 @@ class AutoRLEnv(gymnasium.Env):
     _total_training_steps: int
 
     def __init__(self, config: dict | None = None) -> None:
-        """_summary_.
+        """Creates a new AutoRL environment instance.
 
         Args:
-            config (dict | None, optional): _description_. Defaults to None.
+            config (dict | None, optional): Configuration containing keys of DEFAULT_AUTO_RL_CONFIG.
+            If no configuration keys are provided, default configuration is used. Defaults to None.
         """
         super().__init__()
 
@@ -449,10 +450,10 @@ class AutoRLEnv(gymnasium.Env):
 
     @property
     def hpo_config(self) -> Configuration:
-        """Returns .
+        """Returns the current hyperparameter configuration stored in the AutoRL environment..
 
         Returns:
-            Configuration: _description_
+            Configuration: Hyperparameter configuration.
         """
         return self._hpo_config
 
