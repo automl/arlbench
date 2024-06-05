@@ -332,7 +332,8 @@
               <div>
                 
   <h1>Source code for arlbench.core.algorithms.sac.sac</h1><div class="highlight"><pre>
-<span></span><span class="c1"># The SAC Code is heavily based on stable-baselines JAX</span>
+<span></span><span class="c1"># Parts of this code are based on Stable Baselines Jax  (https://github.com/araffin/sbx).</span>
+<span class="c1"># Licensed under the MIT License</span>
 <span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
 
 <span class="kn">import</span> <span class="nn">functools</span>
@@ -381,8 +382,6 @@
     <span class="kn">from</span> <span class="nn">arlbench.core.environments</span> <span class="kn">import</span> <span class="n">Environment</span>
     <span class="kn">from</span> <span class="nn">arlbench.core.running_statistics</span> <span class="kn">import</span> <span class="n">RunningStatisticsState</span>
     <span class="kn">from</span> <span class="nn">arlbench.core.wrappers</span> <span class="kn">import</span> <span class="n">Wrapper</span>
-
-<span class="c1"># todo: separate learning rate for critic and actor??</span>
 
 
 <div class="viewcode-block" id="SACTrainState">
@@ -527,6 +526,7 @@
             <span class="n">track_metrics</span><span class="o">=</span><span class="n">track_metrics</span><span class="p">,</span>
         <span class="p">)</span>
 
+        <span class="c1"># For the network, we need the properties of the action space</span>
         <span class="n">action_size</span><span class="p">,</span> <span class="n">discrete</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">action_type</span>
         <span class="k">if</span> <span class="n">discrete</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;SAC does not support discrete action spaces.&quot;</span><span class="p">)</span>
@@ -558,6 +558,9 @@
             <span class="n">device</span><span class="o">=</span><span class="n">jax</span><span class="o">.</span><span class="n">default_backend</span><span class="p">(),</span>
         <span class="p">)</span>
 
+        <span class="c1"># This is how we can turn the prioritized sampling on/off for dynamic HPO</span>
+        <span class="c1"># We always use the prioritized replay buffer, but if &quot;buffer_prio_sampling&quot;</span>
+        <span class="c1"># is disabled, we replace the sampling function by the uniform sampling</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">hpo_config</span><span class="p">[</span><span class="s2">&quot;buffer_prio_sampling&quot;</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">:</span>
             <span class="n">sample_fn</span> <span class="o">=</span> <span class="n">functools</span><span class="o">.</span><span class="n">partial</span><span class="p">(</span>
                 <span class="n">uniform_sample</span><span class="p">,</span>
@@ -611,12 +614,12 @@
                 <span class="p">),</span>
             <span class="p">},</span>
         <span class="p">)</span>
-        <span class="n">cond</span> <span class="o">=</span> <span class="n">EqualsCondition</span><span class="p">(</span>
-            <span class="n">cs</span><span class="p">[</span><span class="s2">&quot;target_update_interval&quot;</span><span class="p">],</span> <span class="n">cs</span><span class="p">[</span><span class="s2">&quot;use_target_network&quot;</span><span class="p">],</span> <span class="kc">True</span>
-        <span class="p">)</span>
-        <span class="n">cond</span> <span class="o">=</span> <span class="n">EqualsCondition</span><span class="p">(</span><span class="n">cs</span><span class="p">[</span><span class="s2">&quot;tau&quot;</span><span class="p">],</span> <span class="n">cs</span><span class="p">[</span><span class="s2">&quot;use_target_network&quot;</span><span class="p">],</span> <span class="kc">True</span><span class="p">)</span>
-
-        <span class="n">cs</span><span class="o">.</span><span class="n">add_condition</span><span class="p">(</span><span class="n">cond</span><span class="p">)</span>
+        <span class="n">cs</span><span class="o">.</span><span class="n">add_conditions</span><span class="p">([</span>
+            <span class="n">EqualsCondition</span><span class="p">(</span>
+                <span class="n">cs</span><span class="p">[</span><span class="s2">&quot;target_update_interval&quot;</span><span class="p">],</span> <span class="n">cs</span><span class="p">[</span><span class="s2">&quot;use_target_network&quot;</span><span class="p">],</span> <span class="kc">True</span>
+            <span class="p">),</span>
+            <span class="n">EqualsCondition</span><span class="p">(</span><span class="n">cs</span><span class="p">[</span><span class="s2">&quot;tau&quot;</span><span class="p">],</span> <span class="n">cs</span><span class="p">[</span><span class="s2">&quot;use_target_network&quot;</span><span class="p">],</span> <span class="kc">True</span><span class="p">)</span>
+        <span class="p">])</span>
 
         <span class="k">return</span> <span class="n">cs</span></div>
 
@@ -659,12 +662,12 @@
                 <span class="p">),</span>
             <span class="p">},</span>
         <span class="p">)</span>
-        <span class="n">cond</span> <span class="o">=</span> <span class="n">EqualsCondition</span><span class="p">(</span>
-            <span class="n">cs</span><span class="p">[</span><span class="s2">&quot;target_update_interval&quot;</span><span class="p">],</span> <span class="n">cs</span><span class="p">[</span><span class="s2">&quot;use_target_network&quot;</span><span class="p">],</span> <span class="kc">True</span>
-        <span class="p">)</span>
-        <span class="n">cond</span> <span class="o">=</span> <span class="n">EqualsCondition</span><span class="p">(</span><span class="n">cs</span><span class="p">[</span><span class="s2">&quot;tau&quot;</span><span class="p">],</span> <span class="n">cs</span><span class="p">[</span><span class="s2">&quot;use_target_network&quot;</span><span class="p">],</span> <span class="kc">True</span><span class="p">)</span>
-
-        <span class="n">cs</span><span class="o">.</span><span class="n">add_condition</span><span class="p">(</span><span class="n">cond</span><span class="p">)</span>
+        <span class="n">cs</span><span class="o">.</span><span class="n">add_conditions</span><span class="p">([</span>
+            <span class="n">EqualsCondition</span><span class="p">(</span>
+                <span class="n">cs</span><span class="p">[</span><span class="s2">&quot;target_update_interval&quot;</span><span class="p">],</span> <span class="n">cs</span><span class="p">[</span><span class="s2">&quot;use_target_network&quot;</span><span class="p">],</span> <span class="kc">True</span>
+            <span class="p">),</span>
+            <span class="n">EqualsCondition</span><span class="p">(</span><span class="n">cs</span><span class="p">[</span><span class="s2">&quot;tau&quot;</span><span class="p">],</span> <span class="n">cs</span><span class="p">[</span><span class="s2">&quot;use_target_network&quot;</span><span class="p">],</span> <span class="kc">True</span><span class="p">)</span>
+        <span class="p">])</span>
 
         <span class="k">return</span> <span class="n">cs</span></div>
 
@@ -796,6 +799,8 @@
         <span class="n">rng</span><span class="p">,</span> <span class="n">env_rng</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">rng</span><span class="p">)</span>
         <span class="n">env_state</span><span class="p">,</span> <span class="n">obs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">env</span><span class="o">.</span><span class="n">reset</span><span class="p">(</span><span class="n">env_rng</span><span class="p">)</span>
 
+        <span class="c1"># If any of these if not defined, we need a dummy environment transition</span>
+        <span class="c1"># to initialize them</span>
         <span class="k">if</span> <span class="p">(</span>
             <span class="n">buffer_state</span> <span class="ow">is</span> <span class="kc">None</span>
             <span class="ow">or</span> <span class="n">actor_network_params</span> <span class="ow">is</span> <span class="kc">None</span>
@@ -810,6 +815,8 @@
             <span class="n">_</span><span class="p">,</span> <span class="p">(</span><span class="n">_obs</span><span class="p">,</span> <span class="n">_reward</span><span class="p">,</span> <span class="n">_done</span><span class="p">,</span> <span class="n">_</span><span class="p">)</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">env</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">env_state</span><span class="p">,</span> <span class="n">_action</span><span class="p">,</span> <span class="n">dummy_rng</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">buffer_state</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># This is how transitions will look like during training, so we need to pass one</span>
+            <span class="c1"># once to the buffer to estimate and allocate the required buffer size</span>
             <span class="n">_timestep</span> <span class="o">=</span> <span class="n">TimeStep</span><span class="p">(</span>
                 <span class="n">last_obs</span><span class="o">=</span><span class="n">_obs</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
                 <span class="n">obs</span><span class="o">=</span><span class="n">_obs</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
@@ -834,7 +841,7 @@
             <span class="n">target_params</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
             <span class="n">tx</span><span class="o">=</span><span class="n">optax</span><span class="o">.</span><span class="n">adam</span><span class="p">(</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">hpo_config</span><span class="p">[</span><span class="s2">&quot;learning_rate&quot;</span><span class="p">],</span> <span class="n">eps</span><span class="o">=</span><span class="mf">1e-5</span>
-            <span class="p">),</span>  <span class="c1"># todo: change to actor specific learning_rate</span>
+            <span class="p">),</span>
             <span class="n">opt_state</span><span class="o">=</span><span class="n">actor_opt_state</span><span class="p">,</span>
         <span class="p">)</span>
         <span class="n">critic_train_state</span> <span class="o">=</span> <span class="n">SACTrainState</span><span class="o">.</span><span class="n">create_with_opt_state</span><span class="p">(</span>
@@ -843,7 +850,7 @@
             <span class="n">target_params</span><span class="o">=</span><span class="n">critic_target_params</span><span class="p">,</span>
             <span class="n">tx</span><span class="o">=</span><span class="n">optax</span><span class="o">.</span><span class="n">adam</span><span class="p">(</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">hpo_config</span><span class="p">[</span><span class="s2">&quot;learning_rate&quot;</span><span class="p">],</span> <span class="n">eps</span><span class="o">=</span><span class="mf">1e-5</span>
-            <span class="p">),</span>  <span class="c1"># todo: change to critic specific learning_rate</span>
+            <span class="p">),</span>
             <span class="n">opt_state</span><span class="o">=</span><span class="n">critic_opt_state</span><span class="p">,</span>
         <span class="p">)</span>
         <span class="k">if</span> <span class="n">alpha_network_params</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -855,7 +862,7 @@
             <span class="n">target_params</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
             <span class="n">tx</span><span class="o">=</span><span class="n">optax</span><span class="o">.</span><span class="n">adam</span><span class="p">(</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">hpo_config</span><span class="p">[</span><span class="s2">&quot;learning_rate&quot;</span><span class="p">],</span> <span class="n">eps</span><span class="o">=</span><span class="mf">1e-5</span>
-            <span class="p">),</span>  <span class="c1"># todo: how to set learning_rate, check with stable-baselines</span>
+            <span class="p">),</span>
             <span class="n">opt_state</span><span class="o">=</span><span class="n">alpha_opt_state</span><span class="p">,</span>
         <span class="p">)</span>
 
@@ -914,9 +921,7 @@
             <span class="n">sampled_action</span><span class="p">,</span>
         <span class="p">)</span>
 
-        <span class="c1"># todo: we need to check that the action spaces are finite</span>
         <span class="n">low</span><span class="p">,</span> <span class="n">high</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">env</span><span class="o">.</span><span class="n">action_space</span><span class="o">.</span><span class="n">low</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">env</span><span class="o">.</span><span class="n">action_space</span><span class="o">.</span><span class="n">high</span>
-        <span class="c1"># check if low or high are none, nan or inf and set to 1</span>
         <span class="k">if</span> <span class="n">low</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">low</span><span class="p">)</span><span class="o">.</span><span class="n">any</span><span class="p">()</span> <span class="ow">or</span> <span class="n">np</span><span class="o">.</span><span class="n">isinf</span><span class="p">(</span><span class="n">low</span><span class="p">)</span><span class="o">.</span><span class="n">any</span><span class="p">():</span>
             <span class="n">low</span> <span class="o">=</span> <span class="o">-</span><span class="n">jnp</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="n">action</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">high</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">high</span><span class="p">)</span><span class="o">.</span><span class="n">any</span><span class="p">()</span> <span class="ow">or</span> <span class="n">np</span><span class="o">.</span><span class="n">isinf</span><span class="p">(</span><span class="n">high</span><span class="p">)</span><span class="o">.</span><span class="n">any</span><span class="p">():</span>
@@ -935,7 +940,7 @@
         <span class="n">n_eval_steps</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">100</span><span class="p">,</span>
         <span class="n">n_eval_episodes</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SACTrainReturnT</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Performs one iteration of training.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Performs one full training.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            runner_state (SACTrainReturnT): SAC runner state.</span>
@@ -1453,7 +1458,7 @@
         <span class="n">actor_loss</span><span class="p">,</span> <span class="n">critic_loss</span><span class="p">,</span> <span class="n">alpha_loss</span><span class="p">,</span> <span class="n">td_error</span><span class="p">,</span> <span class="n">actor_grads</span><span class="p">,</span> <span class="n">critic_grads</span> <span class="o">=</span> <span class="p">(</span>
             <span class="n">step_metrics</span>
         <span class="p">)</span>
-        <span class="n">metrics</span><span class="p">,</span> <span class="n">tracjectories</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
+        <span class="n">metrics</span><span class="p">,</span> <span class="n">trajectories</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">track_metrics</span><span class="p">:</span>
             <span class="n">metrics</span> <span class="o">=</span> <span class="n">SACMetrics</span><span class="p">(</span>
                 <span class="n">actor_loss</span><span class="o">=</span><span class="n">actor_loss</span><span class="p">,</span>
@@ -1464,7 +1469,7 @@
                 <span class="n">td_error</span><span class="o">=</span><span class="n">td_error</span><span class="p">,</span>
             <span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">track_trajectories</span><span class="p">:</span>
-            <span class="n">tracjectories</span> <span class="o">=</span> <span class="n">Transition</span><span class="p">(</span>
+            <span class="n">trajectories</span> <span class="o">=</span> <span class="n">Transition</span><span class="p">(</span>
                 <span class="n">obs</span><span class="o">=</span><span class="n">last_obs</span><span class="p">,</span>
                 <span class="n">action</span><span class="o">=</span><span class="n">action</span><span class="p">,</span>
                 <span class="n">reward</span><span class="o">=</span><span class="n">reward</span><span class="p">,</span>
@@ -1472,7 +1477,7 @@
                 <span class="n">value</span><span class="o">=</span><span class="n">value</span><span class="p">,</span>
                 <span class="n">info</span><span class="o">=</span><span class="n">info</span><span class="p">,</span>
             <span class="p">)</span>
-        <span class="k">return</span> <span class="p">(</span><span class="n">runner_state</span><span class="p">,</span> <span class="n">buffer_state</span><span class="p">),</span> <span class="p">(</span><span class="n">metrics</span><span class="p">,</span> <span class="n">tracjectories</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">runner_state</span><span class="p">,</span> <span class="n">buffer_state</span><span class="p">),</span> <span class="p">(</span><span class="n">metrics</span><span class="p">,</span> <span class="n">trajectories</span><span class="p">)</span>
 
     <span class="nd">@functools</span><span class="o">.</span><span class="n">partial</span><span class="p">(</span><span class="n">jax</span><span class="o">.</span><span class="n">jit</span><span class="p">,</span> <span class="n">static_argnums</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
     <span class="k">def</span> <span class="nf">_env_step</span><span class="p">(</span>

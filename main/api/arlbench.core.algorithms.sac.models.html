@@ -553,10 +553,10 @@
 <td><p>A CNN-based critic network for SAC.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="../arlbench.core.algorithms.sac.html#arlbench.core.algorithms.sac.models.SACMLPActor" title="arlbench.core.algorithms.sac.models.SACMLPActor"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SACMLPActor</span></code></a>(action_dim, activation[, ...])</p></td>
-<td><p>A MLP-based actor network for PPO.</p></td>
+<td><p>An MLP-based actor network for PPO.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="../arlbench.core.algorithms.sac.html#arlbench.core.algorithms.sac.models.SACMLPCritic" title="arlbench.core.algorithms.sac.models.SACMLPCritic"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SACMLPCritic</span></code></a>(action_dim, activation[, ...])</p></td>
-<td><p>A MLP-based critic network for SAC.</p></td>
+<td><p>An MLP-based critic network for SAC.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="../arlbench.core.algorithms.sac.html#arlbench.core.algorithms.sac.models.SACVectorCritic" title="arlbench.core.algorithms.sac.models.SACVectorCritic"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SACVectorCritic</span></code></a>(critic, action_dim, activation)</p></td>
 <td><p></p></td>
@@ -725,7 +725,7 @@ another module inside the other module’s <code class="docutils literal notrans
 <dt class="sig sig-object py" id="arlbench.core.algorithms.sac.models.SACMLPActor">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">arlbench.core.algorithms.sac.models.</span></span><span class="sig-name descname"><span class="pre">SACMLPActor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">action_dim</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">activation</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hidden_size=64</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">log_std_min=-20</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">log_std_max=2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parent=&lt;flax.linen.module._Sentinel</span> <span class="pre">object&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name=None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arlbench/core/algorithms/sac/models.html#SACMLPActor"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.core.algorithms.sac.models.SACMLPActor" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></p>
-<p>A MLP-based actor network for PPO.</p>
+<p>An MLP-based actor network for PPO.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="arlbench.core.algorithms.sac.models.SACMLPActor.__call__">
 <span class="sig-name descname"><span class="pre">__call__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arlbench/core/algorithms/sac/models.html#SACMLPActor.__call__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.core.algorithms.sac.models.SACMLPActor.__call__" title="Link to this definition">¶</a></dt>
@@ -775,7 +775,7 @@ another module inside the other module’s <code class="docutils literal notrans
 <dt class="sig sig-object py" id="arlbench.core.algorithms.sac.models.SACMLPCritic">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">arlbench.core.algorithms.sac.models.</span></span><span class="sig-name descname"><span class="pre">SACMLPCritic</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">action_dim</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">activation</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hidden_size=64</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parent=&lt;flax.linen.module._Sentinel</span> <span class="pre">object&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name=None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arlbench/core/algorithms/sac/models.html#SACMLPCritic"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.core.algorithms.sac.models.SACMLPCritic" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></p>
-<p>A MLP-based critic network for SAC.</p>
+<p>An MLP-based critic network for SAC.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="arlbench.core.algorithms.sac.models.SACMLPCritic.__call__">
 <span class="sig-name descname"><span class="pre">__call__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">action</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arlbench/core/algorithms/sac/models.html#SACMLPCritic.__call__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.core.algorithms.sac.models.SACMLPCritic.__call__" title="Link to this definition">¶</a></dt>

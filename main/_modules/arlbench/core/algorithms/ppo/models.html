@@ -343,7 +343,7 @@
 <div class="viewcode-block" id="MLPActorCritic">
 <a class="viewcode-back" href="../../../../../arlbench.core.algorithms.ppo.html#arlbench.core.algorithms.ppo.models.MLPActorCritic">[docs]</a>
 <span class="k">class</span> <span class="nc">MLPActorCritic</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;A MLP-based Actor-Critic network for PPO.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;An MLP-based Actor-Critic network for PPO.&quot;&quot;&quot;</span>
 
     <span class="n">action_dim</span><span class="p">:</span> <span class="nb">int</span>
     <span class="n">activation</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;tanh&quot;</span>
@@ -481,7 +481,7 @@
 <div class="viewcode-block" id="CNNActorCritic.__call__">
 <a class="viewcode-back" href="../../../../../arlbench.core.algorithms.ppo.html#arlbench.core.algorithms.ppo.models.CNNActorCritic.__call__">[docs]</a>
     <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
-        <span class="n">x</span> <span class="o">=</span> <span class="n">x</span> <span class="o">/</span> <span class="mf">255.0</span>  <span class="c1"># todo: make a clean solution for this</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">x</span> <span class="o">/</span> <span class="mf">255.0</span>
         <span class="n">x</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
         <span class="n">features</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">feature_conv0</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
         <span class="n">features</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">activation_func</span><span class="p">(</span><span class="n">features</span><span class="p">)</span>
