@@ -22,6 +22,7 @@
       <a href="#features">Features</a> |
       <a href="#installation">Installation</a> |
       <a href="#quickstart">Quickstart</a> |
+      <a href="#experiments">Experiments</a> |
       <a href="#cite-us">Cite Us</a>
     </h3>
 </div>
@@ -141,6 +142,11 @@ obs, objectives, term, trunc, info = env.step(action)
 ```
 
 Just like with RL agents, you can call 'step' multiple times until termination (which you define via the AutoRLEnv's config). For all configuration options, check out our [documentation](https://automl.github.io/arlbench/main/).
+
+## Experiments
+
+The commands for the landscape analysis are stated in `runscripts/landscaping_commands.sh`.
+The commands for the optimizer runs as part of the subset validation are stated in `runscripts/optimizer_commands.sh`.
 
 ## Cite Us
 
