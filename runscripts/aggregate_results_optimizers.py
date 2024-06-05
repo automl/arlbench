@@ -38,7 +38,18 @@ def aggregate_runhistories(approach: str):
                             continue
                         data["seed"] = seed_dir
 
+                        # Find the row index where the last header starts
+                        last_header_row_index = 0
+                        for i, row in data.iterrows():
+                            if str(row["run_id"]) == "run_id":
+                                last_header_row_index = i
+
+                        # If multiple headers exists, skip rows before last
+                        if last_header_row_index > 0:
+                            data = pd.read_csv(csv_file, skiprows=last_header_row_index + 1)
+
                         if approach == "pbt":
+                            data["run_id"] = data["run_id"].astype(int)
                             # In some cases the hypersweeper started another run that is out-of-budget
                             data = data[data["run_id"] < POPULATION_SIZE * NUM_CONFIGS]
 
