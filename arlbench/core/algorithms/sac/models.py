@@ -33,7 +33,7 @@ class AlphaCoef(nn.Module):
 
 
 class SACMLPActor(nn.Module):
-    """A MLP-based actor network for PPO."""
+    """An MLP-based actor network for PPO."""
 
     action_dim: int
     activation: int
@@ -153,7 +153,7 @@ class SACCNNActor(nn.Module):
 
 
 class SACMLPCritic(nn.Module):
-    """A MLP-based critic network for SAC."""
+    """An MLP-based critic network for SAC."""
 
     action_dim: int
     activation: int

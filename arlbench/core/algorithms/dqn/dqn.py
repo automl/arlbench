@@ -131,6 +131,7 @@ class DQN(Algorithm):
         env: Environment | Wrapper,
         eval_env: Environment | Wrapper | None = None,
         deterministic_eval: bool = True,
+        eval_eps: float = 0.05,
         cnn_policy: bool = False,
         nas_config: Configuration | None = None,
         track_trajectories: bool = False,
@@ -141,7 +142,9 @@ class DQN(Algorithm):
         Args:
             hpo_config (Configuration): Hyperparameter configuration.
             env (Environment | AutoRLWrapper): Training environment.
-            eval_env (Environment | AutoRLWrapper | None, optional): Evaluation environent (otherwise training environment is used for evaluation). Defaults to None.
+            eval_env (Environment | AutoRLWrapper | None, optional): Evaluation environment (otherwise training environment is used for evaluation). Defaults to None.
+            deterministic_eval (bool, optional): Use deterministic evaluation. Defaults to True.
+            eval_eps (float, optional): Epsilon value for non-deterministic evaluation. Defaults to 0.05.
             cnn_policy (bool, optional): Use CNN network architecture. Defaults to False.
             nas_config (Configuration | None, optional): Neural architecture configuration. Defaults to None.
             track_trajectories (bool, optional):  Track metrics such as loss and gradients during training. Defaults to False.
@@ -159,6 +162,8 @@ class DQN(Algorithm):
             track_trajectories=track_trajectories,
             track_metrics=track_metrics,
         )
+
+        self.eval_eps = eval_eps
 
         # For the network, we need the properties of the action space
         action_size, discrete = self.action_type
@@ -218,6 +223,7 @@ class DQN(Algorithm):
                 "tau": Float("tau", (0.01, 1.0), default=1.0),
                 "initial_epsilon": Float("initial_epsilon", (0.5, 1.0), default=1.0),
                 "target_epsilon": Float("target_epsilon", (0.001, 0.2), default=0.05),
+                "exploration_fraction": Float("initial_epsilon", (0.005, 0.5), default=0.1),
                 "use_target_network": Categorical(
                     "use_target_network", [True, False], default=True
                 ),
@@ -267,6 +273,7 @@ class DQN(Algorithm):
                 "tau": Float("tau", (0.01, 1.0), default=1.0),
                 "initial_epsilon": Float("initial_epsilon", (0.5, 1.0), default=1.0),
                 "target_epsilon": Float("target_epsilon", (0.001, 0.2), default=0.05),
+                "exploration_fraction": Float("initial_epsilon", (0.005, 0.5), default=0.1),
                 "use_target_network": Categorical(
                     "use_target_network", [True, False], default=True
                 ),
@@ -315,7 +322,7 @@ class DQN(Algorithm):
         runner_state: DQNRunnerState,
         train_result: DQNTrainingResult | None,
     ) -> dict[str, Callable]:
-        """Creates a factory dictionary of all posssible checkpointing options for DQN.
+        """Creates a factory dictionary of all possible checkpointing options for DQN.
 
         Args:
             runner_state (DQNRunnerState): Algorithm runner state.
@@ -381,7 +388,7 @@ class DQN(Algorithm):
             _, (_obs, _reward, _done, _) = self.env.step(env_state, _action, dummy_rng)
 
         if buffer_state is None:
-            # This is how transitions will look like during training so we need to pass one
+            # This is how transitions will look like during training, so we need to pass one
             # once to the buffer to estimate and allocate the required buffer size
             _timestep = TimeStep(
                 last_obs=_obs[0],
@@ -458,7 +465,7 @@ class DQN(Algorithm):
             rnd_action = random_action(rng, obs)
             grd_action = greedy_action(rng, obs)
             return jax.lax.select(
-                jax.random.uniform(rng, obs.shape[:1]) < 0.05, rnd_action, grd_action
+                jax.random.uniform(rng, obs.shape[:1]) < self.eval_eps, rnd_action, grd_action
             )
 
         return jax.lax.cond(
@@ -478,7 +485,7 @@ class DQN(Algorithm):
         n_eval_steps: int = 100,
         n_eval_episodes: int = 10,
     ) -> DQNTrainReturnT:
-        """Performs one iteration of training.
+        """Performs one full training.
 
         Args:
             runner_state (DQNRunnerState): DQN runner state.
@@ -521,7 +528,6 @@ class DQN(Algorithm):
                 n_update_steps,
             )
             eval_returns = self.eval(runner_state, n_eval_episodes)
-            #jax.debug.print("{eval_returns}", eval_returns=eval_returns.mean())
 
             return (runner_state, buffer_state), DQNTrainingResult(
                 eval_rewards=eval_returns, trajectories=trajectories, metrics=metrics
@@ -549,7 +555,7 @@ class DQN(Algorithm):
 
         Args:
             train_state (DQNTrainState): DQN training state.
-            observations (jnp.ndarray): Batch of observations..
+            observations (jnp.ndarray): Batch of observations.
             actions (jnp.ndarray): Batch of actions.
             next_observations (jnp.ndarray): Batch of next observations.
             rewards (jnp.ndarray): Batch of rewards.
@@ -632,7 +638,7 @@ class DQN(Algorithm):
             ],
             tuple[jnp.ndarray, jnp.ndarray, jnp.ndarray, jnp.ndarray, dict],
         ]:
-            """Takes one environment step (n_envs timesteps).
+            """Takes one environment step (n_envs many steps).
 
             Args:
                 carry (tuple[chex.PRNGKey, DQNTrainState, RunningStatisticsState, jnp.ndarray, Any, int, PrioritisedTrajectoryBufferState]): Carry for jax.lax.scan().
@@ -685,11 +691,11 @@ class DQN(Algorithm):
 
             rng, sample_rng, action_rng = jax.random.split(rng, 3)
             training_fraction = jnp.min(
-                jnp.array([global_step * self.env.n_envs / n_total_timesteps, 0.1])
+                jnp.array([global_step * self.env.n_envs / n_total_timesteps, self.hpo_config["exploration_fraction"]])
             )
             epsilon = self.hpo_config["initial_epsilon"] - training_fraction * (
                 (self.hpo_config["initial_epsilon"] - self.hpo_config["target_epsilon"])
-                / 0.1
+                / self.hpo_config["exploration_fraction"]
             )
             rand_action = random_action(sample_rng, last_obs)
             greedy_action = greedy_action(action_rng, last_obs)
@@ -964,13 +970,13 @@ class DQN(Algorithm):
             obs=last_obs,
             global_step=global_step,
         )
-        tracjectories = None
+        trajectories = None
         if self.track_trajectories:
-            tracjectories = Transition(
+            trajectories = Transition(
                 obs=observations,
                 action=action,
                 reward=reward,
                 done=done,
                 info=info,
             )
-        return (runner_state, buffer_state), (metrics, tracjectories)
+        return (runner_state, buffer_state), (metrics, trajectories)

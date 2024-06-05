@@ -7,7 +7,7 @@ from flax.linen.initializers import constant, orthogonal
 
 
 class MLPActorCritic(nn.Module):
-    """A MLP-based Actor-Critic network for PPO."""
+    """An MLP-based Actor-Critic network for PPO."""
 
     action_dim: int
     activation: str = "tanh"
@@ -131,7 +131,7 @@ class CNNActorCritic(nn.Module):
         )
 
     def __call__(self, x):
-        x = x / 255.0  # todo: make a clean solution for this
+        x = x / 255.0
         x = jnp.transpose(x, (0, 2, 3, 1))
         features = self.feature_conv0(x)
         features = self.activation_func(features)

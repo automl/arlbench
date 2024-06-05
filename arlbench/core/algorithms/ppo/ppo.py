@@ -56,9 +56,6 @@ class PPORunnerState(NamedTuple):
     env_state: Any
     obs: chex.Array
     global_step: int
-    return_buffer_idx: chex.Array | None = None
-    return_buffer: chex.Array | None = None
-    cur_rewards: chex.Array | None = None
 
 
 class PPOState(NamedTuple):
@@ -327,9 +324,6 @@ class PPO(Algorithm):
             env_state=env_state,
             obs=obs,
             global_step=0,
-            return_buffer_idx=jnp.array([0]),
-            return_buffer=jnp.zeros(100),
-            cur_rewards=jnp.zeros(self.env.n_envs),
         )
 
         return PPOState(runner_state=runner_state, buffer_state=None)
@@ -409,7 +403,6 @@ class PPO(Algorithm):
             Returns:
                 tuple[PPORunnerState, PPOTrainingResult]: Tuple of PPO runner state and training result.
             """
-            #jax.debug.print("hallo")
             _runner_state, (metrics, trajectories) = jax.lax.scan(
                 self._update_step,
                 _runner_state,
@@ -422,7 +415,6 @@ class PPO(Algorithm):
                 ),
             )
             eval_returns = self.eval(_runner_state, n_eval_episodes)
-            #jax.debug.print("{ret}", ret=eval_returns.mean())
 
             return _runner_state, PPOTrainingResult(
                 eval_rewards=eval_returns, trajectories=trajectories, metrics=metrics
@@ -459,9 +451,6 @@ class PPO(Algorithm):
             env_state,
             last_obs,
             global_step,
-            return_buffer_idx,
-            return_buffer,
-            cur_rewards,
         ) = runner_state
         if self.hpo_config["normalize_observations"]:
             normalizer_state = running_statistics.update(
@@ -501,9 +490,6 @@ class PPO(Algorithm):
             env_state=env_state,
             obs=last_obs,
             global_step=global_step,
-            return_buffer_idx=return_buffer_idx,
-            return_buffer=runner_state.return_buffer,
-            cur_rewards=runner_state.cur_rewards,
         )
         metrics, trajectories = None, None
         if self.track_metrics:
@@ -532,9 +518,6 @@ class PPO(Algorithm):
             env_state,
             last_obs,
             global_step,
-            return_buffer_idx,
-            return_buffer,
-            cur_rewards,
         ) = runner_state
 
         # Select action(s)
@@ -563,8 +546,6 @@ class PPO(Algorithm):
         global_step += 1
 
         transition = Transition(done, action, value, reward, log_prob, last_obs, info)
-        cur_rewards += reward
-        jnp.array([False])  # todo: print_reward!!
 
         runner_state = PPORunnerState(
             train_state=train_state,
@@ -573,9 +554,6 @@ class PPO(Algorithm):
             obs=obsv,
             rng=rng,
             global_step=global_step,
-            return_buffer_idx=return_buffer_idx,
-            return_buffer=return_buffer,
-            cur_rewards=cur_rewards,
         )
         return runner_state, transition
 
