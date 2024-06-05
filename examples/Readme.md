@@ -212,26 +212,27 @@ hp_config:
   target_update_interval: 10
 ```
 
-You should replace `my_optimizer` with the name of your method to make sure the results are stored in the right directory. You can then set your incumbent configuration for the algorithm/environment accordingly.
-
+You can then set your incumbent configuration for the algorithm/environment accordingly.
 As soon as you have stored all your incumbents (in this example in the `incumbent` directory in `configs`), you can run the evaluation script:
 
 ```bash
-python run_arlbench.py --config-name=evaluate -m "autorl.seed=100,101,102" "incumbent=glob(*)"
+python run_arlbench.py --config-name=evaluate -m "hpo_method=<my_optimizer>" "autorl.seed=100-110" "incumbent=glob(*)" 
 ```
 
-The command will evaluate all configurations on the three test seeds `100,101,102`. Make sure not to use these during the design or tuning of your methods as this will invalidate the evaluation results.
+The command will evaluate all configurations on the test seeds `100,101,102,...`. Make sure not to use these during the design or tuning of your methods as this will invalidate the evaluation results.
+We recommend test on at least 10 seeds.
 
 The final evaluation results are stored in the `evaluation` directory for each algorithm and environment.
 
 To run the evaluation only for a single algorithm, e.g. PPO, you can adapt the `incumbent` argument:
 
 ```bash
-python run_arlbench.py --config-name=evaluate -m "autorl.seed=100,101,102" "incumbent=glob(ppo*)"
+python run_arlbench.py --config-name=evaluate -m "autorl.seed=100-110" "incumbent=glob(ppo*)"
 ```
 
 The same can be done for single combinations of environments and algorithms.
 
 ### Evaluation of Dynamic Approaches
 
-When it comes to dynamic HPO methods, you cannot simply return the incumbent but have to evaluate the whole method. For this case, we recommend to use the Hypersweeper or AutoRL Environment as shown in the examples above. Make sure to set the seed of the AutoRL Environment accordingly (`100, 101, 102, ...`).
+When it comes to dynamic HPO methods, you cannot simply return the incumbent for evaluation since wou'll ahve a schedule with variable length and configuration intervals. 
+For this case, we recommend to use your dynamic tuning setup, but make sure to set the seed of the AutoRL Environment accordingly to a set of test seeds (`100, 101, 102, ...`).
