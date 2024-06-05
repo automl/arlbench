@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import pytest
+
 from arlbench import AutoRLEnv
 from arlbench.core.algorithms import DQN
 

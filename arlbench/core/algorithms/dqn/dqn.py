@@ -1,5 +1,6 @@
 # Parts of this code are based on PureJaxRL (https://github.com/luchris429/purejaxrl).
 # Licensed under the Apache License 2.0 (http://www.apache.org/licenses/LICENSE-2.0).
+"""DQN algorithm."""
 from __future__ import annotations
 
 import functools
@@ -60,6 +61,7 @@ class DQNTrainState(TrainState):
         opt_state: optax.OptState,
         **kwargs,
     ):
+        """Creates a DQN training state with the given optimizer state."""
         if opt_state is None:
             opt_state = tx.init(params)
         return cls(
@@ -199,6 +201,7 @@ class DQN(Algorithm):
 
     @staticmethod
     def get_hpo_config_space(seed: int | None = None) -> ConfigurationSpace:
+        """Returns the hyperparameter optimization (HPO) configuration space for DQN."""
         # defaults from https://stable-baselines3.readthedocs.io/en/master/modules/dqn.html
         cs = ConfigurationSpace(
             name="DQNConfigSpace",
@@ -250,11 +253,60 @@ class DQN(Algorithm):
         return cs
 
     @staticmethod
+    def get_hpo_search_space(seed: int | None = None) -> ConfigurationSpace:
+        """Returns the hyperparameter search space for DQN."""
+        cs = ConfigurationSpace(
+            name="DQNConfigSpace",
+            seed=seed,
+            space={
+                "buffer_size": Integer(
+                    "buffer_size", (1024, int(1e7)), default=1000000
+                ),
+                "buffer_batch_size": Categorical(
+                    "buffer_batch_size", [4, 8, 16, 32, 64], default=16
+                ),
+                "buffer_prio_sampling": Categorical(
+                    "buffer_prio_sampling", [True, False], default=False
+                ),
+                "buffer_alpha": Float("buffer_alpha", (0.01, 1.0), default=0.9),
+                "buffer_beta": Float("buffer_beta", (0.01, 1.0), default=0.9),
+                "buffer_epsilon": Float("buffer_epsilon", (1e-7, 1e-3), default=1e-6),
+                "learning_rate": Float(
+                    "learning_rate", (1e-6, 0.1), default=3e-4, log=True
+                ),
+                "tau": Float("tau", (0.01, 1.0), default=1.0),
+                "initial_epsilon": Float("initial_epsilon", (0.5, 1.0), default=1.0),
+                "target_epsilon": Float("target_epsilon", (0.001, 0.2), default=0.05),
+                "use_target_network": Categorical(
+                    "use_target_network", [True, False], default=True
+                ),
+                "train_freq": Integer("train_freq", (1, 256), default=4),
+                "gradient steps": Integer("gradient_steps", (1, 256), default=1),
+                "learning_starts": Integer("learning_starts", (0, 32768), default=1024),
+                "target_update_interval": Integer(
+                    "target_update_interval", (1, 2000), default=1000
+                ),
+            },
+        )
+        cs.add_conditions(
+            [
+                EqualsCondition(
+                    cs["target_update_interval"], cs["use_target_network"], True
+                ),
+                EqualsCondition(cs["tau"], cs["use_target_network"], True),
+            ]
+        )
+
+        return cs
+
+    @staticmethod
     def get_default_hpo_config() -> Configuration:
+        """Returns the default hyperparameter configuration for DQN."""
         return DQN.get_hpo_config_space().get_default_configuration()
 
     @staticmethod
     def get_nas_config_space(seed=None) -> ConfigurationSpace:
+        """Returns the neural architecture search (NAS) configuration space for DQN."""
         return ConfigurationSpace(
             name="DQNNASConfigSpace",
             seed=seed,
@@ -268,6 +320,7 @@ class DQN(Algorithm):
 
     @staticmethod
     def get_default_nas_config() -> Configuration:
+        """Returns the default NAS configuration for DQN."""
         return DQN.get_nas_config_space().get_default_configuration()
 
     @staticmethod
@@ -825,7 +878,7 @@ class DQN(Algorithm):
         def dont_update(
             rng: chex.PRNGKey,
             train_state: DQNTrainState,
-            normalizer_state: RunningStatisticsState,
+            normalizer_state: RunningStatisticsState, # noqa: ARG001
             buffer_state: PrioritisedTrajectoryBufferState,
         ) -> tuple[
             chex.PRNGKey,

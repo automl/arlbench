@@ -1,3 +1,4 @@
+"""State features for the AutoRL environment."""
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
@@ -65,6 +66,7 @@ class GradInfo(StateFeature):
 
     @staticmethod
     def __call__(train_func: TrainFunc, state_features: dict) -> TrainFunc:
+        """Wraps the training function with the gradient information calculation."""
         def wrapper(*args, **kwargs):
             result = train_func(*args, **kwargs)
 
@@ -96,6 +98,7 @@ class GradInfo(StateFeature):
 
     @staticmethod
     def get_state_space() -> gymnasium.spaces.Space:
+        """Returns state space."""
         return gymnasium.spaces.Box(
             low=np.array([-np.inf, 0]), high=np.array([np.inf, np.inf])
         )

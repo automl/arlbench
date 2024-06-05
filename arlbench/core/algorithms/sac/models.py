@@ -1,3 +1,4 @@
+"""SAC models for the actor and critic networks."""
 from __future__ import annotations
 
 import distrax
@@ -10,11 +11,13 @@ class TanhTransformedDistribution(distrax.Transformed):  # type: ignore[name-def
     """Tanh transformation of a distrax distribution."""
 
     def __init__(self, distribution):  # type: ignore[name-defined]
+        """Initializes the Tanh transformation of a distribution."""
         super().__init__(
             distribution=distribution, bijector=distrax.Block(distrax.Tanh(), 1)
         )
 
     def mode(self) -> jnp.ndarray:
+        """Returns the mode of the distribution."""
         return self.bijector.forward(self.distribution.mode())
 
 
@@ -24,11 +27,13 @@ class AlphaCoef(nn.Module):
     alpha_init: float = 1.0
 
     def setup(self):
+        """Initializes the alpha coefficient."""
         self.log_alpha = self.param(
-            "log_alpha", init_fn=lambda rng: jnp.full((), jnp.log(self.alpha_init))
+            "log_alpha", init_fn=lambda rng: jnp.full((), jnp.log(self.alpha_init)) # noqa: ARG005
         )
 
     def __call__(self) -> jnp.ndarray:
+        """Returns the alpha coefficient."""
         return jnp.exp(self.log_alpha)
 
 
@@ -42,6 +47,7 @@ class SACMLPActor(nn.Module):
     log_std_max: float = 2
 
     def setup(self):
+        """Initializes the actor network."""
         if self.activation == "tanh":
             self.activation_func = nn.tanh
         elif self.activation == "relu":
@@ -67,6 +73,7 @@ class SACMLPActor(nn.Module):
         )
 
     def __call__(self, x):
+        """Applies the actor to the input."""
         actor_hidden = self.dense0(x)
         actor_hidden = self.activation_func(actor_hidden)
         actor_hidden = self.dense1(actor_hidden)
@@ -90,6 +97,7 @@ class SACCNNActor(nn.Module):
     log_std_max: float = 2
 
     def setup(self):
+        """Initializes the actor network."""
         if self.activation == "tanh":
             self.activation_func = nn.tanh
         elif self.activation == "relu":
@@ -134,6 +142,7 @@ class SACCNNActor(nn.Module):
         )
 
     def __call__(self, x):
+        """Applies the actor to the input."""
         x = x / 255.0
         x = jnp.transpose(x, (0, 2, 3, 1))
         actor_hidden = self.actor_conv0(x)
@@ -160,6 +169,7 @@ class SACMLPCritic(nn.Module):
     hidden_size: int = 64
 
     def setup(self):
+        """Initializes the critic network."""
         if self.activation == "tanh":
             self.activation_func = nn.tanh
         elif self.activation == "relu":
@@ -182,6 +192,7 @@ class SACMLPCritic(nn.Module):
         )
 
     def __call__(self, x, action):
+        """Applies the critic to the input."""
         x = x.reshape((x.shape[0], -1))
         x = jnp.concatenate([x, action], -1)
         critic = self.critic0(x)
@@ -201,6 +212,7 @@ class SACCNNCritic(nn.Module):
     hidden_size: int = 512
 
     def setup(self):
+        """Initializes the critic network."""
         if self.activation == "tanh":
             self.activation_func = nn.tanh
         elif self.activation == "relu":
@@ -240,6 +252,7 @@ class SACCNNCritic(nn.Module):
         self.out = nn.Dense(1, kernel_init=orthogonal(1.0), bias_init=constant(0.0))
 
     def __call__(self, x, action):
+        """Applies the critic to the input."""
         x = x / 255.0
         x = jnp.transpose(x(0, 2, 3, 1))
         x = jnp.concatenate([x, action], -1)
@@ -258,6 +271,7 @@ class SACCNNCritic(nn.Module):
 
 
 class SACVectorCritic(nn.Module):
+    """A vectorized critic network for SAC."""
     critic: type[SACMLPCritic] | type[SACCNNCritic]
     action_dim: int
     activation: int
@@ -266,6 +280,7 @@ class SACVectorCritic(nn.Module):
 
     @nn.compact
     def __call__(self, x, action):
+        """Applies the critic to the input."""
         vmap_critic = nn.vmap(
             self.critic,
             variable_axes={"params": 0},  # parameters not shared between the critics

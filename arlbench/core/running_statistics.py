@@ -1,11 +1,15 @@
 # This file includes code from brax (https://github.com/google/brax)
 # Licensed under the Apache License 2.0 (http://www.apache.org/licenses/LICENSE-2.0).
-from typing import Any, Optional, Tuple, Iterable, Mapping, Union
-import dataclasses
+"""Running statistics."""
+from __future__ import annotations
 
-from flax import struct
+import dataclasses
+from collections.abc import Iterable, Mapping
+from typing import Any
+
 import jax
 import jax.numpy as jnp
+from flax import struct
 
 
 @dataclasses.dataclass(frozen=True)
@@ -14,7 +18,7 @@ class Array:
 
   Similar to dm_env.specs.Array.
   """
-  shape: Tuple[int, ...]
+  shape: tuple[int, ...]
   dtype: jnp.dtype
 
 
@@ -23,14 +27,10 @@ NestedArray = jnp.ndarray
 NestedTensor = Any
 
 # pytype: disable=not-supported-yet
-NestedSpec = Union[
-  Array,
-  Iterable['NestedSpec'],
-  Mapping[Any, 'NestedSpec'],
-]
+NestedSpec = Array | Iterable["NestedSpec"] | Mapping[Any, "NestedSpec"]
 # pytype: enable=not-supported-yet
 
-Nest = Union[NestedArray, NestedTensor, NestedSpec]
+Nest = NestedArray | NestedTensor | NestedSpec
 
 
 def _zeros_like(nest: Nest, dtype=None) -> Nest:
@@ -70,7 +70,7 @@ def init_state(nest: Nest) -> RunningStatisticsState:
 
 def _validate_batch_shapes(batch: NestedArray,
                            reference_sample: NestedArray,
-                           batch_dims: Tuple[int, ...]) -> None:
+                           batch_dims: tuple[int, ...]) -> None:
   """Verifies shapes of the batch leaves against the reference sample.
 
   Checks that batch dimensions are the same in all leaves in the batch.
@@ -88,7 +88,7 @@ def _validate_batch_shapes(batch: NestedArray,
   def validate_node_shape(reference_sample: jnp.ndarray,
                           batch: jnp.ndarray) -> None:
     expected_shape = batch_dims + reference_sample.shape
-    assert batch.shape == expected_shape, f'{batch.shape} != {expected_shape}'
+    assert batch.shape == expected_shape, f"{batch.shape} != {expected_shape}"
 
   jax.tree_util.tree_map(validate_node_shape, reference_sample, batch)
 
@@ -96,10 +96,10 @@ def _validate_batch_shapes(batch: NestedArray,
 def update(state: RunningStatisticsState,
            batch: Nest,
            *,
-           weights: Optional[jnp.ndarray] = None,
+           weights: jnp.ndarray | None = None,
            std_min_value: float = 1e-6,
            std_max_value: float = 1e6,
-           pmap_axis_name: Optional[str] = None,
+           pmap_axis_name: str | None = None,
            validate_shapes: bool = True) -> RunningStatisticsState:
   """Updates the running statistics with the given batch of data.
 
@@ -147,14 +147,13 @@ def update(state: RunningStatisticsState,
   # compatible, arrays will be silently broadcasted resulting in incorrect
   # statistics.
   if validate_shapes:
-    if weights is not None:
-      if weights.shape != batch_dims:
-        raise ValueError(f'{weights.shape} != {batch_dims}')
+    if weights is not None and weights.shape != batch_dims:
+      raise ValueError(f"{weights.shape} != {batch_dims}")
     _validate_batch_shapes(batch, state.mean, batch_dims)
 
   def _compute_node_statistics(
       mean: jnp.ndarray, summed_variance: jnp.ndarray,
-      batch: jnp.ndarray) -> Tuple[jnp.ndarray, jnp.ndarray]:
+      batch: jnp.ndarray) -> tuple[jnp.ndarray, jnp.ndarray]:
     assert isinstance(mean, jnp.ndarray), type(mean)
     assert isinstance(summed_variance, jnp.ndarray), type(summed_variance)
     # The mean and the sum of past variances are updated with Welford's
@@ -192,8 +191,7 @@ def update(state: RunningStatisticsState,
     # Summed variance can get negative due to rounding errors.
     summed_variance = jnp.maximum(summed_variance, 0)
     std = jnp.sqrt(summed_variance / count)
-    std = jnp.clip(std, std_min_value, std_max_value)
-    return std
+    return jnp.clip(std, std_min_value, std_max_value)
 
   std = jax.tree_util.tree_map(compute_std, summed_variance, state.std)
 
@@ -203,7 +201,7 @@ def update(state: RunningStatisticsState,
 
 def normalize(batch: NestedArray,
               mean_std: NestedMeanStd,
-              max_abs_value: Optional[float] = None) -> NestedArray:
+              max_abs_value: float | None = None) -> NestedArray:
   """Normalizes data using running statistics."""
 
   def normalize_leaf(data: jnp.ndarray, mean: jnp.ndarray,

@@ -1,3 +1,4 @@
+"""This module provides a function to run ARLBench using a given config."""
 from __future__ import annotations
 
 import os

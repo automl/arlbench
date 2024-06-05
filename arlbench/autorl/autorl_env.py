@@ -1,3 +1,4 @@
+"""Automated Reinforcement Learning Environment."""
 from __future__ import annotations
 
 import warnings
@@ -8,6 +9,7 @@ import gymnasium
 import jax
 import numpy as np
 import pandas as pd
+from ConfigSpace import Configuration, ConfigurationSpace
 
 from arlbench.core.algorithms import (
     DQN,
@@ -28,8 +30,6 @@ from .state_features import STATE_FEATURES, StateFeature
 ObservationT = dict[str, np.ndarray]
 ObjectivesT = dict[str, float]
 InfoT = dict[str, Any]
-
-from ConfigSpace import Configuration, ConfigurationSpace
 
 DEFAULT_AUTO_RL_CONFIG = {
     "seed": 42,
@@ -318,7 +318,7 @@ class AutoRLEnv(gymnasium.Env):
         if checkpoint_path:
             try:
                 self._algorithm_state = self._load(checkpoint_path, seed)
-            except Exception as e:
+            except Exception as e: # noqa: BLE001
                 print(e)
                 init_rng = jax.random.key(seed)
                 self._algorithm_state = self._algorithm.init(init_rng)

@@ -1,3 +1,4 @@
+"""This module contains the objectives for the AutoRL environment."""
 from __future__ import annotations
 
 import time
@@ -87,6 +88,7 @@ class Runtime(Objective):
     def __call__(
         train_func: TrainFunc, objectives: dict, optimize_objectives: str
     ) -> TrainFunc:
+        """Wraps the training function with the runtime calculation."""
         def wrapper(*args, **kwargs):
             start_time = time.time()
             result = train_func(*args, **kwargs)
@@ -104,6 +106,7 @@ class Runtime(Objective):
 
     @staticmethod
     def get_spec() -> dict:
+        """Returns a dictionary containing the specification of the objective."""
         return {"name": "runtime", "upper": None, "lower": 0.0, "optimize": "lower"}
 
 
@@ -117,6 +120,7 @@ class RewardMean(Objective):
     def __call__(
         train_func: TrainFunc, objectives: dict, optimize_objectives: str
     ) -> TrainFunc:
+        """Wraps the training function with the reward mean calculation."""
         def wrapper(*args, **kwargs):
             result = train_func(*args, **kwargs)
             _, train_result = result
@@ -134,6 +138,7 @@ class RewardMean(Objective):
 
     @staticmethod
     def get_spec() -> dict:
+        """Returns a dictionary containing the specification of the objective."""
         return {
             "name": RewardMean.KEY,
             "upper": None,
@@ -152,6 +157,7 @@ class RewardStd(Objective):
     def __call__(
         train_func: TrainFunc, objectives: dict, optimize_objectives: str
     ) -> TrainFunc:
+        """Wraps the training function with the reward standard deviation calculation."""
         def wrapper(*args, **kwargs):
             result = train_func(*args, **kwargs)
             _, train_result = result
@@ -170,6 +176,7 @@ class RewardStd(Objective):
 
     @staticmethod
     def get_spec() -> dict:
+        """Returns a dictionary containing the specification of the objective."""
         return {"name": RewardStd.KEY, "upper": None, "lower": 0, "optimize": "lower"}
 
 
@@ -183,6 +190,7 @@ class Emissions(Objective):
     def __call__(
         train_func: TrainFunc, objectives: dict, optimize_objectives: str
     ) -> TrainFunc:
+        """Wraps the training function with the emissions calculation."""
         def wrapper(*args, **kwargs):
             from codecarbon import EmissionsTracker
 
@@ -209,6 +217,7 @@ class Emissions(Objective):
 
     @staticmethod
     def get_spec() -> dict:
+        """Returns a dictionary containing the specification of the objective."""
         return {"name": "emissions", "upper": None, "lower": 0.0, "optimize": "lower"}
 
 

@@ -1,5 +1,5 @@
+"""RL algorithms."""
 from collections.abc import Callable
-from typing import Optional, Union
 
 from flashbax.buffers.prioritised_trajectory_buffer import (
     PrioritisedTrajectoryBufferState,
@@ -31,14 +31,14 @@ from .sac import (
     SACTrainReturnT,
 )
 
-TrainResult = Union[DQNTrainingResult, PPOTrainingResult, SACTrainingResult]
-TrainMetrics = Union[DQNMetrics, PPOMetrics, SACMetrics]
-RunnerState = Union[DQNRunnerState, PPORunnerState, SACRunnerState]
+TrainResult = DQNTrainingResult | PPOTrainingResult | SACTrainingResult
+TrainMetrics = DQNMetrics | PPOMetrics | SACMetrics
+RunnerState = DQNRunnerState | PPORunnerState | SACRunnerState
 BufferState = PrioritisedTrajectoryBufferState
-TrainReturnT = Union[DQNTrainReturnT, PPOTrainReturnT, SACTrainReturnT]
+TrainReturnT = DQNTrainReturnT | PPOTrainReturnT | SACTrainReturnT
 TrainFunc = Callable[
     [RunnerState, BufferState, int | None, int | None, int | None], TrainReturnT
 ]
-AlgorithmState = Union[DQNState, PPOState, SACState]
+AlgorithmState = DQNState | PPOState | SACState
 
 __all__ = ["Algorithm", "PPO", "DQN", "SAC"]
