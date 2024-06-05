@@ -62,12 +62,8 @@ def read_opt_data(exp: str):
 
 
 def interpolate(opt_data: pd.DataFrame) -> pd.DataFrame:
-    result_path = os.path.join(OPT_RESULTS_DIR, f"{exp}.csv")
-    if os.path.isfile(result_path):
-        return pd.read_csv(result_path)
-
     interpolated_opt_datas = []
-
+    
     min_budget = opt_data[opt_data["optimizer"] == "rs"]["cum_budget"].min()
     max_budget = opt_data[opt_data["optimizer"] == "rs"]["cum_budget"].max()
 
@@ -79,7 +75,8 @@ def interpolate(opt_data: pd.DataFrame) -> pd.DataFrame:
 
         df_merged = pd.merge(df_merged, group_opt_data, on="cum_budget", how="left")
         interpolated_opt_data = df_merged.interpolate(method="linear")
-        interpolated_opt_data[interpolated_opt_data["cum_budget"] <= max_budget]
+        interpolated_opt_data = interpolated_opt_data[interpolated_opt_data["cum_budget"] <= max_budget + 1]
+
 
         interpolated_opt_data["seed"] = seed
         interpolated_opt_data["optimizer"] = OPTIMIZER_NAMES[optimizer]
@@ -88,9 +85,9 @@ def interpolate(opt_data: pd.DataFrame) -> pd.DataFrame:
 
     df = pd.concat(interpolated_opt_datas, ignore_index=True)
     interpolated_data = df[df["cum_budget"] % STEP_SIZE == 0]
-    del df
+    interpolated_data[interpolated_data["cum_budget"] <= max_budget]
 
-    interpolated_data.to_csv(result_path, index=False)
+    del df
 
     return interpolated_data
 
@@ -104,14 +101,19 @@ def plot_opt_over_time(exp: str):
     
     # W need to select the best configuration that we have for each budget
     best_config_opt_data = opt_data.groupby(["optimizer", "cum_budget", "seed"]).apply(lambda x: x.loc[x["performance"].idxmin()]).reset_index(drop=True)
-
-    interpolated_opt_data = interpolate(best_config_opt_data)
+    
+    result_path = os.path.join(OPT_RESULTS_DIR, f"{exp}.csv")
+    if os.path.isfile(result_path):
+        interpolated_opt_data = pd.read_csv(result_path)
+    else:
+        interpolated_opt_data = interpolate(best_config_opt_data)
+        interpolated_opt_data.to_csv(result_path, index=False)
 
     incumbent_opt_data = interpolated_opt_data.sort_values(by=["optimizer", "seed", "cum_budget"])
     incumbent_opt_data["incumbent"] = incumbent_opt_data.groupby(["optimizer", "seed"])["performance"].cummin()
     
     fig = plt.figure(figsize=(7, 5))
-    g = sns.lineplot(data=incumbent_opt_data, x="cum_budget", y="incumbent", hue="optimizer", errorbar="sd")
+    g = sns.lineplot(data=incumbent_opt_data, x="cum_budget", y="incumbent", hue="optimizer", errorbar=("ci", 95))
     g.set_title(f"{algorithm.upper()} on {environment}")
     g.set_ylabel("Cost")
     g.set_xlabel("Optimization Budget")
@@ -159,8 +161,5 @@ def plot_3_opt_over_time(experiments: list[str]):
 if __name__ == "__main__":
     # plot_3_opt_over_time(["ppo_Acrobot-v1", "dqn_CartPole-v1", "sac_Pendulum-v1"])
     for exp in os.listdir("results/smac_mf"):
-        try:
-            plot_opt_over_time(exp)
-            gc.collect()
-        except:
-            pass
+        plot_opt_over_time(exp)
+        gc.collect()

@@ -175,12 +175,11 @@ def read_optimizer_results(optimizer: str) -> pd.DataFrame:
                     "environment": environment,
                     "score": score,
                     "optimizer": optimizer,
-                    "seed": seed,
+                    "seed": seed - 42 if seed >= 42 else seed,
                 }
             ]
     scores = pd.DataFrame(scores)
     scores.to_csv(os.path.join(path, "combined.csv"), index=False)
-    scores = scores.groupby(["algorithm", "environment"])["score"].mean().reset_index()
     return scores
 
 
@@ -211,10 +210,10 @@ def validate(algorithm: str, method: str = "rank"):
     subset_data = overall_data[overall_data["environment"].isin(subset)]
 
     if method == "rank":
-        overall_data.loc[:, "normalized_score"] = overall_data.groupby(["algorithm", "environment"])[
+        overall_data.loc[:, "normalized_score"] = overall_data.groupby(["algorithm", "environment", "seed"])[
             "score"
         ].rank(ascending=False)
-        subset_data.loc[:, "normalized_score"] = subset_data.groupby(["algorithm", "environment"])[
+        subset_data.loc[:, "normalized_score"] = subset_data.groupby(["algorithm", "environment", "seed"])[
             "score"
         ].rank(ascending=False)
     else:
@@ -253,7 +252,7 @@ def plot_subset_vs_overall(overall_data, subset_data, method: str):
 
 
 def plot_subset_vs_overall_combined(method: str):
-    fig, axes = plt.subplots(1, 6, figsize=(8, 2.5), sharey=True)
+    fig, axes = plt.subplots(1, 6, figsize=(8, 2), sharey=True)
 
     hue_order = ["RS", "SMAC", "SMAC + HB", "PBT"]
     
@@ -310,7 +309,7 @@ def plot_subset_vs_overall_combined(method: str):
     handles, labels = axes[0].get_legend_handles_labels()   
     fig.subplots_adjust(bottom=0.305, wspace=0.166)
 
-    fig.legend(loc='upper center', bbox_to_anchor=(0.5, 0.1), ncol=4, fancybox=False, shadow=False, frameon=False)
+    fig.legend(loc='upper center', bbox_to_anchor=(0.5, 0.125), ncol=4, fancybox=False, shadow=False, frameon=False)
 
     plt.tight_layout(pad=1.3)
     plt.savefig(os.path.join(SUBSET_PLOTS, f"{method}_comparison_combined.png"), dpi=500)

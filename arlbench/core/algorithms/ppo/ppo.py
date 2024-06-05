@@ -1,4 +1,5 @@
-# The PPO Code is heavily based on PureJax: https://github.com/luchris429/purejaxrl
+# Parts of this code are based on PureJaxRL (https://github.com/luchris429/purejaxrl).
+# Licensed under the Apache License 2.0 (http://www.apache.org/licenses/LICENSE-2.0).
 from __future__ import annotations
 
 import functools
