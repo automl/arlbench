@@ -350,12 +350,15 @@
                 
   <section id="dynamic-configuration-in-arlbench">
 <h1>Dynamic Configuration in ARLBench<a class="headerlink" href="#dynamic-configuration-in-arlbench" title="Link to this heading">¶</a></h1>
-<p>In addition to static approaches, which run the whole training given a fixed configuration, ARLBench supports dynamic configuration approaches.
-These methods, in contrast, can adapt the current hyperparameter configuration during training.
+<p>In addition to static approaches, which run the whole training given a fixed configuration, ARLBench supports <strong>dynamic configuration approaches</strong>.
+These methods, in contrast, can adapt the current hyperparameter configuration <strong>during training</strong>.
 To do this, you can use the CLI or the AutoRL Environment as shown in our examples.</p>
-<p>When using the CLI, you have to pass a checkpoint path for the current training state. Then, the training is proceeded using the given configuration.</p>
-<p>For the AutoRL Environment, you can set <cite>n_steps</cite> to the number of configuration updates you want to perform during training.
-By adjusting the number of training steps (<cite>n_total_timesteps</cite>) accordingly and calling the <cite>step()</cite> function multiple times to perform dynamic configuration.</p>
+<p>When using the CLI, you have to <strong>pass a checkpoint path</strong> for the current training state.
+Then, the training is proceeded using this training state with a new configuration.
+This is especially useful for highly parallelizable dynamic tuning methods, e.g. population based methods.</p>
+<p>For the AutoRL Environment, you can set <cite>n_steps</cite> to the <strong>number of configuration updates</strong> you want to perform during training.
+You should also adjust (<cite>n_total_timesteps</cite>) accordingly down to 1/<cite>n_steps</cite> in your settings.
+Then calling the <cite>step()</cite> function multiple times until termination will perform the same dynamic configuration as with the CLI.</p>
 </section>
 
 

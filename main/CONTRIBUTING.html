@@ -456,14 +456,15 @@ articles, and such.</p>
 <li><p>Clone your fork locally:</p></li>
 </ol>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>    $ git clone git@github.com:your_name_here/arlbench.git
+    $ cd arlbench
 </pre></div>
 </div>
 <ol class="arabic simple" start="3">
-<li><p>Install your local copy into a virtualenv. Assuming you have virtualenvwrapper installed, this is how you set up your fork for local development:</p></li>
+<li><p>Install your local copy into a conda env:</p></li>
 </ol>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>    $ mkvirtualenv arlbench
-    $ cd arlbench/
-    $ python setup.py develop
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>    $ conda create -n arlbench python=3.10
+    $ conda activate arlbench
+    $ make install-dev
 </pre></div>
 </div>
 <ol class="arabic simple" start="4">
@@ -474,14 +475,11 @@ articles, and such.</p>
 </div>
 <p>Now you can make your changes locally.</p>
 <ol class="arabic simple" start="5">
-<li><p>When you’re done making changes, check that your changes pass ruff, including testing other Python versions with tox:</p></li>
+<li><p>When you’re done making changes, check that your changes pass ruff:</p></li>
 </ol>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>    $ ruff format arlbench tests
-    $ python setup.py test or pytest
-    $ tox
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>    $ make format
 </pre></div>
 </div>
-<p>To get flake8 and tox, just pip install them into your virtualenv.</p>
 <ol class="arabic simple" start="6">
 <li><p>Commit your changes and push your branch to GitHub:</p></li>
 </ol>
@@ -502,15 +500,13 @@ articles, and such.</p>
 <li><p>If the pull request adds functionality, the docs should be updated. Put
 your new functionality into a function with a docstring, and add the
 feature to the list in README.rst.</p></li>
-<li><p>The pull request should work for Python 3.5, 3.6, 3.7 and 3.8, and for PyPy. Check
-https://travis-ci.com/automl/arlbench/pull_requests
-and make sure that the tests pass for all supported Python versions.</p></li>
+<li><p>The pull request should work for Python 3.10 and above. This should be tested in the GitHub workflows.</p></li>
 </ol>
 </section>
 <section id="tips">
 <h2>Tips<a class="headerlink" href="#tips" title="Link to this heading">¶</a></h2>
 <p>To run a subset of tests:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ pytest tests.test_arlbench
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ make test
 
 </pre></div>
 </div>
