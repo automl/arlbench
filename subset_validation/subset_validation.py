@@ -311,7 +311,7 @@ def plot_subset_vs_overall_combined(method: str):
 
     fig.legend(loc='upper center', bbox_to_anchor=(0.5, 0.125), ncol=4, fancybox=False, shadow=False, frameon=False)
 
-    plt.tight_layout(pad=1.3)
+    plt.tight_layout(rect=(0.02, 0.07, 1, 1))
     plt.savefig(os.path.join(SUBSET_PLOTS, f"{method}_comparison_combined.png"), dpi=500)
 
 

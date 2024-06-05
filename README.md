@@ -148,6 +148,37 @@ Just like with RL agents, you can call 'step' multiple times until termination (
 The commands for the landscape analysis are stated in `runscripts/landscaping_commands.sh`.
 The commands for the optimizer runs as part of the subset validation are stated in `runscripts/optimizer_commands.sh`.
 
+The landscaping results will be stored in `results/sobol`.
+If you want to use our results, you find them in `results_finished`, zipped per approach and experiment.
+Just unzip them using the same folder structure, i.e., a zip file stored in `results_finished/sobol` should be unzipped in `results/sobol`.
+The same applies for the optimizer results.
+
+All aggregated results are stored in `results_combined`.
+
+To aggregate the landscaping results, run:
+```bash
+python runscripts runscripts/aggregate_results_landscaping.py sobol
+```
+The script creates a file called `runhistory_combined.csv` for each experiment.
+
+To aggregate the optimizer results, run
+```bash
+python runscripts runscripts/aggregate_results_optimizers.py <optimizer>
+```
+where optimizer can be one of `<rs|pbt|smac|smac_mf>`.
+
+For the subset selection and validation, make sure to store the results how they are stored in this repo.
+
+To run the subset selection, you can run:
+```bash
+python runscripts subset_selection/subset_selection.py
+```
+
+To run the subset validation, you can run:
+```bash
+python runscripts subset_validation/subset_validation.py
+```
+
 ## Cite Us
 
 If you use ARLBench in your work, please cite us:

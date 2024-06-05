@@ -213,13 +213,13 @@ def plot_runtime_comparisons():
     print(all_runtimes)
 
     all_runtimes["runtime"] /= 3600     # to hours
-    all_runtimes["runtime"] *= 96     # 32 trainings on 3 seeds each
+    all_runtimes["runtime"] *= 32 * 10     # 32 trainings on 3 seeds each
 
     
     for i, algorithm in enumerate(env_categories.keys()):
         runtime_data = all_runtimes[all_runtimes["algorithm"] == algorithm]
         print(f"### {algorithm.upper()} ###")
-        print(runtime_data.groupby(["algorithm", "set"]).sum()["runtime"].sum())
+        print(runtime_data.groupby(["algorithm", "set"]).sum())
 
         plot = (
             so.Plot(
@@ -251,7 +251,7 @@ def plot_runtime_comparisons():
         l.set_visible(False)
     legend = fig.legends[0]
     fig.legend(legend.legend_handles, [t.get_text() for t in legend.texts], loc="upper center", bbox_to_anchor=(0.5, 0.105), ncol=5, fancybox=False, shadow=False, frameon=False)
-    plt.tight_layout(pad=1.3)
+    plt.tight_layout(rect=(0, 0.07, 1, 1))
     plt.savefig("plots/runtime_experiments/set_comparison.png", dpi=500)
     plt.close()
     
