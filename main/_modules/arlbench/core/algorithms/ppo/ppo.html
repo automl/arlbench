@@ -554,35 +554,6 @@
         <span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="PPO.get_hpo_search_space">
-<a class="viewcode-back" href="../../../../../arlbench.core.algorithms.ppo.html#arlbench.core.algorithms.PPO.get_hpo_search_space">[docs]</a>
-    <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">get_hpo_search_space</span><span class="p">(</span><span class="n">seed</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ConfigurationSpace</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">ConfigurationSpace</span><span class="p">(</span>
-            <span class="n">name</span><span class="o">=</span><span class="s2">&quot;PPOConfigSpace&quot;</span><span class="p">,</span>
-            <span class="n">seed</span><span class="o">=</span><span class="n">seed</span><span class="p">,</span>
-            <span class="n">space</span><span class="o">=</span><span class="p">{</span>
-                <span class="s2">&quot;minibatch_size&quot;</span><span class="p">:</span> <span class="n">Categorical</span><span class="p">(</span>
-                    <span class="s2">&quot;minibatch_size&quot;</span><span class="p">,</span> <span class="p">[</span><span class="mi">16</span><span class="p">,</span> <span class="mi">32</span><span class="p">,</span> <span class="mi">64</span><span class="p">,</span> <span class="mi">128</span><span class="p">],</span> <span class="n">default</span><span class="o">=</span><span class="mi">64</span>
-                <span class="p">),</span>
-                <span class="s2">&quot;learning_rate&quot;</span><span class="p">:</span> <span class="n">Float</span><span class="p">(</span>
-                    <span class="s2">&quot;learning_rate&quot;</span><span class="p">,</span> <span class="p">(</span><span class="mf">1e-6</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">),</span> <span class="n">default</span><span class="o">=</span><span class="mf">3e-4</span><span class="p">,</span> <span class="n">log</span><span class="o">=</span><span class="kc">True</span>
-                <span class="p">),</span>
-                <span class="s2">&quot;n_steps&quot;</span><span class="p">:</span> <span class="n">Categorical</span><span class="p">(</span><span class="s2">&quot;n_steps&quot;</span><span class="p">,</span> <span class="p">[</span><span class="mi">32</span><span class="p">,</span> <span class="mi">64</span><span class="p">,</span> <span class="mi">128</span><span class="p">,</span> <span class="mi">256</span><span class="p">,</span> <span class="mi">512</span><span class="p">],</span> <span class="n">default</span><span class="o">=</span><span class="mi">128</span><span class="p">),</span>
-                <span class="s2">&quot;update_epochs&quot;</span><span class="p">:</span> <span class="n">Integer</span><span class="p">(</span><span class="s2">&quot;update_epochs&quot;</span><span class="p">,</span> <span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">20</span><span class="p">),</span> <span class="n">default</span><span class="o">=</span><span class="mi">10</span><span class="p">),</span>
-                <span class="s2">&quot;gae_lambda&quot;</span><span class="p">:</span> <span class="n">Float</span><span class="p">(</span><span class="s2">&quot;gae_lambda&quot;</span><span class="p">,</span> <span class="p">(</span><span class="mf">0.8</span><span class="p">,</span> <span class="mf">0.9999</span><span class="p">),</span> <span class="n">default</span><span class="o">=</span><span class="mf">0.95</span><span class="p">),</span>
-                <span class="s2">&quot;clip_eps&quot;</span><span class="p">:</span> <span class="n">Float</span><span class="p">(</span><span class="s2">&quot;clip_eps&quot;</span><span class="p">,</span> <span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">),</span> <span class="n">default</span><span class="o">=</span><span class="mf">0.2</span><span class="p">),</span>
-                <span class="s2">&quot;vf_clip_eps&quot;</span><span class="p">:</span> <span class="n">Float</span><span class="p">(</span><span class="s2">&quot;vf_clip_eps&quot;</span><span class="p">,</span> <span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">),</span> <span class="n">default</span><span class="o">=</span><span class="mf">0.2</span><span class="p">),</span>
-                <span class="s2">&quot;normalize_advantage&quot;</span><span class="p">:</span> <span class="n">Categorical</span><span class="p">(</span>
-                    <span class="s2">&quot;normalize_advantage&quot;</span><span class="p">,</span> <span class="p">[</span><span class="kc">True</span><span class="p">,</span> <span class="kc">False</span><span class="p">],</span> <span class="n">default</span><span class="o">=</span><span class="kc">True</span>
-                <span class="p">),</span>
-                <span class="s2">&quot;ent_coef&quot;</span><span class="p">:</span> <span class="n">Float</span><span class="p">(</span><span class="s2">&quot;ent_coef&quot;</span><span class="p">,</span> <span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">),</span> <span class="n">default</span><span class="o">=</span><span class="mf">0.0</span><span class="p">),</span>
-                <span class="s2">&quot;vf_coef&quot;</span><span class="p">:</span> <span class="n">Float</span><span class="p">(</span><span class="s2">&quot;vf_coef&quot;</span><span class="p">,</span> <span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">),</span> <span class="n">default</span><span class="o">=</span><span class="mf">0.5</span><span class="p">),</span>
-                <span class="s2">&quot;max_grad_norm&quot;</span><span class="p">:</span> <span class="n">Float</span><span class="p">(</span><span class="s2">&quot;max_grad_norm&quot;</span><span class="p">,</span> <span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">),</span> <span class="n">default</span><span class="o">=</span><span class="mf">0.5</span><span class="p">),</span>
-            <span class="p">},</span>
-        <span class="p">)</span></div>
-
-
 <div class="viewcode-block" id="PPO.get_default_hpo_config">
 <a class="viewcode-back" href="../../../../../arlbench.core.algorithms.ppo.html#arlbench.core.algorithms.PPO.get_default_hpo_config">[docs]</a>
     <span class="nd">@staticmethod</span>

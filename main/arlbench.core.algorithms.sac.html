@@ -938,15 +938,6 @@
       </a>
      </li>
      <li class="toc-h4 nav-item toc-entry">
-      <a class="reference internal nav-link" href="#arlbench.core.algorithms.sac.sac.SAC.get_hpo_search_space">
-       <code class="docutils literal notranslate">
-        <span class="pre">
-         SAC.get_hpo_search_space()
-        </span>
-       </code>
-      </a>
-     </li>
-     <li class="toc-h4 nav-item toc-entry">
       <a class="reference internal nav-link" href="#arlbench.core.algorithms.sac.sac.SAC.get_nas_config_space">
        <code class="docutils literal notranslate">
         <span class="pre">
@@ -1395,15 +1386,6 @@
        <code class="docutils literal notranslate">
         <span class="pre">
          SAC.get_hpo_config_space()
-        </span>
-       </code>
-      </a>
-     </li>
-     <li class="toc-h4 nav-item toc-entry">
-      <a class="reference internal nav-link" href="#arlbench.core.algorithms.sac.SAC.get_hpo_search_space">
-       <code class="docutils literal notranslate">
-        <span class="pre">
-         SAC.get_hpo_search_space()
         </span>
        </code>
       </a>
@@ -2311,23 +2293,6 @@ another module inside the other module’s <code class="docutils literal notrans
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="arlbench.core.algorithms.sac.sac.SAC.get_hpo_search_space">
-<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_hpo_search_space</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/arlbench/core/algorithms/sac/sac.html#SAC.get_hpo_search_space"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.core.algorithms.sac.sac.SAC.get_hpo_search_space" title="Link to this definition">¶</a></dt>
-<dd><p>Returns the hyperparameter search space of the algorithm. However, this can be adapted to fit a given HPO method.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>seed</strong> (<em>int</em><em> | </em><em>None</em><em>, </em><em>optional</em>) – Random generator seed that is used to sample configurations. Defaults to None.</p>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>Hyperparameter search space of the algorithm.</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>ConfigurationSpace</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
 <dt class="sig sig-object py" id="arlbench.core.algorithms.sac.sac.SAC.get_nas_config_space">
 <em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_nas_config_space</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/arlbench/core/algorithms/sac/sac.html#SAC.get_nas_config_space"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.core.algorithms.sac.sac.SAC.get_nas_config_space" title="Link to this definition">¶</a></dt>
 <dd><p>Returns the neural architecture configuration space of the algorithm.</p>
@@ -2783,23 +2748,6 @@ another module inside the other module’s <code class="docutils literal notrans
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>Hyperparameter configuration space of the algorithm.</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>ConfigurationSpace</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="arlbench.core.algorithms.sac.SAC.get_hpo_search_space">
-<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_hpo_search_space</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/arlbench/core/algorithms/sac/sac.html#SAC.get_hpo_search_space"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.core.algorithms.sac.SAC.get_hpo_search_space" title="Link to this definition">¶</a></dt>
-<dd><p>Returns the hyperparameter search space of the algorithm. However, this can be adapted to fit a given HPO method.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>seed</strong> (<em>int</em><em> | </em><em>None</em><em>, </em><em>optional</em>) – Random generator seed that is used to sample configurations. Defaults to None.</p>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>Hyperparameter search space of the algorithm.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>ConfigurationSpace</p>
