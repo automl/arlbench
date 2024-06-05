@@ -321,7 +321,7 @@ def plot_method_comparison(method_results: pd.DataFrame):
 
     for i, algorithm in enumerate(algorithms):
         data = method_results[method_results["algorithm"] == algorithm]
-        sns.lineplot(data=data, x="n_subset", y="score", hue="strategy", ax=axes[i], errorbar="sd")
+        sns.lineplot(data=data, x="n_subset", y="score", hue="strategy", ax=axes[i], errorbar=("ci", 95))
         axes[i].set_title(algorithm.upper())
         axes[i].set_ylabel("")
         axes[i].set_xlabel("Subset Size")
@@ -348,7 +348,7 @@ def plot_method_comparison_corr(method_results: pd.DataFrame):
 
     for i, algorithm in enumerate(algorithms):
         data = method_results[method_results["algorithm"] == algorithm]
-        sns.lineplot(data=data, x="n_subset", y="correlation", hue="strategy", ax=axes[i], errorbar="sd")
+        sns.lineplot(data=data, x="n_subset", y="correlation", hue="strategy", ax=axes[i], errorbar=("ci", 95))
         axes[i].set_title(algorithm.upper())
         axes[i].set_ylabel("")
         axes[i].set_xlabel("Subset Size")
@@ -376,7 +376,7 @@ def plot_method_comparison_single_strategy(method_results: pd.DataFrame, strateg
 
     for i, algorithm in enumerate(algorithms):
         data = method_results[method_results["algorithm"] == algorithm]
-        sns.lineplot(data=data, x="n_subset", y="correlation", hue="strategy", ax=axes[i], errorbar="sd")
+        sns.lineplot(data=data, x="n_subset", y="correlation", hue="strategy", ax=axes[i], errorbar=("ci", 95))
         axes[i].set_title(algorithm.upper())
         axes[i].set_ylabel("")
         axes[i].set_xlabel("Subset Size")
