@@ -1,3 +1,4 @@
+"""Q-Networks for DQN."""
 from __future__ import annotations
 
 import flax.linen as nn
@@ -14,6 +15,7 @@ class CNNQ(nn.Module):
     discrete: bool = True
 
     def setup(self):
+        """Initializes the CNN Q-Network."""
         if self.activation == "tanh":
             self.activation_func = nn.tanh
         elif self.activation == "relu":
@@ -55,6 +57,7 @@ class CNNQ(nn.Module):
         )
 
     def __call__(self, x):
+        """Applies the CNN to the input."""
         x = x / 255.0
         x = jnp.transpose(x, (0, 2, 3, 1))
         q = self.conv1(x)
@@ -78,6 +81,7 @@ class MLPQ(nn.Module):
     discrete: bool = True
 
     def setup(self):
+        """Initializes the MLP Q-Network."""
         if self.activation == "tanh":
             self.activation_func = nn.tanh
         elif self.activation == "relu":
@@ -100,6 +104,7 @@ class MLPQ(nn.Module):
         )
 
     def __call__(self, x):
+        """Applies the MLP to the input."""
         q = self.dense0(x)
         q = self.activation_func(q)
         q = self.dense1(q)

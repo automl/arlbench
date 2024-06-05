@@ -1,3 +1,4 @@
+"""Abstract base class for a reinforcement learning algorithm. Contains basic functionality that is shared among different algorithm implementations."""
 from __future__ import annotations
 
 import functools

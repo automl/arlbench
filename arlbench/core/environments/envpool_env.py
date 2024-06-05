@@ -1,3 +1,4 @@
+"""Envpool environment adapter."""
 from __future__ import annotations
 
 import functools
@@ -143,7 +144,8 @@ class EnvpoolEnv(Environment):
             env_name (str): Name/id of the brax environment.
             n_envs (int): Number of environments.
             seed (int): Random seed.
-            env_kwargs (dict[str, Any] | None, optional): Keyword arguments to pass to the brax environment. Defaults to None.
+            env_kwargs (dict[str, Any] | None, optional): Keyword arguments
+                to pass to the environment. Defaults to None.
         """
         if env_kwargs is None:
             env_kwargs = {}
@@ -151,7 +153,8 @@ class EnvpoolEnv(Environment):
             import envpool
         except ImportError:
             raise ValueError(
-                "Failed to import envpool. Please make sure that the package is installed."
+                """Failed to import envpool. Please make sure
+                that the package is installed."""
             )
         env = envpool.make(
             env_name, env_type="gymnasium", num_envs=n_envs, seed=seed, **env_kwargs
@@ -204,7 +207,8 @@ class EnvpoolEnv(Environment):
 
         Args:
             action (Any): Action to take.
-            env_id (int | None, optional): Internal env ID for envpool. Defaults to None.
+            env_id (int | None, optional): Internal env ID for envpool.
+                Defaults to None.
 
         Returns:
             tuple: Step result.
@@ -215,6 +219,7 @@ class EnvpoolEnv(Environment):
     @functools.partial(jax.jit, static_argnums=0)
     def reset(self, _):
         # io_callback is required to handle random seeds correctly
+        """Resets the environment."""
         obs, info = jax.experimental.io_callback(self._reset, self.reset_shape)
         lives = jnp.array(info["lives"]) if self.is_atari else None
 
@@ -222,6 +227,7 @@ class EnvpoolEnv(Environment):
 
     @functools.partial(jax.jit, static_argnums=0)
     def step(self, env_state: Any, action: Any, _):
+        """Steps the environment forward by one step."""
         if not self.is_atari:
             env_state, _ = env_state
         else:
@@ -280,14 +286,16 @@ class EnvpoolEnv(Environment):
             auto_reset = lives_gone
         else:
             auto_reset = done
-        obs = jax.lax.cond(jnp.any(auto_reset), reset, lambda obs, info: obs, obs, info)
+        obs = jax.lax.cond(jnp.any(auto_reset), reset, lambda obs, info: obs, obs, info) #noqa: ARG005
 
         return (env_state, new_lives), (obs, reward, done, info)
 
     @property
     def action_space(self):
+        """Action space of the environment."""
         return gymnasium_space_to_gymnax_space(self._env.action_space)
 
     @property
     def observation_space(self):
+        """Observation space of the environment."""
         return gymnasium_space_to_gymnax_space(self._env.observation_space)

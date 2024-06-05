@@ -1,3 +1,4 @@
+"""Models for the PPO algorithm."""
 from __future__ import annotations
 
 import distrax
@@ -15,6 +16,7 @@ class MLPActorCritic(nn.Module):
     discrete: bool = True
 
     def setup(self):
+        """Initializes the actor-critic network."""
         if self.activation == "tanh":
             self.activation_func = nn.tanh
         elif self.activation == "relu":
@@ -55,6 +57,7 @@ class MLPActorCritic(nn.Module):
         )
 
     def __call__(self, x):
+        """Applies the actor-critic to the input."""
         actor_mean = self.dense0(x)
         actor_mean = self.activation_func(actor_mean)
         actor_mean = self.dense1(actor_mean)
@@ -83,6 +86,7 @@ class CNNActorCritic(nn.Module):
     discrete: bool = True
 
     def setup(self):
+        """Initializes the actor-critic network."""
         if self.activation == "tanh":
             self.activation_func = nn.tanh
         elif self.activation == "relu":
@@ -131,7 +135,8 @@ class CNNActorCritic(nn.Module):
         )
 
     def __call__(self, x):
-        x = x / 255.0
+        """Applies the actor-critic to the input."""
+        x = x / 255.0  # todo: make a clean solution for this
         x = jnp.transpose(x, (0, 2, 3, 1))
         features = self.feature_conv0(x)
         features = self.activation_func(features)

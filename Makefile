@@ -47,10 +47,8 @@ clean-test: ## remove test and coverage artifacts
 	rm -fr htmlcov/
 	rm -fr .pytest_cache
 ruff: ## run ruff as a formatter
-	python -m ruff --exit-zero arlbench
 	python -m ruff --silent --exit-zero --no-cache --fix arlbench
-isort:
-	python -m isort arlbench tests
+	python -m ruff --exit-zero arlbench
 
 test: ## run tests quickly with the default Python
 	python -m pytest tests
@@ -111,4 +109,3 @@ check:
 
 format:
 	make ruff
-	make isort

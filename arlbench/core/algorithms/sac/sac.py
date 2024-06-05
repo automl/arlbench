@@ -1,5 +1,6 @@
 # Parts of this code are based on Stable Baselines Jax  (https://github.com/araffin/sbx).
 # Licensed under the MIT License
+"""SAC algorithm."""
 from __future__ import annotations
 
 import functools
@@ -60,6 +61,7 @@ class SACTrainState(TrainState):
     def create_with_opt_state(
         cls, *, apply_fn, params, target_params, tx, opt_state, **kwargs
     ):
+        """Instantiates with optimizer state."""
         if opt_state is None:
             opt_state = tx.init(params)
         return cls(
@@ -220,6 +222,7 @@ class SAC(Algorithm):
 
     @staticmethod
     def get_hpo_config_space(seed: int | None = None) -> ConfigurationSpace:
+        """Returns the hyperparameter configuration space for SAC."""
         cs = ConfigurationSpace(
             name="SACConfigSpace",
             seed=seed,
@@ -266,10 +269,12 @@ class SAC(Algorithm):
 
     @staticmethod
     def get_default_hpo_config() -> Configuration:
+        """Returns the default HPO configuration for SAC."""
         return SAC.get_hpo_config_space().get_default_configuration()
 
     @staticmethod
     def get_nas_config_space(seed: int | None = None) -> ConfigurationSpace:
+        """Returns the neural architecture search (NAS) configuration space for SAC."""
         return ConfigurationSpace(
             name="SACNASConfigSpace",
             seed=seed,
@@ -283,6 +288,7 @@ class SAC(Algorithm):
 
     @staticmethod
     def get_default_nas_config() -> Configuration:
+        """Returns the default NAS configuration for SAC."""
         return SAC.get_nas_config_space().get_default_configuration()
 
     @staticmethod
@@ -474,8 +480,10 @@ class SAC(Algorithm):
         Args:
             runner_state (SACRunnerState): Algorithm runner state.
             obs (jnp.ndarray): Observation(s).
-            rng (chex.PRNGKey | None, optional): Not used in DQN. Random generator key in other algorithms. Defaults to None.
-            deterministic (bool): Not used in DQN. Return deterministic action in other algorithms. Defaults to True.
+            rng (chex.PRNGKey | None, optional): Not used in DQN. Random generator key
+                in other algorithmsDefaults to None.
+            deterministic (bool): Not used in DQN. Return deterministic action
+                in other algorithm. Defaults to True.
 
         Returns:
             jnp.ndarray: Action(s).
@@ -517,9 +525,11 @@ class SAC(Algorithm):
         Args:
             runner_state (SACTrainReturnT): SAC runner state.
             _ (None): Unused parameter (buffer_state in other algorithms).
-            n_total_timesteps (int, optional): Total number of training timesteps. Update steps = n_total_timesteps // n_envs. Defaults to 1000000.
+            n_total_timesteps (int, optional): Total number of training timesteps.
+                Update steps = n_total_timesteps // n_envs. Defaults to 1000000.
             n_eval_steps (int, optional): Number of evaluation steps during training.
-            n_eval_episodes (int, optional): Number of evaluation episodes per evaluation during training.
+            n_eval_episodes (int, optional): Number of evaluation episodes
+                 per evaluation during training.
 
         Returns:
             SACTrainReturnT: Tuple of PPO algorithm state and training result.
@@ -537,7 +547,9 @@ class SAC(Algorithm):
                 _ (None): Unused parameter (required for jax.lax.scan).
 
             Returns:
-                tuple[tuple[SACRunnerState, PrioritisedTrajectoryBufferState], SACTrainingResult]: Tuple of SAC runner state and training result.
+                tuple[tuple[SACRunnerState, PrioritisedTrajectoryBufferState],
+                    SACTrainingResult]:
+                    Tuple of SAC runner state and training result.
             """
             runner_state, buffer_state = carry
             (runner_state, buffer_state), (metrics, trajectories) = jax.lax.scan(
@@ -647,7 +659,8 @@ class SAC(Algorithm):
             rng (chex.PRNGKey): Random number generator key.
 
         Returns:
-            tuple[SACTrainState, jnp.ndarray, jnp.ndarray, FrozenDict, chex.PRNGKey]: _description_
+            tuple[SACTrainState, jnp.ndarray, jnp.ndarray, FrozenDict, chex.PRNGKey]:
+                _description_
         """
         rng, action_rng = jax.random.split(rng, 2)
 
@@ -726,12 +739,14 @@ class SAC(Algorithm):
         """Perform one update step.
 
         Args:
-            carry (tuple[SACRunnerState, PrioritisedTrajectoryBufferState]): Carry for jax.lax.scan().
+            carry (tuple[SACRunnerState, PrioritisedTrajectoryBufferState]):
+                Carry for jax.lax.scan().
             _ (None): Unused parameter.
 
         Returns:
             tuple[ tuple[SACRunnerState, PrioritisedTrajectoryBufferState],
-            tuple[SACMetrics | None, Transition | None], ]: Updated training state and metrics.
+            tuple[SACMetrics | None, Transition | None], ]:
+                Updated training state and metrics.
         """
 
         def do_update(
@@ -760,7 +775,8 @@ class SAC(Algorithm):
 
             Returns:
                 tuple[ chex.PRNGKey, SACTrainState, SACTrainState, SACTrainState,
-                PrioritisedTrajectoryBufferState, SACMetrics]: Updated training states and metrics.
+                PrioritisedTrajectoryBufferState, SACMetrics]:
+                    Updated training states and metrics.
             """
 
             def gradient_step(
@@ -785,13 +801,16 @@ class SAC(Algorithm):
                 """Perform a gradient update step.
 
                 Args:
-                    carry (tuple[ chex.PRNGKey, SACTrainState, SACTrainState,
-                    SACTrainState, PrioritisedTrajectoryBufferState, ]): Carry for jax.lax.scan():
+                    carry (tuple[chex.PRNGKey, SACTrainState, SACTrainState,
+                    SACTrainState, PrioritisedTrajectoryBufferState,]):
+                        Carry for jax.lax.scan():
                     _ (None): Unused parameter.
 
                 Returns:
-                    tuple[ tuple[ chex.PRNGKey, SACTrainState, SACTrainState, SACTrainState,
-                    PrioritisedTrajectoryBufferState, ], SACMetrics, ]: Updated training states and metrics.
+                    tuple[ tuple[ chex.PRNGKey, SACTrainState,
+                        SACTrainState, SACTrainState,
+                    PrioritisedTrajectoryBufferState, ], SACMetrics, ]:
+                        Updated training states and metrics.
                 """
                 (
                     rng,
@@ -898,7 +917,7 @@ class SAC(Algorithm):
             actor_train_state: SACTrainState,
             critic_train_state: SACTrainState,
             alpha_train_state: SACTrainState,
-            normalizer_state: RunningStatisticsState,
+            normalizer_state: RunningStatisticsState, # noqa: ARG001
             buffer_state: PrioritisedTrajectoryBufferState,
         ) -> tuple[
             chex.PRNGKey,
@@ -915,11 +934,13 @@ class SAC(Algorithm):
                 actor_train_state (SACTrainState): Actor training state.
                 critic_train_state (SACTrainState): Critic training state.
                 alpha_train_state (SACTrainState): Alpha training state.
+                normalizer_state (RunningStatisticsState): Normalizer state.
                 buffer_state (PrioritisedTrajectoryBufferState): Buffer state.
 
             Returns:
                 tuple[ chex.PRNGKey, SACTrainState, SACTrainState, SACTrainState,
-                PrioritisedTrajectoryBufferState, SACMetrics]: Input training states and metrics.
+                PrioritisedTrajectoryBufferState, SACMetrics]:
+                    Input training states and metrics.
             """
             single_loss = jnp.array(
                 [((jnp.array([0]) - jnp.array([0])) ** 2).mean()]
@@ -1048,7 +1069,8 @@ class SAC(Algorithm):
         """Take one step in the environment (n_envs steps in total).
 
         Args:
-            carry (tuple[SACRunnerState, PrioritisedTrajectoryBufferState]): Carry for jax.lax.scan().
+            carry (tuple[SACRunnerState, PrioritisedTrajectoryBufferState]):
+                Carry for jax.lax.scan().
             _ (None): Unused parameter.
 
         Returns:

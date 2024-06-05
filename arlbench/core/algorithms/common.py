@@ -1,3 +1,4 @@
+"""Common data structures for algorithms."""
 from __future__ import annotations
 
 import chex

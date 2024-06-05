@@ -1,3 +1,4 @@
+"""Observation Flattening Wrapper."""
 from __future__ import annotations
 
 import functools
@@ -61,14 +62,16 @@ class FlattenObservationWrapper(Wrapper):
 
     @functools.partial(jax.jit, static_argnums=(0,))
     def reset(self, rng: chex.PRNGKey) -> tuple[Any, jnp.ndarray]:
-        """Calls the reset() function of the environment and flattens the returned observations.
+        """Calls the reset() function of the environment and
+            flattens the returned observations.
 
 
         Args:
             rng (chex.PRNGKey): Random number generator key.
 
         Returns:
-            tuple[Any, jnp.ndarray]: Result of the step function but observations are flattened.
+            tuple[Any, jnp.ndarray]: Result of the step function
+            but observations are flattened.
         """
         env_state, obs = self._env.reset(rng)
 

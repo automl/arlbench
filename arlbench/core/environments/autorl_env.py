@@ -1,3 +1,4 @@
+"""AutoRL Environment module."""
 from __future__ import annotations
 
 import functools
@@ -26,7 +27,8 @@ class Environment(ABC):
     Note: These need to be gymnax spaces, not gymnasium spaces.
     """
     def __init__(self, env_name: str, env: Any, n_envs: int, seed: int | None = None):
-        """Creates a JAX-compatible RL environment. It is automatically vectorized to compute multiple environments simultaneously.
+        """Creates a JAX-compatible RL environment. It is automatically vectorized
+            to compute multiple environments simultaneously.
 
         Args:
             env_name (str): Name/id of the environment.
@@ -47,7 +49,8 @@ class Environment(ABC):
             rng (PRNGKey): Random number generator key.
 
         Returns:
-            tuple[Any, Any]: Returns a tuple containing the environment state as well as the actual return of the reset() function.
+            tuple[Any, Any]: Returns a tuple containing the environment state
+                as well as the actual return of the reset() function.
         """
         raise NotImplementedError
 
@@ -55,7 +58,8 @@ class Environment(ABC):
     def step(
         self, env_state: Any, action: Any, rng: PRNGKey
     ) -> tuple[Any, Any]:
-        """Environment step() function. Performs a step in the environment given an action.
+        """Environment step() function. Performs a step
+            in the environment given an action.
 
         Args:
             env_state (Any): Internal environment state.
@@ -63,7 +67,8 @@ class Environment(ABC):
             rng (PRNGKey): Random number generator key.
 
         Returns:
-            tuple[Any, Any]:  Returns a tuple containing the environment state as well as the actual return of the step() function.
+            tuple[Any, Any]:  Returns a tuple containing the environment state
+                as well as the actual return of the step() function.
         """
         raise NotImplementedError
 

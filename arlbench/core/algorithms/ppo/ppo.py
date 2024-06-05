@@ -1,5 +1,6 @@
 # Parts of this code are based on PureJaxRL (https://github.com/luchris429/purejaxrl).
 # Licensed under the Apache License 2.0 (http://www.apache.org/licenses/LICENSE-2.0).
+"""Proximal Policy Optimization (PPO) algorithm."""
 from __future__ import annotations
 
 import functools
@@ -35,6 +36,7 @@ class PPOTrainState(TrainState):
 
     @classmethod
     def create_with_opt_state(cls, *, apply_fn, params, tx, opt_state, **kwargs):
+        """Creates a PPO training state with an optimizer state."""
         if opt_state is None:
             opt_state = tx.init(params)
         return cls(
@@ -164,6 +166,7 @@ class PPO(Algorithm):
 
     @staticmethod
     def get_hpo_config_space(seed: int | None = None) -> ConfigurationSpace:
+        """Returns the hyperparameter configuration space for PPO."""
         return ConfigurationSpace(
             name="PPOConfigSpace",
             seed=seed,
@@ -196,10 +199,12 @@ class PPO(Algorithm):
 
     @staticmethod
     def get_default_hpo_config() -> Configuration:
+        """Returns the default hyperparameter configuration for PPO."""
         return PPO.get_hpo_config_space().get_default_configuration()
 
     @staticmethod
     def get_nas_config_space(seed: int | None = None) -> ConfigurationSpace:
+        """Returns the neural architecture search configuration space for PPO."""
         return ConfigurationSpace(
             name="PPONASConfigSpace",
             seed=seed,
@@ -213,6 +218,7 @@ class PPO(Algorithm):
 
     @staticmethod
     def get_default_nas_config() -> Configuration:
+        """Returns the default neural architecture search configuration for PPO."""
         return PPO.get_nas_config_space().get_default_configuration()
 
     @staticmethod

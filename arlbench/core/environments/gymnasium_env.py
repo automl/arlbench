@@ -1,3 +1,4 @@
+"""Gymnasium environment adapter."""
 from __future__ import annotations
 
 import functools
@@ -29,7 +30,8 @@ class GymnasiumEnv(Environment):
         Args:
             env_name (str): Name/id of the brax environment.
             seed (int): Random seed.
-            env_kwargs (dict[str, Any] | None, optional): Keyword arguments to pass to the brax environment. Defaults to None.
+            env_kwargs (dict[str, Any] | None, optional): Keyword arguments
+                to pass to the brax environment. Defaults to None.
         """
         if env_kwargs is None:
             env_kwargs = {}
@@ -63,7 +65,8 @@ class GymnasiumEnv(Environment):
         return jax.pure_callback(reset_env, self._reset_result)
 
     @functools.partial(jax.jit, static_argnums=0)
-    def reset(self, rng: PRNGKey) -> tuple[None, chex.Array]:
+    def reset(self, rng: PRNGKey) -> tuple[None, chex.Array]: # noqa: ARG002
+        """Wraps actual reset for jitting."""
         obs = jax.vmap(self.__reset, in_axes=(0))(jnp.arange(self._n_envs))
         return None, obs
 
@@ -77,7 +80,8 @@ class GymnasiumEnv(Environment):
             action (jnp.ndarray): Action to take.
 
         Returns:
-            tuple[jnp.ndarray, jnp.ndarray, jnp.ndarray, dict]: Step result: (obs, reward, done, info).
+            tuple[jnp.ndarray, jnp.ndarray, jnp.ndarray, dict]:
+                Step result: (obs, reward, done, info).
         """
         def step(_action: jnp.ndarray) -> tuple[jnp.ndarray, jnp.ndarray, jnp.ndarray, dict]:
             """Internal step to match function data types and perform autoreset.
@@ -86,7 +90,8 @@ class GymnasiumEnv(Environment):
                 _action (jnp.ndarray): Action to take.
 
             Returns:
-                tuple[jnp.ndarray, jnp.ndarray, jnp.ndarray, dict]: Step result: (obs, reward, done, info).
+                tuple[jnp.ndarray, jnp.ndarray, jnp.ndarray, dict]:
+                    Step result: (obs, reward, done, info).
             """
             obs, reward, term, trunc, _ = self._env.step(_action)
 
@@ -105,16 +110,19 @@ class GymnasiumEnv(Environment):
 
     @functools.partial(jax.jit, static_argnums=0)
     def step(
-        self, env_state: None, action: chex.Array, rng: PRNGKey
+        self, env_state: None, action: chex.Array, rng: PRNGKey # noqa: ARG002
     ) -> tuple[None, tuple[chex.Array, chex.Array, chex.Array, dict]]:
+        """Wraps actual step for jitting."""
         obs, reward, done, info = jax.vmap(self.__step, in_axes=(0))(action)
 
         return None, (obs, reward, done, info)
 
     @property
     def action_space(self):
+        """Action space of the environment."""
         return gymnasium_space_to_gymnax_space(self._env.action_space)
 
     @property
     def observation_space(self):
+        """Observation space of the environment."""
         return gymnasium_space_to_gymnax_space(self._env.observation_space)
