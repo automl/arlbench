@@ -1,4 +1,5 @@
-# The SAC Code is heavily based on stable-baselines JAX
+# Parts of this code are based on Stable Baselines Jax  (https://github.com/araffin/sbx).
+# Licensed under the MIT License
 from __future__ import annotations
 
 import functools
@@ -47,8 +48,6 @@ if TYPE_CHECKING:
     from arlbench.core.environments import Environment
     from arlbench.core.running_statistics import RunningStatisticsState
     from arlbench.core.wrappers import Wrapper
-
-# todo: separate learning rate for critic and actor??
 
 
 class SACTrainState(TrainState):
@@ -170,6 +169,7 @@ class SAC(Algorithm):
             track_metrics=track_metrics,
         )
 
+        # For the network, we need the properties of the action space
         action_size, discrete = self.action_type
         if discrete:
             raise ValueError("SAC does not support discrete action spaces.")
@@ -201,6 +201,9 @@ class SAC(Algorithm):
             device=jax.default_backend(),
         )
 
+        # This is how we can turn the prioritized sampling on/off for dynamic HPO
+        # We always use the prioritized replay buffer, but if "buffer_prio_sampling"
+        # is disabled, we replace the sampling function by the uniform sampling
         if self.hpo_config["buffer_prio_sampling"] is False:
             sample_fn = functools.partial(
                 uniform_sample,
@@ -252,12 +255,12 @@ class SAC(Algorithm):
                 ),
             },
         )
-        cond = EqualsCondition(
-            cs["target_update_interval"], cs["use_target_network"], True
-        )
-        cond = EqualsCondition(cs["tau"], cs["use_target_network"], True)
-
-        cs.add_condition(cond)
+        cs.add_conditions([
+            EqualsCondition(
+                cs["target_update_interval"], cs["use_target_network"], True
+            ),
+            EqualsCondition(cs["tau"], cs["use_target_network"], True)
+        ])
 
         return cs
 
@@ -297,12 +300,12 @@ class SAC(Algorithm):
                 ),
             },
         )
-        cond = EqualsCondition(
-            cs["target_update_interval"], cs["use_target_network"], True
-        )
-        cond = EqualsCondition(cs["tau"], cs["use_target_network"], True)
-
-        cs.add_condition(cond)
+        cs.add_conditions([
+            EqualsCondition(
+                cs["target_update_interval"], cs["use_target_network"], True
+            ),
+            EqualsCondition(cs["tau"], cs["use_target_network"], True)
+        ])
 
         return cs
 
@@ -419,6 +422,8 @@ class SAC(Algorithm):
         rng, env_rng = jax.random.split(rng)
         env_state, obs = self.env.reset(env_rng)
 
+        # If any of these if not defined, we need a dummy environment transition
+        # to initialize them
         if (
             buffer_state is None
             or actor_network_params is None
@@ -433,6 +438,8 @@ class SAC(Algorithm):
             _, (_obs, _reward, _done, _) = self.env.step(env_state, _action, dummy_rng)
 
         if buffer_state is None:
+            # This is how transitions will look like during training, so we need to pass one
+            # once to the buffer to estimate and allocate the required buffer size
             _timestep = TimeStep(
                 last_obs=_obs[0],
                 obs=_obs[0],
@@ -457,7 +464,7 @@ class SAC(Algorithm):
             target_params=None,
             tx=optax.adam(
                 self.hpo_config["learning_rate"], eps=1e-5
-            ),  # todo: change to actor specific learning_rate
+            ),
             opt_state=actor_opt_state,
         )
         critic_train_state = SACTrainState.create_with_opt_state(
@@ -466,7 +473,7 @@ class SAC(Algorithm):
             target_params=critic_target_params,
             tx=optax.adam(
                 self.hpo_config["learning_rate"], eps=1e-5
-            ),  # todo: change to critic specific learning_rate
+            ),
             opt_state=critic_opt_state,
         )
         if alpha_network_params is None:
@@ -478,7 +485,7 @@ class SAC(Algorithm):
             target_params=None,
             tx=optax.adam(
                 self.hpo_config["learning_rate"], eps=1e-5
-            ),  # todo: how to set learning_rate, check with stable-baselines
+            ),
             opt_state=alpha_opt_state,
         )
 
@@ -534,9 +541,7 @@ class SAC(Algorithm):
             sampled_action,
         )
 
-        # todo: we need to check that the action spaces are finite
         low, high = self.env.action_space.low, self.env.action_space.high
-        # check if low or high are none, nan or inf and set to 1
         if low is None or np.isnan(low).any() or np.isinf(low).any():
             low = -jnp.ones_like(action)
         if high is None or np.isnan(high).any() or np.isinf(high).any():
@@ -552,7 +557,7 @@ class SAC(Algorithm):
         n_eval_steps: int = 100,
         n_eval_episodes: int = 10,
     ) -> SACTrainReturnT:
-        """Performs one iteration of training.
+        """Performs one full training.
 
         Args:
             runner_state (SACTrainReturnT): SAC runner state.
@@ -1060,7 +1065,7 @@ class SAC(Algorithm):
         actor_loss, critic_loss, alpha_loss, td_error, actor_grads, critic_grads = (
             step_metrics
         )
-        metrics, tracjectories = None, None
+        metrics, trajectories = None, None
         if self.track_metrics:
             metrics = SACMetrics(
                 actor_loss=actor_loss,
@@ -1071,7 +1076,7 @@ class SAC(Algorithm):
                 td_error=td_error,
             )
         if self.track_trajectories:
-            tracjectories = Transition(
+            trajectories = Transition(
                 obs=last_obs,
                 action=action,
                 reward=reward,
@@ -1079,7 +1084,7 @@ class SAC(Algorithm):
                 value=value,
                 info=info,
             )
-        return (runner_state, buffer_state), (metrics, tracjectories)
+        return (runner_state, buffer_state), (metrics, trajectories)
 
     @functools.partial(jax.jit, static_argnums=0)
     def _env_step(

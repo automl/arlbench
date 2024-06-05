@@ -214,6 +214,7 @@ class EnvpoolEnv(Environment):
 
     @functools.partial(jax.jit, static_argnums=0)
     def reset(self, _):
+        # io_callback is required to handle random seeds correctly
         obs, info = jax.experimental.io_callback(self._reset, self.reset_shape)
         lives = jnp.array(info["lives"]) if self.is_atari else None
 
