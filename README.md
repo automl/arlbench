@@ -30,7 +30,7 @@
 
 # 🦾 Automated Reinforcement Learning Benchmark
 
-The ARLBench is a benchmark for HPO in RL - evaluate your HPO methods fast and on a representative number of environments! For more information, see our [documentation](https://automl.github.io/arlbench/main/). The dataset if available at  [HuggingFace](https://huggingface.co/datasets/autorl-org/arlbench).
+The ARLBench is a benchmark for HPO in RL - evaluate your HPO methods fast and on a representative number of environments! For more information, see our [documentation](https://automl.github.io/arlbench/main/). The dataset is available at  [HuggingFace](https://huggingface.co/datasets/autorl-org/arlbench).
 
 ## Features
 
