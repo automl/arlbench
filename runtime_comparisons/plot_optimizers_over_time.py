@@ -155,10 +155,10 @@ def read_min_max_scores():
     return min_score, max_score
 
 def read_opt_data(exp: str):
-    logging.info(f"Reading {exp}")
     all_data = []
 
     for opt in OPTIMIZERS:
+        logging.info(f"Reading {exp}: {opt}")
         runhistory_path = os.path.join("results", opt, exp, "runhistory_combined.csv")
 
         if not os.path.isfile(runhistory_path):
@@ -246,14 +246,16 @@ def get_incumbent(opt_data: pd.DataFrame, exp: str, method: str, min_scores = No
 
     if method == "rank":
          incumbent_opt_data["rank"] = incumbent_opt_data.groupby(["cum_budget", "seed"])["incumbent"].rank()
-    elif method == "regret":
+    elif method == "score":
         def min_max_normalize(row):
             min_score = min_scores[algorithm][environment]
             max_score = max_scores[algorithm][environment]
             normalized_score = (row["incumbent"] - min_score) / (max_score - min_score)
             return normalized_score
 
-        incumbent_opt_data.loc[:, "regret"] = incumbent_opt_data.apply(min_max_normalize, axis=1)
+        incumbent_opt_data.loc[:, "score"] = incumbent_opt_data.apply(min_max_normalize, axis=1)
+        incumbent_opt_data.loc[:, "score"] *= -1
+        incumbent_opt_data.loc[:, "score"] += 1
 
     incumbent_opt_data = incumbent_opt_data.sort_values("cum_budget")
     
@@ -267,7 +269,7 @@ def get_incumbent(opt_data: pd.DataFrame, exp: str, method: str, min_scores = No
 
 def plot_opt_over_time(exp: str, method: str):
     min_scores, max_scores = None, None
-    if method == "regret":
+    if method == "score":
         min_scores, max_scores = read_min_max_scores()
 
     opt_data = read_opt_data(exp)
@@ -281,7 +283,7 @@ def plot_opt_over_time(exp: str, method: str):
     fig = plt.figure(figsize=(4, 3))
     g = sns.lineplot(data=incumbent_opt_data, x="cum_budget", y=method, hue="optimizer", errorbar=("ci", 95), hue_order=HUE_ORDER, drawstyle='steps')
     g.set_title(f"{algorithm.upper()} on {environment}")
-    g.set_ylabel("Rank" if method == "rank" else "Regret")
+    g.set_ylabel("Rank" if method == "rank" else "Normalized Score")
     g.set_xlabel("Steps")
 
     g.legend(loc='upper center', bbox_to_anchor=(0.5, -0.25), ncol=2, fancybox=False, shadow=False, frameon=False)
@@ -291,12 +293,28 @@ def plot_opt_over_time(exp: str, method: str):
     path = os.path.join(OPT_PLOTS_DIR, method, f"{exp}.png")
     plt.savefig(path, dpi=500)
     logging.info(f"Saved {path}")
-
     plt.close()
+
+    fig = plt.figure(figsize=(4, 3))
+    g = sns.lineplot(data=incumbent_opt_data, x="cum_budget", y=method, hue="optimizer", errorbar=("ci", 95), hue_order=HUE_ORDER, drawstyle='steps')
+    g.set_title(f"{algorithm.upper()} on {environment}")
+    g.set_ylabel("Rank" if method == "rank" else "Normalized Score")
+    g.set_xlabel("Steps")
+    g.set_xscale('log')
+
+    g.legend(loc='upper center', bbox_to_anchor=(0.5, -0.25), ncol=2, fancybox=False, shadow=False, frameon=False)
+
+    plt.tight_layout(pad=0.2, rect=(0, -0.05, 1, 1))
+
+    path = os.path.join(OPT_PLOTS_DIR, method, f"{exp}_log.png")
+    plt.savefig(path, dpi=500)
+    logging.info(f"Saved {path}")
+    plt.close()
+
 
 def plot_envs_opt_over_time(algorithm: str, envs: list[str], category_name: str, method: str):
     min_scores, max_scores = None, None
-    if method == "regret":
+    if method == "score":
         min_scores, max_scores = read_min_max_scores()
 
     all_opt_data = []
@@ -323,15 +341,11 @@ def plot_envs_opt_over_time(algorithm: str, envs: list[str], category_name: str,
         opt_data['normalized_cum_budget'] = (opt_data['cum_budget'] - min_cum_budget) / (max_cum_budget - min_cum_budget)
 
     all_opt_data = pd.concat(all_opt_data)
-
-    # Clip the optimizer by the minimum observed across all optimizers
-    # max_cum_budget_per_optimizer = all_opt_data.groupby("optimizer")["cum_budget"].max()
-    # all_opt_data = all_opt_data[all_opt_data["cum_budget"] <= max_cum_budget_per_optimizer.min()]
     
     fig = plt.figure(figsize=(4, 3))
     g = sns.lineplot(data=all_opt_data, x="normalized_cum_budget", y=method, hue="optimizer", errorbar=("ci", 95), hue_order=HUE_ORDER)
     g.set_title(f"{algorithm.upper()} on {category_name}")
-    g.set_ylabel("Rank" if method == "rank" else "Regret")
+    g.set_ylabel("Rank" if method == "rank" else "Normalized Score")
     g.set_xlabel("Steps")
 
     g.legend(loc='upper center', bbox_to_anchor=(0.5, -0.25), ncol=2, fancybox=False, shadow=False, frameon=False)
@@ -379,24 +393,25 @@ def plot_3_opt_over_time(experiments: list[str]):
 
 
 if __name__ == "__main__":
-    # plot_envs_opt_over_time("dqn", ["CartPole-v1", "Acrobot-v1"], "test", "regret")
+    plot_envs_opt_over_time("dqn", ["CartPole-v1", "Acrobot-v1"], "test", "score")
+    #exit()
+    # for algorithm, category in ENV_CATEGORIES.items():
+    #     for category_name, envs in category.items():
+    #         plot_envs_opt_over_time(algorithm, envs, category_name + "_test", "score")
+    #         exit()
 
-    for algorithm, subset_envs in SUBSETS.items():
-        plot_envs_opt_over_time(algorithm, subset_envs, "Subset", "regret")
-        break
+    # for algorithm, category in ENV_CATEGORIES.items():
+    #     for category_name, envs in category.items():
+    #         plot_envs_opt_over_time(algorithm, envs, category_name, "score")
+            
+    # for algorithm, subset_envs in SUBSETS.items():
+    #     plot_envs_opt_over_time(algorithm, subset_envs, "Subset", "score")
 
-    for algorithm, category in ENV_CATEGORIES.items():
-        envs = [env for cat_envs in category.values() for env in cat_envs]
-        plot_envs_opt_over_time(algorithm, envs, "Full Set", "regret")
-        break
+    # for algorithm, category in ENV_CATEGORIES.items():
+    #     envs = [env for cat_envs in category.values() for env in cat_envs]
+    #     plot_envs_opt_over_time(algorithm, envs, "Full Set", "score")
 
-    for algorithm, category in ENV_CATEGORIES.items():
-        for category_name, envs in category.items():
-            plot_envs_opt_over_time(algorithm, envs, category_name, "regret")
-            break
-
-    for exp in os.listdir("results/smac_mf"):
-       plot_opt_over_time(exp, "rank")
-       plot_opt_over_time(exp, "regret")
-       gc.collect()
-       break
+    # for exp in os.listdir("results/smac_mf"):
+    #    plot_opt_over_time(exp, "rank")
+    #    plot_opt_over_time(exp, "score")
+    #    gc.collect()
