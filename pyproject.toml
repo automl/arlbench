@@ -3,21 +3,22 @@ name = "ARLBench"
 version = "0.1.0"
 dependencies = [
   "typing_extensions", # Better typing
-  "tomli", 
-  "pre-commit", 
-  "codecarbon",
-  "memray",
-  "pathos",
+  "tomli==2.0.1", 
+  "pre-commit==3.7.0", 
+  "codecarbon==2.3.5",
+  "memray==1.12.0",
+  "pathos==0.3.2",
   "jax==0.4.26",
   "jaxlib==0.4.26",
-  "flashbax>=0.1.2",
-  "gymnax>=0.0.6",
-  "ConfigSpace",
-  "distrax",
-  "flax",
-  "brax",
-  "pytest",
-  "coverage",
+  "flashbax==0.1.2",
+  "gymnax==0.0.6",
+  "chex==0.1.86",
+  "ConfigSpace==0.7.1",
+  "distrax==0.1.5",
+  "flax==0.8.2",
+  "brax==0.10.3",
+  "pytest==7.4.4",
+  "coverage==7.4.4",
   "ruff",
   "hydra-core",
   "hydra-submitit-launcher",
@@ -36,7 +37,7 @@ description = "Python Boilerplate that contains all the code you need to create 
 classifiers = [
   'Intended Audience :: Science/Research',
   'Intended Audience :: Developers',
-  'License :: OSI Approved :: BSD license',
+  'License :: OSI Approved :: BSD License',
   'Programming Language :: Python',
   'Topic :: Software Development',
   'Topic :: Scientific/Engineering',
@@ -55,7 +56,7 @@ examples = ["hypersweeper"]
 doc = [
   "automl_sphinx_theme",
 ]
-envpool = ["envpool>=0.8.4"]
+envpool = ["envpool==0.8.4"]
 
 
 # https://docs.pytest.org/en/7.2.x/reference/reference.html#ini-options-ref
