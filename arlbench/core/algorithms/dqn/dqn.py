@@ -223,7 +223,7 @@ class DQN(Algorithm):
                 "tau": Float("tau", (0.01, 1.0), default=1.0),
                 "initial_epsilon": Float("initial_epsilon", (0.5, 1.0), default=1.0),
                 "target_epsilon": Float("target_epsilon", (0.001, 0.2), default=0.05),
-                "exploration_fraction": Float("initial_epsilon", (0.005, 0.5), default=0.1),
+                "exploration_fraction": Float("exploration_fraction", (0.005, 0.5), default=0.1),
                 "use_target_network": Categorical(
                     "use_target_network", [True, False], default=True
                 ),
