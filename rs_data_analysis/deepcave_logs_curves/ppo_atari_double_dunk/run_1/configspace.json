@@ -1,0 +1,82 @@
+{
+  "hyperparameters": [
+    {
+      "name": "clip_eps",
+      "type": "uniform_float",
+      "log": false,
+      "lower": 0.0,
+      "upper": 0.5488967005146123,
+      "default": 0.2744483503
+    },
+    {
+      "name": "ent_coef",
+      "type": "uniform_float",
+      "log": false,
+      "lower": 0.0,
+      "upper": 0.5488792382307703,
+      "default": 0.2744396191
+    },
+    {
+      "name": "gae_lambda",
+      "type": "uniform_float",
+      "log": false,
+      "lower": 0.0,
+      "upper": 1.0998479082421395,
+      "default": 0.5499239541
+    },
+    {
+      "name": "learning_rate",
+      "type": "uniform_float",
+      "log": false,
+      "lower": 0.0,
+      "upper": 0.0984209204103971,
+      "default": 0.0492104602
+    },
+    {
+      "name": "max_grad_norm",
+      "type": "uniform_float",
+      "log": false,
+      "lower": 0.0,
+      "upper": 1.0786381460660106,
+      "default": 0.539319073
+    },
+    {
+      "name": "minibatch_size",
+      "type": "uniform_float",
+      "log": false,
+      "lower": 0.0,
+      "upper": 563.2,
+      "default": 281.6
+    },
+    {
+      "name": "normalize_advantage",
+      "type": "categorical",
+      "choices": [
+        true,
+        false
+      ],
+      "default": true,
+      "weights": null
+    },
+    {
+      "name": "vf_clip_eps",
+      "type": "uniform_float",
+      "log": false,
+      "lower": 0.0,
+      "upper": 0.5496028966571941,
+      "default": 0.2748014483
+    },
+    {
+      "name": "vf_coef",
+      "type": "uniform_float",
+      "log": false,
+      "lower": 0.0,
+      "upper": 1.0637604098849416,
+      "default": 0.5318802049
+    }
+  ],
+  "conditions": [],
+  "forbiddens": [],
+  "python_module_version": "0.6.1",
+  "json_format_version": 0.4
+}
