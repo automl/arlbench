@@ -540,6 +540,7 @@
                 
   <section id="module-arlbench.core.algorithms.sac.models">
 <span id="arlbench-core-algorithms-sac-models"></span><h1>arlbench.core.algorithms.sac.models<a class="headerlink" href="#module-arlbench.core.algorithms.sac.models" title="Link to this heading">¶</a></h1>
+<p>SAC models for the actor and critic networks.</p>
 <p class="rubric">Classes</p>
 <table class="autosummary longtable table autosummary">
 <tbody>
@@ -559,7 +560,7 @@
 <td><p>An MLP-based critic network for SAC.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="../arlbench.core.algorithms.sac.html#arlbench.core.algorithms.sac.models.SACVectorCritic" title="arlbench.core.algorithms.sac.models.SACVectorCritic"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SACVectorCritic</span></code></a>(critic, action_dim, activation)</p></td>
-<td><p></p></td>
+<td><p>A vectorized critic network for SAC.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="../arlbench.core.algorithms.sac.html#arlbench.core.algorithms.sac.models.TanhTransformedDistribution" title="arlbench.core.algorithms.sac.models.TanhTransformedDistribution"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TanhTransformedDistribution</span></code></a>(*args, **kwargs)</p></td>
 <td><p>Tanh transformation of a distrax distribution.</p></td>
@@ -574,7 +575,7 @@
 <dl class="py method">
 <dt class="sig sig-object py" id="arlbench.core.algorithms.sac.models.AlphaCoef.__call__">
 <span class="sig-name descname"><span class="pre">__call__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arlbench/core/algorithms/sac/models.html#AlphaCoef.__call__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.core.algorithms.sac.models.AlphaCoef.__call__" title="Link to this definition">¶</a></dt>
-<dd><p>Call self as a function.</p>
+<dd><p>Returns the alpha coefficient.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">Array</span></code></span></p>
@@ -585,38 +586,7 @@
 <dl class="py method">
 <dt class="sig sig-object py" id="arlbench.core.algorithms.sac.models.AlphaCoef.setup">
 <span class="sig-name descname"><span class="pre">setup</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arlbench/core/algorithms/sac/models.html#AlphaCoef.setup"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.core.algorithms.sac.models.AlphaCoef.setup" title="Link to this definition">¶</a></dt>
-<dd><p>Initializes a Module lazily (similar to a lazy <code class="docutils literal notranslate"><span class="pre">__init__</span></code>).</p>
-<p><code class="docutils literal notranslate"><span class="pre">setup</span></code> is called once lazily on a module instance when a module
-is bound, immediately before any other methods like <code class="docutils literal notranslate"><span class="pre">__call__</span></code> are
-invoked, or before a <code class="docutils literal notranslate"><span class="pre">setup</span></code>-defined attribute on <code class="docutils literal notranslate"><span class="pre">self</span></code> is accessed.</p>
-<p>This can happen in three cases:</p>
-<blockquote>
-<div><ol class="arabic">
-<li><p>Immediately when invoking <code class="xref py py-meth docutils literal notranslate"><span class="pre">apply()</span></code>, <code class="xref py py-meth docutils literal notranslate"><span class="pre">init()</span></code> or
-<code class="xref py py-meth docutils literal notranslate"><span class="pre">init_and_output()</span></code>.</p></li>
-<li><p>Once the module is given a name by being assigned to an attribute of
-another module inside the other module’s <code class="docutils literal notranslate"><span class="pre">setup</span></code> method
-(see <code class="xref py py-meth docutils literal notranslate"><span class="pre">__setattr__()</span></code>):</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">class</span> <span class="nc">MyModule</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
-<span class="gp">... </span>  <span class="k">def</span> <span class="nf">setup</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="gp">... </span>    <span class="n">submodule</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Conv</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
-
-<span class="go">...     # Accessing `submodule` attributes does not yet work here.</span>
-
-<span class="go">...     # The following line invokes `self.__setattr__`, which gives</span>
-<span class="go">...     # `submodule` the name &quot;conv1&quot;.</span>
-<span class="go">...     self.conv1 = submodule</span>
-
-<span class="go">...     # Accessing `submodule` attributes or methods is now safe and</span>
-<span class="go">...     # either causes setup() to be called once.</span>
-</pre></div>
-</div>
-</li>
-<li><p>Once a module is constructed inside a method wrapped with
-<code class="xref py py-meth docutils literal notranslate"><span class="pre">compact()</span></code>, immediately before another method is called or
-<code class="docutils literal notranslate"><span class="pre">setup</span></code> defined attribute is accessed.</p></li>
-</ol>
-</div></blockquote>
+<dd><p>Initializes the alpha coefficient.</p>
 </dd></dl>
 
 </dd></dl>
@@ -629,44 +599,13 @@ another module inside the other module’s <code class="docutils literal notrans
 <dl class="py method">
 <dt class="sig sig-object py" id="arlbench.core.algorithms.sac.models.SACCNNActor.__call__">
 <span class="sig-name descname"><span class="pre">__call__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arlbench/core/algorithms/sac/models.html#SACCNNActor.__call__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.core.algorithms.sac.models.SACCNNActor.__call__" title="Link to this definition">¶</a></dt>
-<dd><p>Call self as a function.</p>
+<dd><p>Applies the actor to the input.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="arlbench.core.algorithms.sac.models.SACCNNActor.setup">
 <span class="sig-name descname"><span class="pre">setup</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arlbench/core/algorithms/sac/models.html#SACCNNActor.setup"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.core.algorithms.sac.models.SACCNNActor.setup" title="Link to this definition">¶</a></dt>
-<dd><p>Initializes a Module lazily (similar to a lazy <code class="docutils literal notranslate"><span class="pre">__init__</span></code>).</p>
-<p><code class="docutils literal notranslate"><span class="pre">setup</span></code> is called once lazily on a module instance when a module
-is bound, immediately before any other methods like <code class="docutils literal notranslate"><span class="pre">__call__</span></code> are
-invoked, or before a <code class="docutils literal notranslate"><span class="pre">setup</span></code>-defined attribute on <code class="docutils literal notranslate"><span class="pre">self</span></code> is accessed.</p>
-<p>This can happen in three cases:</p>
-<blockquote>
-<div><ol class="arabic">
-<li><p>Immediately when invoking <code class="xref py py-meth docutils literal notranslate"><span class="pre">apply()</span></code>, <code class="xref py py-meth docutils literal notranslate"><span class="pre">init()</span></code> or
-<code class="xref py py-meth docutils literal notranslate"><span class="pre">init_and_output()</span></code>.</p></li>
-<li><p>Once the module is given a name by being assigned to an attribute of
-another module inside the other module’s <code class="docutils literal notranslate"><span class="pre">setup</span></code> method
-(see <code class="xref py py-meth docutils literal notranslate"><span class="pre">__setattr__()</span></code>):</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">class</span> <span class="nc">MyModule</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
-<span class="gp">... </span>  <span class="k">def</span> <span class="nf">setup</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="gp">... </span>    <span class="n">submodule</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Conv</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
-
-<span class="go">...     # Accessing `submodule` attributes does not yet work here.</span>
-
-<span class="go">...     # The following line invokes `self.__setattr__`, which gives</span>
-<span class="go">...     # `submodule` the name &quot;conv1&quot;.</span>
-<span class="go">...     self.conv1 = submodule</span>
-
-<span class="go">...     # Accessing `submodule` attributes or methods is now safe and</span>
-<span class="go">...     # either causes setup() to be called once.</span>
-</pre></div>
-</div>
-</li>
-<li><p>Once a module is constructed inside a method wrapped with
-<code class="xref py py-meth docutils literal notranslate"><span class="pre">compact()</span></code>, immediately before another method is called or
-<code class="docutils literal notranslate"><span class="pre">setup</span></code> defined attribute is accessed.</p></li>
-</ol>
-</div></blockquote>
+<dd><p>Initializes the actor network.</p>
 </dd></dl>
 
 </dd></dl>
@@ -679,44 +618,13 @@ another module inside the other module’s <code class="docutils literal notrans
 <dl class="py method">
 <dt class="sig sig-object py" id="arlbench.core.algorithms.sac.models.SACCNNCritic.__call__">
 <span class="sig-name descname"><span class="pre">__call__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">action</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arlbench/core/algorithms/sac/models.html#SACCNNCritic.__call__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.core.algorithms.sac.models.SACCNNCritic.__call__" title="Link to this definition">¶</a></dt>
-<dd><p>Call self as a function.</p>
+<dd><p>Applies the critic to the input.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="arlbench.core.algorithms.sac.models.SACCNNCritic.setup">
 <span class="sig-name descname"><span class="pre">setup</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arlbench/core/algorithms/sac/models.html#SACCNNCritic.setup"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.core.algorithms.sac.models.SACCNNCritic.setup" title="Link to this definition">¶</a></dt>
-<dd><p>Initializes a Module lazily (similar to a lazy <code class="docutils literal notranslate"><span class="pre">__init__</span></code>).</p>
-<p><code class="docutils literal notranslate"><span class="pre">setup</span></code> is called once lazily on a module instance when a module
-is bound, immediately before any other methods like <code class="docutils literal notranslate"><span class="pre">__call__</span></code> are
-invoked, or before a <code class="docutils literal notranslate"><span class="pre">setup</span></code>-defined attribute on <code class="docutils literal notranslate"><span class="pre">self</span></code> is accessed.</p>
-<p>This can happen in three cases:</p>
-<blockquote>
-<div><ol class="arabic">
-<li><p>Immediately when invoking <code class="xref py py-meth docutils literal notranslate"><span class="pre">apply()</span></code>, <code class="xref py py-meth docutils literal notranslate"><span class="pre">init()</span></code> or
-<code class="xref py py-meth docutils literal notranslate"><span class="pre">init_and_output()</span></code>.</p></li>
-<li><p>Once the module is given a name by being assigned to an attribute of
-another module inside the other module’s <code class="docutils literal notranslate"><span class="pre">setup</span></code> method
-(see <code class="xref py py-meth docutils literal notranslate"><span class="pre">__setattr__()</span></code>):</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">class</span> <span class="nc">MyModule</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
-<span class="gp">... </span>  <span class="k">def</span> <span class="nf">setup</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="gp">... </span>    <span class="n">submodule</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Conv</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
-
-<span class="go">...     # Accessing `submodule` attributes does not yet work here.</span>
-
-<span class="go">...     # The following line invokes `self.__setattr__`, which gives</span>
-<span class="go">...     # `submodule` the name &quot;conv1&quot;.</span>
-<span class="go">...     self.conv1 = submodule</span>
-
-<span class="go">...     # Accessing `submodule` attributes or methods is now safe and</span>
-<span class="go">...     # either causes setup() to be called once.</span>
-</pre></div>
-</div>
-</li>
-<li><p>Once a module is constructed inside a method wrapped with
-<code class="xref py py-meth docutils literal notranslate"><span class="pre">compact()</span></code>, immediately before another method is called or
-<code class="docutils literal notranslate"><span class="pre">setup</span></code> defined attribute is accessed.</p></li>
-</ol>
-</div></blockquote>
+<dd><p>Initializes the critic network.</p>
 </dd></dl>
 
 </dd></dl>
@@ -729,44 +637,13 @@ another module inside the other module’s <code class="docutils literal notrans
 <dl class="py method">
 <dt class="sig sig-object py" id="arlbench.core.algorithms.sac.models.SACMLPActor.__call__">
 <span class="sig-name descname"><span class="pre">__call__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arlbench/core/algorithms/sac/models.html#SACMLPActor.__call__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.core.algorithms.sac.models.SACMLPActor.__call__" title="Link to this definition">¶</a></dt>
-<dd><p>Call self as a function.</p>
+<dd><p>Applies the actor to the input.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="arlbench.core.algorithms.sac.models.SACMLPActor.setup">
 <span class="sig-name descname"><span class="pre">setup</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arlbench/core/algorithms/sac/models.html#SACMLPActor.setup"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.core.algorithms.sac.models.SACMLPActor.setup" title="Link to this definition">¶</a></dt>
-<dd><p>Initializes a Module lazily (similar to a lazy <code class="docutils literal notranslate"><span class="pre">__init__</span></code>).</p>
-<p><code class="docutils literal notranslate"><span class="pre">setup</span></code> is called once lazily on a module instance when a module
-is bound, immediately before any other methods like <code class="docutils literal notranslate"><span class="pre">__call__</span></code> are
-invoked, or before a <code class="docutils literal notranslate"><span class="pre">setup</span></code>-defined attribute on <code class="docutils literal notranslate"><span class="pre">self</span></code> is accessed.</p>
-<p>This can happen in three cases:</p>
-<blockquote>
-<div><ol class="arabic">
-<li><p>Immediately when invoking <code class="xref py py-meth docutils literal notranslate"><span class="pre">apply()</span></code>, <code class="xref py py-meth docutils literal notranslate"><span class="pre">init()</span></code> or
-<code class="xref py py-meth docutils literal notranslate"><span class="pre">init_and_output()</span></code>.</p></li>
-<li><p>Once the module is given a name by being assigned to an attribute of
-another module inside the other module’s <code class="docutils literal notranslate"><span class="pre">setup</span></code> method
-(see <code class="xref py py-meth docutils literal notranslate"><span class="pre">__setattr__()</span></code>):</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">class</span> <span class="nc">MyModule</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
-<span class="gp">... </span>  <span class="k">def</span> <span class="nf">setup</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="gp">... </span>    <span class="n">submodule</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Conv</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
-
-<span class="go">...     # Accessing `submodule` attributes does not yet work here.</span>
-
-<span class="go">...     # The following line invokes `self.__setattr__`, which gives</span>
-<span class="go">...     # `submodule` the name &quot;conv1&quot;.</span>
-<span class="go">...     self.conv1 = submodule</span>
-
-<span class="go">...     # Accessing `submodule` attributes or methods is now safe and</span>
-<span class="go">...     # either causes setup() to be called once.</span>
-</pre></div>
-</div>
-</li>
-<li><p>Once a module is constructed inside a method wrapped with
-<code class="xref py py-meth docutils literal notranslate"><span class="pre">compact()</span></code>, immediately before another method is called or
-<code class="docutils literal notranslate"><span class="pre">setup</span></code> defined attribute is accessed.</p></li>
-</ol>
-</div></blockquote>
+<dd><p>Initializes the actor network.</p>
 </dd></dl>
 
 </dd></dl>
@@ -779,44 +656,13 @@ another module inside the other module’s <code class="docutils literal notrans
 <dl class="py method">
 <dt class="sig sig-object py" id="arlbench.core.algorithms.sac.models.SACMLPCritic.__call__">
 <span class="sig-name descname"><span class="pre">__call__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">action</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arlbench/core/algorithms/sac/models.html#SACMLPCritic.__call__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.core.algorithms.sac.models.SACMLPCritic.__call__" title="Link to this definition">¶</a></dt>
-<dd><p>Call self as a function.</p>
+<dd><p>Applies the critic to the input.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="arlbench.core.algorithms.sac.models.SACMLPCritic.setup">
 <span class="sig-name descname"><span class="pre">setup</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arlbench/core/algorithms/sac/models.html#SACMLPCritic.setup"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.core.algorithms.sac.models.SACMLPCritic.setup" title="Link to this definition">¶</a></dt>
-<dd><p>Initializes a Module lazily (similar to a lazy <code class="docutils literal notranslate"><span class="pre">__init__</span></code>).</p>
-<p><code class="docutils literal notranslate"><span class="pre">setup</span></code> is called once lazily on a module instance when a module
-is bound, immediately before any other methods like <code class="docutils literal notranslate"><span class="pre">__call__</span></code> are
-invoked, or before a <code class="docutils literal notranslate"><span class="pre">setup</span></code>-defined attribute on <code class="docutils literal notranslate"><span class="pre">self</span></code> is accessed.</p>
-<p>This can happen in three cases:</p>
-<blockquote>
-<div><ol class="arabic">
-<li><p>Immediately when invoking <code class="xref py py-meth docutils literal notranslate"><span class="pre">apply()</span></code>, <code class="xref py py-meth docutils literal notranslate"><span class="pre">init()</span></code> or
-<code class="xref py py-meth docutils literal notranslate"><span class="pre">init_and_output()</span></code>.</p></li>
-<li><p>Once the module is given a name by being assigned to an attribute of
-another module inside the other module’s <code class="docutils literal notranslate"><span class="pre">setup</span></code> method
-(see <code class="xref py py-meth docutils literal notranslate"><span class="pre">__setattr__()</span></code>):</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">class</span> <span class="nc">MyModule</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
-<span class="gp">... </span>  <span class="k">def</span> <span class="nf">setup</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="gp">... </span>    <span class="n">submodule</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Conv</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
-
-<span class="go">...     # Accessing `submodule` attributes does not yet work here.</span>
-
-<span class="go">...     # The following line invokes `self.__setattr__`, which gives</span>
-<span class="go">...     # `submodule` the name &quot;conv1&quot;.</span>
-<span class="go">...     self.conv1 = submodule</span>
-
-<span class="go">...     # Accessing `submodule` attributes or methods is now safe and</span>
-<span class="go">...     # either causes setup() to be called once.</span>
-</pre></div>
-</div>
-</li>
-<li><p>Once a module is constructed inside a method wrapped with
-<code class="xref py py-meth docutils literal notranslate"><span class="pre">compact()</span></code>, immediately before another method is called or
-<code class="docutils literal notranslate"><span class="pre">setup</span></code> defined attribute is accessed.</p></li>
-</ol>
-</div></blockquote>
+<dd><p>Initializes the critic network.</p>
 </dd></dl>
 
 </dd></dl>
@@ -825,10 +671,11 @@ another module inside the other module’s <code class="docutils literal notrans
 <dt class="sig sig-object py" id="arlbench.core.algorithms.sac.models.SACVectorCritic">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">arlbench.core.algorithms.sac.models.</span></span><span class="sig-name descname"><span class="pre">SACVectorCritic</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">critic</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">action_dim</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">activation</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hidden_size=64</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_critics=2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parent=&lt;flax.linen.module._Sentinel</span> <span class="pre">object&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name=None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arlbench/core/algorithms/sac/models.html#SACVectorCritic"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.core.algorithms.sac.models.SACVectorCritic" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></p>
+<p>A vectorized critic network for SAC.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="arlbench.core.algorithms.sac.models.SACVectorCritic.__call__">
 <span class="sig-name descname"><span class="pre">__call__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">action</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arlbench/core/algorithms/sac/models.html#SACVectorCritic.__call__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.core.algorithms.sac.models.SACVectorCritic.__call__" title="Link to this definition">¶</a></dt>
-<dd><p>Call self as a function.</p>
+<dd><p>Applies the critic to the input.</p>
 </dd></dl>
 
 </dd></dl>
@@ -841,7 +688,7 @@ another module inside the other module’s <code class="docutils literal notrans
 <dl class="py method">
 <dt class="sig sig-object py" id="arlbench.core.algorithms.sac.models.TanhTransformedDistribution.mode">
 <span class="sig-name descname"><span class="pre">mode</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arlbench/core/algorithms/sac/models.html#TanhTransformedDistribution.mode"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.core.algorithms.sac.models.TanhTransformedDistribution.mode" title="Link to this definition">¶</a></dt>
-<dd><p>Calculates the mode.</p>
+<dd><p>Returns the mode of the distribution.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">Array</span></code></span></p>

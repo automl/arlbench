@@ -332,7 +332,8 @@
               <div>
                 
   <h1>Source code for arlbench.core.wrappers.flatten_observation</h1><div class="highlight"><pre>
-<span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
+<span></span><span class="sd">&quot;&quot;&quot;Observation Flattening Wrapper.&quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
 
 <span class="kn">import</span> <span class="nn">functools</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">TYPE_CHECKING</span><span class="p">,</span> <span class="n">Any</span>
@@ -399,14 +400,16 @@
 <a class="viewcode-back" href="../../../../arlbench.core.wrappers.html#arlbench.core.wrappers.FlattenObservationWrapper.reset">[docs]</a>
     <span class="nd">@functools</span><span class="o">.</span><span class="n">partial</span><span class="p">(</span><span class="n">jax</span><span class="o">.</span><span class="n">jit</span><span class="p">,</span> <span class="n">static_argnums</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,))</span>
     <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rng</span><span class="p">:</span> <span class="n">chex</span><span class="o">.</span><span class="n">PRNGKey</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Calls the reset() function of the environment and flattens the returned observations.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Calls the reset() function of the environment and</span>
+<span class="sd">            flattens the returned observations.</span>
 
 
 <span class="sd">        Args:</span>
 <span class="sd">            rng (chex.PRNGKey): Random number generator key.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            tuple[Any, jnp.ndarray]: Result of the step function but observations are flattened.</span>
+<span class="sd">            tuple[Any, jnp.ndarray]: Result of the step function</span>
+<span class="sd">            but observations are flattened.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">env_state</span><span class="p">,</span> <span class="n">obs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_env</span><span class="o">.</span><span class="n">reset</span><span class="p">(</span><span class="n">rng</span><span class="p">)</span>
 

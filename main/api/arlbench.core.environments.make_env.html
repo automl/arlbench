@@ -367,16 +367,19 @@
 <dl class="py function">
 <dt class="sig sig-object py" id="arlbench.core.environments.make_env">
 <span class="sig-prename descclassname"><span class="pre">arlbench.core.environments.</span></span><span class="sig-name descname"><span class="pre">make_env</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">env_framework</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">env_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cnn_policy</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_envs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">env_kwargs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arlbench/core/environments/make_env.html#make_env"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.core.environments.make_env" title="Link to this definition">¶</a></dt>
-<dd><p>ARLBench equivalent to make_env in gymnasium/gymnax etc. Creates a JAX-compatible RL environment.</p>
+<dd><p>ARLBench equivalent to make_env in gymnasium/gymnax etc.
+Creates a JAX-compatible RL environment.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>env_framework</strong> (<em>str</em>) – Environment framework to use. Must be one of the following: brax, envpool, gymnasium, gymnax, xland</p></li>
+<li><p><strong>env_framework</strong> (<em>str</em>) – Environment framework to use.
+Must be one of the following: brax, envpool, gymnasium, gymnax, xland</p></li>
 <li><p><strong>env_name</strong> (<em>str</em>) – Name/id of the environment. Has to match the env_framework.</p></li>
 <li><p><strong>cnn_policy</strong> (<em>bool</em><em>, </em><em>optional</em>) – _description_. Defaults to False.</p></li>
 <li><p><strong>n_envs</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of environments. Defaults to 1.</p></li>
 <li><p><strong>seed</strong> (<em>int</em><em>, </em><em>optional</em>) – Random seed. Defaults to 0.</p></li>
-<li><p><strong>env_kwargs</strong> (<em>dict</em><em>[</em><em>str</em><em>, </em><em>Any</em><em>] </em><em>| </em><em>None</em><em>, </em><em>optional</em>) – Keyword arguments to pass to the environment. Defaults to None.</p></li>
+<li><p><strong>env_kwargs</strong> (<em>dict</em><em>[</em><em>str</em><em>, </em><em>Any</em><em>] </em><em>| </em><em>None</em><em>, </em><em>optional</em>) – Keyword arguments
+to pass to the environment. Defaults to None.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>

@@ -478,6 +478,7 @@
 </section>
 <section id="module-arlbench.core.wrappers.flatten_observation">
 <span id="arlbench-core-wrappers-flatten-observation-module"></span><h2>arlbench.core.wrappers.flatten_observation module<a class="headerlink" href="#module-arlbench.core.wrappers.flatten_observation" title="Link to this heading">¶</a></h2>
+<p>Observation Flattening Wrapper.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="arlbench.core.wrappers.flatten_observation.FlattenObservationWrapper">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">arlbench.core.wrappers.flatten_observation.</span></span><span class="sig-name descname"><span class="pre">FlattenObservationWrapper</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">env</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/arlbench/core/wrappers/flatten_observation.html#FlattenObservationWrapper"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.core.wrappers.flatten_observation.FlattenObservationWrapper" title="Link to this definition">¶</a></dt>
@@ -500,13 +501,17 @@
 <dl class="py method">
 <dt class="sig sig-object py" id="arlbench.core.wrappers.flatten_observation.FlattenObservationWrapper.reset">
 <span class="sig-name descname"><span class="pre">reset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rng</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/arlbench/core/wrappers/flatten_observation.html#FlattenObservationWrapper.reset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.core.wrappers.flatten_observation.FlattenObservationWrapper.reset" title="Link to this definition">¶</a></dt>
-<dd><p>Calls the reset() function of the environment and flattens the returned observations.</p>
+<dd><dl class="simple">
+<dt>Calls the reset() function of the environment and</dt><dd><p>flattens the returned observations.</p>
+</dd>
+</dl>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>rng</strong> (<em>chex.PRNGKey</em>) – Random number generator key.</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>Result of the step function but observations are flattened.</p>
+<dd class="field-even"><p>Result of the step function
+but observations are flattened.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>tuple[Any, jnp.ndarray]</p>
@@ -542,6 +547,7 @@ the step function but observations are flattened.</p>
 </section>
 <section id="module-arlbench.core.wrappers.wrapper">
 <span id="arlbench-core-wrappers-wrapper-module"></span><h2>arlbench.core.wrappers.wrapper module<a class="headerlink" href="#module-arlbench.core.wrappers.wrapper" title="Link to this heading">¶</a></h2>
+<p>Wrapper class.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="arlbench.core.wrappers.wrapper.Wrapper">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">arlbench.core.wrappers.wrapper.</span></span><span class="sig-name descname"><span class="pre">Wrapper</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">env</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/arlbench/core/wrappers/wrapper.html#Wrapper"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.core.wrappers.wrapper.Wrapper" title="Link to this definition">¶</a></dt>
@@ -574,13 +580,17 @@ the step function but observations are flattened.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="arlbench.core.wrappers.FlattenObservationWrapper.reset">
 <span class="sig-name descname"><span class="pre">reset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rng</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/arlbench/core/wrappers/flatten_observation.html#FlattenObservationWrapper.reset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.core.wrappers.FlattenObservationWrapper.reset" title="Link to this definition">¶</a></dt>
-<dd><p>Calls the reset() function of the environment and flattens the returned observations.</p>
+<dd><dl class="simple">
+<dt>Calls the reset() function of the environment and</dt><dd><p>flattens the returned observations.</p>
+</dd>
+</dl>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>rng</strong> (<em>chex.PRNGKey</em>) – Random number generator key.</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>Result of the step function but observations are flattened.</p>
+<dd class="field-even"><p>Result of the step function
+but observations are flattened.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>tuple[Any, jnp.ndarray]</p>

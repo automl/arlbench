@@ -1718,6 +1718,7 @@
 </section>
 <section id="module-arlbench.core.algorithms.sac.models">
 <span id="arlbench-core-algorithms-sac-models-module"></span><h2>arlbench.core.algorithms.sac.models module<a class="headerlink" href="#module-arlbench.core.algorithms.sac.models" title="Link to this heading">¶</a></h2>
+<p>SAC models for the actor and critic networks.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="arlbench.core.algorithms.sac.models.AlphaCoef">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">arlbench.core.algorithms.sac.models.</span></span><span class="sig-name descname"><span class="pre">AlphaCoef</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">alpha_init=1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parent=&lt;flax.linen.module._Sentinel</span> <span class="pre">object&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name=None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/arlbench/core/algorithms/sac/models.html#AlphaCoef"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.core.algorithms.sac.models.AlphaCoef" title="Link to this definition">¶</a></dt>
@@ -1726,7 +1727,7 @@
 <dl class="py method">
 <dt class="sig sig-object py" id="arlbench.core.algorithms.sac.models.AlphaCoef.__call__">
 <span class="sig-name descname"><span class="pre">__call__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/arlbench/core/algorithms/sac/models.html#AlphaCoef.__call__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.core.algorithms.sac.models.AlphaCoef.__call__" title="Link to this definition">¶</a></dt>
-<dd><p>Call self as a function.</p>
+<dd><p>Returns the alpha coefficient.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">Array</span></code></span></p>
@@ -1757,38 +1758,7 @@
 <dl class="py method">
 <dt class="sig sig-object py" id="arlbench.core.algorithms.sac.models.AlphaCoef.setup">
 <span class="sig-name descname"><span class="pre">setup</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/arlbench/core/algorithms/sac/models.html#AlphaCoef.setup"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.core.algorithms.sac.models.AlphaCoef.setup" title="Link to this definition">¶</a></dt>
-<dd><p>Initializes a Module lazily (similar to a lazy <code class="docutils literal notranslate"><span class="pre">__init__</span></code>).</p>
-<p><code class="docutils literal notranslate"><span class="pre">setup</span></code> is called once lazily on a module instance when a module
-is bound, immediately before any other methods like <code class="docutils literal notranslate"><span class="pre">__call__</span></code> are
-invoked, or before a <code class="docutils literal notranslate"><span class="pre">setup</span></code>-defined attribute on <code class="docutils literal notranslate"><span class="pre">self</span></code> is accessed.</p>
-<p>This can happen in three cases:</p>
-<blockquote>
-<div><ol class="arabic">
-<li><p>Immediately when invoking <code class="xref py py-meth docutils literal notranslate"><span class="pre">apply()</span></code>, <code class="xref py py-meth docutils literal notranslate"><span class="pre">init()</span></code> or
-<code class="xref py py-meth docutils literal notranslate"><span class="pre">init_and_output()</span></code>.</p></li>
-<li><p>Once the module is given a name by being assigned to an attribute of
-another module inside the other module’s <code class="docutils literal notranslate"><span class="pre">setup</span></code> method
-(see <code class="xref py py-meth docutils literal notranslate"><span class="pre">__setattr__()</span></code>):</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">class</span> <span class="nc">MyModule</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
-<span class="gp">... </span>  <span class="k">def</span> <span class="nf">setup</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="gp">... </span>    <span class="n">submodule</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Conv</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
-
-<span class="go">...     # Accessing `submodule` attributes does not yet work here.</span>
-
-<span class="go">...     # The following line invokes `self.__setattr__`, which gives</span>
-<span class="go">...     # `submodule` the name &quot;conv1&quot;.</span>
-<span class="go">...     self.conv1 = submodule</span>
-
-<span class="go">...     # Accessing `submodule` attributes or methods is now safe and</span>
-<span class="go">...     # either causes setup() to be called once.</span>
-</pre></div>
-</div>
-</li>
-<li><p>Once a module is constructed inside a method wrapped with
-<code class="xref py py-meth docutils literal notranslate"><span class="pre">compact()</span></code>, immediately before another method is called or
-<code class="docutils literal notranslate"><span class="pre">setup</span></code> defined attribute is accessed.</p></li>
-</ol>
-</div></blockquote>
+<dd><p>Initializes the alpha coefficient.</p>
 </dd></dl>
 
 </dd></dl>
@@ -1801,7 +1771,7 @@ another module inside the other module’s <code class="docutils literal notrans
 <dl class="py method">
 <dt class="sig sig-object py" id="arlbench.core.algorithms.sac.models.SACCNNActor.__call__">
 <span class="sig-name descname"><span class="pre">__call__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/arlbench/core/algorithms/sac/models.html#SACCNNActor.__call__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.core.algorithms.sac.models.SACCNNActor.__call__" title="Link to this definition">¶</a></dt>
-<dd><p>Call self as a function.</p>
+<dd><p>Applies the actor to the input.</p>
 </dd></dl>
 
 <dl class="py attribute">
@@ -1847,38 +1817,7 @@ another module inside the other module’s <code class="docutils literal notrans
 <dl class="py method">
 <dt class="sig sig-object py" id="arlbench.core.algorithms.sac.models.SACCNNActor.setup">
 <span class="sig-name descname"><span class="pre">setup</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/arlbench/core/algorithms/sac/models.html#SACCNNActor.setup"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.core.algorithms.sac.models.SACCNNActor.setup" title="Link to this definition">¶</a></dt>
-<dd><p>Initializes a Module lazily (similar to a lazy <code class="docutils literal notranslate"><span class="pre">__init__</span></code>).</p>
-<p><code class="docutils literal notranslate"><span class="pre">setup</span></code> is called once lazily on a module instance when a module
-is bound, immediately before any other methods like <code class="docutils literal notranslate"><span class="pre">__call__</span></code> are
-invoked, or before a <code class="docutils literal notranslate"><span class="pre">setup</span></code>-defined attribute on <code class="docutils literal notranslate"><span class="pre">self</span></code> is accessed.</p>
-<p>This can happen in three cases:</p>
-<blockquote>
-<div><ol class="arabic">
-<li><p>Immediately when invoking <code class="xref py py-meth docutils literal notranslate"><span class="pre">apply()</span></code>, <code class="xref py py-meth docutils literal notranslate"><span class="pre">init()</span></code> or
-<code class="xref py py-meth docutils literal notranslate"><span class="pre">init_and_output()</span></code>.</p></li>
-<li><p>Once the module is given a name by being assigned to an attribute of
-another module inside the other module’s <code class="docutils literal notranslate"><span class="pre">setup</span></code> method
-(see <code class="xref py py-meth docutils literal notranslate"><span class="pre">__setattr__()</span></code>):</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">class</span> <span class="nc">MyModule</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
-<span class="gp">... </span>  <span class="k">def</span> <span class="nf">setup</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="gp">... </span>    <span class="n">submodule</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Conv</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
-
-<span class="go">...     # Accessing `submodule` attributes does not yet work here.</span>
-
-<span class="go">...     # The following line invokes `self.__setattr__`, which gives</span>
-<span class="go">...     # `submodule` the name &quot;conv1&quot;.</span>
-<span class="go">...     self.conv1 = submodule</span>
-
-<span class="go">...     # Accessing `submodule` attributes or methods is now safe and</span>
-<span class="go">...     # either causes setup() to be called once.</span>
-</pre></div>
-</div>
-</li>
-<li><p>Once a module is constructed inside a method wrapped with
-<code class="xref py py-meth docutils literal notranslate"><span class="pre">compact()</span></code>, immediately before another method is called or
-<code class="docutils literal notranslate"><span class="pre">setup</span></code> defined attribute is accessed.</p></li>
-</ol>
-</div></blockquote>
+<dd><p>Initializes the actor network.</p>
 </dd></dl>
 
 </dd></dl>
@@ -1891,7 +1830,7 @@ another module inside the other module’s <code class="docutils literal notrans
 <dl class="py method">
 <dt class="sig sig-object py" id="arlbench.core.algorithms.sac.models.SACCNNCritic.__call__">
 <span class="sig-name descname"><span class="pre">__call__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">action</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/arlbench/core/algorithms/sac/models.html#SACCNNCritic.__call__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.core.algorithms.sac.models.SACCNNCritic.__call__" title="Link to this definition">¶</a></dt>
-<dd><p>Call self as a function.</p>
+<dd><p>Applies the critic to the input.</p>
 </dd></dl>
 
 <dl class="py attribute">
@@ -1927,38 +1866,7 @@ another module inside the other module’s <code class="docutils literal notrans
 <dl class="py method">
 <dt class="sig sig-object py" id="arlbench.core.algorithms.sac.models.SACCNNCritic.setup">
 <span class="sig-name descname"><span class="pre">setup</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/arlbench/core/algorithms/sac/models.html#SACCNNCritic.setup"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.core.algorithms.sac.models.SACCNNCritic.setup" title="Link to this definition">¶</a></dt>
-<dd><p>Initializes a Module lazily (similar to a lazy <code class="docutils literal notranslate"><span class="pre">__init__</span></code>).</p>
-<p><code class="docutils literal notranslate"><span class="pre">setup</span></code> is called once lazily on a module instance when a module
-is bound, immediately before any other methods like <code class="docutils literal notranslate"><span class="pre">__call__</span></code> are
-invoked, or before a <code class="docutils literal notranslate"><span class="pre">setup</span></code>-defined attribute on <code class="docutils literal notranslate"><span class="pre">self</span></code> is accessed.</p>
-<p>This can happen in three cases:</p>
-<blockquote>
-<div><ol class="arabic">
-<li><p>Immediately when invoking <code class="xref py py-meth docutils literal notranslate"><span class="pre">apply()</span></code>, <code class="xref py py-meth docutils literal notranslate"><span class="pre">init()</span></code> or
-<code class="xref py py-meth docutils literal notranslate"><span class="pre">init_and_output()</span></code>.</p></li>
-<li><p>Once the module is given a name by being assigned to an attribute of
-another module inside the other module’s <code class="docutils literal notranslate"><span class="pre">setup</span></code> method
-(see <code class="xref py py-meth docutils literal notranslate"><span class="pre">__setattr__()</span></code>):</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">class</span> <span class="nc">MyModule</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
-<span class="gp">... </span>  <span class="k">def</span> <span class="nf">setup</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="gp">... </span>    <span class="n">submodule</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Conv</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
-
-<span class="go">...     # Accessing `submodule` attributes does not yet work here.</span>
-
-<span class="go">...     # The following line invokes `self.__setattr__`, which gives</span>
-<span class="go">...     # `submodule` the name &quot;conv1&quot;.</span>
-<span class="go">...     self.conv1 = submodule</span>
-
-<span class="go">...     # Accessing `submodule` attributes or methods is now safe and</span>
-<span class="go">...     # either causes setup() to be called once.</span>
-</pre></div>
-</div>
-</li>
-<li><p>Once a module is constructed inside a method wrapped with
-<code class="xref py py-meth docutils literal notranslate"><span class="pre">compact()</span></code>, immediately before another method is called or
-<code class="docutils literal notranslate"><span class="pre">setup</span></code> defined attribute is accessed.</p></li>
-</ol>
-</div></blockquote>
+<dd><p>Initializes the critic network.</p>
 </dd></dl>
 
 </dd></dl>
@@ -1971,7 +1879,7 @@ another module inside the other module’s <code class="docutils literal notrans
 <dl class="py method">
 <dt class="sig sig-object py" id="arlbench.core.algorithms.sac.models.SACMLPActor.__call__">
 <span class="sig-name descname"><span class="pre">__call__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/arlbench/core/algorithms/sac/models.html#SACMLPActor.__call__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.core.algorithms.sac.models.SACMLPActor.__call__" title="Link to this definition">¶</a></dt>
-<dd><p>Call self as a function.</p>
+<dd><p>Applies the actor to the input.</p>
 </dd></dl>
 
 <dl class="py attribute">
@@ -2017,38 +1925,7 @@ another module inside the other module’s <code class="docutils literal notrans
 <dl class="py method">
 <dt class="sig sig-object py" id="arlbench.core.algorithms.sac.models.SACMLPActor.setup">
 <span class="sig-name descname"><span class="pre">setup</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/arlbench/core/algorithms/sac/models.html#SACMLPActor.setup"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.core.algorithms.sac.models.SACMLPActor.setup" title="Link to this definition">¶</a></dt>
-<dd><p>Initializes a Module lazily (similar to a lazy <code class="docutils literal notranslate"><span class="pre">__init__</span></code>).</p>
-<p><code class="docutils literal notranslate"><span class="pre">setup</span></code> is called once lazily on a module instance when a module
-is bound, immediately before any other methods like <code class="docutils literal notranslate"><span class="pre">__call__</span></code> are
-invoked, or before a <code class="docutils literal notranslate"><span class="pre">setup</span></code>-defined attribute on <code class="docutils literal notranslate"><span class="pre">self</span></code> is accessed.</p>
-<p>This can happen in three cases:</p>
-<blockquote>
-<div><ol class="arabic">
-<li><p>Immediately when invoking <code class="xref py py-meth docutils literal notranslate"><span class="pre">apply()</span></code>, <code class="xref py py-meth docutils literal notranslate"><span class="pre">init()</span></code> or
-<code class="xref py py-meth docutils literal notranslate"><span class="pre">init_and_output()</span></code>.</p></li>
-<li><p>Once the module is given a name by being assigned to an attribute of
-another module inside the other module’s <code class="docutils literal notranslate"><span class="pre">setup</span></code> method
-(see <code class="xref py py-meth docutils literal notranslate"><span class="pre">__setattr__()</span></code>):</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">class</span> <span class="nc">MyModule</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
-<span class="gp">... </span>  <span class="k">def</span> <span class="nf">setup</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="gp">... </span>    <span class="n">submodule</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Conv</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
-
-<span class="go">...     # Accessing `submodule` attributes does not yet work here.</span>
-
-<span class="go">...     # The following line invokes `self.__setattr__`, which gives</span>
-<span class="go">...     # `submodule` the name &quot;conv1&quot;.</span>
-<span class="go">...     self.conv1 = submodule</span>
-
-<span class="go">...     # Accessing `submodule` attributes or methods is now safe and</span>
-<span class="go">...     # either causes setup() to be called once.</span>
-</pre></div>
-</div>
-</li>
-<li><p>Once a module is constructed inside a method wrapped with
-<code class="xref py py-meth docutils literal notranslate"><span class="pre">compact()</span></code>, immediately before another method is called or
-<code class="docutils literal notranslate"><span class="pre">setup</span></code> defined attribute is accessed.</p></li>
-</ol>
-</div></blockquote>
+<dd><p>Initializes the actor network.</p>
 </dd></dl>
 
 </dd></dl>
@@ -2061,7 +1938,7 @@ another module inside the other module’s <code class="docutils literal notrans
 <dl class="py method">
 <dt class="sig sig-object py" id="arlbench.core.algorithms.sac.models.SACMLPCritic.__call__">
 <span class="sig-name descname"><span class="pre">__call__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">action</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/arlbench/core/algorithms/sac/models.html#SACMLPCritic.__call__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.core.algorithms.sac.models.SACMLPCritic.__call__" title="Link to this definition">¶</a></dt>
-<dd><p>Call self as a function.</p>
+<dd><p>Applies the critic to the input.</p>
 </dd></dl>
 
 <dl class="py attribute">
@@ -2097,38 +1974,7 @@ another module inside the other module’s <code class="docutils literal notrans
 <dl class="py method">
 <dt class="sig sig-object py" id="arlbench.core.algorithms.sac.models.SACMLPCritic.setup">
 <span class="sig-name descname"><span class="pre">setup</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/arlbench/core/algorithms/sac/models.html#SACMLPCritic.setup"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.core.algorithms.sac.models.SACMLPCritic.setup" title="Link to this definition">¶</a></dt>
-<dd><p>Initializes a Module lazily (similar to a lazy <code class="docutils literal notranslate"><span class="pre">__init__</span></code>).</p>
-<p><code class="docutils literal notranslate"><span class="pre">setup</span></code> is called once lazily on a module instance when a module
-is bound, immediately before any other methods like <code class="docutils literal notranslate"><span class="pre">__call__</span></code> are
-invoked, or before a <code class="docutils literal notranslate"><span class="pre">setup</span></code>-defined attribute on <code class="docutils literal notranslate"><span class="pre">self</span></code> is accessed.</p>
-<p>This can happen in three cases:</p>
-<blockquote>
-<div><ol class="arabic">
-<li><p>Immediately when invoking <code class="xref py py-meth docutils literal notranslate"><span class="pre">apply()</span></code>, <code class="xref py py-meth docutils literal notranslate"><span class="pre">init()</span></code> or
-<code class="xref py py-meth docutils literal notranslate"><span class="pre">init_and_output()</span></code>.</p></li>
-<li><p>Once the module is given a name by being assigned to an attribute of
-another module inside the other module’s <code class="docutils literal notranslate"><span class="pre">setup</span></code> method
-(see <code class="xref py py-meth docutils literal notranslate"><span class="pre">__setattr__()</span></code>):</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">class</span> <span class="nc">MyModule</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
-<span class="gp">... </span>  <span class="k">def</span> <span class="nf">setup</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="gp">... </span>    <span class="n">submodule</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Conv</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
-
-<span class="go">...     # Accessing `submodule` attributes does not yet work here.</span>
-
-<span class="go">...     # The following line invokes `self.__setattr__`, which gives</span>
-<span class="go">...     # `submodule` the name &quot;conv1&quot;.</span>
-<span class="go">...     self.conv1 = submodule</span>
-
-<span class="go">...     # Accessing `submodule` attributes or methods is now safe and</span>
-<span class="go">...     # either causes setup() to be called once.</span>
-</pre></div>
-</div>
-</li>
-<li><p>Once a module is constructed inside a method wrapped with
-<code class="xref py py-meth docutils literal notranslate"><span class="pre">compact()</span></code>, immediately before another method is called or
-<code class="docutils literal notranslate"><span class="pre">setup</span></code> defined attribute is accessed.</p></li>
-</ol>
-</div></blockquote>
+<dd><p>Initializes the critic network.</p>
 </dd></dl>
 
 </dd></dl>
@@ -2137,10 +1983,11 @@ another module inside the other module’s <code class="docutils literal notrans
 <dt class="sig sig-object py" id="arlbench.core.algorithms.sac.models.SACVectorCritic">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">arlbench.core.algorithms.sac.models.</span></span><span class="sig-name descname"><span class="pre">SACVectorCritic</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">critic</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">action_dim</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">activation</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hidden_size=64</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_critics=2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parent=&lt;flax.linen.module._Sentinel</span> <span class="pre">object&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name=None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/arlbench/core/algorithms/sac/models.html#SACVectorCritic"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.core.algorithms.sac.models.SACVectorCritic" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></p>
+<p>A vectorized critic network for SAC.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="arlbench.core.algorithms.sac.models.SACVectorCritic.__call__">
 <span class="sig-name descname"><span class="pre">__call__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">action</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/arlbench/core/algorithms/sac/models.html#SACVectorCritic.__call__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.core.algorithms.sac.models.SACVectorCritic.__call__" title="Link to this definition">¶</a></dt>
-<dd><p>Call self as a function.</p>
+<dd><p>Applies the critic to the input.</p>
 </dd></dl>
 
 <dl class="py attribute">
@@ -2193,7 +2040,7 @@ another module inside the other module’s <code class="docutils literal notrans
 <dl class="py method">
 <dt class="sig sig-object py" id="arlbench.core.algorithms.sac.models.TanhTransformedDistribution.mode">
 <span class="sig-name descname"><span class="pre">mode</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/arlbench/core/algorithms/sac/models.html#TanhTransformedDistribution.mode"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.core.algorithms.sac.models.TanhTransformedDistribution.mode" title="Link to this definition">¶</a></dt>
-<dd><p>Calculates the mode.</p>
+<dd><p>Returns the mode of the distribution.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">Array</span></code></span></p>
@@ -2206,6 +2053,7 @@ another module inside the other module’s <code class="docutils literal notrans
 </section>
 <section id="module-arlbench.core.algorithms.sac.sac">
 <span id="arlbench-core-algorithms-sac-sac-module"></span><h2>arlbench.core.algorithms.sac.sac module<a class="headerlink" href="#module-arlbench.core.algorithms.sac.sac" title="Link to this heading">¶</a></h2>
+<p>SAC algorithm.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="arlbench.core.algorithms.sac.sac.SAC">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">arlbench.core.algorithms.sac.sac.</span></span><span class="sig-name descname"><span class="pre">SAC</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">hpo_config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">env</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eval_env</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">deterministic_eval</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cnn_policy</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nas_config</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">track_metrics</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">track_trajectories</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/arlbench/core/algorithms/sac/sac.html#SAC"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.core.algorithms.sac.sac.SAC" title="Link to this definition">¶</a></dt>
@@ -2250,13 +2098,10 @@ another module inside the other module’s <code class="docutils literal notrans
 <dl class="py method">
 <dt class="sig sig-object py" id="arlbench.core.algorithms.sac.sac.SAC.get_default_hpo_config">
 <em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_default_hpo_config</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/arlbench/core/algorithms/sac/sac.html#SAC.get_default_hpo_config"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.core.algorithms.sac.sac.SAC.get_default_hpo_config" title="Link to this definition">¶</a></dt>
-<dd><p>Returns the default hyperparameter configuration of the agent.</p>
+<dd><p>Returns the default HPO configuration for SAC.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Default hyperparameter configuration.</p>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p>Configuration</p>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">Configuration</span></code></span></p>
 </dd>
 </dl>
 </dd></dl>
@@ -2264,13 +2109,10 @@ another module inside the other module’s <code class="docutils literal notrans
 <dl class="py method">
 <dt class="sig sig-object py" id="arlbench.core.algorithms.sac.sac.SAC.get_default_nas_config">
 <em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_default_nas_config</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/arlbench/core/algorithms/sac/sac.html#SAC.get_default_nas_config"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.core.algorithms.sac.sac.SAC.get_default_nas_config" title="Link to this definition">¶</a></dt>
-<dd><p>Returns the default neural architecture configuration of the agent.</p>
+<dd><p>Returns the default NAS configuration for SAC.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Default neural architecture configuration.</p>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p>Configuration</p>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">Configuration</span></code></span></p>
 </dd>
 </dl>
 </dd></dl>
@@ -2278,16 +2120,10 @@ another module inside the other module’s <code class="docutils literal notrans
 <dl class="py method">
 <dt class="sig sig-object py" id="arlbench.core.algorithms.sac.sac.SAC.get_hpo_config_space">
 <em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_hpo_config_space</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/arlbench/core/algorithms/sac/sac.html#SAC.get_hpo_config_space"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.core.algorithms.sac.sac.SAC.get_hpo_config_space" title="Link to this definition">¶</a></dt>
-<dd><p>Returns the hyperparameter configuration space of the algorithm.</p>
+<dd><p>Returns the hyperparameter configuration space for SAC.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>seed</strong> (<em>int</em><em> | </em><em>None</em><em>, </em><em>optional</em>) – Random generator seed that is used to sample configurations. Defaults to None.</p>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>Hyperparameter configuration space of the algorithm.</p>
-</dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>ConfigurationSpace</p>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">ConfigurationSpace</span></code></span></p>
 </dd>
 </dl>
 </dd></dl>
@@ -2295,16 +2131,10 @@ another module inside the other module’s <code class="docutils literal notrans
 <dl class="py method">
 <dt class="sig sig-object py" id="arlbench.core.algorithms.sac.sac.SAC.get_nas_config_space">
 <em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_nas_config_space</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/arlbench/core/algorithms/sac/sac.html#SAC.get_nas_config_space"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.core.algorithms.sac.sac.SAC.get_nas_config_space" title="Link to this definition">¶</a></dt>
-<dd><p>Returns the neural architecture configuration space of the algorithm.</p>
+<dd><p>Returns the neural architecture search (NAS) configuration space for SAC.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>seed</strong> (<em>int</em><em> | </em><em>None</em><em>, </em><em>optional</em>) – Random generator seed that is used to sample configurations. Defaults to None.</p>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>Neural architecture configuration space of the algorithm.</p>
-</dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>ConfigurationSpace</p>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">ConfigurationSpace</span></code></span></p>
 </dd>
 </dl>
 </dd></dl>
@@ -2348,8 +2178,10 @@ another module inside the other module’s <code class="docutils literal notrans
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>runner_state</strong> (<a class="reference internal" href="#arlbench.core.algorithms.sac.sac.SACRunnerState" title="arlbench.core.algorithms.sac.sac.SACRunnerState"><em>SACRunnerState</em></a>) – Algorithm runner state.</p></li>
 <li><p><strong>obs</strong> (<em>jnp.ndarray</em>) – Observation(s).</p></li>
-<li><p><strong>rng</strong> (<em>chex.PRNGKey</em><em> | </em><em>None</em><em>, </em><em>optional</em>) – Not used in DQN. Random generator key in other algorithms. Defaults to None.</p></li>
-<li><p><strong>deterministic</strong> (<em>bool</em>) – Not used in DQN. Return deterministic action in other algorithms. Defaults to True.</p></li>
+<li><p><strong>rng</strong> (<em>chex.PRNGKey</em><em> | </em><em>None</em><em>, </em><em>optional</em>) – Not used in DQN. Random generator key
+in other algorithmsDefaults to None.</p></li>
+<li><p><strong>deterministic</strong> (<em>bool</em>) – Not used in DQN. Return deterministic action
+in other algorithm. Defaults to True.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -2370,9 +2202,11 @@ another module inside the other module’s <code class="docutils literal notrans
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>runner_state</strong> (<em>SACTrainReturnT</em>) – SAC runner state.</p></li>
 <li><p><strong>_</strong> (<em>None</em>) – Unused parameter (buffer_state in other algorithms).</p></li>
-<li><p><strong>n_total_timesteps</strong> (<em>int</em><em>, </em><em>optional</em>) – Total number of training timesteps. Update steps = n_total_timesteps // n_envs. Defaults to 1000000.</p></li>
+<li><p><strong>n_total_timesteps</strong> (<em>int</em><em>, </em><em>optional</em>) – Total number of training timesteps.
+Update steps = n_total_timesteps // n_envs. Defaults to 1000000.</p></li>
 <li><p><strong>n_eval_steps</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of evaluation steps during training.</p></li>
-<li><p><strong>n_eval_episodes</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of evaluation episodes per evaluation during training.</p></li>
+<li><p><strong>n_eval_episodes</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of evaluation episodes
+per evaluation during training.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -2578,7 +2412,8 @@ another module inside the other module’s <code class="docutils literal notrans
 <dl class="py method">
 <dt class="sig sig-object py" id="arlbench.core.algorithms.sac.sac.SACTrainState.create_with_opt_state">
 <em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">create_with_opt_state</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">apply_fn</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">params</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target_params</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">opt_state</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/arlbench/core/algorithms/sac/sac.html#SACTrainState.create_with_opt_state"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.core.algorithms.sac.sac.SACTrainState.create_with_opt_state" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Instantiates with optimizer state.</p>
+</dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="arlbench.core.algorithms.sac.sac.SACTrainState.network_state">
@@ -2713,13 +2548,10 @@ another module inside the other module’s <code class="docutils literal notrans
 <dl class="py method">
 <dt class="sig sig-object py" id="arlbench.core.algorithms.sac.SAC.get_default_hpo_config">
 <em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_default_hpo_config</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/arlbench/core/algorithms/sac/sac.html#SAC.get_default_hpo_config"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.core.algorithms.sac.SAC.get_default_hpo_config" title="Link to this definition">¶</a></dt>
-<dd><p>Returns the default hyperparameter configuration of the agent.</p>
+<dd><p>Returns the default HPO configuration for SAC.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Default hyperparameter configuration.</p>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p>Configuration</p>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">Configuration</span></code></span></p>
 </dd>
 </dl>
 </dd></dl>
@@ -2727,13 +2559,10 @@ another module inside the other module’s <code class="docutils literal notrans
 <dl class="py method">
 <dt class="sig sig-object py" id="arlbench.core.algorithms.sac.SAC.get_default_nas_config">
 <em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_default_nas_config</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/arlbench/core/algorithms/sac/sac.html#SAC.get_default_nas_config"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.core.algorithms.sac.SAC.get_default_nas_config" title="Link to this definition">¶</a></dt>
-<dd><p>Returns the default neural architecture configuration of the agent.</p>
+<dd><p>Returns the default NAS configuration for SAC.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Default neural architecture configuration.</p>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p>Configuration</p>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">Configuration</span></code></span></p>
 </dd>
 </dl>
 </dd></dl>
@@ -2741,16 +2570,10 @@ another module inside the other module’s <code class="docutils literal notrans
 <dl class="py method">
 <dt class="sig sig-object py" id="arlbench.core.algorithms.sac.SAC.get_hpo_config_space">
 <em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_hpo_config_space</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/arlbench/core/algorithms/sac/sac.html#SAC.get_hpo_config_space"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.core.algorithms.sac.SAC.get_hpo_config_space" title="Link to this definition">¶</a></dt>
-<dd><p>Returns the hyperparameter configuration space of the algorithm.</p>
+<dd><p>Returns the hyperparameter configuration space for SAC.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>seed</strong> (<em>int</em><em> | </em><em>None</em><em>, </em><em>optional</em>) – Random generator seed that is used to sample configurations. Defaults to None.</p>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>Hyperparameter configuration space of the algorithm.</p>
-</dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>ConfigurationSpace</p>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">ConfigurationSpace</span></code></span></p>
 </dd>
 </dl>
 </dd></dl>
@@ -2758,16 +2581,10 @@ another module inside the other module’s <code class="docutils literal notrans
 <dl class="py method">
 <dt class="sig sig-object py" id="arlbench.core.algorithms.sac.SAC.get_nas_config_space">
 <em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_nas_config_space</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/arlbench/core/algorithms/sac/sac.html#SAC.get_nas_config_space"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.core.algorithms.sac.SAC.get_nas_config_space" title="Link to this definition">¶</a></dt>
-<dd><p>Returns the neural architecture configuration space of the algorithm.</p>
+<dd><p>Returns the neural architecture search (NAS) configuration space for SAC.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>seed</strong> (<em>int</em><em> | </em><em>None</em><em>, </em><em>optional</em>) – Random generator seed that is used to sample configurations. Defaults to None.</p>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>Neural architecture configuration space of the algorithm.</p>
-</dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>ConfigurationSpace</p>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">ConfigurationSpace</span></code></span></p>
 </dd>
 </dl>
 </dd></dl>
@@ -2811,8 +2628,10 @@ another module inside the other module’s <code class="docutils literal notrans
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>runner_state</strong> (<a class="reference internal" href="#arlbench.core.algorithms.sac.SACRunnerState" title="arlbench.core.algorithms.sac.SACRunnerState"><em>SACRunnerState</em></a>) – Algorithm runner state.</p></li>
 <li><p><strong>obs</strong> (<em>jnp.ndarray</em>) – Observation(s).</p></li>
-<li><p><strong>rng</strong> (<em>chex.PRNGKey</em><em> | </em><em>None</em><em>, </em><em>optional</em>) – Not used in DQN. Random generator key in other algorithms. Defaults to None.</p></li>
-<li><p><strong>deterministic</strong> (<em>bool</em>) – Not used in DQN. Return deterministic action in other algorithms. Defaults to True.</p></li>
+<li><p><strong>rng</strong> (<em>chex.PRNGKey</em><em> | </em><em>None</em><em>, </em><em>optional</em>) – Not used in DQN. Random generator key
+in other algorithmsDefaults to None.</p></li>
+<li><p><strong>deterministic</strong> (<em>bool</em>) – Not used in DQN. Return deterministic action
+in other algorithm. Defaults to True.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -2833,9 +2652,11 @@ another module inside the other module’s <code class="docutils literal notrans
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>runner_state</strong> (<em>SACTrainReturnT</em>) – SAC runner state.</p></li>
 <li><p><strong>_</strong> (<em>None</em>) – Unused parameter (buffer_state in other algorithms).</p></li>
-<li><p><strong>n_total_timesteps</strong> (<em>int</em><em>, </em><em>optional</em>) – Total number of training timesteps. Update steps = n_total_timesteps // n_envs. Defaults to 1000000.</p></li>
+<li><p><strong>n_total_timesteps</strong> (<em>int</em><em>, </em><em>optional</em>) – Total number of training timesteps.
+Update steps = n_total_timesteps // n_envs. Defaults to 1000000.</p></li>
 <li><p><strong>n_eval_steps</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of evaluation steps during training.</p></li>
-<li><p><strong>n_eval_episodes</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of evaluation episodes per evaluation during training.</p></li>
+<li><p><strong>n_eval_episodes</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of evaluation episodes
+per evaluation during training.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>

@@ -332,7 +332,8 @@
               <div>
                 
   <h1>Source code for arlbench.core.environments.envpool_env</h1><div class="highlight"><pre>
-<span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
+<span></span><span class="sd">&quot;&quot;&quot;Envpool environment adapter.&quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
 
 <span class="kn">import</span> <span class="nn">functools</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span>
@@ -482,7 +483,8 @@
 <span class="sd">            env_name (str): Name/id of the brax environment.</span>
 <span class="sd">            n_envs (int): Number of environments.</span>
 <span class="sd">            seed (int): Random seed.</span>
-<span class="sd">            env_kwargs (dict[str, Any] | None, optional): Keyword arguments to pass to the brax environment. Defaults to None.</span>
+<span class="sd">            env_kwargs (dict[str, Any] | None, optional): Keyword arguments</span>
+<span class="sd">                to pass to the environment. Defaults to None.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">env_kwargs</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">env_kwargs</span> <span class="o">=</span> <span class="p">{}</span>
@@ -490,7 +492,8 @@
             <span class="kn">import</span> <span class="nn">envpool</span>
         <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="s2">&quot;Failed to import envpool. Please make sure that the package is installed.&quot;</span>
+<span class="w">                </span><span class="sd">&quot;&quot;&quot;Failed to import envpool. Please make sure</span>
+<span class="sd">                that the package is installed.&quot;&quot;&quot;</span>
             <span class="p">)</span>
         <span class="n">env</span> <span class="o">=</span> <span class="n">envpool</span><span class="o">.</span><span class="n">make</span><span class="p">(</span>
             <span class="n">env_name</span><span class="p">,</span> <span class="n">env_type</span><span class="o">=</span><span class="s2">&quot;gymnasium&quot;</span><span class="p">,</span> <span class="n">num_envs</span><span class="o">=</span><span class="n">n_envs</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="n">seed</span><span class="p">,</span> <span class="o">**</span><span class="n">env_kwargs</span>
@@ -543,7 +546,8 @@
 
 <span class="sd">        Args:</span>
 <span class="sd">            action (Any): Action to take.</span>
-<span class="sd">            env_id (int | None, optional): Internal env ID for envpool. Defaults to None.</span>
+<span class="sd">            env_id (int | None, optional): Internal env ID for envpool.</span>
+<span class="sd">                Defaults to None.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            tuple: Step result.</span>
@@ -556,6 +560,7 @@
     <span class="nd">@functools</span><span class="o">.</span><span class="n">partial</span><span class="p">(</span><span class="n">jax</span><span class="o">.</span><span class="n">jit</span><span class="p">,</span> <span class="n">static_argnums</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
     <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">_</span><span class="p">):</span>
         <span class="c1"># io_callback is required to handle random seeds correctly</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Resets the environment.&quot;&quot;&quot;</span>
         <span class="n">obs</span><span class="p">,</span> <span class="n">info</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">experimental</span><span class="o">.</span><span class="n">io_callback</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_reset</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">reset_shape</span><span class="p">)</span>
         <span class="n">lives</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">info</span><span class="p">[</span><span class="s2">&quot;lives&quot;</span><span class="p">])</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_atari</span> <span class="k">else</span> <span class="kc">None</span>
 
@@ -566,6 +571,7 @@
 <a class="viewcode-back" href="../../../../arlbench.core.environments.html#arlbench.core.environments.EnvpoolEnv.step">[docs]</a>
     <span class="nd">@functools</span><span class="o">.</span><span class="n">partial</span><span class="p">(</span><span class="n">jax</span><span class="o">.</span><span class="n">jit</span><span class="p">,</span> <span class="n">static_argnums</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
     <span class="k">def</span> <span class="nf">step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">env_state</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">action</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">_</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Steps the environment forward by one step.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_atari</span><span class="p">:</span>
             <span class="n">env_state</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">env_state</span>
         <span class="k">else</span><span class="p">:</span>
@@ -624,17 +630,19 @@
             <span class="n">auto_reset</span> <span class="o">=</span> <span class="n">lives_gone</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">auto_reset</span> <span class="o">=</span> <span class="n">done</span>
-        <span class="n">obs</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">lax</span><span class="o">.</span><span class="n">cond</span><span class="p">(</span><span class="n">jnp</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">auto_reset</span><span class="p">),</span> <span class="n">reset</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">obs</span><span class="p">,</span> <span class="n">info</span><span class="p">:</span> <span class="n">obs</span><span class="p">,</span> <span class="n">obs</span><span class="p">,</span> <span class="n">info</span><span class="p">)</span>
+        <span class="n">obs</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">lax</span><span class="o">.</span><span class="n">cond</span><span class="p">(</span><span class="n">jnp</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">auto_reset</span><span class="p">),</span> <span class="n">reset</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">obs</span><span class="p">,</span> <span class="n">info</span><span class="p">:</span> <span class="n">obs</span><span class="p">,</span> <span class="n">obs</span><span class="p">,</span> <span class="n">info</span><span class="p">)</span> <span class="c1">#noqa: ARG005</span>
 
         <span class="k">return</span> <span class="p">(</span><span class="n">env_state</span><span class="p">,</span> <span class="n">new_lives</span><span class="p">),</span> <span class="p">(</span><span class="n">obs</span><span class="p">,</span> <span class="n">reward</span><span class="p">,</span> <span class="n">done</span><span class="p">,</span> <span class="n">info</span><span class="p">)</span></div>
 
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">action_space</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Action space of the environment.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">gymnasium_space_to_gymnax_space</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_env</span><span class="o">.</span><span class="n">action_space</span><span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">observation_space</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Observation space of the environment.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">gymnasium_space_to_gymnax_space</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_env</span><span class="o">.</span><span class="n">observation_space</span><span class="p">)</span></div>
 
 </pre></div>

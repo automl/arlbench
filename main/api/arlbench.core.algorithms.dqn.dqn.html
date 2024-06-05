@@ -566,6 +566,15 @@
   </a>
   <ul class="nav section-nav flex-column">
    <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#arlbench.core.algorithms.dqn.dqn.DQNTrainState.create_with_opt_state">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       DQNTrainState.create_with_opt_state()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
     <a class="reference internal nav-link" href="#arlbench.core.algorithms.dqn.dqn.DQNTrainState.replace">
      <code class="docutils literal notranslate">
       <span class="pre">
@@ -693,6 +702,7 @@
                 
   <section id="module-arlbench.core.algorithms.dqn.dqn">
 <span id="arlbench-core-algorithms-dqn-dqn"></span><h1>arlbench.core.algorithms.dqn.dqn<a class="headerlink" href="#module-arlbench.core.algorithms.dqn.dqn" title="Link to this heading">¶</a></h1>
+<p>DQN algorithm.</p>
 <p class="rubric">Classes</p>
 <table class="autosummary longtable table autosummary">
 <tbody>
@@ -747,13 +757,10 @@
 <dl class="py method">
 <dt class="sig sig-object py" id="arlbench.core.algorithms.dqn.dqn.DQN.get_default_hpo_config">
 <em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_default_hpo_config</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arlbench/core/algorithms/dqn/dqn.html#DQN.get_default_hpo_config"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.core.algorithms.dqn.dqn.DQN.get_default_hpo_config" title="Link to this definition">¶</a></dt>
-<dd><p>Returns the default hyperparameter configuration of the agent.</p>
+<dd><p>Returns the default hyperparameter configuration for DQN.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Default hyperparameter configuration.</p>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p>Configuration</p>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">Configuration</span></code></span></p>
 </dd>
 </dl>
 </dd></dl>
@@ -761,13 +768,10 @@
 <dl class="py method">
 <dt class="sig sig-object py" id="arlbench.core.algorithms.dqn.dqn.DQN.get_default_nas_config">
 <em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_default_nas_config</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arlbench/core/algorithms/dqn/dqn.html#DQN.get_default_nas_config"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.core.algorithms.dqn.dqn.DQN.get_default_nas_config" title="Link to this definition">¶</a></dt>
-<dd><p>Returns the default neural architecture configuration of the agent.</p>
+<dd><p>Returns the default NAS configuration for DQN.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Default neural architecture configuration.</p>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p>Configuration</p>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">Configuration</span></code></span></p>
 </dd>
 </dl>
 </dd></dl>
@@ -775,16 +779,10 @@
 <dl class="py method">
 <dt class="sig sig-object py" id="arlbench.core.algorithms.dqn.dqn.DQN.get_hpo_config_space">
 <em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_hpo_config_space</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arlbench/core/algorithms/dqn/dqn.html#DQN.get_hpo_config_space"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.core.algorithms.dqn.dqn.DQN.get_hpo_config_space" title="Link to this definition">¶</a></dt>
-<dd><p>Returns the hyperparameter configuration space of the algorithm.</p>
+<dd><p>Returns the hyperparameter optimization (HPO) configuration space for DQN.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>seed</strong> (<em>int</em><em> | </em><em>None</em><em>, </em><em>optional</em>) – Random generator seed that is used to sample configurations. Defaults to None.</p>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>Hyperparameter configuration space of the algorithm.</p>
-</dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>ConfigurationSpace</p>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">ConfigurationSpace</span></code></span></p>
 </dd>
 </dl>
 </dd></dl>
@@ -792,16 +790,10 @@
 <dl class="py method">
 <dt class="sig sig-object py" id="arlbench.core.algorithms.dqn.dqn.DQN.get_nas_config_space">
 <em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_nas_config_space</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arlbench/core/algorithms/dqn/dqn.html#DQN.get_nas_config_space"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.core.algorithms.dqn.dqn.DQN.get_nas_config_space" title="Link to this definition">¶</a></dt>
-<dd><p>Returns the neural architecture configuration space of the algorithm.</p>
+<dd><p>Returns the neural architecture search (NAS) configuration space for DQN.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>seed</strong> (<em>int</em><em> | </em><em>None</em><em>, </em><em>optional</em>) – Random generator seed that is used to sample configurations. Defaults to None.</p>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>Neural architecture configuration space of the algorithm.</p>
-</dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>ConfigurationSpace</p>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">ConfigurationSpace</span></code></span></p>
 </dd>
 </dl>
 </dd></dl>
@@ -992,6 +984,12 @@
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">arlbench.core.algorithms.dqn.dqn.</span></span><span class="sig-name descname"><span class="pre">DQNTrainState</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">step</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">apply_fn</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">params</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">opt_state</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target_params</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arlbench/core/algorithms/dqn/dqn.html#DQNTrainState"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.core.algorithms.dqn.dqn.DQNTrainState" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">TrainState</span></code></p>
 <p>DQN training state.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="arlbench.core.algorithms.dqn.dqn.DQNTrainState.create_with_opt_state">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">create_with_opt_state</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">apply_fn</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">params</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target_params</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">opt_state</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arlbench/core/algorithms/dqn/dqn.html#DQNTrainState.create_with_opt_state"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.core.algorithms.dqn.dqn.DQNTrainState.create_with_opt_state" title="Link to this definition">¶</a></dt>
+<dd><p>Creates a DQN training state with the given optimizer state.</p>
+</dd></dl>
+
 <dl class="py method">
 <dt class="sig sig-object py" id="arlbench.core.algorithms.dqn.dqn.DQNTrainState.replace">
 <span class="sig-name descname"><span class="pre">replace</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">updates</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#arlbench.core.algorithms.dqn.dqn.DQNTrainState.replace" title="Link to this definition">¶</a></dt>

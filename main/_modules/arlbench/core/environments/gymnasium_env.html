@@ -332,7 +332,8 @@
               <div>
                 
   <h1>Source code for arlbench.core.environments.gymnasium_env</h1><div class="highlight"><pre>
-<span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
+<span></span><span class="sd">&quot;&quot;&quot;Gymnasium environment adapter.&quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
 
 <span class="kn">import</span> <span class="nn">functools</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">TYPE_CHECKING</span>
@@ -365,7 +366,8 @@
 <span class="sd">        Args:</span>
 <span class="sd">            env_name (str): Name/id of the brax environment.</span>
 <span class="sd">            seed (int): Random seed.</span>
-<span class="sd">            env_kwargs (dict[str, Any] | None, optional): Keyword arguments to pass to the brax environment. Defaults to None.</span>
+<span class="sd">            env_kwargs (dict[str, Any] | None, optional): Keyword arguments</span>
+<span class="sd">                to pass to the brax environment. Defaults to None.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">env_kwargs</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">env_kwargs</span> <span class="o">=</span> <span class="p">{}</span>
@@ -401,7 +403,8 @@
 <div class="viewcode-block" id="GymnasiumEnv.reset">
 <a class="viewcode-back" href="../../../../arlbench.core.environments.html#arlbench.core.environments.GymnasiumEnv.reset">[docs]</a>
     <span class="nd">@functools</span><span class="o">.</span><span class="n">partial</span><span class="p">(</span><span class="n">jax</span><span class="o">.</span><span class="n">jit</span><span class="p">,</span> <span class="n">static_argnums</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
-    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rng</span><span class="p">:</span> <span class="n">PRNGKey</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="n">chex</span><span class="o">.</span><span class="n">Array</span><span class="p">]:</span>
+    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rng</span><span class="p">:</span> <span class="n">PRNGKey</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="n">chex</span><span class="o">.</span><span class="n">Array</span><span class="p">]:</span> <span class="c1"># noqa: ARG002</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Wraps actual reset for jitting.&quot;&quot;&quot;</span>
         <span class="n">obs</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">vmap</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__reset</span><span class="p">,</span> <span class="n">in_axes</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">))(</span><span class="n">jnp</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_n_envs</span><span class="p">))</span>
         <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="n">obs</span></div>
 
@@ -416,7 +419,8 @@
 <span class="sd">            action (jnp.ndarray): Action to take.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            tuple[jnp.ndarray, jnp.ndarray, jnp.ndarray, dict]: Step result: (obs, reward, done, info).</span>
+<span class="sd">            tuple[jnp.ndarray, jnp.ndarray, jnp.ndarray, dict]:</span>
+<span class="sd">                Step result: (obs, reward, done, info).</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">def</span> <span class="nf">step</span><span class="p">(</span><span class="n">_action</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="nb">dict</span><span class="p">]:</span>
 <span class="w">            </span><span class="sd">&quot;&quot;&quot;Internal step to match function data types and perform autoreset.</span>
@@ -425,7 +429,8 @@
 <span class="sd">                _action (jnp.ndarray): Action to take.</span>
 
 <span class="sd">            Returns:</span>
-<span class="sd">                tuple[jnp.ndarray, jnp.ndarray, jnp.ndarray, dict]: Step result: (obs, reward, done, info).</span>
+<span class="sd">                tuple[jnp.ndarray, jnp.ndarray, jnp.ndarray, dict]:</span>
+<span class="sd">                    Step result: (obs, reward, done, info).</span>
 <span class="sd">            &quot;&quot;&quot;</span>
             <span class="n">obs</span><span class="p">,</span> <span class="n">reward</span><span class="p">,</span> <span class="n">term</span><span class="p">,</span> <span class="n">trunc</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_env</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">_action</span><span class="p">)</span>
 
@@ -446,8 +451,9 @@
 <a class="viewcode-back" href="../../../../arlbench.core.environments.html#arlbench.core.environments.GymnasiumEnv.step">[docs]</a>
     <span class="nd">@functools</span><span class="o">.</span><span class="n">partial</span><span class="p">(</span><span class="n">jax</span><span class="o">.</span><span class="n">jit</span><span class="p">,</span> <span class="n">static_argnums</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
     <span class="k">def</span> <span class="nf">step</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span> <span class="n">env_state</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span> <span class="n">action</span><span class="p">:</span> <span class="n">chex</span><span class="o">.</span><span class="n">Array</span><span class="p">,</span> <span class="n">rng</span><span class="p">:</span> <span class="n">PRNGKey</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">env_state</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span> <span class="n">action</span><span class="p">:</span> <span class="n">chex</span><span class="o">.</span><span class="n">Array</span><span class="p">,</span> <span class="n">rng</span><span class="p">:</span> <span class="n">PRNGKey</span> <span class="c1"># noqa: ARG002</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">chex</span><span class="o">.</span><span class="n">Array</span><span class="p">,</span> <span class="n">chex</span><span class="o">.</span><span class="n">Array</span><span class="p">,</span> <span class="n">chex</span><span class="o">.</span><span class="n">Array</span><span class="p">,</span> <span class="nb">dict</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Wraps actual step for jitting.&quot;&quot;&quot;</span>
         <span class="n">obs</span><span class="p">,</span> <span class="n">reward</span><span class="p">,</span> <span class="n">done</span><span class="p">,</span> <span class="n">info</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">vmap</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__step</span><span class="p">,</span> <span class="n">in_axes</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">))(</span><span class="n">action</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="p">(</span><span class="n">obs</span><span class="p">,</span> <span class="n">reward</span><span class="p">,</span> <span class="n">done</span><span class="p">,</span> <span class="n">info</span><span class="p">)</span></div>
@@ -455,10 +461,12 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">action_space</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Action space of the environment.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">gymnasium_space_to_gymnax_space</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_env</span><span class="o">.</span><span class="n">action_space</span><span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">observation_space</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Observation space of the environment.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">gymnasium_space_to_gymnax_space</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_env</span><span class="o">.</span><span class="n">observation_space</span><span class="p">)</span></div>
 
 </pre></div>

@@ -332,7 +332,8 @@
               <div>
                 
   <h1>Source code for arlbench.core.environments.xland_env</h1><div class="highlight"><pre>
-<span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
+<span></span><span class="sd">&quot;&quot;&quot;XLand environment adapter.&quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
 
 <span class="kn">import</span> <span class="nn">functools</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">TYPE_CHECKING</span><span class="p">,</span> <span class="n">Any</span>
@@ -364,8 +365,10 @@
 <span class="sd">        Args:</span>
 <span class="sd">            env_name (str): Name/id of the brax environment.</span>
 <span class="sd">            n_envs (int): Number of environments.</span>
-<span class="sd">            env_kwargs (dict[str, Any] | None, optional): Keyword arguments to pass to the gymnax environment. Defaults to None.</span>
-<span class="sd">            cnn_policy (bool, optional): Use a CNN-based policy (instead of MLP-based). Defaults to False.</span>
+<span class="sd">            env_kwargs (dict[str, Any] | None, optional): Keyword arguments to pass</span>
+<span class="sd">                to the gymnax environment. Defaults to None.</span>
+<span class="sd">            cnn_policy (bool, optional): Use a CNN-based policy (instead of MLP-based).</span>
+<span class="sd">                Defaults to False.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">env_kwargs</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">env_kwargs</span> <span class="o">=</span> <span class="p">{}</span>
@@ -390,6 +393,7 @@
 <a class="viewcode-back" href="../../../../arlbench.core.environments.html#arlbench.core.environments.xland_env.XLandEnv.reset">[docs]</a>
     <span class="nd">@functools</span><span class="o">.</span><span class="n">partial</span><span class="p">(</span><span class="n">jax</span><span class="o">.</span><span class="n">jit</span><span class="p">,</span> <span class="n">static_argnums</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
     <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rng</span><span class="p">:</span> <span class="n">PRNGKey</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Resets the environment.&quot;&quot;&quot;</span>
         <span class="n">reset_rng</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">rng</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_envs</span><span class="p">)</span>
         <span class="n">timestep</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">vmap</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_env</span><span class="o">.</span><span class="n">reset</span><span class="p">,</span> <span class="n">in_axes</span><span class="o">=</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="mi">0</span><span class="p">))(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">env_params</span><span class="p">,</span> <span class="n">reset_rng</span>
@@ -400,7 +404,8 @@
 <div class="viewcode-block" id="XLandEnv.step">
 <a class="viewcode-back" href="../../../../arlbench.core.environments.html#arlbench.core.environments.xland_env.XLandEnv.step">[docs]</a>
     <span class="nd">@functools</span><span class="o">.</span><span class="n">partial</span><span class="p">(</span><span class="n">jax</span><span class="o">.</span><span class="n">jit</span><span class="p">,</span> <span class="n">static_argnums</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
-    <span class="k">def</span> <span class="nf">step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">env_state</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">action</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">rng</span><span class="p">:</span> <span class="n">PRNGKey</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">env_state</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">action</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">rng</span><span class="p">:</span> <span class="n">PRNGKey</span><span class="p">):</span> <span class="c1">#noqa: ARG002</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Steps the environment forward by one step.&quot;&quot;&quot;</span>
         <span class="c1"># here, the env_state is equal to the timestep</span>
         <span class="c1"># (as referred to in the xland documentation)</span>
         <span class="n">timestep</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">vmap</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_env</span><span class="o">.</span><span class="n">step</span><span class="p">,</span> <span class="n">in_axes</span><span class="o">=</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">))(</span>
@@ -412,6 +417,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">action_space</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Action space of the environment.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">gymnax</span><span class="o">.</span><span class="n">environments</span><span class="o">.</span><span class="n">spaces</span><span class="o">.</span><span class="n">Discrete</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_env</span><span class="o">.</span><span class="n">num_actions</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">env_params</span><span class="p">)</span>
         <span class="p">)</span>
@@ -420,11 +426,13 @@
 <a class="viewcode-back" href="../../../../arlbench.core.environments.html#arlbench.core.environments.xland_env.XLandEnv.sample_action">[docs]</a>
     <span class="nd">@functools</span><span class="o">.</span><span class="n">partial</span><span class="p">(</span><span class="n">jax</span><span class="o">.</span><span class="n">jit</span><span class="p">,</span> <span class="n">static_argnums</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
     <span class="k">def</span> <span class="nf">sample_action</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rng</span><span class="p">:</span> <span class="n">PRNGKey</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Samples a random action from the action space.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">action_space</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">rng</span><span class="p">)</span></div>
 
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">observation_space</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Observation space of the environment.&quot;&quot;&quot;</span>
         <span class="n">obs_shape</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_env</span><span class="o">.</span><span class="n">observation_shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">env_params</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">gymnax</span><span class="o">.</span><span class="n">environments</span><span class="o">.</span><span class="n">spaces</span><span class="o">.</span><span class="n">Box</span><span class="p">(</span>
             <span class="n">low</span><span class="o">=</span><span class="n">jnp</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">0</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">obs_shape</span><span class="p">]),</span>

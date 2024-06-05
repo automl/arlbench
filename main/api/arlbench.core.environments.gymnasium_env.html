@@ -359,6 +359,24 @@
      </code>
     </a>
    </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#arlbench.core.environments.gymnasium_env.GymnasiumEnv.reset">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       GymnasiumEnv.reset()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#arlbench.core.environments.gymnasium_env.GymnasiumEnv.step">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       GymnasiumEnv.step()
+      </span>
+     </code>
+    </a>
+   </li>
   </ul>
  </li>
 </ul>
@@ -384,6 +402,7 @@
                 
   <section id="module-arlbench.core.environments.gymnasium_env">
 <span id="arlbench-core-environments-gymnasium-env"></span><h1>arlbench.core.environments.gymnasium_env<a class="headerlink" href="#module-arlbench.core.environments.gymnasium_env" title="Link to this heading">¶</a></h1>
+<p>Gymnasium environment adapter.</p>
 <p class="rubric">Classes</p>
 <table class="autosummary longtable table autosummary">
 <tbody>
@@ -400,27 +419,33 @@
 <dl class="py property">
 <dt class="sig sig-object py" id="arlbench.core.environments.gymnasium_env.GymnasiumEnv.action_space">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">action_space</span></span><a class="headerlink" href="#arlbench.core.environments.gymnasium_env.GymnasiumEnv.action_space" title="Link to this definition">¶</a></dt>
-<dd><p>The action space of the environment (gymnax space).</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Action space of the environment.</p>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p>gymnax.environments.spaces.Space</p>
-</dd>
-</dl>
+<dd><p>Action space of the environment.</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="arlbench.core.environments.gymnasium_env.GymnasiumEnv.observation_space">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">observation_space</span></span><a class="headerlink" href="#arlbench.core.environments.gymnasium_env.GymnasiumEnv.observation_space" title="Link to this definition">¶</a></dt>
-<dd><p>The observation space of the environment (gymnax space).</p>
+<dd><p>Observation space of the environment.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="arlbench.core.environments.gymnasium_env.GymnasiumEnv.reset">
+<span class="sig-name descname"><span class="pre">reset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rng</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arlbench/core/environments/gymnasium_env.html#GymnasiumEnv.reset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.core.environments.gymnasium_env.GymnasiumEnv.reset" title="Link to this definition">¶</a></dt>
+<dd><p>Wraps actual reset for jitting.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Observation space of the environment.</p>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code>[<code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code>, <code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Array</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">bool_</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">number</span></code>]]</span></p>
 </dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p>gymnax.environments.spaces.Space</p>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="arlbench.core.environments.gymnasium_env.GymnasiumEnv.step">
+<span class="sig-name descname"><span class="pre">step</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">env_state</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">action</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rng</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arlbench/core/environments/gymnasium_env.html#GymnasiumEnv.step"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.core.environments.gymnasium_env.GymnasiumEnv.step" title="Link to this definition">¶</a></dt>
+<dd><p>Wraps actual step for jitting.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code>[<code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code>[<code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Array</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">bool_</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">number</span></code>], <code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Array</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">bool_</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">number</span></code>], <code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Array</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">bool_</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">number</span></code>], <code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code>]]</span></p>
 </dd>
 </dl>
 </dd></dl>

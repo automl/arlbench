@@ -334,6 +334,7 @@
   <h1>Source code for arlbench.core.algorithms.sac.sac</h1><div class="highlight"><pre>
 <span></span><span class="c1"># Parts of this code are based on Stable Baselines Jax  (https://github.com/araffin/sbx).</span>
 <span class="c1"># Licensed under the MIT License</span>
+<span class="sd">&quot;&quot;&quot;SAC algorithm.&quot;&quot;&quot;</span>
 <span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
 
 <span class="kn">import</span> <span class="nn">functools</span>
@@ -398,6 +399,7 @@
     <span class="k">def</span> <span class="nf">create_with_opt_state</span><span class="p">(</span>
         <span class="bp">cls</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">apply_fn</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">target_params</span><span class="p">,</span> <span class="n">tx</span><span class="p">,</span> <span class="n">opt_state</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
     <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Instantiates with optimizer state.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">opt_state</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">opt_state</span> <span class="o">=</span> <span class="n">tx</span><span class="o">.</span><span class="n">init</span><span class="p">(</span><span class="n">params</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span>
@@ -579,6 +581,7 @@
 <a class="viewcode-back" href="../../../../../arlbench.core.algorithms.sac.html#arlbench.core.algorithms.SAC.get_hpo_config_space">[docs]</a>
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">get_hpo_config_space</span><span class="p">(</span><span class="n">seed</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ConfigurationSpace</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns the hyperparameter configuration space for SAC.&quot;&quot;&quot;</span>
         <span class="n">cs</span> <span class="o">=</span> <span class="n">ConfigurationSpace</span><span class="p">(</span>
             <span class="n">name</span><span class="o">=</span><span class="s2">&quot;SACConfigSpace&quot;</span><span class="p">,</span>
             <span class="n">seed</span><span class="o">=</span><span class="n">seed</span><span class="p">,</span>
@@ -628,6 +631,7 @@
 <a class="viewcode-back" href="../../../../../arlbench.core.algorithms.sac.html#arlbench.core.algorithms.SAC.get_default_hpo_config">[docs]</a>
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">get_default_hpo_config</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">Configuration</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns the default HPO configuration for SAC.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">SAC</span><span class="o">.</span><span class="n">get_hpo_config_space</span><span class="p">()</span><span class="o">.</span><span class="n">get_default_configuration</span><span class="p">()</span></div>
 
 
@@ -635,6 +639,7 @@
 <a class="viewcode-back" href="../../../../../arlbench.core.algorithms.sac.html#arlbench.core.algorithms.SAC.get_nas_config_space">[docs]</a>
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">get_nas_config_space</span><span class="p">(</span><span class="n">seed</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ConfigurationSpace</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns the neural architecture search (NAS) configuration space for SAC.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">ConfigurationSpace</span><span class="p">(</span>
             <span class="n">name</span><span class="o">=</span><span class="s2">&quot;SACNASConfigSpace&quot;</span><span class="p">,</span>
             <span class="n">seed</span><span class="o">=</span><span class="n">seed</span><span class="p">,</span>
@@ -651,6 +656,7 @@
 <a class="viewcode-back" href="../../../../../arlbench.core.algorithms.sac.html#arlbench.core.algorithms.SAC.get_default_nas_config">[docs]</a>
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">get_default_nas_config</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">Configuration</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns the default NAS configuration for SAC.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">SAC</span><span class="o">.</span><span class="n">get_nas_config_space</span><span class="p">()</span><span class="o">.</span><span class="n">get_default_configuration</span><span class="p">()</span></div>
 
 
@@ -851,8 +857,10 @@
 <span class="sd">        Args:</span>
 <span class="sd">            runner_state (SACRunnerState): Algorithm runner state.</span>
 <span class="sd">            obs (jnp.ndarray): Observation(s).</span>
-<span class="sd">            rng (chex.PRNGKey | None, optional): Not used in DQN. Random generator key in other algorithms. Defaults to None.</span>
-<span class="sd">            deterministic (bool): Not used in DQN. Return deterministic action in other algorithms. Defaults to True.</span>
+<span class="sd">            rng (chex.PRNGKey | None, optional): Not used in DQN. Random generator key</span>
+<span class="sd">                in other algorithmsDefaults to None.</span>
+<span class="sd">            deterministic (bool): Not used in DQN. Return deterministic action</span>
+<span class="sd">                in other algorithm. Defaults to True.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            jnp.ndarray: Action(s).</span>
@@ -897,9 +905,11 @@
 <span class="sd">        Args:</span>
 <span class="sd">            runner_state (SACTrainReturnT): SAC runner state.</span>
 <span class="sd">            _ (None): Unused parameter (buffer_state in other algorithms).</span>
-<span class="sd">            n_total_timesteps (int, optional): Total number of training timesteps. Update steps = n_total_timesteps // n_envs. Defaults to 1000000.</span>
+<span class="sd">            n_total_timesteps (int, optional): Total number of training timesteps.</span>
+<span class="sd">                Update steps = n_total_timesteps // n_envs. Defaults to 1000000.</span>
 <span class="sd">            n_eval_steps (int, optional): Number of evaluation steps during training.</span>
-<span class="sd">            n_eval_episodes (int, optional): Number of evaluation episodes per evaluation during training.</span>
+<span class="sd">            n_eval_episodes (int, optional): Number of evaluation episodes</span>
+<span class="sd">                 per evaluation during training.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            SACTrainReturnT: Tuple of PPO algorithm state and training result.</span>
@@ -917,7 +927,9 @@
 <span class="sd">                _ (None): Unused parameter (required for jax.lax.scan).</span>
 
 <span class="sd">            Returns:</span>
-<span class="sd">                tuple[tuple[SACRunnerState, PrioritisedTrajectoryBufferState], SACTrainingResult]: Tuple of SAC runner state and training result.</span>
+<span class="sd">                tuple[tuple[SACRunnerState, PrioritisedTrajectoryBufferState],</span>
+<span class="sd">                    SACTrainingResult]:</span>
+<span class="sd">                    Tuple of SAC runner state and training result.</span>
 <span class="sd">            &quot;&quot;&quot;</span>
             <span class="n">runner_state</span><span class="p">,</span> <span class="n">buffer_state</span> <span class="o">=</span> <span class="n">carry</span>
             <span class="p">(</span><span class="n">runner_state</span><span class="p">,</span> <span class="n">buffer_state</span><span class="p">),</span> <span class="p">(</span><span class="n">metrics</span><span class="p">,</span> <span class="n">trajectories</span><span class="p">)</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">lax</span><span class="o">.</span><span class="n">scan</span><span class="p">(</span>
@@ -1033,7 +1045,8 @@
 <span class="sd">            rng (chex.PRNGKey): Random number generator key.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            tuple[SACTrainState, jnp.ndarray, jnp.ndarray, FrozenDict, chex.PRNGKey]: _description_</span>
+<span class="sd">            tuple[SACTrainState, jnp.ndarray, jnp.ndarray, FrozenDict, chex.PRNGKey]:</span>
+<span class="sd">                _description_</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">rng</span><span class="p">,</span> <span class="n">action_rng</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">rng</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
 
@@ -1116,12 +1129,14 @@
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Perform one update step.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            carry (tuple[SACRunnerState, PrioritisedTrajectoryBufferState]): Carry for jax.lax.scan().</span>
+<span class="sd">            carry (tuple[SACRunnerState, PrioritisedTrajectoryBufferState]):</span>
+<span class="sd">                Carry for jax.lax.scan().</span>
 <span class="sd">            _ (None): Unused parameter.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            tuple[ tuple[SACRunnerState, PrioritisedTrajectoryBufferState],</span>
-<span class="sd">            tuple[SACMetrics | None, Transition | None], ]: Updated training state and metrics.</span>
+<span class="sd">            tuple[SACMetrics | None, Transition | None], ]:</span>
+<span class="sd">                Updated training state and metrics.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="k">def</span> <span class="nf">do_update</span><span class="p">(</span>
@@ -1150,7 +1165,8 @@
 
 <span class="sd">            Returns:</span>
 <span class="sd">                tuple[ chex.PRNGKey, SACTrainState, SACTrainState, SACTrainState,</span>
-<span class="sd">                PrioritisedTrajectoryBufferState, SACMetrics]: Updated training states and metrics.</span>
+<span class="sd">                PrioritisedTrajectoryBufferState, SACMetrics]:</span>
+<span class="sd">                    Updated training states and metrics.</span>
 <span class="sd">            &quot;&quot;&quot;</span>
 
             <span class="k">def</span> <span class="nf">gradient_step</span><span class="p">(</span>
@@ -1175,13 +1191,16 @@
 <span class="w">                </span><span class="sd">&quot;&quot;&quot;Perform a gradient update step.</span>
 
 <span class="sd">                Args:</span>
-<span class="sd">                    carry (tuple[ chex.PRNGKey, SACTrainState, SACTrainState,</span>
-<span class="sd">                    SACTrainState, PrioritisedTrajectoryBufferState, ]): Carry for jax.lax.scan():</span>
+<span class="sd">                    carry (tuple[chex.PRNGKey, SACTrainState, SACTrainState,</span>
+<span class="sd">                    SACTrainState, PrioritisedTrajectoryBufferState,]):</span>
+<span class="sd">                        Carry for jax.lax.scan():</span>
 <span class="sd">                    _ (None): Unused parameter.</span>
 
 <span class="sd">                Returns:</span>
-<span class="sd">                    tuple[ tuple[ chex.PRNGKey, SACTrainState, SACTrainState, SACTrainState,</span>
-<span class="sd">                    PrioritisedTrajectoryBufferState, ], SACMetrics, ]: Updated training states and metrics.</span>
+<span class="sd">                    tuple[ tuple[ chex.PRNGKey, SACTrainState,</span>
+<span class="sd">                        SACTrainState, SACTrainState,</span>
+<span class="sd">                    PrioritisedTrajectoryBufferState, ], SACMetrics, ]:</span>
+<span class="sd">                        Updated training states and metrics.</span>
 <span class="sd">                &quot;&quot;&quot;</span>
                 <span class="p">(</span>
                     <span class="n">rng</span><span class="p">,</span>
@@ -1288,7 +1307,7 @@
             <span class="n">actor_train_state</span><span class="p">:</span> <span class="n">SACTrainState</span><span class="p">,</span>
             <span class="n">critic_train_state</span><span class="p">:</span> <span class="n">SACTrainState</span><span class="p">,</span>
             <span class="n">alpha_train_state</span><span class="p">:</span> <span class="n">SACTrainState</span><span class="p">,</span>
-            <span class="n">normalizer_state</span><span class="p">:</span> <span class="n">RunningStatisticsState</span><span class="p">,</span>
+            <span class="n">normalizer_state</span><span class="p">:</span> <span class="n">RunningStatisticsState</span><span class="p">,</span> <span class="c1"># noqa: ARG001</span>
             <span class="n">buffer_state</span><span class="p">:</span> <span class="n">PrioritisedTrajectoryBufferState</span><span class="p">,</span>
         <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span>
             <span class="n">chex</span><span class="o">.</span><span class="n">PRNGKey</span><span class="p">,</span>
@@ -1305,11 +1324,13 @@
 <span class="sd">                actor_train_state (SACTrainState): Actor training state.</span>
 <span class="sd">                critic_train_state (SACTrainState): Critic training state.</span>
 <span class="sd">                alpha_train_state (SACTrainState): Alpha training state.</span>
+<span class="sd">                normalizer_state (RunningStatisticsState): Normalizer state.</span>
 <span class="sd">                buffer_state (PrioritisedTrajectoryBufferState): Buffer state.</span>
 
 <span class="sd">            Returns:</span>
 <span class="sd">                tuple[ chex.PRNGKey, SACTrainState, SACTrainState, SACTrainState,</span>
-<span class="sd">                PrioritisedTrajectoryBufferState, SACMetrics]: Input training states and metrics.</span>
+<span class="sd">                PrioritisedTrajectoryBufferState, SACMetrics]:</span>
+<span class="sd">                    Input training states and metrics.</span>
 <span class="sd">            &quot;&quot;&quot;</span>
             <span class="n">single_loss</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
                 <span class="p">[((</span><span class="n">jnp</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">0</span><span class="p">])</span> <span class="o">-</span> <span class="n">jnp</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">0</span><span class="p">]))</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()]</span>
@@ -1438,7 +1459,8 @@
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Take one step in the environment (n_envs steps in total).</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            carry (tuple[SACRunnerState, PrioritisedTrajectoryBufferState]): Carry for jax.lax.scan().</span>
+<span class="sd">            carry (tuple[SACRunnerState, PrioritisedTrajectoryBufferState]):</span>
+<span class="sd">                Carry for jax.lax.scan().</span>
 <span class="sd">            _ (None): Unused parameter.</span>
 
 <span class="sd">        Returns:</span>

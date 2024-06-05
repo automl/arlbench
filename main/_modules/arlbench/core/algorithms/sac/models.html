@@ -332,7 +332,8 @@
               <div>
                 
   <h1>Source code for arlbench.core.algorithms.sac.models</h1><div class="highlight"><pre>
-<span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
+<span></span><span class="sd">&quot;&quot;&quot;SAC models for the actor and critic networks.&quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
 
 <span class="kn">import</span> <span class="nn">distrax</span>
 <span class="kn">import</span> <span class="nn">flax.linen</span> <span class="k">as</span> <span class="nn">nn</span>
@@ -346,6 +347,7 @@
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Tanh transformation of a distrax distribution.&quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">distribution</span><span class="p">):</span>  <span class="c1"># type: ignore[name-defined]</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initializes the Tanh transformation of a distribution.&quot;&quot;&quot;</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
             <span class="n">distribution</span><span class="o">=</span><span class="n">distribution</span><span class="p">,</span> <span class="n">bijector</span><span class="o">=</span><span class="n">distrax</span><span class="o">.</span><span class="n">Block</span><span class="p">(</span><span class="n">distrax</span><span class="o">.</span><span class="n">Tanh</span><span class="p">(),</span> <span class="mi">1</span><span class="p">)</span>
         <span class="p">)</span>
@@ -353,6 +355,7 @@
 <div class="viewcode-block" id="TanhTransformedDistribution.mode">
 <a class="viewcode-back" href="../../../../../arlbench.core.algorithms.sac.html#arlbench.core.algorithms.sac.models.TanhTransformedDistribution.mode">[docs]</a>
     <span class="k">def</span> <span class="nf">mode</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns the mode of the distribution.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">bijector</span><span class="o">.</span><span class="n">forward</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">distribution</span><span class="o">.</span><span class="n">mode</span><span class="p">())</span></div>
 </div>
 
@@ -368,14 +371,16 @@
 <div class="viewcode-block" id="AlphaCoef.setup">
 <a class="viewcode-back" href="../../../../../arlbench.core.algorithms.sac.html#arlbench.core.algorithms.sac.models.AlphaCoef.setup">[docs]</a>
     <span class="k">def</span> <span class="nf">setup</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initializes the alpha coefficient.&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">log_alpha</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">param</span><span class="p">(</span>
-            <span class="s2">&quot;log_alpha&quot;</span><span class="p">,</span> <span class="n">init_fn</span><span class="o">=</span><span class="k">lambda</span> <span class="n">rng</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">full</span><span class="p">((),</span> <span class="n">jnp</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">alpha_init</span><span class="p">))</span>
+            <span class="s2">&quot;log_alpha&quot;</span><span class="p">,</span> <span class="n">init_fn</span><span class="o">=</span><span class="k">lambda</span> <span class="n">rng</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">full</span><span class="p">((),</span> <span class="n">jnp</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">alpha_init</span><span class="p">))</span> <span class="c1"># noqa: ARG005</span>
         <span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="AlphaCoef.__call__">
 <a class="viewcode-back" href="../../../../../arlbench.core.algorithms.sac.html#arlbench.core.algorithms.sac.models.AlphaCoef.__call__">[docs]</a>
     <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns the alpha coefficient.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">jnp</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">log_alpha</span><span class="p">)</span></div>
 </div>
 
@@ -395,6 +400,7 @@
 <div class="viewcode-block" id="SACMLPActor.setup">
 <a class="viewcode-back" href="../../../../../arlbench.core.algorithms.sac.html#arlbench.core.algorithms.sac.models.SACMLPActor.setup">[docs]</a>
     <span class="k">def</span> <span class="nf">setup</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initializes the actor network.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">activation</span> <span class="o">==</span> <span class="s2">&quot;tanh&quot;</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">activation_func</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">tanh</span>
         <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">activation</span> <span class="o">==</span> <span class="s2">&quot;relu&quot;</span><span class="p">:</span>
@@ -423,6 +429,7 @@
 <div class="viewcode-block" id="SACMLPActor.__call__">
 <a class="viewcode-back" href="../../../../../arlbench.core.algorithms.sac.html#arlbench.core.algorithms.sac.models.SACMLPActor.__call__">[docs]</a>
     <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Applies the actor to the input.&quot;&quot;&quot;</span>
         <span class="n">actor_hidden</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dense0</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
         <span class="n">actor_hidden</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">activation_func</span><span class="p">(</span><span class="n">actor_hidden</span><span class="p">)</span>
         <span class="n">actor_hidden</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dense1</span><span class="p">(</span><span class="n">actor_hidden</span><span class="p">)</span>
@@ -452,6 +459,7 @@
 <div class="viewcode-block" id="SACCNNActor.setup">
 <a class="viewcode-back" href="../../../../../arlbench.core.algorithms.sac.html#arlbench.core.algorithms.sac.models.SACCNNActor.setup">[docs]</a>
     <span class="k">def</span> <span class="nf">setup</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initializes the actor network.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">activation</span> <span class="o">==</span> <span class="s2">&quot;tanh&quot;</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">activation_func</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">tanh</span>
         <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">activation</span> <span class="o">==</span> <span class="s2">&quot;relu&quot;</span><span class="p">:</span>
@@ -499,6 +507,7 @@
 <div class="viewcode-block" id="SACCNNActor.__call__">
 <a class="viewcode-back" href="../../../../../arlbench.core.algorithms.sac.html#arlbench.core.algorithms.sac.models.SACCNNActor.__call__">[docs]</a>
     <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Applies the actor to the input.&quot;&quot;&quot;</span>
         <span class="n">x</span> <span class="o">=</span> <span class="n">x</span> <span class="o">/</span> <span class="mf">255.0</span>
         <span class="n">x</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
         <span class="n">actor_hidden</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">actor_conv0</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
@@ -531,6 +540,7 @@
 <div class="viewcode-block" id="SACMLPCritic.setup">
 <a class="viewcode-back" href="../../../../../arlbench.core.algorithms.sac.html#arlbench.core.algorithms.sac.models.SACMLPCritic.setup">[docs]</a>
     <span class="k">def</span> <span class="nf">setup</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initializes the critic network.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">activation</span> <span class="o">==</span> <span class="s2">&quot;tanh&quot;</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">activation_func</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">tanh</span>
         <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">activation</span> <span class="o">==</span> <span class="s2">&quot;relu&quot;</span><span class="p">:</span>
@@ -556,6 +566,7 @@
 <div class="viewcode-block" id="SACMLPCritic.__call__">
 <a class="viewcode-back" href="../../../../../arlbench.core.algorithms.sac.html#arlbench.core.algorithms.sac.models.SACMLPCritic.__call__">[docs]</a>
     <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">action</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Applies the critic to the input.&quot;&quot;&quot;</span>
         <span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="o">-</span><span class="mi">1</span><span class="p">))</span>
         <span class="n">x</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([</span><span class="n">x</span><span class="p">,</span> <span class="n">action</span><span class="p">],</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
         <span class="n">critic</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">critic0</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
@@ -581,6 +592,7 @@
 <div class="viewcode-block" id="SACCNNCritic.setup">
 <a class="viewcode-back" href="../../../../../arlbench.core.algorithms.sac.html#arlbench.core.algorithms.sac.models.SACCNNCritic.setup">[docs]</a>
     <span class="k">def</span> <span class="nf">setup</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initializes the critic network.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">activation</span> <span class="o">==</span> <span class="s2">&quot;tanh&quot;</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">activation_func</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">tanh</span>
         <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">activation</span> <span class="o">==</span> <span class="s2">&quot;relu&quot;</span><span class="p">:</span>
@@ -623,6 +635,7 @@
 <div class="viewcode-block" id="SACCNNCritic.__call__">
 <a class="viewcode-back" href="../../../../../arlbench.core.algorithms.sac.html#arlbench.core.algorithms.sac.models.SACCNNCritic.__call__">[docs]</a>
     <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">action</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Applies the critic to the input.&quot;&quot;&quot;</span>
         <span class="n">x</span> <span class="o">=</span> <span class="n">x</span> <span class="o">/</span> <span class="mf">255.0</span>
         <span class="n">x</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">x</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
         <span class="n">x</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([</span><span class="n">x</span><span class="p">,</span> <span class="n">action</span><span class="p">],</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
@@ -645,6 +658,7 @@
 <div class="viewcode-block" id="SACVectorCritic">
 <a class="viewcode-back" href="../../../../../arlbench.core.algorithms.sac.html#arlbench.core.algorithms.sac.models.SACVectorCritic">[docs]</a>
 <span class="k">class</span> <span class="nc">SACVectorCritic</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;A vectorized critic network for SAC.&quot;&quot;&quot;</span>
     <span class="n">critic</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">SACMLPCritic</span><span class="p">]</span> <span class="o">|</span> <span class="nb">type</span><span class="p">[</span><span class="n">SACCNNCritic</span><span class="p">]</span>
     <span class="n">action_dim</span><span class="p">:</span> <span class="nb">int</span>
     <span class="n">activation</span><span class="p">:</span> <span class="nb">int</span>
@@ -655,6 +669,7 @@
 <a class="viewcode-back" href="../../../../../arlbench.core.algorithms.sac.html#arlbench.core.algorithms.sac.models.SACVectorCritic.__call__">[docs]</a>
     <span class="nd">@nn</span><span class="o">.</span><span class="n">compact</span>
     <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">action</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Applies the critic to the input.&quot;&quot;&quot;</span>
         <span class="n">vmap_critic</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">vmap</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">critic</span><span class="p">,</span>
             <span class="n">variable_axes</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;params&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">},</span>  <span class="c1"># parameters not shared between the critics</span>

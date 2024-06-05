@@ -429,6 +429,7 @@
                 
   <section id="module-arlbench.core.environments.autorl_env">
 <span id="arlbench-core-environments-autorl-env"></span><h1>arlbench.core.environments.autorl_env<a class="headerlink" href="#module-arlbench.core.environments.autorl_env" title="Link to this heading">¶</a></h1>
+<p>AutoRL Environment module.</p>
 <p class="rubric">Classes</p>
 <table class="autosummary longtable table autosummary">
 <tbody>
@@ -523,7 +524,11 @@
 <dd class="field-odd"><p><strong>rng</strong> (<em>PRNGKey</em>) – Random number generator key.</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>Returns a tuple containing the environment state as well as the actual return of the reset() function.</p>
+<dd class="field-even"><p><dl class="simple">
+<dt>Returns a tuple containing the environment state</dt><dd><p>as well as the actual return of the reset() function.</p>
+</dd>
+</dl>
+</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>tuple[Any, Any]</p>
@@ -551,7 +556,10 @@
 <dl class="py method">
 <dt class="sig sig-object py" id="arlbench.core.environments.autorl_env.Environment.step">
 <em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">step</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">env_state</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">action</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rng</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arlbench/core/environments/autorl_env.html#Environment.step"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.core.environments.autorl_env.Environment.step" title="Link to this definition">¶</a></dt>
-<dd><p>Environment step() function. Performs a step in the environment given an action.</p>
+<dd><dl class="simple">
+<dt>Environment step() function. Performs a step</dt><dd><p>in the environment given an action.</p>
+</dd>
+</dl>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
@@ -561,7 +569,11 @@
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>Returns a tuple containing the environment state as well as the actual return of the step() function.</p>
+<dd class="field-even"><p><dl class="simple">
+<dt>Returns a tuple containing the environment state</dt><dd><p>as well as the actual return of the step() function.</p>
+</dd>
+</dl>
+</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>tuple[Any, Any]</p>

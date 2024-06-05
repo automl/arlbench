@@ -750,6 +750,7 @@
                 
   <section id="module-arlbench.core.algorithms">
 <span id="arlbench-core-algorithms"></span><h1>arlbench.core.algorithms<a class="headerlink" href="#module-arlbench.core.algorithms" title="Link to this heading">¶</a></h1>
+<p>RL algorithms.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="arlbench.core.algorithms.Algorithm">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">arlbench.core.algorithms.</span></span><span class="sig-name descname"><span class="pre">Algorithm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">hpo_config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nas_config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">env</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eval_env</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">deterministic_eval</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">track_trajectories</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">track_metrics</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arlbench/core/algorithms/algorithm.html#Algorithm"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.core.algorithms.Algorithm" title="Link to this definition">¶</a></dt>
@@ -974,13 +975,10 @@
 <dl class="py method">
 <dt class="sig sig-object py" id="arlbench.core.algorithms.DQN.get_default_hpo_config">
 <em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_default_hpo_config</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arlbench/core/algorithms/dqn/dqn.html#DQN.get_default_hpo_config"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.core.algorithms.DQN.get_default_hpo_config" title="Link to this definition">¶</a></dt>
-<dd><p>Returns the default hyperparameter configuration of the agent.</p>
+<dd><p>Returns the default hyperparameter configuration for DQN.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Default hyperparameter configuration.</p>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p>Configuration</p>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">Configuration</span></code></span></p>
 </dd>
 </dl>
 </dd></dl>
@@ -988,13 +986,10 @@
 <dl class="py method">
 <dt class="sig sig-object py" id="arlbench.core.algorithms.DQN.get_default_nas_config">
 <em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_default_nas_config</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arlbench/core/algorithms/dqn/dqn.html#DQN.get_default_nas_config"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.core.algorithms.DQN.get_default_nas_config" title="Link to this definition">¶</a></dt>
-<dd><p>Returns the default neural architecture configuration of the agent.</p>
+<dd><p>Returns the default NAS configuration for DQN.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Default neural architecture configuration.</p>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p>Configuration</p>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">Configuration</span></code></span></p>
 </dd>
 </dl>
 </dd></dl>
@@ -1002,16 +997,10 @@
 <dl class="py method">
 <dt class="sig sig-object py" id="arlbench.core.algorithms.DQN.get_hpo_config_space">
 <em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_hpo_config_space</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arlbench/core/algorithms/dqn/dqn.html#DQN.get_hpo_config_space"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.core.algorithms.DQN.get_hpo_config_space" title="Link to this definition">¶</a></dt>
-<dd><p>Returns the hyperparameter configuration space of the algorithm.</p>
+<dd><p>Returns the hyperparameter optimization (HPO) configuration space for DQN.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>seed</strong> (<em>int</em><em> | </em><em>None</em><em>, </em><em>optional</em>) – Random generator seed that is used to sample configurations. Defaults to None.</p>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>Hyperparameter configuration space of the algorithm.</p>
-</dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>ConfigurationSpace</p>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">ConfigurationSpace</span></code></span></p>
 </dd>
 </dl>
 </dd></dl>
@@ -1019,16 +1008,10 @@
 <dl class="py method">
 <dt class="sig sig-object py" id="arlbench.core.algorithms.DQN.get_nas_config_space">
 <em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_nas_config_space</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arlbench/core/algorithms/dqn/dqn.html#DQN.get_nas_config_space"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.core.algorithms.DQN.get_nas_config_space" title="Link to this definition">¶</a></dt>
-<dd><p>Returns the neural architecture configuration space of the algorithm.</p>
+<dd><p>Returns the neural architecture search (NAS) configuration space for DQN.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>seed</strong> (<em>int</em><em> | </em><em>None</em><em>, </em><em>optional</em>) – Random generator seed that is used to sample configurations. Defaults to None.</p>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>Neural architecture configuration space of the algorithm.</p>
-</dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>ConfigurationSpace</p>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">ConfigurationSpace</span></code></span></p>
 </dd>
 </dl>
 </dd></dl>
@@ -1155,13 +1138,10 @@
 <dl class="py method">
 <dt class="sig sig-object py" id="arlbench.core.algorithms.PPO.get_default_hpo_config">
 <em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_default_hpo_config</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arlbench/core/algorithms/ppo/ppo.html#PPO.get_default_hpo_config"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.core.algorithms.PPO.get_default_hpo_config" title="Link to this definition">¶</a></dt>
-<dd><p>Returns the default hyperparameter configuration of the agent.</p>
+<dd><p>Returns the default hyperparameter configuration for PPO.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Default hyperparameter configuration.</p>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p>Configuration</p>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">Configuration</span></code></span></p>
 </dd>
 </dl>
 </dd></dl>
@@ -1169,13 +1149,10 @@
 <dl class="py method">
 <dt class="sig sig-object py" id="arlbench.core.algorithms.PPO.get_default_nas_config">
 <em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_default_nas_config</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arlbench/core/algorithms/ppo/ppo.html#PPO.get_default_nas_config"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.core.algorithms.PPO.get_default_nas_config" title="Link to this definition">¶</a></dt>
-<dd><p>Returns the default neural architecture configuration of the agent.</p>
+<dd><p>Returns the default neural architecture search configuration for PPO.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Default neural architecture configuration.</p>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p>Configuration</p>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">Configuration</span></code></span></p>
 </dd>
 </dl>
 </dd></dl>
@@ -1183,16 +1160,10 @@
 <dl class="py method">
 <dt class="sig sig-object py" id="arlbench.core.algorithms.PPO.get_hpo_config_space">
 <em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_hpo_config_space</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arlbench/core/algorithms/ppo/ppo.html#PPO.get_hpo_config_space"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.core.algorithms.PPO.get_hpo_config_space" title="Link to this definition">¶</a></dt>
-<dd><p>Returns the hyperparameter configuration space of the algorithm.</p>
+<dd><p>Returns the hyperparameter configuration space for PPO.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>seed</strong> (<em>int</em><em> | </em><em>None</em><em>, </em><em>optional</em>) – Random generator seed that is used to sample configurations. Defaults to None.</p>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>Hyperparameter configuration space of the algorithm.</p>
-</dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>ConfigurationSpace</p>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">ConfigurationSpace</span></code></span></p>
 </dd>
 </dl>
 </dd></dl>
@@ -1200,16 +1171,10 @@
 <dl class="py method">
 <dt class="sig sig-object py" id="arlbench.core.algorithms.PPO.get_nas_config_space">
 <em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_nas_config_space</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arlbench/core/algorithms/ppo/ppo.html#PPO.get_nas_config_space"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.core.algorithms.PPO.get_nas_config_space" title="Link to this definition">¶</a></dt>
-<dd><p>Returns the neural architecture configuration space of the algorithm.</p>
+<dd><p>Returns the neural architecture search configuration space for PPO.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>seed</strong> (<em>int</em><em> | </em><em>None</em><em>, </em><em>optional</em>) – Random generator seed that is used to sample configurations. Defaults to None.</p>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>Neural architecture configuration space of the algorithm.</p>
-</dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>ConfigurationSpace</p>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">ConfigurationSpace</span></code></span></p>
 </dd>
 </dl>
 </dd></dl>
@@ -1326,13 +1291,10 @@
 <dl class="py method">
 <dt class="sig sig-object py" id="arlbench.core.algorithms.SAC.get_default_hpo_config">
 <em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_default_hpo_config</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arlbench/core/algorithms/sac/sac.html#SAC.get_default_hpo_config"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.core.algorithms.SAC.get_default_hpo_config" title="Link to this definition">¶</a></dt>
-<dd><p>Returns the default hyperparameter configuration of the agent.</p>
+<dd><p>Returns the default HPO configuration for SAC.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Default hyperparameter configuration.</p>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p>Configuration</p>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">Configuration</span></code></span></p>
 </dd>
 </dl>
 </dd></dl>
@@ -1340,13 +1302,10 @@
 <dl class="py method">
 <dt class="sig sig-object py" id="arlbench.core.algorithms.SAC.get_default_nas_config">
 <em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_default_nas_config</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arlbench/core/algorithms/sac/sac.html#SAC.get_default_nas_config"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.core.algorithms.SAC.get_default_nas_config" title="Link to this definition">¶</a></dt>
-<dd><p>Returns the default neural architecture configuration of the agent.</p>
+<dd><p>Returns the default NAS configuration for SAC.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Default neural architecture configuration.</p>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p>Configuration</p>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">Configuration</span></code></span></p>
 </dd>
 </dl>
 </dd></dl>
@@ -1354,16 +1313,10 @@
 <dl class="py method">
 <dt class="sig sig-object py" id="arlbench.core.algorithms.SAC.get_hpo_config_space">
 <em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_hpo_config_space</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arlbench/core/algorithms/sac/sac.html#SAC.get_hpo_config_space"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.core.algorithms.SAC.get_hpo_config_space" title="Link to this definition">¶</a></dt>
-<dd><p>Returns the hyperparameter configuration space of the algorithm.</p>
+<dd><p>Returns the hyperparameter configuration space for SAC.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>seed</strong> (<em>int</em><em> | </em><em>None</em><em>, </em><em>optional</em>) – Random generator seed that is used to sample configurations. Defaults to None.</p>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>Hyperparameter configuration space of the algorithm.</p>
-</dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>ConfigurationSpace</p>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">ConfigurationSpace</span></code></span></p>
 </dd>
 </dl>
 </dd></dl>
@@ -1371,16 +1324,10 @@
 <dl class="py method">
 <dt class="sig sig-object py" id="arlbench.core.algorithms.SAC.get_nas_config_space">
 <em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_nas_config_space</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arlbench/core/algorithms/sac/sac.html#SAC.get_nas_config_space"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.core.algorithms.SAC.get_nas_config_space" title="Link to this definition">¶</a></dt>
-<dd><p>Returns the neural architecture configuration space of the algorithm.</p>
+<dd><p>Returns the neural architecture search (NAS) configuration space for SAC.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>seed</strong> (<em>int</em><em> | </em><em>None</em><em>, </em><em>optional</em>) – Random generator seed that is used to sample configurations. Defaults to None.</p>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>Neural architecture configuration space of the algorithm.</p>
-</dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>ConfigurationSpace</p>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">ConfigurationSpace</span></code></span></p>
 </dd>
 </dl>
 </dd></dl>
@@ -1419,8 +1366,10 @@
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>runner_state</strong> (<a class="reference internal" href="../arlbench.core.algorithms.sac.html#arlbench.core.algorithms.sac.SACRunnerState" title="arlbench.core.algorithms.sac.SACRunnerState"><em>SACRunnerState</em></a>) – Algorithm runner state.</p></li>
 <li><p><strong>obs</strong> (<em>jnp.ndarray</em>) – Observation(s).</p></li>
-<li><p><strong>rng</strong> (<em>chex.PRNGKey</em><em> | </em><em>None</em><em>, </em><em>optional</em>) – Not used in DQN. Random generator key in other algorithms. Defaults to None.</p></li>
-<li><p><strong>deterministic</strong> (<em>bool</em>) – Not used in DQN. Return deterministic action in other algorithms. Defaults to True.</p></li>
+<li><p><strong>rng</strong> (<em>chex.PRNGKey</em><em> | </em><em>None</em><em>, </em><em>optional</em>) – Not used in DQN. Random generator key
+in other algorithmsDefaults to None.</p></li>
+<li><p><strong>deterministic</strong> (<em>bool</em>) – Not used in DQN. Return deterministic action
+in other algorithm. Defaults to True.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -1441,9 +1390,11 @@
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>runner_state</strong> (<em>SACTrainReturnT</em>) – SAC runner state.</p></li>
 <li><p><strong>_</strong> (<em>None</em>) – Unused parameter (buffer_state in other algorithms).</p></li>
-<li><p><strong>n_total_timesteps</strong> (<em>int</em><em>, </em><em>optional</em>) – Total number of training timesteps. Update steps = n_total_timesteps // n_envs. Defaults to 1000000.</p></li>
+<li><p><strong>n_total_timesteps</strong> (<em>int</em><em>, </em><em>optional</em>) – Total number of training timesteps.
+Update steps = n_total_timesteps // n_envs. Defaults to 1000000.</p></li>
 <li><p><strong>n_eval_steps</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of evaluation steps during training.</p></li>
-<li><p><strong>n_eval_episodes</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of evaluation episodes per evaluation during training.</p></li>
+<li><p><strong>n_eval_episodes</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of evaluation episodes
+per evaluation during training.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -1528,13 +1479,13 @@
 <table class="autosummary longtable table autosummary">
 <tbody>
 <tr class="row-odd"><td><p><a class="reference internal" href="../arlbench.core.algorithms.html#module-arlbench.core.algorithms.algorithm" title="arlbench.core.algorithms.algorithm"><code class="xref py py-obj docutils literal notranslate"><span class="pre">arlbench.core.algorithms.algorithm</span></code></a></p></td>
-<td><p></p></td>
+<td><p>Abstract base class for a reinforcement learning algorithm.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="../arlbench.core.algorithms.html#module-arlbench.core.algorithms.buffers" title="arlbench.core.algorithms.buffers"><code class="xref py py-obj docutils literal notranslate"><span class="pre">arlbench.core.algorithms.buffers</span></code></a></p></td>
-<td><p></p></td>
+<td><p>Replay buffers.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="../arlbench.core.algorithms.html#module-arlbench.core.algorithms.common" title="arlbench.core.algorithms.common"><code class="xref py py-obj docutils literal notranslate"><span class="pre">arlbench.core.algorithms.common</span></code></a></p></td>
-<td><p></p></td>
+<td><p>Common data structures for algorithms.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="../arlbench.core.algorithms.dqn.html#module-arlbench.core.algorithms.dqn" title="arlbench.core.algorithms.dqn"><code class="xref py py-obj docutils literal notranslate"><span class="pre">arlbench.core.algorithms.dqn</span></code></a></p></td>
 <td><p></p></td>
@@ -1543,7 +1494,7 @@
 <td><p></p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="../arlbench.core.algorithms.html#module-arlbench.core.algorithms.prioritised_item_buffer" title="arlbench.core.algorithms.prioritised_item_buffer"><code class="xref py py-obj docutils literal notranslate"><span class="pre">arlbench.core.algorithms.prioritised_item_buffer</span></code></a></p></td>
-<td><p></p></td>
+<td><p>Prioritised replay buffer.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="../arlbench.core.algorithms.sac.html#module-arlbench.core.algorithms.sac" title="arlbench.core.algorithms.sac"><code class="xref py py-obj docutils literal notranslate"><span class="pre">arlbench.core.algorithms.sac</span></code></a></p></td>
 <td><p></p></td>

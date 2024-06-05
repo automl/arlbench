@@ -332,7 +332,8 @@
               <div>
                 
   <h1>Source code for arlbench.core.environments.make_env</h1><div class="highlight"><pre>
-<span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
+<span></span><span class="sd">&quot;&quot;&quot;Environment creation function for ARLBench.&quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
 
 <span class="kn">import</span> <span class="nn">warnings</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">TYPE_CHECKING</span>
@@ -355,15 +356,18 @@
     <span class="n">seed</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
     <span class="n">env_kwargs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Environment</span> <span class="o">|</span> <span class="n">Wrapper</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;ARLBench equivalent to make_env in gymnasium/gymnax etc. Creates a JAX-compatible RL environment.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;ARLBench equivalent to make_env in gymnasium/gymnax etc.</span>
+<span class="sd">    Creates a JAX-compatible RL environment.</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        env_framework (str): Environment framework to use. Must be one of the following: brax, envpool, gymnasium, gymnax, xland</span>
+<span class="sd">        env_framework (str): Environment framework to use.</span>
+<span class="sd">            Must be one of the following: brax, envpool, gymnasium, gymnax, xland</span>
 <span class="sd">        env_name (str): Name/id of the environment. Has to match the env_framework.</span>
 <span class="sd">        cnn_policy (bool, optional): _description_. Defaults to False.</span>
 <span class="sd">        n_envs (int, optional): Number of environments. Defaults to 1.</span>
 <span class="sd">        seed (int, optional): Random seed. Defaults to 0.</span>
-<span class="sd">        env_kwargs (dict[str, Any] | None, optional): Keyword arguments to pass to the environment. Defaults to None.</span>
+<span class="sd">        env_kwargs (dict[str, Any] | None, optional): Keyword arguments</span>
+<span class="sd">            to pass to the environment. Defaults to None.</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        Environment | Wrapper: JAX-compatible RL environment.</span>
@@ -373,7 +377,8 @@
     <span class="k">if</span> <span class="n">env_framework</span> <span class="o">==</span> <span class="s2">&quot;gymnasium&quot;</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">n_envs</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
             <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;For gymnasium only n_envs must be set to 1 but actual value is </span><span class="si">{</span><span class="n">n_envs</span><span class="si">}</span><span class="s2">. n_envs will be set to 1.&quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;&quot;&quot;For gymnasium only n_envs must be set to 1 but</span>
+<span class="s2">                actual value is </span><span class="si">{</span><span class="n">n_envs</span><span class="si">}</span><span class="s2">. n_envs will be set to 1.&quot;&quot;&quot;</span>
             <span class="p">)</span>
         <span class="kn">from</span> <span class="nn">.gymnasium_env</span> <span class="kn">import</span> <span class="n">GymnasiumEnv</span>
 

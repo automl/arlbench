@@ -359,6 +359,24 @@
      </code>
     </a>
    </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#arlbench.core.environments.envpool_env.EnvpoolEnv.reset">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       EnvpoolEnv.reset()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#arlbench.core.environments.envpool_env.EnvpoolEnv.step">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       EnvpoolEnv.step()
+      </span>
+     </code>
+    </a>
+   </li>
   </ul>
  </li>
  <li class="toc-h2 nav-item toc-entry">
@@ -393,6 +411,7 @@
                 
   <section id="module-arlbench.core.environments.envpool_env">
 <span id="arlbench-core-environments-envpool-env"></span><h1>arlbench.core.environments.envpool_env<a class="headerlink" href="#module-arlbench.core.environments.envpool_env" title="Link to this heading">¶</a></h1>
+<p>Envpool environment adapter.</p>
 <p class="rubric">Functions</p>
 <table class="autosummary longtable table autosummary">
 <tbody>
@@ -417,29 +436,25 @@
 <dl class="py property">
 <dt class="sig sig-object py" id="arlbench.core.environments.envpool_env.EnvpoolEnv.action_space">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">action_space</span></span><a class="headerlink" href="#arlbench.core.environments.envpool_env.EnvpoolEnv.action_space" title="Link to this definition">¶</a></dt>
-<dd><p>The action space of the environment (gymnax space).</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Action space of the environment.</p>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p>gymnax.environments.spaces.Space</p>
-</dd>
-</dl>
+<dd><p>Action space of the environment.</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="arlbench.core.environments.envpool_env.EnvpoolEnv.observation_space">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">observation_space</span></span><a class="headerlink" href="#arlbench.core.environments.envpool_env.EnvpoolEnv.observation_space" title="Link to this definition">¶</a></dt>
-<dd><p>The observation space of the environment (gymnax space).</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Observation space of the environment.</p>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p>gymnax.environments.spaces.Space</p>
-</dd>
-</dl>
+<dd><p>Observation space of the environment.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="arlbench.core.environments.envpool_env.EnvpoolEnv.reset">
+<span class="sig-name descname"><span class="pre">reset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">_</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arlbench/core/environments/envpool_env.html#EnvpoolEnv.reset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.core.environments.envpool_env.EnvpoolEnv.reset" title="Link to this definition">¶</a></dt>
+<dd><p>Resets the environment.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="arlbench.core.environments.envpool_env.EnvpoolEnv.step">
+<span class="sig-name descname"><span class="pre">step</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">env_state</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">action</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arlbench/core/environments/envpool_env.html#EnvpoolEnv.step"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.core.environments.envpool_env.EnvpoolEnv.step" title="Link to this definition">¶</a></dt>
+<dd><p>Steps the environment forward by one step.</p>
 </dd></dl>
 
 </dd></dl>
