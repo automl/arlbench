@@ -99,18 +99,6 @@ class Algorithm(ABC):
 
     @staticmethod
     @abstractmethod
-    def get_hpo_search_space(seed: int | None = None) -> ConfigurationSpace:
-        """Returns the hyperparameter search space of the algorithm. However, this can be adapted to fit a given HPO method.
-
-        Args:
-            seed (int | None, optional): Random generator seed that is used to sample configurations. Defaults to None.
-
-        Returns:
-            ConfigurationSpace: Hyperparameter search space of the algorithm.
-        """
-
-    @staticmethod
-    @abstractmethod
     def get_default_hpo_config() -> Configuration:
         """Returns the default hyperparameter configuration of the agent.
 
