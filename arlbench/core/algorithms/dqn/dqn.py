@@ -250,53 +250,6 @@ class DQN(Algorithm):
         return cs
 
     @staticmethod
-    def get_hpo_search_space(seed: int | None = None) -> ConfigurationSpace:
-        cs = ConfigurationSpace(
-            name="DQNConfigSpace",
-            seed=seed,
-            space={
-                "buffer_size": Integer(
-                    "buffer_size", (1024, int(1e7)), default=1000000
-                ),
-                "buffer_batch_size": Categorical(
-                    "buffer_batch_size", [4, 8, 16, 32, 64], default=16
-                ),
-                "buffer_prio_sampling": Categorical(
-                    "buffer_prio_sampling", [True, False], default=False
-                ),
-                "buffer_alpha": Float("buffer_alpha", (0.01, 1.0), default=0.9),
-                "buffer_beta": Float("buffer_beta", (0.01, 1.0), default=0.9),
-                "buffer_epsilon": Float("buffer_epsilon", (1e-7, 1e-3), default=1e-6),
-                "learning_rate": Float(
-                    "learning_rate", (1e-6, 0.1), default=3e-4, log=True
-                ),
-                "tau": Float("tau", (0.01, 1.0), default=1.0),
-                "initial_epsilon": Float("initial_epsilon", (0.5, 1.0), default=1.0),
-                "target_epsilon": Float("target_epsilon", (0.001, 0.2), default=0.05),
-                "exploration_fraction": Float("initial_epsilon", (0.005, 0.5), default=0.1),
-                "use_target_network": Categorical(
-                    "use_target_network", [True, False], default=True
-                ),
-                "train_freq": Integer("train_freq", (1, 256), default=4),
-                "gradient steps": Integer("gradient_steps", (1, 256), default=1),
-                "learning_starts": Integer("learning_starts", (0, 32768), default=1024),
-                "target_update_interval": Integer(
-                    "target_update_interval", (1, 2000), default=1000
-                ),
-            },
-        )
-        cs.add_conditions(
-            [
-                EqualsCondition(
-                    cs["target_update_interval"], cs["use_target_network"], True
-                ),
-                EqualsCondition(cs["tau"], cs["use_target_network"], True),
-            ]
-        )
-
-        return cs
-
-    @staticmethod
     def get_default_hpo_config() -> Configuration:
         return DQN.get_hpo_config_space().get_default_configuration()
 

@@ -195,32 +195,6 @@ class PPO(Algorithm):
         )
 
     @staticmethod
-    def get_hpo_search_space(seed: int | None = None) -> ConfigurationSpace:
-        return ConfigurationSpace(
-            name="PPOConfigSpace",
-            seed=seed,
-            space={
-                "minibatch_size": Categorical(
-                    "minibatch_size", [16, 32, 64, 128], default=64
-                ),
-                "learning_rate": Float(
-                    "learning_rate", (1e-6, 0.1), default=3e-4, log=True
-                ),
-                "n_steps": Categorical("n_steps", [32, 64, 128, 256, 512], default=128),
-                "update_epochs": Integer("update_epochs", (5, 20), default=10),
-                "gae_lambda": Float("gae_lambda", (0.8, 0.9999), default=0.95),
-                "clip_eps": Float("clip_eps", (0.0, 0.5), default=0.2),
-                "vf_clip_eps": Float("vf_clip_eps", (0.0, 0.5), default=0.2),
-                "normalize_advantage": Categorical(
-                    "normalize_advantage", [True, False], default=True
-                ),
-                "ent_coef": Float("ent_coef", (0.0, 0.5), default=0.0),
-                "vf_coef": Float("vf_coef", (0.0, 1.0), default=0.5),
-                "max_grad_norm": Float("max_grad_norm", (0.0, 1.0), default=0.5),
-            },
-        )
-
-    @staticmethod
     def get_default_hpo_config() -> Configuration:
         return PPO.get_hpo_config_space().get_default_configuration()
 
