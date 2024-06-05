@@ -212,7 +212,9 @@ def plot_runtime_comparisons():
 
     print(all_runtimes)
 
-    all_runtimes["runtime"] /= 3600
+    all_runtimes["runtime"] /= 3600     # to hours
+    all_runtimes["runtime"] *= 96     # 32 trainings on 3 seeds each
+
     
     for i, algorithm in enumerate(env_categories.keys()):
         runtime_data = all_runtimes[all_runtimes["algorithm"] == algorithm]
