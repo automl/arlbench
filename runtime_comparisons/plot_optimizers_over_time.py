@@ -18,6 +18,36 @@ OPT_PLOTS_DIR = "plots/optimizer_runs"
 OPT_RESULTS_DIR = "results_combined/optimizer_runs"
 STEP_SIZE = 100000
 
+HUE_ORDER = ["Random Search", "SMAC", "SMAC + HB", "PBT"]
+
+ENV_CATEGORIES = {
+    "ppo": {
+        "Atari": ["BattleZone-v5", "DoubleDunk-v5", "NameThisGame-v5", "Phoenix-v5", "QBert-v5"],
+        "Box2D": ["LunarLander-v2", "LunarLanderContinuous-v2"],
+        "Classic Control": ["Acrobot-v1", "CartPole-v1", "MountainCar-v0", "MountainCarContinuous-v0", "Pendulum-v1"],
+        "XLand": ["MiniGrid-DoorKey-5x5", "MiniGrid-EmptyRandom-5x5", "MiniGrid-FourRooms", "MiniGrid-Unlock"],
+        "Brax": ["ant", "halfcheetah", "hopper", "humanoid"]
+    },
+    "dqn": {
+        "Atari": ["BattleZone-v5", "DoubleDunk-v5", "NameThisGame-v5", "Phoenix-v5", "QBert-v5"],
+        "Box2D": ["LunarLander-v2"],
+        "Classic Control": ["Acrobot-v1", "CartPole-v1", "MountainCar-v0"],
+        "XLand": ["MiniGrid-DoorKey-5x5", "MiniGrid-EmptyRandom-5x5", "MiniGrid-FourRooms", "MiniGrid-Unlock"],
+    },
+    "sac": {
+        "Box2D": ["BipedalWalker-v2", "LunarLanderContinuous-v2"],
+        "Classic Control": ["MountainCarContinuous-v0", "Pendulum-v1"],
+        "Brax": ["ant", "halfcheetah", "hopper", "humanoid"]
+    },
+}
+
+SUBSETS = {
+    "ppo": ["LunarLander-v2", "halfcheetah", "BattleZone-v5", "MiniGrid-EmptyRandom-5x5", "MiniGrid-FourRooms"],
+    "dqn": ["Acrobot-v1", "MiniGrid-DoorKey-5x5", "BattleZone-v5", "MiniGrid-FourRooms"],
+    "sac": ["BipedalWalker-v3", "halfcheetah", "MountainCarContinuous-v0", "Pendulum-v1"],
+}
+
+
 sns.set_style("whitegrid")
 sns.set_palette("colorblind")
 
@@ -78,7 +108,7 @@ def interpolate(opt_data: pd.DataFrame) -> pd.DataFrame:
         interpolated_opt_data = interpolated_opt_data[interpolated_opt_data["cum_budget"] <= max_budget + 1]
 
 
-        interpolated_opt_data["seed"] = seed
+        interpolated_opt_data["seed"] = seed - 42 if optimizer == "rs" else seed
         interpolated_opt_data["optimizer"] = OPTIMIZER_NAMES[optimizer]
     
         interpolated_opt_datas.append(interpolated_opt_data)
@@ -92,14 +122,7 @@ def interpolate(opt_data: pd.DataFrame) -> pd.DataFrame:
     return interpolated_data
 
 
-def plot_opt_over_time(exp: str):
-    opt_data = read_opt_data(exp)
-    if opt_data is None:
-        return
-
-    algorithm, environment = exp.split("_")
-    
-    # W need to select the best configuration that we have for each budget
+def get_incumbent(opt_data: pd.DataFrame, exp: str, method: str) -> pd.DataFrame:
     best_config_opt_data = opt_data.groupby(["optimizer", "cum_budget", "seed"]).apply(lambda x: x.loc[x["performance"].idxmin()]).reset_index(drop=True)
     
     result_path = os.path.join(OPT_RESULTS_DIR, f"{exp}.csv")
@@ -111,14 +134,64 @@ def plot_opt_over_time(exp: str):
 
     incumbent_opt_data = interpolated_opt_data.sort_values(by=["optimizer", "seed", "cum_budget"])
     incumbent_opt_data["incumbent"] = incumbent_opt_data.groupby(["optimizer", "seed"])["performance"].cummin()
+    incumbent_opt_data = incumbent_opt_data[["cum_budget", "optimizer", "seed", "incumbent"]]
+
+    incumbent_opt_data = incumbent_opt_data.dropna()
+
+    if method == "rank":
+        incumbent_opt_data["rank"] = incumbent_opt_data.groupby(["cum_budget", "seed"])["incumbent"].rank()
+
+    incumbent_opt_data = incumbent_opt_data.sort_values("cum_budget")
+    return incumbent_opt_data
+
+def plot_opt_over_time(exp: str, rank: bool = False):
+    opt_data = read_opt_data(exp)
+    if opt_data is None:
+        return
+
+    algorithm, environment = exp.split("_")
     
+    method = "rank" if rank else ""
+    incumbent_opt_data = get_incumbent(opt_data, exp, method)
+
     fig = plt.figure(figsize=(7, 5))
-    g = sns.lineplot(data=incumbent_opt_data, x="cum_budget", y="incumbent", hue="optimizer", errorbar=("ci", 95))
+    g = sns.lineplot(data=incumbent_opt_data, x="cum_budget", y="rank" if rank else "incumbent", hue="optimizer", errorbar=("ci", 95), hue_order=HUE_ORDER)
     g.set_title(f"{algorithm.upper()} on {environment}")
-    g.set_ylabel("Cost")
+    g.set_ylabel("Rank" if rank else "Cost")
     g.set_xlabel("Optimization Budget")
 
-    path = os.path.join(OPT_PLOTS_DIR, f"{exp}.png")
+    path = os.path.join(OPT_PLOTS_DIR, f"{exp + '_rank' if method == 'rank' else exp}.png")
+    plt.legend(title="Optimizer")
+    plt.tight_layout()
+    plt.savefig(path, dpi=500)
+    plt.close()
+
+
+def plot_envs_opt_over_time(algorithm: str, envs: list[str], category_name: str):
+    all_opt_data = []
+    for env in envs:
+        exp = f"{algorithm}_{env}"
+        opt_data = read_opt_data(exp)
+        if opt_data is None:
+            continue
+        incumbent_opt_data = get_incumbent(opt_data, exp, "rank")
+
+        incumbent_opt_data["env"] = env
+        all_opt_data += [incumbent_opt_data]
+
+    if len (all_opt_data) == 0:
+        return
+
+    all_opt_data = pd.concat(all_opt_data)
+    
+    fig = plt.figure(figsize=(7, 5))
+    g = sns.lineplot(data=incumbent_opt_data, x="cum_budget", y="rank", hue="optimizer", errorbar=("ci", 95), hue_order=HUE_ORDER)
+    g.set_title(f"{algorithm.upper()} on {category_name}")
+    g.set_ylabel("Rank")
+    g.set_xlabel("Optimization Budget")
+
+    path = os.path.join(OPT_PLOTS_DIR, f"{algorithm}_{category_name}.png")
+    plt.legend(title="Optimizer")
     plt.tight_layout()
     plt.savefig(path, dpi=500)
     plt.close()
@@ -145,7 +218,7 @@ def plot_3_opt_over_time(experiments: list[str]):
         
         axes[i].set_title(f"{algorithm.upper()} on {environment}")
         axes[i].set_ylabel("")
-        axes[i].set_xlabel("Budget")
+        axes[i].set_xlabel("budget")
         axes[i].legend().set_visible(False)
 
     axes[0].set_ylabel("Cost")
@@ -161,5 +234,17 @@ def plot_3_opt_over_time(experiments: list[str]):
 if __name__ == "__main__":
     # plot_3_opt_over_time(["ppo_Acrobot-v1", "dqn_CartPole-v1", "sac_Pendulum-v1"])
     for exp in os.listdir("results/smac_mf"):
-        plot_opt_over_time(exp)
-        gc.collect()
+       plot_opt_over_time(exp, rank=False)
+       plot_opt_over_time(exp, rank=True)
+       gc.collect()
+
+    for algorithm, subset_envs in SUBSETS.items():
+        plot_envs_opt_over_time(algorithm, subset_envs, "Subset")
+
+    for algorithm, category in ENV_CATEGORIES.items():
+        envs = [env for cat_envs in category.values() for env in cat_envs]
+        plot_envs_opt_over_time(algorithm, envs, "Full Set")
+
+    for algorithm, category in ENV_CATEGORIES.items():
+        for category_name, envs in category.items():
+            plot_envs_opt_over_time(algorithm, envs, category_name)
