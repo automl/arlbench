@@ -9,7 +9,7 @@
 
 <div align="center">
     
-<!--- [![PyPI Version](https://img.shields.io/pypi/v/arlbench.svg)](https://pypi.python.org/pypi/arlbench) -->
+[![PyPI Version](https://img.shields.io/pypi/v/arlbench.svg)](https://pypi.python.org/pypi/arlbench)
 ![Python](https://img.shields.io/badge/Python-3.10-3776AB)
 ![License](https://img.shields.io/badge/License-BSD3-orange)
 [![Test](https://github.com/automl/arlbench/actions/workflows/pytest.yaml/badge.svg)](https://github.com/automl/arlbench/actions/workflows/pytest.yaml)
