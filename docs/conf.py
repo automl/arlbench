@@ -10,7 +10,6 @@ options = {
     "name": "ARLBench",
     "html_theme_options": {
         "github_url": "https://github.com/automl/ARLBench",
-        "twitter_url": "https://twitter.com/automl_org?lang=de",
     },
     "extensions": [
         "myst_parser",
