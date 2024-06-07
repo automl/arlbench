@@ -3,7 +3,7 @@
 
 ## Development Lead
 
-AutoML Hannover <automl@ai.uni-hannover.de>
+redacted
 
 ## Contributors
 
