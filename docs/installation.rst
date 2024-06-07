@@ -16,7 +16,7 @@ This is the simplest way to install ARLBench. Just run the following command:
 
 .. code-block:: bash
 
-    pip install arlbench
+    pip install (redacted)
 
 2. Downloading from GitHub
 --------------------------
@@ -25,8 +25,8 @@ This is the best way to install the latest version of ARLBench. First, clone the
 
 .. code-block:: bash
 
-    git clone git@github.com:automl/arlbench.git
-    cd arlbench
+    git clone (redacted)
+    cd xxx
 
 Then, install the package:
 
