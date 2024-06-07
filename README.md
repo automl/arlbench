@@ -8,16 +8,6 @@
 </p>
 
 <div align="center">
-    
-[![PyPI Version](https://img.shields.io/pypi/v/arlbench.svg)](https://pypi.python.org/pypi/arlbench)
-![Python](https://img.shields.io/badge/Python-3.10-3776AB)
-![License](https://img.shields.io/badge/License-BSD3-orange)
-[![Test](https://github.com/automl/arlbench/actions/workflows/pytest.yaml/badge.svg)](https://github.com/automl/arlbench/actions/workflows/pytest.yaml)
-[![Doc Status](https://github.com/automl/arlbench/actions/workflows/docs.yaml/badge.svg)](https://github.com/automl/arlbench/actions/workflows/docs.yaml)
-    
-</div>
-
-<div align="center">
     <h3>
       <a href="#features">Features</a> |
       <a href="#installation">Installation</a> |
@@ -30,7 +20,7 @@
 
 # 🦾 Automated Reinforcement Learning Benchmark
 
-The ARLBench is a benchmark for HPO in RL - evaluate your HPO methods fast and on a representative number of environments! For more information, see our [documentation](https://automl.github.io/arlbench/main/). The dataset is available at  [HuggingFace](https://huggingface.co/datasets/autorl-org/arlbench).
+The ARLBench is a benchmark for HPO in RL - evaluate your HPO methods fast and on a representative number of environments!
 
 ## Features
 
@@ -62,13 +52,13 @@ If you want to run the ARLBench on GPU, we recommend you check out the [JAX inst
 You can install ARLBench using `pip`:
 
 ```bash
-pip install arlbench
+pip install (redacted for peer-review)
 ```
 
 If you want to use envpool environments (not currently supported for Mac!), instead choose:
 
 ```bash
-pip install arlbench[envpool]
+pip install (redacted for peer-review)[envpool]
 ```
 
 </details>
@@ -78,8 +68,8 @@ pip install arlbench[envpool]
 First, you need to clone the ARLBench reopsitory:
 
 ```bash
-git clone git@github.com:automl/arlbench.git
-cd arlbench
+git clone (redacted for peer-review)
+cd xxx
 ```
 
 Then you can install the benchmark. For the base version, use:
@@ -101,7 +91,7 @@ make install-envpool
 
 ## Quickstart
 
-Here are the two ways you can use ARLBench: via the command line or as an environment. To see them in action, take a look at our [examples](https://github.com/automl/arlbench/tree/main/examples).
+Here are the two ways you can use ARLBench: via the command line or as an environment.
 
 ### Use the CLI
 
@@ -129,8 +119,6 @@ All hyperparamters to adapt are in the 'hpo_config' and architecture settings in
 python run_arlbench.py -m autorl.seed=0,1,2,3,4 nas_config.hidden_size=8,16,32 hp_config.learning_rate=0.001,0.01
 ```
 
-We recommend you create your own custom config files if using the CLI (for more information on this, checkout [Hydra's guide to config files](https://hydra.cc/docs/tutorials/basic/your_first_app/config_file/)). Our [examples](https://github.com/automl/arlbench/tree/main/examples) can show you how these can look.
-
 ### Use the AutoRL environment
 
 If you want to have specific control over the ARLBench loop, want to do dynamic configuration or learn based on the agent state, you should use the environment-like interface of ARLBench in your script.
@@ -138,7 +126,7 @@ If you want to have specific control over the ARLBench loop, want to do dynamic 
 To do so, import ARLBench and use the `AutoRLEnv` to run an RL agent:
 
 ```python
-from arlbench import AutoRLEnv
+from xxx import AutoRLEnv
 
 env = AutoRLEnv()
 
@@ -148,16 +136,4 @@ action = env.config_space.sample_configuration()
 obs, objectives, term, trunc, info = env.step(action)
 ```
 
-Just like with RL agents, you can call 'step' multiple times until termination (which you define via the AutoRLEnv's config). For all configuration options, check out our [documentation](https://automl.github.io/arlbench/main/).
-
-## Cite Us
-
-If you use ARLBench in your work, please cite us:
-
-```bibtex
-@misc{beckdierkes24,
-  author    = {J. Becktepe and J. Dierkes and C. Benjamins and D. Salinas and A. Mohan and R. Rajan and F. Hutter and H. Hoos and M. Lindauer and T. Eimer},
-  title     = {ARLBench},
-  year      = {2024},
-  url = {https://github.com/automl/arlbench},
-```
+Just like with RL agents, you can call 'step' multiple times until termination (which you define via the AutoRLEnv's config).
