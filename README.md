@@ -37,7 +37,7 @@ The ARLBench is a benchmark for HPO in RL - evaluate your HPO methods fast and o
 
 - **Lightning-fast JAX-Based implementations of DQN, PPO, and SAC**
 - **Compatible with many different environment domains via Gymnax, XLand and EnvPool**
-- **Representative benchmark set of HPO settings** 
+- **Representative benchmark set of HPO settings**
 
 <p align="center">
     <a href="./docs/images/subsets.png">
@@ -47,7 +47,7 @@ The ARLBench is a benchmark for HPO in RL - evaluate your HPO methods fast and o
 
 ## Installation
 
-There are currently two different ways to install ARLBench. 
+There are currently two different ways to install ARLBench.
 Whichever you choose, we recommend to create a virtual environment for the installation:
 
 ```bash
@@ -55,7 +55,7 @@ conda create -n arlbench python=3.10
 conda activate arlbench
 ```
 
-The instructions below will help you install the default version of ARLBench with the CPU version of JAX. 
+The instructions below will help you install the default version of ARLBench with the CPU version of JAX.
 If you want to run the ARLBench on GPU, we recommend you check out the [JAX installation guide](https://jax.readthedocs.io/en/latest/installation.html) to see how you can install the correct version for your GPU setup before proceeding.
 
 <details>
@@ -67,6 +67,7 @@ pip install arlbench
 ```
 
 If you want to use envpool environments (not currently supported for Mac!), instead choose:
+
 ```bash
 pip install arlbench[envpool]
 ```
@@ -83,14 +84,17 @@ cd arlbench
 ```
 
 Then you can install the benchmark. For the base version, use:
+
 ```bash
 make install
 ```
+
 For the envpool functionality (not available on Mac!), instead use:
 
 ```bash
 make install-envpool
 ```
+
 </details>
 
 > [!CAUTION]
@@ -98,26 +102,30 @@ make install-envpool
 
 ## Quickstart
 
-Here are the two ways you can use ARLBench: via the command line or as an environment. To see them in action, take a look at our [examples](https://github.com/automl/arlbench/tree/main/examples). 
+Here are the two ways you can use ARLBench: via the command line or as an environment. To see them in action, take a look at our [examples](https://github.com/automl/arlbench/tree/main/examples).
 
 ### Use the CLI
 
 We provide a command line script for black-box configuration in ARLBench which will also save the results in a 'results' directory. To execute one run of DQN on CartPole, simply run:
+
 ```bash
 python run_arlbench.py
 ```
 
 You can use the [hydra](https://hydra.cc/) command line syntax to override some of the configuration like this to change to PPO:
+
 ```bash
 python run_arlbench.py algorithm=ppo
 ```
 
 Or run multiple different seeds after one another:
+
 ```bash
 python run_arlbench.py -m autorl.seed=0,1,2,3,4
 ```
 
 All hyperparamters to adapt are in the 'hpo_config' and architecture settings in the 'nas_config', so to run a grid of different configurations for 5 seeds each , you can do this:
+
 ```bash
 python run_arlbench.py -m autorl.seed=0,1,2,3,4 nas_config.hidden_size=8,16,32 hp_config.learning_rate=0.001,0.01
 ```
@@ -145,38 +153,149 @@ Just like with RL agents, you can call 'step' multiple times until termination (
 
 ## Experiments
 
+### Reproduce Landscaping & Optimizer Runs
+
 The commands for the landscape analysis are stated in `runscripts/landscaping_commands.sh`.
 The commands for the optimizer runs as part of the subset validation are stated in `runscripts/optimizer_commands.sh`.
 
 The landscaping results will be stored in `results/sobol`.
-If you want to use our results, you find them in `results_finished`, zipped per approach and experiment.
-Just unzip them using the same folder structure, i.e., a zip file stored in `results_finished/sobol` should be unzipped in `results/sobol`.
-The same applies for the optimizer results.
 
 All aggregated results are stored in `results_combined`.
 
 To aggregate the landscaping results, run:
+
 ```bash
 python runscripts runscripts/aggregate_results_landscaping.py sobol
 ```
+
 The script creates a file called `runhistory_combined.csv` for each experiment.
 
 To aggregate the optimizer results, run
+
 ```bash
 python runscripts runscripts/aggregate_results_optimizers.py <optimizer>
 ```
+
 where optimizer can be one of `<rs|pbt|smac|smac_mf>`.
 
-For the subset selection and validation, make sure to store the results how they are stored in this repo.
+### Reproduce Subset Selection and Subset Validation
+
+For the subset selection and validation, you need to have all results from this repo in the `results_combined` directory.
+
+All
 
 To run the subset selection, you can run:
+
 ```bash
 python runscripts subset_selection/subset_selection.py
 ```
 
 To run the subset validation, you can run:
+
 ```bash
 python runscripts subset_validation/subset_validation.py
+```
+
+### Plots and other experiments
+
+To reproduce everything we have in the paper, you need all available results (Sobol landscaping + optimizer runs) in `results`.
+It needs to have the following structure:
+
+```
+results/
+│
+├── pbt/
+│   ├── dqn_Acrobot-v1
+│   │   ├── 0
+│   │   ├── 1
+│   │   ├── 2
+│   │   └── runhistory_combined.csv
+│   ├── ...
+│   └── ...
+│
+├── rs/
+│   ├── dqn_Acrobot-v1
+│   │   ├── 0
+│   │   ├── 1
+│   │   ├── 2
+│   │   └── runhistory_combined.csv
+│   ├── ...
+│   └── ...
+│
+├── smac/
+│   ├── dqn_Acrobot-v1
+│   │   ├── 0
+│   │   ├── 1
+│   │   ├── 2
+│   │   └── runhistory_combined.csv
+│   ├── ...
+│   └── ...
+│
+├── smac_mf/
+│   ├── dqn_Acrobot-v1
+│   │   ├── 0
+│   │   ├── 1
+│   │   ├── 2
+│   │   └── runhistory_combined.csv
+│   ├── ...
+│   └── ...
+│
+└── sobol/
+    ├── dqn_Acrobot-v1
+    │   ├── 0
+    │   ├── 1
+    │   ├── 2
+    │   └── runhistory_combined.csv
+    └── ...
+
+```
+
+The optimizer data is stored in `results_finished/<optimizer>/<algorithm_environment>.zip`. By unzipping all files for each optimizer in `results/<optimizer>`, you achieve the structure as shown above.
+
+For sobol, you have to unzip all zip files in `results_finished/sobol/<category>` inside the `results/sobol_landscaping` directory.
+
+Then runtime experiments can be found in `results_finished/runtime_experiments` and need to be extracted in `results/runtime_experiments`.
+
+To aggregate the landscaping results, run:
+
+```bash
+python runscripts runscripts/aggregate_results_landscaping.py sobol
+```
+
+The script creates a file called `runhistory_combined.csv` for each experiment.
+
+To aggregate the optimizer results, run
+
+```bash
+python runscripts runscripts/aggregate_results_optimizers.py <optimizer>
+```
+
+where optimizer can be one of `<rs|pbt|smac|smac_mf>`.
+
+To store all the figures, make sure to have this folder structure for the `plots` directory:
+
+```
+plots/
+│
+├── subset_validation/
+│   └── optimizer_runs/
+│   │   ├── single_runs
+│   │   └── subsets
+│
+├── subset_selection
+│
+└── runtime_experiments
+    ├── <experiments>
+    └── ...
+
+```
+
+You can then use the following scripts to create the figures and statistics:
+
+```bash
+python subset_validation/plot_optimizers_over_time.py
+python runtime_comparisons/plot_runtime_comparisons.py
+python runtime_comparisons/plot_runtime_experiments.py
 ```
 
 ## Cite Us
