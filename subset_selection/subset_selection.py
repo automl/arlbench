@@ -69,21 +69,14 @@ def read_arlb_dataset():
     return merged_results
 
 
-def normalize_ranks(pivot_table: pd.DataFrame) -> pd.DataFrame:        
+def normalize_ranks(pivot_table: pd.DataFrame) -> pd.DataFrame:   
+    # We are ranking the performances using percentile form     
     pivot_table = pivot_table.rank(axis=0, pct=True)
 
     # If the score is NaN we set it to the lowest rank
     pivot_table = pivot_table.fillna(0)
 
-    return pivot_table
-
-def normalize_z_score(pivot_table: pd.DataFrame) -> pd.DataFrame:  
-    def z_score(col):
-        # We assign the highest score, i.e., the lowest performance to NaN
-        col = col.fillna(col.max())
-        return (col - col.mean()) / col.std()
-
-    return pivot_table.apply(z_score)      
+    return pivot_table   
 
 
 def normalize_min_max(pivot_table: pd.DataFrame) -> pd.DataFrame:        
@@ -398,7 +391,7 @@ def plot_method_comparison_single_strategy(method_results: pd.DataFrame, strateg
 if __name__ == "__main__":
     sns.set_style("whitegrid")
     sns.set_palette("colorblind")
-    # get_method_comparison(6)
+    get_method_comparison(6)
 
     data = pd.read_csv(os.path.join(SUBSET_RESULTS, "method_comparison.csv"))
     plot_method_comparison(data)
