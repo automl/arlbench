@@ -13,6 +13,14 @@ sns.set_palette("colorblind")
 SUBSET_PLOTS = "plots/subset_validation"
 
 
+WEIGHTS = {
+    "ppo": {
+        "BattleZone-v5": 0.19193164,
+
+    }
+}
+
+
 EXPERIMENT_TO_ENV = {
     "brax_halfcheetah": "halfcheetah",
     "procgen_heist_easy": "HeistEasy-v0",
@@ -78,10 +86,10 @@ EXPERIMENT_TO_ENV = {
 RAW_SOBOL_RESULTS = "results_combined/sobol"
 
 OPTIMIZER_RESULTS = {
-    "SMAC_BO": "results/smac",
-    "SMAC_MultiFidelity": "results/smac_mf",
-    "RandomSearch": "results/rs",
-    "PBT": "results/pbt",
+    "SMAC_BO": "../arlbench/results/smac",
+    "SMAC_MultiFidelity": "../arlbench/results/smac_mf",
+    "RandomSearch": "../arlbench/results/rs",
+    "PBT": "../arlbench/results/pbt",
 }
 
 OPTIMIZER_NAMES = {
@@ -102,6 +110,28 @@ SUBSETS = {
     "ppo": ["LunarLander-v2", "halfcheetah", "BattleZone-v5", "MiniGrid-EmptyRandom-5x5", "MiniGrid-FourRooms"],
     "dqn": ["Acrobot-v1", "MiniGrid-DoorKey-5x5", "BattleZone-v5", "MiniGrid-FourRooms"],
     "sac": ["BipedalWalker-v3", "halfcheetah", "MountainCarContinuous-v0", "Pendulum-v1"],
+}
+
+WEIGHTS = {
+    "ppo": {
+        "BattleZone-v5": 0.19193164,
+        "LunarLander-v2": 0.30660096,
+        "halfcheetah": 0.19395392,
+        "MiniGrid-EmptyRandom-5x5": 0.1613879,
+        "MiniGrid-FourRooms": 0.12931163
+    },
+    "dqn": {
+        "BattleZone-v5": 0.22546958,
+        "Acrobot-v1": 0.31231633,
+        "MiniGrid-DoorKey-5x5": 0.29930238,
+        "MiniGrid-FourRooms": 0.14113194,
+    },
+    "sac": {
+        "BipedalWalker-v3": 0.35797678,
+        "halfcheetah": 0.322538,
+        "MountainCarContinuous-v0": 0.17745508,
+        "Pendulum-v1": 0.14122835,
+    },
 }
 
 def read_min_max_scores():
@@ -226,7 +256,6 @@ def validate(algorithm: str, method: str = "rank"):
         # Apply min-max normalization
         overall_data.loc[:, "normalized_score"] = overall_data.apply(min_max_normalize, axis=1)
         subset_data.loc[:, "normalized_score"] = subset_data.apply(min_max_normalize, axis=1)
-    
 
     return overall_data, subset_data
 
@@ -251,18 +280,27 @@ def plot_subset_vs_overall(overall_data, subset_data, method: str):
     plt.savefig(os.path.join(SUBSET_PLOTS, f"{method}_{algorithm}_comparison.png"), dpi=500)
 
 
-def plot_subset_vs_overall_combined(method: str):
+def plot_subset_vs_overall_combined(method: str, use_weights: bool = False):
     fig, axes = plt.subplots(1, 6, figsize=(8, 2), sharey=True)
 
     hue_order = ["RS", "SMAC", "SMAC + HB", "PBT"]
     
     for i, algorithm in enumerate(["ppo", "dqn", "sac"]):
         overall_data, subset_data = validate(algorithm, method) 
+
+        if use_weights:
+            def apply_weights(row):      
+                return row['normalized_score'] * WEIGHTS[algorithm][row['environment']] / sum(WEIGHTS[algorithm].values())
+
+            subset_data['weighted_score'] = subset_data.apply(lambda row: apply_weights(row), axis=1)
+
+            overall_data = overall_data.groupby(['algorithm', 'optimizer', 'seed'])['normalized_score'].mean().reset_index()
+            subset_data = subset_data.groupby(['algorithm', 'optimizer', 'seed'])['weighted_score'].sum().reset_index()
         print(subset_data)
 
         sns.boxplot(
             x="optimizer", 
-            y="normalized_score", 
+            y="weighted_score" if use_weights else "normalized_score", 
             data=subset_data, 
             hue="optimizer", ax=axes[2 * i], 
             showmeans=True, 
@@ -312,11 +350,15 @@ def plot_subset_vs_overall_combined(method: str):
     fig.legend(loc='upper center', bbox_to_anchor=(0.5, 0.125), ncol=4, fancybox=False, shadow=False, frameon=False)
 
     plt.tight_layout(rect=(0.02, 0.07, 1, 1))
-    plt.savefig(os.path.join(SUBSET_PLOTS, f"{method}_comparison_combined.png"), dpi=500)
+    path = os.path.join(SUBSET_PLOTS, f"{method}_comparison_combined")
+
+    if use_weights:
+        path += "_weighted"
+    plt.savefig(f"{path}.png", dpi=500)
 
 
 if __name__ == "__main__":
     for method in ["rank", "min_max"]:
-        plot_subset_vs_overall_combined(method)
+        plot_subset_vs_overall_combined(method, use_weights=True)
 
 
