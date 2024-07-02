@@ -1,0 +1,24 @@
+# @package _global_
+defaults:
+  - override /environment: box2d_bipedal_walker
+  - override /algorithm: ppo
+
+environment:
+  n_total_timesteps: 200000
+  n_envs: 1
+  kwargs:
+    max_episode_steps: 1600
+  eval_kwargs:
+    max_episode_steps: 1600
+
+hp_config:
+  clip_eps: 0.18
+  ent_coef: 0.0
+  learning_rate: 0.0003
+  update_epochs: 10
+  n_steps: 2048
+  normalize_observations: True
+
+nas_config:
+  activation: tanh
+  hidden_size: 64
