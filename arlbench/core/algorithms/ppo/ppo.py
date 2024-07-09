@@ -316,7 +316,7 @@ class PPO(Algorithm):
             obs=obs,
             global_step=0,
             return_buffer_idx=jnp.array([0]),
-            return_buffer=jnp.array([False]),
+            return_buffer=jnp.array(False),
             cur_rewards=jnp.zeros(self.env.n_envs),
         )
 
@@ -386,7 +386,7 @@ class PPO(Algorithm):
         """
 
         def train_eval_step(
-            _runner_state
+            _runner_state, _
         ) -> tuple[PPORunnerState, PPOTrainingResult]:
             """Performs one iteration of training and evaluation.
 
@@ -404,12 +404,12 @@ class PPO(Algorithm):
                     None,
                     np.ceil(n_total_timesteps / self.env.n_envs / self.hpo_config["n_steps"] / n_eval_steps),
                 )
-                return _runner_state, (metrics, trajectories, none_value)
+                return _runner_state, (metrics, trajectories)
 
 
-            _runner_state, (metrics, trajectories, none_value) = jax.lax.cond(
+            _runner_state, (metrics, trajectories) = jax.lax.cond(
                 _runner_state.return_buffer,
-                lambda _: (runner_state, (None, None, None)),
+                lambda _: (runner_state, (None, None)),
                 update_loop,
                 _runner_state,
             )
@@ -432,7 +432,7 @@ class PPO(Algorithm):
 
         runner_state, train_result = jax.lax.scan(
             train_eval_step,
-            (runner_state, jnp.array([False])),
+            runner_state,
             None,
             n_eval_steps,
         )
@@ -499,10 +499,11 @@ class PPO(Algorithm):
             if self.track_trajectories:
                 trajectories = traj_batch
             return runner_state, (metrics, trajectories)
-        runner_state, (metrics, trajectories) = jax.cond(
+        runner_state, (metrics, trajectories) = jax.lax.cond(
             runner_state.return_buffer,
             lambda _: (runner_state, (None, None)),
             lambda _: update_step(traj_batch, runner_state),
+            runner_state
         )
         return runner_state, (metrics, trajectories)
 
