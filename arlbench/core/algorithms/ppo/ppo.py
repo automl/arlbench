@@ -316,7 +316,7 @@ class PPO(Algorithm):
             obs=obs,
             global_step=0,
             return_buffer_idx=jnp.array([0]),
-            return_buffer=jnp.zeros(100),
+            return_buffer=jnp.array([False]),
             cur_rewards=jnp.zeros(self.env.n_envs),
         )
 
@@ -386,7 +386,7 @@ class PPO(Algorithm):
         """
 
         def train_eval_step(
-            loop_state
+            _runner_state
         ) -> tuple[PPORunnerState, PPOTrainingResult]:
             """Performs one iteration of training and evaluation.
 
@@ -397,10 +397,8 @@ class PPO(Algorithm):
             Returns:
                 tuple[PPORunnerState, PPOTrainingResult]: Tuple of PPO runner state and training result.
             """
-            _runner_state, none_value = loop_state
-
             def update_loop(_runner_state):
-                _runner_state, (metrics, trajectories, none_value) = jax.lax.scan(
+                _runner_state, (metrics, trajectories) = jax.lax.scan(
                     self._update_step,
                     _runner_state,
                     None,
@@ -410,7 +408,7 @@ class PPO(Algorithm):
 
 
             _runner_state, (metrics, trajectories, none_value) = jax.lax.cond(
-                jnp.any(none_value),
+                _runner_state.return_buffer,
                 lambda _: (runner_state, (None, None, None)),
                 update_loop,
                 _runner_state,
@@ -422,13 +420,13 @@ class PPO(Algorithm):
                 return _runner_state, eval_returns
 
             _runner_state, eval_returns = jax.lax.cond(
-                jnp.any(none_value),
+                _runner_state.return_buffer,
                 lambda _: (runner_state, jnp.array([float('nan')])),
                 eval_loop,
                 _runner_state,
             )
 
-            return (_runner_state, none_value), PPOTrainingResult(
+            return _runner_state, PPOTrainingResult(
                 eval_rewards=eval_returns, trajectories=trajectories, metrics=metrics
             )
 
@@ -453,7 +451,7 @@ class PPO(Algorithm):
         Returns:
             tuple[PPORunnerState, tuple[PPOMetrics | None, Transition | None]]: Tuple of PPO runner state and tuple of metrics and trajectories (if tracked).
         """
-        runner_state, traj_batch, none_value = jax.lax.scan(
+        runner_state, traj_batch = jax.lax.scan(
             self._env_step, runner_state, None, self.hpo_config["n_steps"]
         )
         def update_step(traj_batch, runner_state):
@@ -502,11 +500,11 @@ class PPO(Algorithm):
                 trajectories = traj_batch
             return runner_state, (metrics, trajectories)
         runner_state, (metrics, trajectories) = jax.cond(
-            jnp.any(none_value),
+            runner_state.return_buffer,
             lambda _: (runner_state, (None, None)),
             lambda _: update_step(traj_batch, runner_state),
         )
-        return runner_state, (metrics, trajectories, none_value)
+        return runner_state, (metrics, trajectories)
 
     @functools.partial(jax.jit, static_argnums=0)
     def _env_step(
@@ -545,7 +543,7 @@ class PPO(Algorithm):
         )
         global_step += 1
 
-        none_value = jnp.any(jnp.isnan(obsv)),
+        return_buffer = jnp.any(jnp.isnan(obsv))
 
         transition = Transition(done, action, value, reward, log_prob, last_obs, info)
         cur_rewards += reward
@@ -561,7 +559,7 @@ class PPO(Algorithm):
             return_buffer=return_buffer,
             cur_rewards=cur_rewards,
         )
-        return runner_state, transition, none_value
+        return runner_state, transition
 
     @functools.partial(jax.jit, static_argnums=0)
     def _calculate_gae(
