@@ -386,7 +386,7 @@ class PPO(Algorithm):
         """
 
         def train_eval_step(
-            _runner_state: PPORunnerState, _: None
+            loop_state
         ) -> tuple[PPORunnerState, PPOTrainingResult]:
             """Performs one iteration of training and evaluation.
 
@@ -397,16 +397,38 @@ class PPO(Algorithm):
             Returns:
                 tuple[PPORunnerState, PPOTrainingResult]: Tuple of PPO runner state and training result.
             """
-            _runner_state, (metrics, trajectories) = jax.lax.scan(
-                self._update_step,
-                _runner_state,
-                None,
-                np.ceil(n_total_timesteps / self.env.n_envs / self.hpo_config["n_steps"] / n_eval_steps),
-            )
-            eval_returns = self.eval(_runner_state, n_eval_episodes)
-            jax.debug.print("{ret}", ret=eval_returns.mean())
+            _runner_state, none_value = loop_state
 
-            return _runner_state, PPOTrainingResult(
+            def update_loop(_runner_state):
+                _runner_state, (metrics, trajectories, none_value) = jax.lax.scan(
+                    self._update_step,
+                    _runner_state,
+                    None,
+                    np.ceil(n_total_timesteps / self.env.n_envs / self.hpo_config["n_steps"] / n_eval_steps),
+                )
+                return _runner_state, (metrics, trajectories, none_value)
+
+
+            _runner_state, (metrics, trajectories, none_value) = jax.lax.cond(
+                jnp.any(none_value),
+                lambda _: (runner_state, (None, None, None)),
+                update_loop,
+                _runner_state,
+            )
+
+            def eval_loop(_runner_state):
+                eval_returns = self.eval(_runner_state, n_eval_episodes)
+                jax.debug.print("{ret}", ret=eval_returns.mean())
+                return _runner_state, eval_returns
+
+            _runner_state, eval_returns = jax.lax.cond(
+                jnp.any(none_value),
+                lambda _: (runner_state, jnp.array([float('nan')])),
+                eval_loop,
+                _runner_state,
+            )
+
+            return (_runner_state, none_value), PPOTrainingResult(
                 eval_rewards=eval_returns, trajectories=trajectories, metrics=metrics
             )
 
@@ -431,54 +453,60 @@ class PPO(Algorithm):
         Returns:
             tuple[PPORunnerState, tuple[PPOMetrics | None, Transition | None]]: Tuple of PPO runner state and tuple of metrics and trajectories (if tracked).
         """
-        runner_state, traj_batch = jax.lax.scan(
+        runner_state, traj_batch, none_value = jax.lax.scan(
             self._env_step, runner_state, None, self.hpo_config["n_steps"]
         )
-        (rng, train_state, normalizer_state, env_state, last_obs, global_step, return_buffer_idx, return_buffer, cur_rewards) = runner_state
-        if self.hpo_config["normalize_observations"]:
-            normalizer_state = running_statistics.update(normalizer_state, traj_batch.obs)
-            traj_batch = Transition(
-                done = traj_batch.done,
-                action = traj_batch.action,
-                value = traj_batch.value,
-                reward = traj_batch.reward,
-                log_prob = traj_batch.log_prob,
-                obs = running_statistics.normalize(traj_batch.obs, normalizer_state),
-                info = traj_batch.info,
+        def update_step(traj_batch, runner_state):
+            (rng, train_state, normalizer_state, env_state, last_obs, global_step, return_buffer_idx, return_buffer, cur_rewards) = runner_state
+            if self.hpo_config["normalize_observations"]:
+                normalizer_state = running_statistics.update(normalizer_state, traj_batch.obs)
+                traj_batch = Transition(
+                    done = traj_batch.done,
+                    action = traj_batch.action,
+                    value = traj_batch.value,
+                    reward = traj_batch.reward,
+                    log_prob = traj_batch.log_prob,
+                    obs = running_statistics.normalize(traj_batch.obs, normalizer_state),
+                    info = traj_batch.info,
+                )
+                _, last_val = self.network.apply(train_state.params, running_statistics.normalize(last_obs, normalizer_state))
+            else:
+                _, last_val = self.network.apply(train_state.params, last_obs)
+
+            # Calculate advantage
+            advantages, targets = self._calculate_gae(traj_batch, last_val)
+
+            # Update network parameters
+            update_state = (train_state, traj_batch, advantages, targets, rng)
+            update_state, (loss, grads) = jax.lax.scan(
+                self._update_epoch, update_state, None, self.hpo_config["update_epochs"]
             )
-            _, last_val = self.network.apply(train_state.params, running_statistics.normalize(last_obs, normalizer_state))
-        else:
-            _, last_val = self.network.apply(train_state.params, last_obs)
+            train_state = update_state[0]
+            rng = update_state[-1]
 
-
-        # Calculate advantage
-        advantages, targets = self._calculate_gae(traj_batch, last_val)
-
-        # Update network parameters
-        update_state = (train_state, traj_batch, advantages, targets, rng)
-        update_state, (loss, grads) = jax.lax.scan(
-            self._update_epoch, update_state, None, self.hpo_config["update_epochs"]
+            runner_state = PPORunnerState(
+                rng=rng,
+                train_state=train_state,
+                normalizer_state=normalizer_state,
+                env_state=env_state,
+                obs=last_obs,
+                global_step=global_step,
+                return_buffer_idx=return_buffer_idx,
+                return_buffer=runner_state.return_buffer,
+                cur_rewards=runner_state.cur_rewards
+            )
+            metrics, trajectories = None, None
+            if self.track_metrics:
+                metrics = PPOMetrics(loss=loss, grads=grads, advantages=advantages)
+            if self.track_trajectories:
+                trajectories = traj_batch
+            return runner_state, (metrics, trajectories)
+        runner_state, (metrics, trajectories) = jax.cond(
+            jnp.any(none_value),
+            lambda _: (runner_state, (None, None)),
+            lambda _: update_step(traj_batch, runner_state),
         )
-        train_state = update_state[0]
-        rng = update_state[-1]
-
-        runner_state = PPORunnerState(
-            rng=rng,
-            train_state=train_state,
-            normalizer_state=normalizer_state,
-            env_state=env_state,
-            obs=last_obs,
-            global_step=global_step,
-            return_buffer_idx=return_buffer_idx,
-            return_buffer=runner_state.return_buffer,
-            cur_rewards=runner_state.cur_rewards
-        )
-        metrics, trajectories = None, None
-        if self.track_metrics:
-            metrics = PPOMetrics(loss=loss, grads=grads, advantages=advantages)
-        if self.track_trajectories:
-            trajectories = traj_batch
-        return runner_state, (metrics, trajectories)
+        return runner_state, (metrics, trajectories, none_value)
 
     @functools.partial(jax.jit, static_argnums=0)
     def _env_step(
@@ -517,9 +545,10 @@ class PPO(Algorithm):
         )
         global_step += 1
 
+        none_value = jnp.any(jnp.isnan(obsv)),
+
         transition = Transition(done, action, value, reward, log_prob, last_obs, info)
         cur_rewards += reward
-        print_reward = jnp.array([False])   # todo: print_reward!!
 
         runner_state = PPORunnerState(
             train_state=train_state,
@@ -532,7 +561,7 @@ class PPO(Algorithm):
             return_buffer=return_buffer,
             cur_rewards=cur_rewards,
         )
-        return runner_state, transition
+        return runner_state, transition, none_value
 
     @functools.partial(jax.jit, static_argnums=0)
     def _calculate_gae(
