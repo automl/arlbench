@@ -404,7 +404,7 @@ class PPO(Algorithm):
                     None,
                     np.ceil(n_total_timesteps / self.env.n_envs / self.hpo_config["n_steps"] / n_eval_steps),
                 )
-                return _runner_state, (metrics, trajectories)
+                return _runner_state, (None, None)
 
 
             _runner_state, (metrics, trajectories) = jax.lax.cond(
@@ -421,7 +421,7 @@ class PPO(Algorithm):
 
             _runner_state, eval_returns = jax.lax.cond(
                 _runner_state.return_buffer,
-                lambda _: (runner_state, jnp.array([float('nan')])),
+                lambda _: (runner_state, jnp.array([float('nan')] * 128)),
                 eval_loop,
                 _runner_state,
             )
@@ -545,6 +545,8 @@ class PPO(Algorithm):
         global_step += 1
 
         return_buffer = jnp.any(jnp.isnan(obsv))
+        jax.debug.print("none: {none}", none = return_buffer)
+        jax.debug.print("test")
 
         transition = Transition(done, action, value, reward, log_prob, last_obs, info)
         cur_rewards += reward
