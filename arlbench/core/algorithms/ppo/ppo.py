@@ -434,7 +434,7 @@ class PPO(Algorithm):
 
         runner_state, train_result = jax.lax.scan(
             train_eval_step,
-            runner_state,
+            (runner_state, jnp.array([False])),
             None,
             n_eval_steps,
         )
