@@ -406,12 +406,14 @@ class PPO(Algorithm):
                 return _runner_state, (None, None)
 
 
+            #jax.debug.print("none_bef: {none}", none=_runner_state.return_buffer)
             _runner_state, (metrics, trajectories) = jax.lax.cond(
                 _runner_state.return_buffer,
-                lambda _: (runner_state, (None, None)),
+                lambda _: (_runner_state, (None, None)),
                 update_loop,
                 _runner_state,
             )
+            #jax.debug.print("none_aft: {none}", none=_runner_state.return_buffer)
 
             def eval_loop(_runner_state):
                 eval_returns = self.eval(_runner_state, n_eval_episodes)
@@ -420,7 +422,7 @@ class PPO(Algorithm):
 
             _runner_state, eval_returns = jax.lax.cond(
                 _runner_state.return_buffer,
-                lambda _: (runner_state, jnp.array([float('nan')] * 128)),
+                lambda _: (_runner_state, jnp.array([float('nan')] * 128)),
                 eval_loop,
                 _runner_state,
             )
@@ -503,6 +505,8 @@ class PPO(Algorithm):
             lambda _: update_step(traj_batch, runner_state),
             runner_state
         )
+        #jax.debug.print("none3: {none}", none=runner_state.return_buffer)
+        
         return runner_state, (metrics, trajectories)
 
     @functools.partial(jax.jit, static_argnums=0)
@@ -538,14 +542,13 @@ class PPO(Algorithm):
 
             # Perform env step
             rng, _rng = jax.random.split(rng)
-            env_state, (obsv, reward, done) = self.env.step(
+            env_state, (obsv, reward, done, info) = self.env.step(
                 env_state, clipped_action, _rng
             )
             global_step += 1
 
             return_buffer = jnp.any(jnp.isnan(obsv))
-            jax.debug.print("none: {none}", none = return_buffer)
-            jax.debug.print("test")
+            #jax.debug.print("none: {none}", none=return_buffer)
 
             transition = Transition(done, action, value, reward, log_prob, last_obs)
             cur_rewards += reward
@@ -563,12 +566,14 @@ class PPO(Algorithm):
             )
             return runner_state, transition
 
+        dummy_done = jnp.array([False] * self.env.n_envs)
         dummy_value = jnp.array([float('nan')] * self.env.n_envs)
+        dummy_action = jnp.array([[float('nan')] * 4] * self.env.n_envs)
         last_obs = runner_state.obs
 
         runner_state, transition = jax.lax.cond(
             runner_state.return_buffer,
-            lambda _: (runner_state, Transition(dummy_value, dummy_value, dummy_value, dummy_value, dummy_value, last_obs)),
+            lambda _: (runner_state, Transition(dummy_done, dummy_action, dummy_value, dummy_value, dummy_value, last_obs)),
             lambda _: step(runner_state),
             runner_state
         )

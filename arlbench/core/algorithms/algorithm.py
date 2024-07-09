@@ -199,7 +199,7 @@ class Algorithm(ABC):
         Returns:
             tuple[tuple[chex.PRNGKey, Any], jnp.ndarray]: ((rng, runner_state), reward). Current state of the evaluation and cumulative rewards.
         """
-        rng, runner_state = state
+        rng, runner_state, none_value = state
         rng, reset_rng = jax.random.split(rng)
 
         env_state, obs = self.eval_env.reset(reset_rng)
@@ -209,8 +209,10 @@ class Algorithm(ABC):
             jnp.full((self.eval_env.n_envs,), 0.),
             jnp.full((self.eval_env.n_envs,), False),
             rng,
-            runner_state
+            runner_state,
+            none_value,
         )
+
 
         def cond_fn(state: tuple) -> jnp.bool:
             """Condition function for JAX while loop. Returns true if not all parallel environments are done.
@@ -221,9 +223,9 @@ class Algorithm(ABC):
             Returns:
                 jnp.bool: True if not all environments are done.
             """
-            _, _, _, done, _, _ = state
+            _, _, _, done, _, _, none_value = state
 
-            return jnp.logical_not(jnp.all(done))
+            return jnp.logical_and(jnp.logical_not(jnp.all(done)), jnp.logical_not(none_value))
 
         def body_fn(state: tuple) -> tuple:
             """Body function for JAX while loop. Performs one parallel step in all environments.
@@ -234,7 +236,7 @@ class Algorithm(ABC):
             Returns:
                 tuple: Updated loop state.
             """
-            env_state, obs, reward, done, rng, runner_state = state
+            env_state, obs, reward, done, rng, runner_state, none_value = state
 
             # Select action
             rng, action_rng = jax.random.split(rng)
@@ -243,17 +245,18 @@ class Algorithm(ABC):
             # Step
             rng, step_rng = jax.random.split(rng)
             env_state, (obs, reward_, done_, info_) = self.eval_env.step(env_state, action, step_rng)
+            none_value = jnp.any(jnp.isnan(obs))
 
             # Count rewards only for envs that are not already done
             reward += reward_ * ~done
             done = jnp.logical_or(done, done_)
 
-            return env_state, obs, reward, done, rng, runner_state
+            return env_state, obs, reward, done, rng, runner_state, none_value
 
         final_state = jax.lax.while_loop(cond_fn, body_fn, initial_state)
-        _, _, reward, _, rng, _ = final_state
+        _, _, reward, _, rng, _, none_value = final_state
 
-        return (rng, runner_state), reward
+        return (rng, runner_state, none_value), reward
 
     def eval(self, runner_state: Any, num_eval_episodes: int) -> jnp.ndarray:
         """Evaluate the algorithm.
@@ -269,7 +272,7 @@ class Algorithm(ABC):
         n_evals = int(np.ceil(num_eval_episodes / self.eval_env.n_envs))
 
         _, rewards = jax.lax.scan(
-            self._env_episode, (runner_state.rng, runner_state), None, n_evals
+            self._env_episode, (runner_state.rng, runner_state, jnp.array(False)), None, n_evals
         )
         return jnp.concat(rewards)[:num_eval_episodes]
 
