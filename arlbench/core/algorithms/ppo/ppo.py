@@ -520,48 +520,58 @@ class PPO(Algorithm):
         Returns:
             tuple[PPORunnerState, Transition]: Tuple of PPO runner state and batch of transitions.
         """
-        (rng, train_state, normalizer_state, env_state, last_obs, global_step, return_buffer_idx, return_buffer, cur_rewards) = runner_state
 
-        # Select action(s)
-        rng, _rng = jax.random.split(rng)
-        if self.hpo_config["normalize_observations"]:
-            pi, value = self.network.apply(train_state.params, running_statistics.normalize(last_obs, normalizer_state))
-        else:
-            pi, value = self.network.apply(train_state.params, last_obs)
+        def step(runner_state):
+            (rng, train_state, normalizer_state, env_state, last_obs, global_step, return_buffer_idx, return_buffer, cur_rewards) = runner_state
+            # Select action(s)
+            rng, _rng = jax.random.split(rng)
+            if self.hpo_config["normalize_observations"]:
+                pi, value = self.network.apply(train_state.params, running_statistics.normalize(last_obs, normalizer_state))
+            else:
+                pi, value = self.network.apply(train_state.params, last_obs)
 
-        action, log_prob = pi.sample_and_log_prob(seed=_rng)
+            action, log_prob = pi.sample_and_log_prob(seed=_rng)
 
-        clipped_action = action
-        if not self.action_type[1]:  # continuous action space
-            clipped_action = jnp.clip(
-                action, self.env.action_space.low, self.env.action_space.high
+            clipped_action = action
+            if not self.action_type[1]:  # continuous action space
+                clipped_action = jnp.clip(
+                    action, self.env.action_space.low, self.env.action_space.high
+                )
+
+            # Perform env step
+            rng, _rng = jax.random.split(rng)
+            env_state, (obsv, reward, done, info) = self.env.step(
+                env_state, clipped_action, _rng
             )
+            global_step += 1
 
-        # Perform env step
-        rng, _rng = jax.random.split(rng)
-        env_state, (obsv, reward, done, info) = self.env.step(
-            env_state, clipped_action, _rng
+            return_buffer = jnp.any(jnp.isnan(obsv))
+            jax.debug.print("none: {none}", none = return_buffer)
+            jax.debug.print("test")
+
+            transition = Transition(done, action, value, reward, log_prob, last_obs, info)
+            cur_rewards += reward
+
+            runner_state = PPORunnerState(
+                train_state=train_state,
+                normalizer_state=normalizer_state,
+                env_state=env_state,
+                obs=obsv,
+                rng=rng,
+                global_step=global_step,
+                return_buffer_idx=return_buffer_idx,
+                return_buffer=return_buffer,
+                cur_rewards=cur_rewards,
+            )
+            return runner_state, transition
+
+        runner_state, transition = jax.lax.cond(
+            runner_state.return_buffer,
+            lambda _: (runner_state, Transition(*[jnp.array([float('nan')] * self.env.n_envs)] * 6)),
+            lambda _: step(runner_state),
+            runner_state
         )
-        global_step += 1
 
-        return_buffer = jnp.any(jnp.isnan(obsv))
-        jax.debug.print("none: {none}", none = return_buffer)
-        jax.debug.print("test")
-
-        transition = Transition(done, action, value, reward, log_prob, last_obs, info)
-        cur_rewards += reward
-
-        runner_state = PPORunnerState(
-            train_state=train_state,
-            normalizer_state=normalizer_state,
-            env_state=env_state,
-            obs=obsv,
-            rng=rng,
-            global_step=global_step,
-            return_buffer_idx=return_buffer_idx,
-            return_buffer=return_buffer,
-            cur_rewards=cur_rewards,
-        )
         return runner_state, transition
 
     @functools.partial(jax.jit, static_argnums=0)
