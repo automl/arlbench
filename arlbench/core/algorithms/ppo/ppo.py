@@ -97,7 +97,6 @@ class Transition(NamedTuple):
     reward: jnp.ndarray
     log_prob: jnp.ndarray
     obs: jnp.ndarray
-    info: dict
 
 
 PPOTrainReturnT = tuple[PPOState, PPOTrainingResult]
@@ -465,7 +464,6 @@ class PPO(Algorithm):
                     reward = traj_batch.reward,
                     log_prob = traj_batch.log_prob,
                     obs = running_statistics.normalize(traj_batch.obs, normalizer_state),
-                    info = traj_batch.info,
                 )
                 _, last_val = self.network.apply(train_state.params, running_statistics.normalize(last_obs, normalizer_state))
             else:
@@ -540,7 +538,7 @@ class PPO(Algorithm):
 
             # Perform env step
             rng, _rng = jax.random.split(rng)
-            env_state, (obsv, reward, done, info) = self.env.step(
+            env_state, (obsv, reward, done) = self.env.step(
                 env_state, clipped_action, _rng
             )
             global_step += 1
@@ -549,7 +547,7 @@ class PPO(Algorithm):
             jax.debug.print("none: {none}", none = return_buffer)
             jax.debug.print("test")
 
-            transition = Transition(done, action, value, reward, log_prob, last_obs, info)
+            transition = Transition(done, action, value, reward, log_prob, last_obs)
             cur_rewards += reward
 
             runner_state = PPORunnerState(
@@ -565,9 +563,12 @@ class PPO(Algorithm):
             )
             return runner_state, transition
 
+        dummy_value = jnp.array([float('nan')] * self.env.n_envs)
+        last_obs = runner_state.obs
+
         runner_state, transition = jax.lax.cond(
             runner_state.return_buffer,
-            lambda _: (runner_state, Transition(*[jnp.array([float('nan')] * self.env.n_envs)] * 6)),
+            lambda _: (runner_state, Transition(dummy_value, dummy_value, dummy_value, dummy_value, dummy_value, last_obs)),
             lambda _: step(runner_state),
             runner_state
         )
