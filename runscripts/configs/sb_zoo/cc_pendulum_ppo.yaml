@@ -6,7 +6,7 @@ defaults:
 # https://huggingface.co/sb3/ppo-Pendulum-v1
 environment:
   n_envs: 4
-  n_total_timesteps: 20000
+  n_total_timesteps: 100000
 
 hp_config:
   minibatch_size: 256
@@ -20,3 +20,7 @@ hp_config:
   update_epochs: 10
   n_steps: 1024
   normalize_observations: False
+
+nas_config:
+  activation: tanh
+  hidden_size: 64

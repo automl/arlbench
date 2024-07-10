@@ -17,10 +17,12 @@ hp_config:
   learning_rate: 2.0633e-05
   max_grad_norm: 0.8
   update_epochs: 20
+  vf_coef: 0.58096
   n_steps: 512
   normalize_observations: True
 
 nas_config:
   activation: relu
+  hidden_size: 256
 
 jax_enable_x64: True

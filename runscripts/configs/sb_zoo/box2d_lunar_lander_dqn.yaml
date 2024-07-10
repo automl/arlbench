@@ -1,0 +1,24 @@
+# @package _global_
+defaults:
+  - override /environment: box2d_lunar_lander
+  - override /algorithm: dqn    
+
+environment:
+  n_envs: 1
+  n_total_timesteps: 100000
+
+hp_config:
+  buffer_batch_size: 128
+  buffer_size: 50000
+  target_epsilon: 0.1
+  gradient_steps: 4
+  gamma: 0.99
+  learning_rate: 0.00063
+  learning_starts: 0
+  target_update_interval: 250
+  train_freq: 4
+  normalize_observations: False
+
+nas_config:
+  activation: tanh
+  hidden_size: 256
