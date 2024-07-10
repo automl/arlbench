@@ -3,6 +3,7 @@ name = "ARLBench"
 version = "0.1.0"
 dependencies = [
   "typing_extensions", # Better typing
+  "numpy==1.26.4",
   "tomli==2.0.1", 
   "pre-commit==3.7.0", 
   "codecarbon==2.3.5",
