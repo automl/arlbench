@@ -7,12 +7,12 @@ defaults:
 experiment_name: atari_this_game_dqn
 
 environment:
-  n_envs: 4
+  n_envs: 8
   n_total_timesteps: 10000000
 
 hp_config:
   train_freq: 1
-  gradient_steps: 1
+  gradient_steps: 2
   normalize_observations: False
 
 nas_config:
