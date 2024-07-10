@@ -27,7 +27,7 @@ N_OPT_RUNS = 4 * 3 * 32 * 4     # 4 optimizers * 3 optimizer seeds * 32 * 3 RL s
 
 ENV_CATEGORIES = {
     "ppo": [
-        "Atari", "Atari", "Atari", "Atari", "Atari", "Box2D", "Box2D", "MuJoCo", "MuJoCo", "MuJoCo", "MuJoCo",
+        "Atari", "Atari", "Atari", "Atari", "Atari", "Box2D", "Box2D", "Box2D", "MuJoCo", "MuJoCo", "MuJoCo", "MuJoCo",
         "Classic Control", "Classic Control", "Classic Control", "Classic Control", "Classic Control",
         "XLand", "XLand", "XLand", "XLand"
         ],
