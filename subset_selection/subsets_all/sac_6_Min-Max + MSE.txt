@@ -1,12 +1,12 @@
 Tasks chosen for sac:
 Task 0: box2d_bipedal_walker
 Task 1: brax_ant
-Task 2: brax_halfcheetah
-Task 3: brax_hopper
-Task 4: brax_humanoid
-Task 5: cc_continuous_mountain_car
-Correlation without weights: 0.9847440944881889
-Correlation with prediction: 0.9739658119658119
-Validation error: 0.0008548212195380982
+Task 2: brax_hopper
+Task 3: brax_humanoid
+Task 4: cc_continuous_mountain_car
+Task 5: cc_pendulum
+Correlation without weights: 0.9767166399633782
+Correlation with prediction: 0.9768424827115171
+Validation error: 0.0007924034731982248
 Weights:
-[0.1440592  0.16152908 0.14472664 0.17036343 0.13651224 0.20877663]
+[0.16704944 0.24270652 0.18645172 0.167547   0.15602204 0.12788146]

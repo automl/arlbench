@@ -4,8 +4,8 @@ Task 1: brax_halfcheetah
 Task 2: brax_hopper
 Task 3: brax_humanoid
 Task 4: cc_pendulum
-Correlation without weights: 0.9661405878044312
-Correlation with prediction: 0.9695042735042737
-Validation error: 0.030495726495726495
+Correlation without weights: 0.9637402723735408
+Correlation with prediction: 0.9696634508665586
+Validation error: 0.030336549133441526
 Weights:
-[0.34576013 0.15035515 0.10583901 0.13549065 0.21856597]
+[0.35487807 0.16684827 0.09894095 0.12972533 0.19153941]

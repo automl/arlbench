@@ -1,12 +1,12 @@
 Tasks chosen for dqn:
 Task 0: atari_double_dunk
 Task 1: atari_phoenix
-Task 2: box2d_lunar_lander
-Task 3: cc_acrobot
-Task 4: minigrid_empty_random
-Task 5: minigrid_unlock
-Correlation without weights: 0.9714452481230544
-Correlation with prediction: 0.9589230769230769
-Validation error: 0.0005891116797469286
+Task 2: atari_qbert
+Task 3: box2d_lunar_lander
+Task 4: cc_acrobot
+Task 5: minigrid_empty_random
+Correlation without weights: 0.951396915770199
+Correlation with prediction: 0.9456074447195423
+Validation error: 0.0006513503983275062
 Weights:
-[0.15379644 0.11762306 0.15073477 0.13580793 0.14035765 0.11227318]
+[0.17238316 0.0985015  0.06349529 0.15170048 0.1222341  0.15465505]

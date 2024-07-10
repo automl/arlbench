@@ -1,8 +1,8 @@
 Tasks chosen for sac:
 Task 0: box2d_bipedal_walker
 Task 1: brax_halfcheetah
-Correlation without weights: 0.9255863274820039
-Correlation with prediction: 0.9035384615384615
-Validation error: 0.09646153846153852
+Correlation without weights: 0.9285719396048389
+Correlation with prediction: 0.9241147443012038
+Validation error: 0.07588525569879626
 Weights:
-[0.51313935 0.41900754]
+[0.51578168 0.41084643]

@@ -1,7 +1,7 @@
 Tasks chosen for sac:
 Task 0: box2d_lunar_lander_continuous
-Correlation without weights: 0.8484709760117194
-Correlation with prediction: 0.8340512820512821
-Validation error: 0.00964727041125262
+Correlation without weights: 0.830560482948043
+Correlation with prediction: 0.8309205156663536
+Validation error: 0.009362919123293892
 Weights:
-[0.65195231]
+[0.65544349]

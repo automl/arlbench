@@ -55,7 +55,7 @@ def read_arlb_dataset():
         result_filtered = result_filtered.sort_values(["Configuration", "Seed"])
         
         # TODO should we only use the first 128 observations since we only have 128 for Atari?
-        result_filtered = result_filtered[result_filtered["Configuration"] < 128]
+        result_filtered = result_filtered[result_filtered["Configuration"] < 256]
 
         # Prepare DataFrame to be merged
         merged_results[algorithm] = pd.concat(

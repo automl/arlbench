@@ -1,11 +1,11 @@
 Tasks chosen for ppo:
-Task 0: brax_halfcheetah
-Task 1: cc_acrobot
-Task 2: cc_cartpole
-Task 3: minigrid_door_key
+Task 0: atari_phoenix
+Task 1: box2d_bipedal_walker
+Task 2: box2d_lunar_lander
+Task 3: minigrid_empty_random
 Task 4: minigrid_four_rooms
-Correlation without weights: 0.9399892418970883
-Correlation with prediction: 0.9508376068376068
-Validation error: 0.049162393162393236
+Correlation without weights: 0.8628032730601967
+Correlation with prediction: 0.9156267395201911
+Validation error: 0.0843732604798088
 Weights:
-[0.29366579 0.10117752 0.14682479 0.06858816 0.20428991]
+[0.30780374 0.08364262 0.32004141 0.18033546 0.11720371]

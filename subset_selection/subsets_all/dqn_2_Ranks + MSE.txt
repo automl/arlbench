@@ -1,8 +1,8 @@
 Tasks chosen for dqn:
 Task 0: atari_qbert
 Task 1: minigrid_unlock
-Correlation without weights: 0.8883598627203607
-Correlation with prediction: 0.8475318671397813
-Validation error: 0.007091355678189716
+Correlation without weights: 0.8183227792561532
+Correlation with prediction: 0.7794532261867525
+Validation error: 0.007776774311505291
 Weights:
-[0.37950033 0.6001583 ]
+[0.38918106 0.59125043]

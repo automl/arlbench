@@ -1,7 +1,7 @@
 Tasks chosen for dqn:
 Task 0: box2d_lunar_lander
-Correlation without weights: 0.1287596136238784
-Correlation with prediction: 0.09338461538461539
-Validation error: 0.014124127363712779
+Correlation without weights: 0.24863026436255434
+Correlation with prediction: 0.24869051481260135
+Validation error: 0.011272049814410339
 Weights:
-[0.36185344]
+[0.35412826]

@@ -3,8 +3,8 @@ Task 0: box2d_lunar_lander_continuous
 Task 1: brax_halfcheetah
 Task 2: brax_humanoid
 Task 3: cc_pendulum
-Correlation without weights: 0.9570648690715986
-Correlation with prediction: 0.9585470085470085
-Validation error: 0.04145299145299151
+Correlation without weights: 0.9562721732661935
+Correlation with prediction: 0.9594604285836249
+Validation error: 0.040539571416375056
 Weights:
-[0.40356446 0.16847264 0.13298585 0.23675997]
+[0.40376544 0.18614876 0.13336386 0.20575844]
