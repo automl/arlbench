@@ -10,4 +10,13 @@ environment:
 
 hp_config:
   learning_rate: 0.001
+  tau: 0.005
+  batch_size: 256
+  train_freq: 1
+  gradient_steps: 1
+  learning_starts: 100
   normalize_observations: False
+
+nas_config: 
+  activation: relu
+  hidden_size: 256
