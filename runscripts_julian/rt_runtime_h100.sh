@@ -1,2 +1,2 @@
 #!/bin/bash
-./run_runtime_claix.sh sac box2d lunar_lander_continuous sb3
+./run_runtime_claix.sh ppo box2d bipedal_walker arlbench
