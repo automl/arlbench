@@ -12,9 +12,9 @@ echo "#!/bin/bash
 #SBATCH --mem-per-cpu=2000M                                      
 #SBATCH --job-name=rt_$3
 #SBATCH --account=p0021208
-###SBATCH --gres=gpu:1
-#SBATCH --partition=c23ms
-#SBATCH -t 00:20:00            
+#SBATCH --gres=gpu:1
+#SBATCH --partition=c23g
+#SBATCH -t 24:00:00            
 #SBATCH --mail-type fail                                
 #SBATCH --mail-user dierkes@aim.rwth-aachen.de
 #SBATCH --output $directory/log/arlb_rs_${1}_${2}_%A_%a.out
@@ -23,7 +23,7 @@ echo "#!/bin/bash
 
 cd ..
 source /rwthfs/rz/cluster/home/oh751555/i14/arlbench/.venv/bin/activate 
-python runscripts/run_runtime_experiments.py "algorithm_framework=$4" "seed=\$SLURM_ARRAY_TASK_ID" "+sb_zoo=$2_$3_$1"
+python runscripts/run_runtime_experiments.py "algorithm_framework=$4" "seed=\$SLURM_ARRAY_TASK_ID" "+sb_zoo=$2_$3_$1" "environment.framework=envpool"
 " > $directory/${1}_${2}.sh
 echo "Submitting $directory for $1 on $2"
 chmod +x $directory/${1}_${2}.sh
