@@ -4,13 +4,12 @@ defaults:
 
 hydra:
   launcher:
-    partition: dgx2
     gres: "gpu:1"
     timeout_min: 2880
-    cpus_per_task: 2
-    mem_per_cpu: 4000M
-    account: supp0003
+    partition: c18g
+    cpus_per_task: 16
+    mem_per_cpu: 1000M
+    account: p0021208
     setup:
-      - export JAX_PLATFORM_NAME=gpu
       - source /rwthfs/rz/cluster/home/oh751555/i14/arlbench/.venv/bin/activate
-      - module load CUDA/12.3.0
+      - module load CUDA/12.4.0
