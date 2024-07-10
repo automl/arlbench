@@ -27,7 +27,7 @@ N_OPT_RUNS = 4 * 3 * 32 * 4     # 4 optimizers * 3 optimizer seeds * 32 * 3 RL s
 
 ENV_CATEGORIES = {
     "ppo": [
-        "Atari", "Atari", "Atari", "Atari", "Atari", "Box2D", "Box2D", "Brax", "Brax", "Brax", "Brax",
+        "Atari", "Atari", "Atari", "Atari", "Atari", "Box2D", "Box2D", "Brax Walker", "Brax Walker", "Brax Walker", "Brax Walker",
         "Classic Control", "Classic Control", "Classic Control", "Classic Control", "Classic Control",
         "XLand", "XLand", "XLand", "XLand"
         ],
@@ -36,20 +36,20 @@ ENV_CATEGORIES = {
         "XLand", "XLand", "XLand", "XLand"
     ],
     "sac": [
-        "Box2D", "Box2D", "Brax", "Brax", "Brax", "Brax",
+        "Box2D", "Box2D", "Brax Walker", "Brax Walker", "Brax Walker", "Brax Walker",
         "Classic Control", "Classic Control"
         ],
 }
 
 SUBSET_CATEGORIES = {
-    "ppo": ["Box2D", "Brax", "Atari", "Atari", "XLand"],
+    "ppo": ["Box2D", "Brax Walker", "Atari", "Atari", "XLand"],
     "dqn": ["Classic Control", "Box2D", "Atari", "XLand"],
-    "sac": ["Box2D", "Brax", "Brax", "Classic Control"],
+    "sac": ["Box2D", "Brax Walker", "Brax Walker", "Classic Control"],
 }
 
 CATEGORY = {
     "ant": "brax",
-    "Ant-v4": "Brax",
+    "Ant-v4": "Brax Walker",
     "CartPole-v1": "Classic Control",
     "LunarLander-v2": "Box2D",
     "LunarLanderContinuous-v2": "Box2D",
@@ -204,7 +204,7 @@ def plot_runtime_comparisons():
     fig.subplots_adjust(top=0.85)
 
     set_order = ["SB3 on full set", "ARLBench on full set", "SB3 on subset", "ARLBench on subset"]
-    hue_order = ["Atari", "Box2D", "Classic Control", "XLand", "Brax"]
+    hue_order = ["Atari", "Box2D", "Classic Control", "XLand", "Brax Walker"]
 
     all_combinations = pd.MultiIndex.from_product([all_runtimes["algorithm"].unique(), all_runtimes["set"].unique(), hue_order], names=["algorithm", "set", "category"])
     all_runtimes = all_runtimes.set_index(["algorithm", "set", "category"]).reindex(all_combinations).reset_index()
