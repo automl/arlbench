@@ -4,12 +4,10 @@ defaults:
 
 hydra:
   launcher:
-    gres: "gpu:1"
-    timeout_min: 360
-    partition: c23g
-    cpus_per_task: 16
+    timeout_min: 20
+    partition: c23ms
+    cpus_per_task: 8
     mem_per_cpu: 2000M
     account: p0021208
     setup:
       - source /rwthfs/rz/cluster/home/oh751555/i14/arlbench/.venv/bin/activate
-      - module load CUDA/12.4.0
