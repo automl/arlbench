@@ -1,6 +1,6 @@
 name: "BipedalWalker-v3"
 framework: "envpool"
-n_total_timesteps: 1e6
+n_total_timesteps: 1e7
 kwargs: {}
 eval_kwargs: {}
 cnn_policy: False
