@@ -99,8 +99,8 @@ OPTIMIZER_SEEDS = {
 }
 
 SUBSETS = {
-    "ppo": ["LunarLander-v2", "humanoid", "Phoenix-v5", "MiniGrid-EmptyRandom-5x5"],
-    "dqn": ["Acrobot-v1", "MiniGrid-DoorKey-5x5", "BattleZone-v5", "Phoenix-v5"],
+    "ppo": ["LunarLander-v2", "humanoid", "Phoenix-v5", "BattleZone-v5", "MiniGrid-EmptyRandom-5x5"],
+    "dqn": ["Acrobot-v1", "MiniGrid-DoorKey-5x5", "LunarLander-v2", "Phoenix-v5"],
     "sac": ["BipedalWalker-v3", "halfcheetah", "MountainCarContinuous-v0", "hopper"],
 }
 
