@@ -21,7 +21,7 @@ GPU_ENVS = ["ant", "halfcheetah", "hopper", "humanoid", "BattleZone-v5", "Double
 ATARI_ENVS = ["BattleZone-v5", "DoubleDunk-v5", "NameThisGame-v5", "QBert-v5", "Phoenix-v5"]
 
 N_SOBOL_RUNS = 256 * 10         # 256 * 10 seeds
-N_SOBOL_RUNS_ATARI = 128 * 10   # 128 * 10 seeds
+N_SOBOL_RUNS_ATARI = 256 * 10   # 256 * 10 seeds
 
 N_OPT_RUNS = 4 * 3 * 32 * 4     # 4 optimizers * 3 optimizer seeds * 32 * 3 RL seeds
 
@@ -42,8 +42,8 @@ ENV_CATEGORIES = {
 }
 
 SUBSET_CATEGORIES = {
-    "ppo": ["Box2D", "MuJoCo", "Atari", "XLand", "XLand"],
-    "dqn": ["Classic Control", "XLand", "Atari", "XLand"],
+    "ppo": ["Box2D", "MuJoCo", "Atari", "Atari", "XLand"],
+    "dqn": ["Classic Control", "Box2D", "Atari", "XLand"],
     "sac": ["Box2D", "MuJoCo", "Classic Control", "Classic Control"],
 }
 
@@ -55,7 +55,7 @@ CATEGORY = {
     "LunarLanderContinuous-v2": "Box2D",
     "Pendulum-v1": "Classic Control",
     "Pong-v5": "Atari",
-    "MiniGrid-DoorKey-5x5": "XLand"
+    "MiniGrid-DoorKey-5x5": "XLand",
 }
 
 
@@ -280,5 +280,5 @@ def compute_total_runtime():
 
 if __name__ == "__main__":
     plot_runtime_comparisons()
-    #compute_total_runtime()
+    compute_total_runtime()
     
