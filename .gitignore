@@ -216,3 +216,4 @@ runscripts_janni/pbt/*
 runscripts_julian/sobol/*
 runscripts_julian/smac/*
 runscripts_julian/pbt/*
+create_plots
