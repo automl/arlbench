@@ -5,8 +5,8 @@ Task 2: brax_halfcheetah
 Task 3: cc_acrobot
 Task 4: minigrid_empty_random
 Task 5: minigrid_four_rooms
-Correlation without weights: 0.9315403982604712
-Correlation with prediction: 0.9374032271834715
-Validation error: 0.0009674534834288465
+Correlation without weights: 0.9428065632867932
+Correlation with prediction: 0.9528861948262615
+Validation error: 0.0008644468067206309
 Weights:
-[0.14501079 0.13560909 0.20305597 0.07815983 0.09862261 0.16316977]
+[0.14954789 0.12502981 0.19396402 0.07179569 0.12535707 0.15854048]

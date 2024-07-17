@@ -3,8 +3,8 @@ Task 0: atari_phoenix
 Task 1: atari_qbert
 Task 2: brax_halfcheetah
 Task 3: brax_hopper
-Correlation without weights: 0.9409921822850229
-Correlation with prediction: 0.9485221548706566
-Validation error: 0.05147784512934348
+Correlation without weights: 0.942302207446668
+Correlation with prediction: 0.9501722872022539
+Validation error: 0.049827712797746115
 Weights:
-[0.201535   0.29014791 0.25887587 0.20356489]
+[0.20346976 0.29356713 0.25611241 0.20645841]

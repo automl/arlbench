@@ -1,8 +1,8 @@
 Tasks chosen for ppo:
 Task 0: brax_halfcheetah
 Task 1: minigrid_empty_random
-Correlation without weights: 0.8397720800780852
-Correlation with prediction: 0.8409277298665137
-Validation error: 0.00338360746021096
+Correlation without weights: 0.8700153693062613
+Correlation with prediction: 0.8682322153922424
+Validation error: 0.0030866317885587706
 Weights:
-[0.38076107 0.19749498]
+[0.36081668 0.22070801]

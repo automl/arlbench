@@ -1,10 +1,10 @@
 Tasks chosen for ppo:
-Task 0: atari_phoenix
-Task 1: atari_qbert
+Task 0: atari_qbert
+Task 1: atari_this_game
 Task 2: brax_halfcheetah
 Task 3: cc_mountain_car
-Correlation without weights: 0.8744077741163003
-Correlation with prediction: 0.9376159822419533
-Validation error: 0.003361667177468364
+Correlation without weights: 0.8341580440826626
+Correlation with prediction: 0.9388890975838811
+Validation error: 0.003347499411704089
 Weights:
-[0.12873245 0.37830948 0.25086296 0.22409593]
+[0.40900845 0.12331925 0.24348242 0.21384147]

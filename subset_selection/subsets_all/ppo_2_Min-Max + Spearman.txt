@@ -1,8 +1,8 @@
 Tasks chosen for ppo:
 Task 0: atari_qbert
 Task 1: minigrid_door_key
-Correlation without weights: 0.8671379841255177
-Correlation with prediction: 0.8669544251044282
-Validation error: 0.13304557489557167
+Correlation without weights: 0.8890854301358495
+Correlation with prediction: 0.8849907478729445
+Validation error: 0.11500925212705544
 Weights:
-[0.8030484  0.47867156]
+[0.80355341 0.47971799]

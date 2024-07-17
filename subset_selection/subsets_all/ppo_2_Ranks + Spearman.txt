@@ -1,8 +1,8 @@
 Tasks chosen for ppo:
 Task 0: atari_qbert
 Task 1: brax_halfcheetah
-Correlation without weights: 0.9146997163343334
-Correlation with prediction: 0.9193118756936738
-Validation error: 0.08068812430632635
+Correlation without weights: 0.9146045845768405
+Correlation with prediction: 0.9201413813711261
+Validation error: 0.07985861862887392
 Weights:
-[0.52437728 0.3793705 ]
+[0.53061489 0.37805805]

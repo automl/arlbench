@@ -2,8 +2,8 @@ Tasks chosen for ppo:
 Task 0: atari_qbert
 Task 1: brax_humanoid
 Task 2: cc_mountain_car
-Correlation without weights: 0.9081723943480162
-Correlation with prediction: 0.9146404849312729
-Validation error: 0.0047584463218543855
+Correlation without weights: 0.910485246701114
+Correlation with prediction: 0.9182412703833347
+Validation error: 0.004695456293005183
 Weights:
-[0.3987255  0.27536425 0.30531074]
+[0.40163038 0.27410258 0.30994624]

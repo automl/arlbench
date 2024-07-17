@@ -1,8 +1,8 @@
 Tasks chosen for ppo:
 Task 0: box2d_lunar_lander
 Task 1: minigrid_four_rooms
-Correlation without weights: 0.8379597361726928
-Correlation with prediction: 0.871785878937932
-Validation error: 0.008145891726282823
+Correlation without weights: 0.8404342639871617
+Correlation with prediction: 0.8690494322547597
+Validation error: 0.008176957905278698
 Weights:
-[0.40548042 0.56562989]
+[0.41080986 0.56621254]

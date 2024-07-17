@@ -5,8 +5,8 @@ Task 2: box2d_lunar_lander
 Task 3: brax_ant
 Task 4: brax_halfcheetah
 Task 5: minigrid_empty_random
-Correlation without weights: 0.9675117572438174
-Correlation with prediction: 0.9727519849739604
-Validation error: 0.027248015026039508
+Correlation without weights: 0.9675950861067188
+Correlation with prediction: 0.9719224792965081
+Validation error: 0.028077520703491878
 Weights:
-[0.14865371 0.12589694 0.20584012 0.1280205  0.15031307 0.21986673]
+[0.14953784 0.12640897 0.21086458 0.13061923 0.14830565 0.21878935]

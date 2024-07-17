@@ -1,7 +1,7 @@
 Tasks chosen for ppo:
 Task 0: minigrid_empty_random
-Correlation without weights: 0.839783988704117
-Correlation with prediction: 0.8409045902224863
-Validation error: 0.15909540977751366
+Correlation without weights: 0.8699998211882614
+Correlation with prediction: 0.8681639171754927
+Validation error: 0.13183608282450726
 Weights:
-[0.64710001]
+[0.64676257]

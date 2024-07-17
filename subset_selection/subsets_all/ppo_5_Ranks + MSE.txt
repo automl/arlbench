@@ -4,8 +4,8 @@ Task 1: atari_this_game
 Task 2: box2d_lunar_lander
 Task 3: brax_halfcheetah
 Task 4: minigrid_empty_random
-Correlation without weights: 0.9530666244326587
-Correlation with prediction: 0.9598538376163237
-Validation error: 0.002110149045586265
+Correlation without weights: 0.952973639252528
+Correlation with prediction: 0.9592309399812174
+Validation error: 0.0021568137115935606
 Weights:
-[0.19001018 0.1206566  0.22349891 0.23912619 0.2086406 ]
+[0.19148671 0.12176855 0.22864734 0.23888478 0.20715187]

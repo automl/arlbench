@@ -5,8 +5,8 @@ Task 2: box2d_lunar_lander
 Task 3: brax_humanoid
 Task 4: cc_mountain_car
 Task 5: minigrid_empty_random
-Correlation without weights: 0.9350870109462652
-Correlation with prediction: 0.9654035686843676
-Validation error: 0.0015936941783489522
+Correlation without weights: 0.9365100426009674
+Correlation with prediction: 0.9650514812601383
+Validation error: 0.001581219269654614
 Weights:
-[0.17483073 0.09275475 0.15554206 0.22718407 0.11047914 0.23021705]
+[0.17539421 0.09297129 0.15946172 0.22823888 0.11325395 0.22798999]
