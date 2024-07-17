@@ -115,8 +115,8 @@ ENV_CATEGORIES = {
 
 SUBSETS = {
     "ppo": ["LunarLander-v2", "humanoid", "BattleZone-v5", "MiniGrid-EmptyRandom-5x5", "Phoenix-v5"],
-    "dqn": ["Acrobot-v1", "MiniGrid-DoorKey-5x5", "Phoenix-v5", "LunarLander-v2"],
-    "sac": ["BipedalWalker-v3", "halfcheetah", "MountainCarContinuous-v0", "hopper"],
+    "dqn": ["Acrobot-v1", "DoubleDunk-v5", "BattleZone-v5", "MiniGrid-FourRooms", "MiniGrid-EmptyRandom-5x5"],
+    "sac": ["BipedalWalker-v3", "halfcheetah", "MountainCarContinuous-v0", "humanoid"],
 }
 
 

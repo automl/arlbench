@@ -99,9 +99,9 @@ OPTIMIZER_SEEDS = {
 }
 
 SUBSETS = {
-    "ppo": ["LunarLander-v2", "humanoid", "Phoenix-v5", "BattleZone-v5", "MiniGrid-EmptyRandom-5x5"],
-    "dqn": ["Acrobot-v1", "MiniGrid-DoorKey-5x5", "LunarLander-v2", "Phoenix-v5"],
-    "sac": ["BipedalWalker-v3", "halfcheetah", "MountainCarContinuous-v0", "hopper"],
+    "ppo": ["LunarLander-v2", "humanoid", "BattleZone-v5", "MiniGrid-EmptyRandom-5x5", "Phoenix-v5"],
+    "dqn": ["Acrobot-v1", "DoubleDunk-v5", "BattleZone-v5", "MiniGrid-FourRooms", "MiniGrid-EmptyRandom-5x5"],
+    "sac": ["BipedalWalker-v3", "halfcheetah", "MountainCarContinuous-v0", "humanoid"],
 }
 
 def read_min_max_scores():
