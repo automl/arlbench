@@ -1,9 +1,9 @@
 Tasks chosen for ppo:
-Task 0: atari_battle_zone
-Task 1: box2d_lunar_lander
-Task 2: minigrid_empty_random
-Correlation without weights: 0.8691970416571295
-Correlation with prediction: 0.8634341330145991
-Validation error: 0.1365658669854009
+Task 0: cc_cartpole
+Task 1: minigrid_empty_random
+Task 2: minigrid_four_rooms
+Correlation without weights: 0.9131008239871822
+Correlation with prediction: 0.8975736361307949
+Validation error: 0.1024263638692052
 Weights:
-[0.15372755 0.40322153 0.20205033]
+[0.44777504 0.16439516 0.3202193 ]

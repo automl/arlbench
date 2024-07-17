@@ -1,8 +1,8 @@
 Tasks chosen for dqn:
 Task 0: atari_double_dunk
 Task 1: cc_acrobot
-Correlation without weights: 0.8650619671525765
-Correlation with prediction: 0.8571161382236289
-Validation error: 0.14288386177637113
+Correlation without weights: 0.9006739164129931
+Correlation with prediction: 0.8915785291765763
+Validation error: 0.10842147082342372
 Weights:
-[0.50832024 0.4272119 ]
+[0.48240795 0.45201298]

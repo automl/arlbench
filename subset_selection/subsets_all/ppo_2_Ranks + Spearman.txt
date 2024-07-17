@@ -1,8 +1,8 @@
 Tasks chosen for ppo:
-Task 0: brax_humanoid
-Task 1: cc_cartpole
-Correlation without weights: 0.8502242480357359
-Correlation with prediction: 0.8398565696234952
-Validation error: 0.1601434303765048
+Task 0: atari_qbert
+Task 1: brax_halfcheetah
+Correlation without weights: 0.9146997163343334
+Correlation with prediction: 0.9193118756936738
+Validation error: 0.08068812430632635
 Weights:
-[0.49778454 0.41016311]
+[0.52437728 0.3793705 ]

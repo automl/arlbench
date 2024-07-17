@@ -2,8 +2,8 @@ Tasks chosen for dqn:
 Task 0: atari_double_dunk
 Task 1: box2d_lunar_lander
 Task 2: cc_acrobot
-Correlation without weights: 0.8148546578164338
-Correlation with prediction: 0.8725805515239478
-Validation error: 0.0018316328943873555
+Correlation without weights: 0.8643203536278323
+Correlation with prediction: 0.9109089046358747
+Validation error: 0.001572751117726899
 Weights:
-[0.31037538 0.13978798 0.14969034]
+[0.27785418 0.12930938 0.16664139]

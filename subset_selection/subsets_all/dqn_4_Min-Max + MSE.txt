@@ -3,8 +3,8 @@ Task 0: atari_double_dunk
 Task 1: box2d_lunar_lander
 Task 2: cc_acrobot
 Task 3: minigrid_empty_random
-Correlation without weights: 0.8797372110322726
-Correlation with prediction: 0.9136552548450438
-Validation error: 0.0011316431947541174
+Correlation without weights: 0.9300848306248568
+Correlation with prediction: 0.9373158029539826
+Validation error: 0.0008966876545275354
 Weights:
-[0.27965057 0.14896307 0.13296672 0.14214486]
+[0.2343096  0.14135989 0.15002903 0.14776624]

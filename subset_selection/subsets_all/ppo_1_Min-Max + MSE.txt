@@ -1,7 +1,7 @@
 Tasks chosen for ppo:
 Task 0: brax_hopper
-Correlation without weights: 0.6038803215838864
-Correlation with prediction: 0.6058823529411764
-Validation error: 0.007148401058631679
+Correlation without weights: 0.6477969787136644
+Correlation with prediction: 0.6485064458294202
+Validation error: 0.008777583531350774
 Weights:
-[0.50667932]
+[0.50556339]
