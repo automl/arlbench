@@ -114,9 +114,9 @@ ENV_CATEGORIES = {
 }
 
 SUBSETS = {
-    "ppo": ["LunarLander-v2", "halfcheetah", "BattleZone-v5", "MiniGrid-EmptyRandom-5x5", "MiniGrid-FourRooms"],
-    "dqn": ["Acrobot-v1", "MiniGrid-DoorKey-5x5", "BattleZone-v5", "MiniGrid-FourRooms"],
-    "sac": ["BipedalWalker-v3", "halfcheetah", "MountainCarContinuous-v0", "Pendulum-v1"],
+    "ppo": ["LunarLander-v2", "humanoid", "BattleZone-v5", "MiniGrid-EmptyRandom-5x5", "Phoenix-v5"],
+    "dqn": ["Acrobot-v1", "MiniGrid-DoorKey-5x5", "Phoenix-v5", "LunarLander-v2"],
+    "sac": ["BipedalWalker-v3", "halfcheetah", "MountainCarContinuous-v0", "hopper"],
 }
 
 
@@ -407,19 +407,19 @@ def plot_subset_vs_overall(algorithm: str):
 
 
 if __name__ == "__main__":
-    # for algorithm in SUBSETS:
-    #     plot_subset_vs_overall(algorithm)
+    for algorithm in SUBSETS:
+        plot_subset_vs_overall(algorithm)
 
-    # for algorithm, subset_envs in SUBSETS.items():
-    #     plot_envs_opt_over_time(algorithm, subset_envs, "Subset", "score")
+    for algorithm, subset_envs in SUBSETS.items():
+        plot_envs_opt_over_time(algorithm, subset_envs, "Subset", "score")
 
-    # for algorithm, category in ENV_CATEGORIES.items():
-    #     envs = [env for cat_envs in category.values() for env in cat_envs]
-    #     plot_envs_opt_over_time(algorithm, envs, "Full Set", "score")
+    for algorithm, category in ENV_CATEGORIES.items():
+        envs = [env for cat_envs in category.values() for env in cat_envs]
+        plot_envs_opt_over_time(algorithm, envs, "Full Set", "score")
 
-    # for algorithm, category in ENV_CATEGORIES.items():
-    #     for category_name, envs in category.items():
-    #         plot_envs_opt_over_time(algorithm, envs, category_name, "score")
+    for algorithm, category in ENV_CATEGORIES.items():
+        for category_name, envs in category.items():
+            plot_envs_opt_over_time(algorithm, envs, category_name, "score")
 
     for exp in os.listdir("results/smac_mf"):
        plot_opt_over_time(exp, "score")

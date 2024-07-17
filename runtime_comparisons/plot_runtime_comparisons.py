@@ -27,7 +27,7 @@ N_OPT_RUNS = 4 * 3 * 32 * 4     # 4 optimizers * 3 optimizer seeds * 32 * 3 RL s
 
 ENV_CATEGORIES = {
     "ppo": [
-        "Atari", "Atari", "Atari", "Atari", "Atari", "Box2D", "Box2D", "MuJoCo", "MuJoCo", "MuJoCo", "MuJoCo",
+        "Atari", "Atari", "Atari", "Atari", "Atari", "Box2D", "Box2D", "Box2D", "MuJoCo", "MuJoCo", "MuJoCo", "MuJoCo",
         "Classic Control", "Classic Control", "Classic Control", "Classic Control", "Classic Control",
         "XLand", "XLand", "XLand", "XLand"
         ],
@@ -44,7 +44,7 @@ ENV_CATEGORIES = {
 SUBSET_CATEGORIES = {
     "ppo": ["Box2D", "MuJoCo", "Atari", "Atari", "XLand"],
     "dqn": ["Classic Control", "Box2D", "Atari", "XLand"],
-    "sac": ["Box2D", "MuJoCo", "Classic Control", "Classic Control"],
+    "sac": ["Box2D", "MuJoCo", "MuJoCo", "Classic Control"],
 }
 
 CATEGORY = {
@@ -214,7 +214,6 @@ def plot_runtime_comparisons():
 
     all_runtimes["runtime"] /= 3600     # to hours
     all_runtimes["runtime"] *= 32 * 10     # 32 trainings on 3 seeds each
-
     
     for i, algorithm in enumerate(env_categories.keys()):
         runtime_data = all_runtimes[all_runtimes["algorithm"] == algorithm]
@@ -271,14 +270,19 @@ def compute_total_runtime():
     runtimes["total_runtime"] = runtimes["n_runs"] * runtimes["runtime"]
     runtimes["total_runtime"] /= 3600   # to hours
 
+    runtimes = runtimes.drop("n_runs", axis=1)  # we don't needs this since they are all the same
+    total_runtimes = runtimes.groupby(['platform'])['runtime'].sum().reset_index()
+
+    runtimes = runtimes.round(2)
+    runtimes = runtimes.applymap(lambda x: '{:.2f}'.format(x).rstrip('0').rstrip('.') if isinstance(x, (int, float)) else x)  # remove trailing zeros
+
     print(runtimes)
     print(runtimes.to_latex(index=False))
-    total_runtimes = runtimes.groupby(['platform'])['runtime'].sum().reset_index()
     print(total_runtimes)
 
 
 
 if __name__ == "__main__":
     plot_runtime_comparisons()
-    compute_total_runtime()
+    #compute_total_runtime()
     
