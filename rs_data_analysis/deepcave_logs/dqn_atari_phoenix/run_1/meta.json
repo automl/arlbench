@@ -2,8 +2,8 @@
     "objectives": [
         {
             "name": "reward_mean",
-            "lower": -14456.016,
-            "upper": -16.40625,
+            "lower": -16403.515625,
+            "upper": -16.09375,
             "lock_lower": true,
             "lock_upper": true,
             "optimize": "upper"

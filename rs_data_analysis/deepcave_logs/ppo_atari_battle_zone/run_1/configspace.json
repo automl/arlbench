@@ -29,16 +29,16 @@
       "type": "uniform_float",
       "log": false,
       "lower": 0.0,
-      "upper": 0.0984209204103971,
-      "default": 0.0492104602
+      "upper": 0.10793618668371452,
+      "default": 0.0539680933
     },
     {
       "name": "max_grad_norm",
       "type": "uniform_float",
       "log": false,
       "lower": 0.0,
-      "upper": 1.0786381460660106,
-      "default": 0.539319073
+      "upper": 1.09837923547919,
+      "default": 0.5491896177
     },
     {
       "name": "minibatch_size",
@@ -71,8 +71,8 @@
       "type": "uniform_float",
       "log": false,
       "lower": 0.0,
-      "upper": 1.0637604098849416,
-      "default": 0.5318802049
+      "upper": 1.0769120109009052,
+      "default": 0.5384560055
     }
   ],
   "conditions": [],

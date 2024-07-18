@@ -1,0 +1,18 @@
+{
+    "objectives": [
+        {
+            "name": "reward_mean",
+            "lower": -273.9151306152344,
+            "upper": 200.0,
+            "lock_lower": true,
+            "lock_upper": true,
+            "optimize": "upper"
+        }
+    ],
+    "budgets": [
+        1
+    ],
+    "seeds": [
+        -1
+    ]
+}

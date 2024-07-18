@@ -55,16 +55,16 @@
       "type": "uniform_float",
       "log": false,
       "lower": 0.0,
-      "upper": 1.0920202852038137,
-      "default": 0.5460101426
+      "upper": 1.0990951824045982,
+      "default": 0.5495475912
     },
     {
       "name": "learning_rate",
       "type": "uniform_float",
       "log": false,
       "lower": 0.0,
-      "upper": 0.0962192296324051,
-      "default": 0.0481096148
+      "upper": 0.10993539374767598,
+      "default": 0.0549676969
     },
     {
       "name": "learning_starts",
@@ -79,8 +79,8 @@
       "type": "uniform_float",
       "log": false,
       "lower": 0.0,
-      "upper": 0.2178851955851385,
-      "default": 0.1089425978
+      "upper": 0.21908718774675512,
+      "default": 0.1095435939
     },
     {
       "name": "target_update_interval",

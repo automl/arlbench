@@ -2,7 +2,7 @@
     "objectives": [
         {
             "name": "reward_mean",
-            "lower": -17125.781,
+            "lower": -18636.328125,
             "upper": -0.0,
             "lock_lower": true,
             "lock_upper": true,
