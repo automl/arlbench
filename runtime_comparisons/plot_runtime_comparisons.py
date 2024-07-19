@@ -43,7 +43,7 @@ ENV_CATEGORIES = {
 
 SUBSET_CATEGORIES = {
     "ppo": ["Box2D", "MuJoCo", "Atari", "Atari", "XLand"],
-    "dqn": ["Classic Control", "Box2D", "Atari", "XLand"],
+    "dqn": ["Classic Control", "XLand", "Atari", "Atari", "XLand"],
     "sac": ["Box2D", "MuJoCo", "MuJoCo", "Classic Control"],
 }
 
