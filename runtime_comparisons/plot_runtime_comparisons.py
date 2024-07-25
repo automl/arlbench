@@ -43,7 +43,7 @@ ENV_CATEGORIES = {
 
 SUBSET_CATEGORIES = {
     "ppo": ["Box2D", "MuJoCo", "Atari", "Atari", "XLand"],
-    "dqn": ["Classic Control", "Box2D", "Atari", "XLand"],
+    "dqn": ["Classic Control", "XLand", "Atari", "Atari", "XLand"],
     "sac": ["Box2D", "MuJoCo", "MuJoCo", "Classic Control"],
 }
 
@@ -213,12 +213,14 @@ def plot_runtime_comparisons():
     print(all_runtimes)
 
     all_runtimes["runtime"] /= 3600     # to hours
-    all_runtimes["runtime"] *= 32 * 10     # 32 trainings on 3 seeds each
+    all_runtimes["runtime"] *= 32 * 10     # 32 trainings on 10 seeds each
     
     for i, algorithm in enumerate(env_categories.keys()):
         runtime_data = all_runtimes[all_runtimes["algorithm"] == algorithm]
         print(f"### {algorithm.upper()} ###")
-        print(runtime_data.groupby(["algorithm", "set"]).sum())
+        alg_rt = runtime_data.groupby(["algorithm", "set"]).sum()
+        alg_rt["runtime"] = alg_rt["runtime"] / (32 * 10)
+        print(alg_rt)
 
         plot = (
             so.Plot(
