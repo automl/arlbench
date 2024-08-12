@@ -20,7 +20,7 @@ echo "#!/bin/bash
 #SBATCH -p normal                                       # TODO check for your clusters partition
 #SBATCH --output $directory/log/rs_${1}_%A_%a.out
 #SBATCH --error $directory/log/rs_${1}_%A_%a.err
-#SBATCH --array=43-44
+#SBATCH --array=45-46
 
 cd ..
 python runscripts/run_arlbench.py -m --config-name=tune_rs "experiments=$1" "cluster=$2" "search_space.seed=\$SLURM_ARRAY_TASK_ID" 

@@ -11,7 +11,7 @@
 #SBATCH -p normal                                       # TODO check for your clusters partition
 #SBATCH --output rs/log/rs_cc_pendulum_ppo_%A_%a.out
 #SBATCH --error rs/log/rs_cc_pendulum_ppo_%A_%a.err
-#SBATCH --array=43-44
+#SBATCH --array=45-46
 
 cd ..
 python runscripts/run_arlbench.py -m --config-name=tune_rs experiments=cc_pendulum_ppo cluster=local search_space.seed=$SLURM_ARRAY_TASK_ID 

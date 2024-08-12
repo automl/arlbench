@@ -11,7 +11,7 @@
 #SBATCH -p normal                                       # TODO check for your clusters partition
 #SBATCH --output pbt/log/pbt_cc_mountain_car_ppo_%A_%a.out
 #SBATCH --error pbt/log/pbt_cc_mountain_car_ppo_%A_%a.err
-#SBATCH --array=0-2
+#SBATCH --array=3-4
 
 
 cd ..
