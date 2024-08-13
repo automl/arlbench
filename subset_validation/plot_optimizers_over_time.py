@@ -113,10 +113,27 @@ ENV_CATEGORIES = {
     },
 }
 
-SUBSETS = {
-    "ppo": ["LunarLander-v2", "humanoid", "BattleZone-v5", "MiniGrid-EmptyRandom-5x5", "Phoenix-v5"],
-    "dqn": ["Acrobot-v1", "DoubleDunk-v5", "BattleZone-v5", "MiniGrid-FourRooms", "MiniGrid-EmptyRandom-5x5"],
-    "sac": ["BipedalWalker-v3", "halfcheetah", "MountainCarContinuous-v0", "humanoid"],
+SUBSET_WEIGHTS = {
+    "ppo": {
+        "BattleZone-v5": 0.18960638,
+        "Phoenix-v5": 0.12810087,
+        "LunarLander-v2": 0.21154265,
+        "humanoid": 0.21554603,
+        "MiniGrid-EmptyRandom-5x5": 0.23619909
+    },
+    "dqn": {
+        "DoubleDunk-v5": 0.22108139,
+        "NameThisGame-v5": 0.10913745,
+        "Acrobot-v1": 0.3300676,
+        "MiniGrid-EmptyRandom-5x5": 0.18383447,
+        "MiniGrid-FourRooms": 0.11920235,
+    },
+    "sac": {
+        "0.3208448": 0.35797678,
+        "halfcheetah": 0.3176157,
+        "hopper": 0.15381655,
+        "MountainCarContinuous-v0": 0.19360028,
+    },
 }
 
 
@@ -352,7 +369,7 @@ def plot_envs_opt_over_time(algorithm: str, envs: list[str], category_name: str,
 def plot_subset_vs_overall(algorithm: str):
     min_scores, max_scores = read_min_max_scores()
 
-    subset_envs = SUBSETS[algorithm]
+    subset_envs = list(SUBSET_WEIGHTS[algorithm].keys())
     overall_envs = [env for cat_envs in ENV_CATEGORIES[algorithm].values() for env in cat_envs]
 
     subset_data, overall_data = [], []
@@ -375,6 +392,8 @@ def plot_subset_vs_overall(algorithm: str):
     overall_data = pd.concat(overall_data)
     subset_data = subset_data.reset_index()
     overall_data = overall_data.reset_index()
+
+    print(subset_data)
     
     for scale in ["", "log"]:
         fig, axes = plt.subplots(ncols=2, nrows=1, figsize=(9, 2.5), sharey=True)
@@ -407,15 +426,16 @@ def plot_subset_vs_overall(algorithm: str):
 
 
 if __name__ == "__main__":
-    for algorithm in SUBSETS:
+    for algorithm in SUBSET_WEIGHTS:
         plot_subset_vs_overall(algorithm)
 
-    for algorithm, subset_envs in SUBSETS.items():
-        plot_envs_opt_over_time(algorithm, subset_envs, "Subset", "score")
+    # for algorithm, subset_weights in SUBSET_WEIGHTS.items():
+    #     subset_envs = list(subset_weights.keys())
+    #     plot_envs_opt_over_time(algorithm, subset_envs, "Subset", "score")
 
-    for algorithm, category in ENV_CATEGORIES.items():
-        envs = [env for cat_envs in category.values() for env in cat_envs]
-        plot_envs_opt_over_time(algorithm, envs, "Full Set", "score")
+    # for algorithm, category in ENV_CATEGORIES.items():
+    #     envs = [env for cat_envs in category.values() for env in cat_envs]
+    #     plot_envs_opt_over_time(algorithm, envs, "Full Set", "score")
 
     for algorithm, category in ENV_CATEGORIES.items():
         for category_name, envs in category.items():

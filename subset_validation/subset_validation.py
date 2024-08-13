@@ -74,7 +74,6 @@ EXPERIMENT_TO_ENV = {
     "brax_humanoid": "humanoid",
 }
 
-
 RAW_SOBOL_RESULTS = "results_combined/sobol"
 
 OPTIMIZER_RESULTS = {
@@ -92,16 +91,33 @@ OPTIMIZER_NAMES = {
 }
 
 OPTIMIZER_SEEDS = {
-    "SMAC_BO": [0, 1, 2],
-    "SMAC_MultiFidelity": [0, 1, 2],
-    "RandomSearch": [42, 43, 44],
-    "PBT": [0, 1, 2],
+    "SMAC_BO": [0, 1, 2, 3, 4],
+    "SMAC_MultiFidelity": [0, 1, 2, 3, 4],
+    "RandomSearch": [42, 43, 44, 45, 46],
+    "PBT": [0, 1, 2, 3, 4],
 }
 
-SUBSETS = {
-    "ppo": ["LunarLander-v2", "humanoid", "BattleZone-v5", "MiniGrid-EmptyRandom-5x5", "Phoenix-v5"],
-    "dqn": ["Acrobot-v1", "DoubleDunk-v5", "BattleZone-v5", "MiniGrid-FourRooms", "MiniGrid-EmptyRandom-5x5"],
-    "sac": ["BipedalWalker-v3", "halfcheetah", "MountainCarContinuous-v0", "humanoid"],
+SUBSET_WEIGHTS = {
+    "ppo": {
+        "BattleZone-v5": 0.18960638,
+        "Phoenix-v5": 0.12810087,
+        "LunarLander-v2": 0.21154265,
+        "humanoid": 0.21554603,
+        "MiniGrid-EmptyRandom-5x5": 0.23619909
+    },
+    "dqn": {
+        "DoubleDunk-v5": 0.22108139,
+        "NameThisGame-v5": 0.10913745,
+        "Acrobot-v1": 0.3300676,
+        "MiniGrid-EmptyRandom-5x5": 0.18383447,
+        "MiniGrid-FourRooms": 0.11920235,
+    },
+    "sac": {
+        "0.3208448": 0.35797678,
+        "halfcheetah": 0.3176157,
+        "hopper": 0.15381655,
+        "MountainCarContinuous-v0": 0.19360028,
+    },
 }
 
 def read_min_max_scores():
@@ -193,7 +209,7 @@ def read_optimizer_data_per_algorithm():
     results = pd.concat(results)
 
     algorithm_results = {}
-    for algorithm in SUBSETS:
+    for algorithm in SUBSET_WEIGHTS:
         algorithm_results[algorithm] = results[results["algorithm"] == algorithm]
 
     return algorithm_results
@@ -203,7 +219,7 @@ def validate(algorithm: str, method: str = "rank"):
     min_scores, max_scores = read_min_max_scores()
     optimizer_data = read_optimizer_data_per_algorithm()
     overall_data = optimizer_data[algorithm].copy()
-    subset = SUBSETS[algorithm]
+    subset = list(SUBSET_WEIGHTS[algorithm].keys())
 
     # Rename columns
     overall_data["optimizer"] = overall_data["optimizer"].replace(OPTIMIZER_NAMES)
@@ -251,18 +267,26 @@ def plot_subset_vs_overall(overall_data, subset_data, method: str):
     plt.savefig(os.path.join(SUBSET_PLOTS, f"{method}_{algorithm}_comparison.png"), dpi=500)
 
 
-def plot_subset_vs_overall_combined(method: str):
+def plot_subset_vs_overall_combined(method: str, use_weights: bool = False):
     fig, axes = plt.subplots(1, 6, figsize=(8, 2), sharey=True)
 
     hue_order = ["RS", "SMAC", "SMAC + HB", "PBT"]
     
     for i, algorithm in enumerate(["ppo", "dqn", "sac"]):
         overall_data, subset_data = validate(algorithm, method) 
-        print(subset_data)
+        
+        if use_weights:
+            def apply_weights(row):      
+                return row['normalized_score'] * SUBSET_WEIGHTS[algorithm][row['environment']] / sum(SUBSET_WEIGHTS[algorithm].values())
+
+            subset_data['weighted_score'] = subset_data.apply(lambda row: apply_weights(row), axis=1)
+
+            overall_data = overall_data.groupby(['algorithm', 'optimizer', 'seed'])['normalized_score'].mean().reset_index()
+            subset_data = subset_data.groupby(['algorithm', 'optimizer', 'seed'])['weighted_score'].sum().reset_index()
 
         sns.boxplot(
             x="optimizer", 
-            y="normalized_score", 
+            y="weighted_score" if use_weights else "normalized_score",
             data=subset_data, 
             hue="optimizer", ax=axes[2 * i], 
             showmeans=True, 
@@ -312,11 +336,15 @@ def plot_subset_vs_overall_combined(method: str):
     fig.legend(loc='upper center', bbox_to_anchor=(0.5, 0.125), ncol=4, fancybox=False, shadow=False, frameon=False)
 
     plt.tight_layout(rect=(0.02, 0.07, 1, 1))
-    plt.savefig(os.path.join(SUBSET_PLOTS, f"{method}_comparison_combined.png"), dpi=500)
+    path = os.path.join(SUBSET_PLOTS, f"{method}_comparison_combined")
 
+    if use_weights:
+        path += "_weighted"
+    plt.savefig(f"{path}.png", dpi=500)
 
 if __name__ == "__main__":
     for method in ["rank", "min_max"]:
-        plot_subset_vs_overall_combined(method)
+        plot_subset_vs_overall_combined(method, use_weights=False)
+        plot_subset_vs_overall_combined(method, use_weights=True)
 
 

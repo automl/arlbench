@@ -250,8 +250,7 @@ results/
 
 ```
 
-The optimizer data is stored in `results_finished/<optimizer>/<algorithm_environment>.zip`. By unzipping all files in the root directory of the repository, you achieve the structure as shown above.
-It is important to be in the root directory of ARLBench, since each zip file contains the folder structure of `results` already.
+The optimizer data is stored in `results_finished/<optimizer>/<algorithm_environment>.zip`. By unzipping each zip file in the corresponding `results/<optimizer>/` directory of the repository, you achieve the structure as shown above.
 
 For sobol, you have to unzip all zip files in `results_finished/sobol/<category>` inside the `results/sobol_landscaping` directory.
 
