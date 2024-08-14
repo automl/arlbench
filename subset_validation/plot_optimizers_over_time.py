@@ -94,14 +94,14 @@ HUE_ORDER = ["RS", "SMAC", "SMAC + HB", "PBT"]
 
 ENV_CATEGORIES = {
     "ppo": {
-        "Atari": ["BattleZone-v5", "DoubleDunk-v5", "NameThisGame-v5", "Phoenix-v5", "QBert-v5"],
+        "ALE": ["BattleZone-v5", "DoubleDunk-v5", "NameThisGame-v5", "Phoenix-v5", "QBert-v5"],
         "Box2D": ["LunarLander-v2", "LunarLanderContinuous-v2"],
         "Classic Control": ["Acrobot-v1", "CartPole-v1", "MountainCar-v0", "MountainCarContinuous-v0", "Pendulum-v1"],
         "XLand": ["MiniGrid-DoorKey-5x5", "MiniGrid-EmptyRandom-5x5", "MiniGrid-FourRooms", "MiniGrid-Unlock"],
         "Brax": ["ant", "halfcheetah", "hopper", "humanoid"]
     },
     "dqn": {
-        "Atari": ["BattleZone-v5", "DoubleDunk-v5", "NameThisGame-v5", "Phoenix-v5", "QBert-v5"],
+        "ALE": ["BattleZone-v5", "DoubleDunk-v5", "NameThisGame-v5", "Phoenix-v5", "QBert-v5"],
         "Box2D": ["LunarLander-v2"],
         "Classic Control": ["Acrobot-v1", "CartPole-v1", "MountainCar-v0"],
         "XLand": ["MiniGrid-DoorKey-5x5", "MiniGrid-EmptyRandom-5x5", "MiniGrid-FourRooms", "MiniGrid-Unlock"],

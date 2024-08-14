@@ -27,12 +27,12 @@ N_OPT_RUNS = 4 * 3 * 32 * 4     # 4 optimizers * 3 optimizer seeds * 32 * 3 RL s
 
 ENV_CATEGORIES = {
     "ppo": [
-        "Atari", "Atari", "Atari", "Atari", "Atari", "Box2D", "Box2D", "Box2D", "MuJoCo", "MuJoCo", "MuJoCo", "MuJoCo",
+        "ALE", "ALE", "ALE", "ALE", "ALE", "Box2D", "Box2D", "Box2D", "MuJoCo", "MuJoCo", "MuJoCo", "MuJoCo",
         "Classic Control", "Classic Control", "Classic Control", "Classic Control", "Classic Control",
         "XLand", "XLand", "XLand", "XLand"
         ],
     "dqn": [
-        "Atari", "Atari", "Atari", "Atari", "Atari", "Box2D", "Classic Control", "Classic Control", "Classic Control", 
+        "ALE", "ALE", "ALE", "ALE", "ALE", "Box2D", "Classic Control", "Classic Control", "Classic Control", 
         "XLand", "XLand", "XLand", "XLand"
     ],
     "sac": [
@@ -42,8 +42,8 @@ ENV_CATEGORIES = {
 }
 
 SUBSET_CATEGORIES = {
-    "ppo": ["Box2D", "MuJoCo", "Atari", "Atari", "XLand"],
-    "dqn": ["Classic Control", "XLand", "Atari", "Atari", "XLand"],
+    "ppo": ["Box2D", "MuJoCo", "ALE", "ALE", "XLand"],
+    "dqn": ["Classic Control", "XLand", "ALE", "ALE", "XLand"],
     "sac": ["Box2D", "MuJoCo", "MuJoCo", "Classic Control"],
 }
 
@@ -54,7 +54,7 @@ CATEGORY = {
     "LunarLander-v2": "Box2D",
     "LunarLanderContinuous-v2": "Box2D",
     "Pendulum-v1": "Classic Control",
-    "Pong-v5": "Atari",
+    "Pong-v5": "ALE",
     "MiniGrid-DoorKey-5x5": "XLand",
 }
 
@@ -198,13 +198,13 @@ def plot_runtime_comparisons():
     # Set seaborn style
     sns.set_style("whitegrid")
 
-    # Plot
+    # Plot combined plot
     fig, axes = plt.subplots(1, 3, figsize=(8, 2.5))
 
     fig.subplots_adjust(top=0.85)
 
     set_order = ["SB3 on full set", "ARLBench on full set", "SB3 on subset", "ARLBench on subset"]
-    hue_order = ["Atari", "Box2D", "Classic Control", "XLand", "MuJoCo"]
+    hue_order = ["ALE", "Box2D", "Classic Control", "XLand", "MuJoCo"]
 
     all_combinations = pd.MultiIndex.from_product([all_runtimes["algorithm"].unique(), all_runtimes["set"].unique(), hue_order], names=["algorithm", "set", "category"])
     all_runtimes = all_runtimes.set_index(["algorithm", "set", "category"]).reindex(all_combinations).reset_index()
@@ -255,6 +255,60 @@ def plot_runtime_comparisons():
     plt.tight_layout(rect=(0, 0.07, 1, 1))
     plt.savefig("plots/runtime_experiments/set_comparison.png", dpi=500)
     plt.close()
+
+    # Plot seprate plots per env category
+    for i, category in enumerate(np.unique(ENV_CATEGORIES["ppo"])):
+        print(category)
+        fig, axes = plt.subplots(1, 3, figsize=(8, 2.5))
+
+        fig.subplots_adjust(top=0.85)
+
+        category_runtimes = all_runtimes[all_runtimes["category"] == category]
+        
+        for i, algorithm in enumerate(env_categories.keys()):
+            runtime_data = category_runtimes[category_runtimes["algorithm"] == algorithm]
+            print(f"### {algorithm.upper()} ###")
+            alg_rt = runtime_data
+            alg_rt["runtime"] = alg_rt["runtime"] / (32 * 10)
+            print(alg_rt)
+
+            if (runtime_data["runtime"] == 0.).all():
+                axes[i].set_visible(False)
+                continue
+
+            plot = (
+                so.Plot(
+                    runtime_data,
+                    x="runtime",
+                    y="set",
+                    color="category",
+                ).add(
+                    so.Bar(),
+                    so.Agg("sum"),
+                    so.Norm(func="sum", by=["x"]),
+                    so.Stack()
+                ).scale(
+                    color="colorblind",
+                    y=so.Nominal(order=set_order),
+                )
+            )
+            plot.on(axes[i]).show()
+
+            axes[i].set_title(algorithm.upper())
+            axes[i].set_xlabel("Total Runtime [h]")
+            if i == 0:
+                axes[i].set_ylabel("Environments")
+            else:
+                axes[i].set_ylabel("")
+                axes[i].set_yticklabels([])
+
+        for l in fig.legends:
+            l.set_visible(False)
+        legend = fig.legends[0]
+        fig.legend(legend.legend_handles, [t.get_text() for t in legend.texts], loc="upper center", bbox_to_anchor=(0.5, 0.105), ncol=5, fancybox=False, shadow=False, frameon=False)
+        plt.tight_layout(rect=(0, 0.07, 1, 1))
+        plt.savefig(f"plots/runtime_experiments/set_comparison_{category}.png", dpi=500)
+        plt.close()
     
 
 def compute_total_runtime():
