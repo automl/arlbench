@@ -6,6 +6,9 @@ import numpy as np
 import seaborn as sns
 import seaborn.objects as so
 import matplotlib.pyplot as plt
+import warnings
+
+warnings.filterwarnings("ignore")
 
 
 sns.set_style("whitegrid")
@@ -258,7 +261,7 @@ def plot_runtime_comparisons():
 
     # Plot seprate plots per env category
     for i, category in enumerate(np.unique(ENV_CATEGORIES["ppo"])):
-        print(category)
+        print(f"### Category: {category} ###")
         fig, axes = plt.subplots(1, 3, figsize=(8, 2.5))
 
         fig.subplots_adjust(top=0.85)
