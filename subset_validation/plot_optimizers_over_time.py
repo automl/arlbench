@@ -129,7 +129,7 @@ SUBSET_WEIGHTS = {
         "MiniGrid-FourRooms": 0.11920235,
     },
     "sac": {
-        "0.3208448": 0.35797678,
+        "ant": 0.35797678,
         "halfcheetah": 0.3176157,
         "hopper": 0.15381655,
         "MountainCarContinuous-v0": 0.19360028,
@@ -165,10 +165,18 @@ def read_min_max_scores():
         algorithm = splitted_filename[-1]
         environment = "_".join(splitted_filename[:-1])
 
+        min_p = result_filtered.dropna()["Score"].min()
+        max_p = result_filtered.dropna()["Score"].max()
+
+        if "brax" in environment:
+            min_p = -2000
+        elif "box2d" in environment:
+            min_p = -200
+
         environment = EXPERIMENT_TO_ENV[environment]
 
-        min_score[algorithm][environment] = result_filtered["Score"].min()
-        max_score[algorithm][environment] = result_filtered["Score"].max()
+        min_score[algorithm][environment] = min_p
+        max_score[algorithm][environment] = max_p
 
     return min_score, max_score
 
@@ -272,7 +280,7 @@ def get_incumbent(opt_data: pd.DataFrame, exp: str, method: str, min_scores = No
             min_score = min_scores[algorithm][environment]
             max_score = max_scores[algorithm][environment]
             normalized_score = (row["incumbent"] - min_score) / (max_score - min_score)
-            return normalized_score
+            return max(min(normalized_score, 1), 0)
 
         incumbent_opt_data.loc[:, "score"] = incumbent_opt_data.apply(min_max_normalize, axis=1)
         incumbent_opt_data.loc[:, "score"] *= -1
@@ -441,6 +449,6 @@ if __name__ == "__main__":
         for category_name, envs in category.items():
             plot_envs_opt_over_time(algorithm, envs, category_name, "score")
 
-    for exp in os.listdir("results/smac_mf"):
+    for exp in os.listdir("results/rs"):
        plot_opt_over_time(exp, "score")
        gc.collect()

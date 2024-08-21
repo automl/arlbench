@@ -222,8 +222,18 @@ def plot_runtime_comparisons():
         runtime_data = all_runtimes[all_runtimes["algorithm"] == algorithm]
         print(f"### {algorithm.upper()} ###")
         alg_rt = runtime_data.groupby(["algorithm", "set"]).sum()
-        alg_rt["runtime"] = alg_rt["runtime"] / (32 * 10)
         print(alg_rt)
+
+        # compute speedups of JAX/subset selection separately
+        print(alg_rt.columns)
+        jax_speedup = alg_rt.loc[(algorithm, 'SB3 on full set'), 'runtime'] / alg_rt.loc[(algorithm, 'ARLBench on full set'), 'runtime']
+        subset_speedup = alg_rt.loc[(algorithm, 'ARLBench on full set'), 'runtime'] / alg_rt.loc[(algorithm, 'ARLBench on subset'), 'runtime']
+        total_speedup =  alg_rt.loc[(algorithm, 'SB3 on full set'), 'runtime'] / alg_rt.loc[(algorithm, 'ARLBench on subset'), 'runtime']
+
+        # Print the results
+        print(f"JAX speedup: {jax_speedup:.2f}")
+        print(f"Subset speedup (ARLBench): {subset_speedup:.2f}")
+        print(f"Total speedup: {total_speedup:.2f}")
 
         plot = (
             so.Plot(
@@ -274,6 +284,18 @@ def plot_runtime_comparisons():
             alg_rt = runtime_data
             alg_rt["runtime"] = alg_rt["runtime"] / (32 * 10)
             print(alg_rt)
+
+            # Calculate speedup factors
+            jax_speedup = alg_rt.loc[alg_rt["set"] == 'SB3 on full set', 'runtime'].values[0] / alg_rt.loc[alg_rt["set"] == 'ARLBench on full set', 'runtime'].values[0]
+            subset_speedup = alg_rt.loc[alg_rt["set"] == 'ARLBench on full set', 'runtime'].values[0] / alg_rt.loc[alg_rt["set"] == 'ARLBench on subset', 'runtime'].values[0]
+            total_speedup =  alg_rt.loc[alg_rt["set"] == 'SB3 on full set', 'runtime'].values[0] / alg_rt.loc[alg_rt["set"] == 'ARLBench on subset', 'runtime'].values[0]
+
+            # Print the results
+            print(f"JAX speedup: {jax_speedup:.2f}")
+            print(f"Subset speedup (ARLBench): {subset_speedup:.2f}")
+            print(f"Total speedup: {total_speedup:.2f}")
+
+
 
             if (runtime_data["runtime"] == 0.).all():
                 axes[i].set_visible(False)
