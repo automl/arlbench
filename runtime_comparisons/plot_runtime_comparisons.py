@@ -222,10 +222,11 @@ def plot_runtime_comparisons():
         runtime_data = all_runtimes[all_runtimes["algorithm"] == algorithm]
         print(f"### {algorithm.upper()} ###")
         alg_rt = runtime_data.groupby(["algorithm", "set"]).sum()
-        print(alg_rt)
+        
+        print("Overall SB3 full set sum:", alg_rt.loc[(algorithm, 'SB3 on full set'), 'runtime'].sum())
+        print("Overall ARLBench subset sum:", alg_rt.loc[(algorithm, 'ARLBench on subset'), 'runtime'].sum())
 
         # compute speedups of JAX/subset selection separately
-        print(alg_rt.columns)
         jax_speedup = alg_rt.loc[(algorithm, 'SB3 on full set'), 'runtime'] / alg_rt.loc[(algorithm, 'ARLBench on full set'), 'runtime']
         subset_speedup = alg_rt.loc[(algorithm, 'ARLBench on full set'), 'runtime'] / alg_rt.loc[(algorithm, 'ARLBench on subset'), 'runtime']
         total_speedup =  alg_rt.loc[(algorithm, 'SB3 on full set'), 'runtime'] / alg_rt.loc[(algorithm, 'ARLBench on subset'), 'runtime']
