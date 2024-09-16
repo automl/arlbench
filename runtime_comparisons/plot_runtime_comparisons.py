@@ -283,7 +283,6 @@ def plot_runtime_comparisons():
             runtime_data = category_runtimes[category_runtimes["algorithm"] == algorithm]
             print(f"### {algorithm.upper()} ###")
             alg_rt = runtime_data
-            alg_rt["runtime"] = alg_rt["runtime"] / (32 * 10)
             print(alg_rt)
 
             # Calculate speedup factors
