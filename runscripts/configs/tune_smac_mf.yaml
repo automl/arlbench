@@ -9,15 +9,14 @@ defaults:
 
 hydra:
   sweeper:
-    n_trials: 254
+    n_trials: 70
     budget: ${multiply:${environment.n_total_timesteps},32}
     budget_variable: autorl.n_total_timesteps
     search_space: ${search_space}
     sweeper_kwargs:
       seeds: [0, 1, 2]
       maximize: true
-      max_job_array
-      min_budget: ${divide:${environment.n_total_timesteps},100}
+      min_budget: ${divide:${environment.n_total_timesteps},10}
       max_budget: ${environment.n_total_timesteps} 
       job_array_size_limit: 1
       optimizer_kwargs:
@@ -28,7 +27,7 @@ hydra:
         intensifier:
           _target_: smac.facade.multi_fidelity_facade.MultiFidelityFacade.get_intensifier
           _partial_: true
-          eta: 4
+          eta: 2
         scenario:
           seed: ${smac_seed}
           n_trials: ${hydra.sweeper.n_trials}
