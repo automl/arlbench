@@ -12,8 +12,11 @@ hydra:
     n_trials: 32
     search_space: ${search_space}
     sweeper_kwargs:
+      seeds: [0, 1, 2]
+      maximize: true
+      min_budget: ${environment.n_total_timesteps}
       max_budget: ${environment.n_total_timesteps}
-      # warmstart_file: runscripts/configs/initial_design/${experiment_name}.csv
+      job_array_size_limit: 1
       optimizer_kwargs:
         smac_facade:
           _target_: smac.facade.blackbox_facade.BlackBoxFacade
@@ -34,11 +37,6 @@ hydra:
         initial_design:
           _target_: smac.initial_design.sobol_design.SobolInitialDesign
           _partial_: true
-          n_configs: 0
-          # additional_configs: ${read_additional_configs:runscripts/configs/initial_design/${experiment_name}.csv,${search_space}}
-      seeds: [0, 1, 2]
-      maximize: true
-      deterministic: true
   run:
     dir: results/smac/${algorithm}_${autorl.env_name}/${smac_seed}/${seed}
   sweep:
