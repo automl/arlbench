@@ -4,34 +4,16 @@ arlbench.core.algorithms
 .. automodule:: arlbench.core.algorithms
 
    
-   
-   
-
-   
-   
-   
-
-   
-   
-   
-
-   
-   
-   
-
-
-
 .. rubric:: Modules
 
 .. autosummary::
    :toctree:
    :recursive:
 
-   arlbench.core.algorithms.algorithm
-   arlbench.core.algorithms.buffers
-   arlbench.core.algorithms.common
-   arlbench.core.algorithms.dqn
-   arlbench.core.algorithms.ppo
-   arlbench.core.algorithms.prioritised_item_buffer
-   arlbench.core.algorithms.sac
-
+   algorithm
+   buffers
+   common
+   dqn
+   ppo
+   prioritised_item_buffer
+   sac

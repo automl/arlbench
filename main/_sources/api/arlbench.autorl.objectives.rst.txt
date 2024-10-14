@@ -4,15 +4,6 @@ arlbench.autorl.objectives
 .. automodule:: arlbench.autorl.objectives
 
    
-   
-   
-
-   
-   
-   
-
-   
-   
    .. rubric:: Classes
 
    .. autosummary::
@@ -23,11 +14,3 @@ arlbench.autorl.objectives
       RewardStd
       Runtime
    
-   
-
-   
-   
-   
-
-
-

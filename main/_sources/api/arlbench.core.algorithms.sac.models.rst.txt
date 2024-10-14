@@ -4,15 +4,6 @@ arlbench.core.algorithms.sac.models
 .. automodule:: arlbench.core.algorithms.sac.models
 
    
-   
-   
-
-   
-   
-   
-
-   
-   
    .. rubric:: Classes
 
    .. autosummary::
@@ -25,11 +16,3 @@ arlbench.core.algorithms.sac.models
       SACVectorCritic
       TanhTransformedDistribution
    
-   
-
-   
-   
-   
-
-
-

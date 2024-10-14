@@ -4,29 +4,11 @@ arlbench.core.wrappers
 .. automodule:: arlbench.core.wrappers
 
    
-   
-   
-
-   
-   
-   
-
-   
-   
-   
-
-   
-   
-   
-
-
-
 .. rubric:: Modules
 
 .. autosummary::
    :toctree:
    :recursive:
 
-   arlbench.core.wrappers.flatten_observation
-   arlbench.core.wrappers.wrapper
-
+   flatten_observation
+   wrapper

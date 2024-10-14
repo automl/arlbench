@@ -4,20 +4,11 @@ arlbench.core.environments.envpool\_env
 .. automodule:: arlbench.core.environments.envpool_env
 
    
-   
-   
-
-   
-   
    .. rubric:: Functions
 
    .. autosummary::
    
       numpy_to_jax
-   
-   
-
-   
    
    .. rubric:: Classes
 
@@ -25,11 +16,3 @@ arlbench.core.environments.envpool\_env
    
       EnvpoolEnv
    
-   
-
-   
-   
-   
-
-
-

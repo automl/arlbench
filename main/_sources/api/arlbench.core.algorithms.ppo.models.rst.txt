@@ -4,15 +4,6 @@ arlbench.core.algorithms.ppo.models
 .. automodule:: arlbench.core.algorithms.ppo.models
 
    
-   
-   
-
-   
-   
-   
-
-   
-   
    .. rubric:: Classes
 
    .. autosummary::
@@ -20,11 +11,3 @@ arlbench.core.algorithms.ppo.models
       CNNActorCritic
       MLPActorCritic
    
-   
-
-   
-   
-   
-
-
-

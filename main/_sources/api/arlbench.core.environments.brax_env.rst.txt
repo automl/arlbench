@@ -4,26 +4,9 @@ arlbench.core.environments.brax\_env
 .. automodule:: arlbench.core.environments.brax_env
 
    
-   
-   
-
-   
-   
-   
-
-   
-   
    .. rubric:: Classes
 
    .. autosummary::
    
       BraxEnv
    
-   
-
-   
-   
-   
-
-
-

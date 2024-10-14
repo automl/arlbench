@@ -4,11 +4,6 @@ arlbench.core.running\_statistics
 .. automodule:: arlbench.core.running_statistics
 
    
-   
-   
-
-   
-   
    .. rubric:: Functions
 
    .. autosummary::
@@ -18,10 +13,6 @@ arlbench.core.running\_statistics
       normalize
       update
    
-   
-
-   
-   
    .. rubric:: Classes
 
    .. autosummary::
@@ -30,11 +21,3 @@ arlbench.core.running\_statistics
       NestedMeanStd
       RunningStatisticsState
    
-   
-
-   
-   
-   
-
-
-

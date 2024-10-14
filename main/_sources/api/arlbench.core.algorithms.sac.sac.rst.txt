@@ -4,15 +4,6 @@ arlbench.core.algorithms.sac.sac
 .. automodule:: arlbench.core.algorithms.sac.sac
 
    
-   
-   
-
-   
-   
-   
-
-   
-   
    .. rubric:: Classes
 
    .. autosummary::
@@ -25,11 +16,3 @@ arlbench.core.algorithms.sac.sac
       SACTrainingResult
       Transition
    
-   
-
-   
-   
-   
-
-
-

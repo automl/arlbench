@@ -4,28 +4,10 @@ arlbench.utils
 .. automodule:: arlbench.utils
 
    
-   
-   
-
-   
-   
-   
-
-   
-   
-   
-
-   
-   
-   
-
-
-
 .. rubric:: Modules
 
 .. autosummary::
    :toctree:
    :recursive:
 
-   arlbench.utils.common
-
+   common

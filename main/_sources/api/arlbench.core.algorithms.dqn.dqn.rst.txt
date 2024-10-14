@@ -4,15 +4,6 @@ arlbench.core.algorithms.dqn.dqn
 .. automodule:: arlbench.core.algorithms.dqn.dqn
 
    
-   
-   
-
-   
-   
-   
-
-   
-   
    .. rubric:: Classes
 
    .. autosummary::
@@ -25,11 +16,3 @@ arlbench.core.algorithms.dqn.dqn
       DQNTrainingResult
       Transition
    
-   
-
-   
-   
-   
-
-
-

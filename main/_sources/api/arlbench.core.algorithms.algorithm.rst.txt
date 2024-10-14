@@ -4,26 +4,9 @@ arlbench.core.algorithms.algorithm
 .. automodule:: arlbench.core.algorithms.algorithm
 
    
-   
-   
-
-   
-   
-   
-
-   
-   
    .. rubric:: Classes
 
    .. autosummary::
    
       Algorithm
    
-   
-
-   
-   
-   
-
-
-

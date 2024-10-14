@@ -4,26 +4,9 @@ arlbench.autorl.checkpointing
 .. automodule:: arlbench.autorl.checkpointing
 
    
-   
-   
-
-   
-   
-   
-
-   
-   
    .. rubric:: Classes
 
    .. autosummary::
    
       Checkpointer
    
-   
-
-   
-   
-   
-
-
-
