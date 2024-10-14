@@ -156,8 +156,12 @@ If you use ARLBench in your work, please cite us:
 
 ```bibtex
 @misc{beckdierkes24,
-  author    = {J. Becktepe and J. Dierkes and C. Benjamins and D. Salinas and A. Mohan and R. Rajan and F. Hutter and H. Hoos and M. Lindauer and T. Eimer},
-  title     = {ARLBench},
-  year      = {2024},
-  url = {https://github.com/automl/arlbench},
+      title={ARLBench: Flexible and Efficient Benchmarking for Hyperparameter Optimization in Reinforcement Learning}, 
+      author={J. Becktepe and J. Dierkes and C. Benjamins and D. Salinas and A. Mohan and R. Rajan and F. Hutter and H. Hoos and M. Lindauer and T. Eimer},
+      year={2024},
+      archivePrefix={arXiv},
+      primaryClass={cs.LG},
+      url={https://arxiv.org/abs/2409.18827},
+      note={GitHub: https://github.com/automl/arlbench}, 
+}
 ```
