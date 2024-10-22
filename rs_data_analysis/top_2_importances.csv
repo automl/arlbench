@@ -31,6 +31,7 @@ ppo,minigrid_unlock,vf_clip_eps,ent_coef
 ppo,brax_ant,learning_rate,clip_eps
 ppo,brax_hopper,learning_rate,max_grad_norm
 ppo,brax_humanoid,vf_coef,learning_rate
+ppo,brax_halfcheetah,vf_coef,learning_rate
 sac,box2d_bipedal_walker,learning_rate,tau
 sac,cc_pendulum,alpha,alpha_auto
 sac,cc_continuous_mountain_car,buffer_size,learning_starts

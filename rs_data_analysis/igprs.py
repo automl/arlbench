@@ -366,10 +366,13 @@ if __name__ == "__main__":
     envs = top_df['env'].unique()
     
     
-    envs = ["brax_ant"]
+    envs = ["atari_this_game"]
 
 
     plot_dir = Path("igpr_data/plots_new")
+
+
+    # import pdb; pdb.set_trace()
 
     # Y_BOUNDS = {
     #     'ppo' : (-200, 200),
