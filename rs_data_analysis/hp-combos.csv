@@ -1,0 +1,11 @@
+algorithm,env,top_hp_1,top_hp_2
+dqn,Qbert-v5,learning_rate,target_update_interval
+dqn,DoubleDunk,learning_rate,buffer_alpha
+dqn,MiniGrid-DoorKey-5x5,buffer_alpha,learning_starts
+dqn,CartPole-v1,learning_rate,buffer_epsilon
+ppo,ant,learning_rate,vf_clip_eps
+ppo,halfcheetah,ent_coef,vf_clip_eps
+ppo,MiniGrid-DoorKey-5x5,ent_coef,normalize_advantage
+ppo,Pendulum-v1,learning_rate,normalize_advantage
+sac,halfcheetah,alpha,vf_clip_eps
+sac,BipedalWalker-v3,buffer_beta,reward_scale
