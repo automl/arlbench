@@ -4,8 +4,14 @@ import logging
 import shutil
 
 
-POPULATION_SIZE = 32
-NUM_CONFIGS = 10    # number of dynamic configurations for each run
+N_CONFIGS = {
+    "rs": 32,
+    "smac": 32,
+    "smac_mf": 70,
+    "pbt": 320
+}
+
+N_SEEDS = 5
 
 
 def aggregate_runhistories(approach: str):
@@ -18,64 +24,50 @@ def aggregate_runhistories(approach: str):
     for algorithm_env in os.listdir(base_path):
         agent_env_path = os.path.join(base_path, algorithm_env)
         if os.path.isdir(agent_env_path):
-            combined_path = os.path.join(agent_env_path, "runhistory_combined.csv")
+            combined_runhistory_path = os.path.join(agent_env_path, "runhistory_combined.csv")
+            combined_incumbent_path = os.path.join(agent_env_path, "incumbent_combined.csv")
 
-            if os.path.exists(combined_path):
-                logging.info(f"Aggregated runhistory already exists for {algorithm_env}. Skipping...")
-                #continue
-        
-            all_data = []
+            all_runhistories = []
+            all_incumbents = []
+
             for seed_dir in os.listdir(agent_env_path):
                 seed_path = os.path.join(agent_env_path, seed_dir)
                 if os.path.isdir(seed_path):
-                    csv_file = os.path.join(seed_path, "42", "runhistory.csv")
-                    if os.path.isfile(csv_file):
+                    runhistory_file = os.path.join(seed_path, "42", "runhistory.csv")
+                    incumbent_file = os.path.join(seed_path, "42", "incumbent.csv")
+                    if os.path.isfile(runhistory_file) and os.path.isfile(incumbent_file):
                         try:
-                            data = pd.read_csv(csv_file)
+                            runhistory = pd.read_csv(runhistory_file)
+                            incumbent = pd.read_csv(incumbent_file)
                         except pd.errors.ParserError as e:
-                            print(f"Error while reading: {csv_file}")
-                            print(e)
+                            print(f"Error while reading directory {seed_path}")
                             continue
-                        data["seed"] = seed_dir
+                        runhistory["seed"] = int(seed_dir)
+                        incumbent["seed"] = int(seed_dir)
 
-                        # Find the row index where the last header starts
-                        last_header_row_index = 0
-                        for i, row in data.iterrows():
-                            if str(row["run_id"]) == "run_id":
-                                last_header_row_index = i
+                        if approach == "pbt" and len(runhistory) == N_CONFIGS[approach] + 1:
+                            runhistory = runhistory.iloc[:N_CONFIGS[approach], :]
 
-                        # If multiple headers exists, skip rows before last
-                        if last_header_row_index > 0:
-                            data = pd.read_csv(csv_file, skiprows=last_header_row_index + 1)
-
-                        if approach == "pbt":
-                            data["run_id"] = data["run_id"].astype(int)
-                            # In some cases the hypersweeper started another run that is out-of-budget
-                            data = data[data["run_id"] < POPULATION_SIZE * NUM_CONFIGS]
-
-                            # Every 32th entry belongs to the same population member
-                            for _, row in data.iterrows():
-                                member_id = row["run_id"] % POPULATION_SIZE
-                                iteration = row["run_id"] // POPULATION_SIZE
-                                data.at[row["run_id"], "member_id"] = member_id
-                                data.at[row["run_id"], "iteration"] = iteration
-                                data.at[row["run_id"], "budget"] = row["budget"] * (iteration + 1)
-                        elif approach == "smac_mf":
-                            max_budget = data["budget"].max()
-                            max_budget_idx = data[data["budget"] == max_budget].index.max()
-                            data = data.iloc[:max_budget_idx + 1, :]
-                        all_data.append(data)
-
-                    # remove directories > 255 because we had to many random runs
-                    # for some environments due to a bug in the hypersweeper
-                    for run_dir in os.listdir(seed_path):
-                        run_path = os.path.join(seed_path, run_dir)
-                        if not os.path.isdir(run_path):
+                        if not len(runhistory) == N_CONFIGS[approach]:
+                            print(f"{runhistory_file}: Expected {N_CONFIGS[approach]} entries but got {len(runhistory)} instead.")
                             continue
-            
-            if all_data:
-                combined_data = pd.concat(all_data, ignore_index=True)
-                combined_data.to_csv(combined_path, index=False)
+
+                        all_runhistories.append(runhistory)
+                        all_incumbents.append(incumbent)
+
+            if all_runhistories:
+                all_runhistories = pd.concat(all_runhistories, ignore_index=True)
+                all_runhistories.to_csv(combined_runhistory_path, index=False)
+
+                all_incumbents = pd.concat(all_incumbents, ignore_index=True)
+                all_incumbents.to_csv(combined_incumbent_path, index=False)
+
+                if not len(all_runhistories) == N_SEEDS * N_CONFIGS[approach]:
+                    print(f"{algorithm_env} Runhistory: Expected {N_SEEDS * N_CONFIGS[approach]} entries but got {len(all_runhistories)} instead.")
+
+                if not len(all_incumbents) == N_SEEDS * N_CONFIGS[approach]:
+                    print(f"{algorithm_env} Incumbent: Expected {N_SEEDS * N_CONFIGS[approach]} entries but got {len(all_incumbents)} instead.")
+
                 logging.info(f"Created combined runhistory for {algorithm_env}.")
             else:
                 logging.info(f"No data found for {algorithm_env}. Skipping...")
