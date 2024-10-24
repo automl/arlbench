@@ -10,6 +10,8 @@ import warnings
 import logging
 import sys
 
+# pd.set_option('display.max_rows', None)
+
 
 logging.basicConfig(stream=sys.stdout, level=logging.INFO, format="%(asctime)s %(message)s")
 
@@ -18,6 +20,13 @@ warnings.filterwarnings("ignore")
 N_BUCKETS = 1000
 
 RAW_SOBOL_RESULTS = "results_combined/sobol"
+
+N_CONFIGS = {
+    "rs": 32,
+    "smac": 32,
+    "smac_mf": 70,
+    "pbt": 320
+}
 
 EXPERIMENT_TO_ENV = {
     "brax_halfcheetah": "halfcheetah",
@@ -94,20 +103,20 @@ HUE_ORDER = ["RS", "SMAC", "SMAC + HB", "PBT"]
 
 ENV_CATEGORIES = {
     "ppo": {
-        "ALE": ["BattleZone-v5", "DoubleDunk-v5", "NameThisGame-v5", "Phoenix-v5", "QBert-v5"],
+        "ALE": ["BattleZone-v5", "DoubleDunk-v5", "NameThisGame-v5", "Phoenix-v5", "Qbert-v5"],
         "Box2D": ["LunarLander-v2", "LunarLanderContinuous-v2"],
         "Classic Control": ["Acrobot-v1", "CartPole-v1", "MountainCar-v0", "MountainCarContinuous-v0", "Pendulum-v1"],
         "XLand": ["MiniGrid-DoorKey-5x5", "MiniGrid-EmptyRandom-5x5", "MiniGrid-FourRooms", "MiniGrid-Unlock"],
         "Brax": ["ant", "halfcheetah", "hopper", "humanoid"]
     },
     "dqn": {
-        "ALE": ["BattleZone-v5", "DoubleDunk-v5", "NameThisGame-v5", "Phoenix-v5", "QBert-v5"],
+        "ALE": ["BattleZone-v5", "DoubleDunk-v5", "NameThisGame-v5", "Phoenix-v5", "Qbert-v5"],
         "Box2D": ["LunarLander-v2"],
         "Classic Control": ["Acrobot-v1", "CartPole-v1", "MountainCar-v0"],
         "XLand": ["MiniGrid-DoorKey-5x5", "MiniGrid-EmptyRandom-5x5", "MiniGrid-FourRooms", "MiniGrid-Unlock"],
     },
     "sac": {
-        "Box2D": ["BipedalWalker-v2", "LunarLanderContinuous-v2"],
+        "Box2D": ["BipedalWalker-v3", "LunarLanderContinuous-v2"],
         "Classic Control": ["MountainCarContinuous-v0", "Pendulum-v1"],
         "Brax": ["ant", "halfcheetah", "hopper", "humanoid"]
     },
@@ -165,6 +174,9 @@ def read_min_max_scores():
         algorithm = splitted_filename[-1]
         environment = "_".join(splitted_filename[:-1])
 
+        # In the landscaping we minimized the score, i.e. negative rewards
+        result_filtered["Score"] *= -1
+
         min_p = result_filtered.dropna()["Score"].min()
         max_p = result_filtered.dropna()["Score"].max()
 
@@ -180,132 +192,135 @@ def read_min_max_scores():
 
     return min_score, max_score
 
-def read_opt_data(exp: str):
+def read_incubment_data(exp: str):
+    environment = exp.split("_")[1]
+
     all_data = []
 
     for opt in OPTIMIZERS:
         logging.info(f"Reading {exp}: {opt}")
-        runhistory_path = os.path.join("results", opt, exp, "runhistory_combined.csv")
+        exp_path = os.path.join("results", opt, exp)
+        if not os.path.isdir(exp_path):
+            print(f"Unable to load {exp_path}")
+            continue 
 
-        if not os.path.isfile(runhistory_path):
-            continue
+        for seed_dir in os.listdir(exp_path):
+            seed_path = os.path.join(exp_path, seed_dir)
 
-        opt_data = pd.read_csv(runhistory_path)
-        opt_data["optimizer"] = opt
-        opt_data = opt_data[["optimizer", "run_id", "budget", "performance", "seed"]]
+            if not os.path.isdir(seed_path):
+                continue
 
-        if opt == "smac_mf" or opt == "pbt":
-            agg_opt_data = []
+            incumbent_path = os.path.join(seed_path, "42", "incumbent.csv")
+            runhistory_path = os.path.join(seed_path, "42", "runhistory.csv")
 
-            for (budget, seed), budget_seed_group in opt_data.groupby(["budget", "seed"]):
-                if opt == "pbt":
-                    budget = opt_data["budget"].min()
-                agg_opt_data += [{
-                    "budget": budget,
-                    "cum_budget": budget * len(budget_seed_group),
-                    "seed": seed,
-                    "performance": budget_seed_group["performance"].min()
-                }]
+            if not os.path.isfile(incumbent_path):
+                print(f"Unable to read directory {seed_path}.")
+                continue 
 
+            incumbent_data = pd.read_csv(incumbent_path)
+            runhistory_data = pd.read_csv(runhistory_path)
 
-            agg_opt_data = pd.DataFrame(agg_opt_data)
+            if opt == "pbt":
+                # Sometimes the hypersweeper excutes one additional run at the 
+                # end so we have to remove it 
+                runhistory_data = runhistory_data.iloc[:32 * 10, :]
+                incumbent_data = incumbent_data.iloc[:10, :]
 
-            agg_opt_data["optimizer"] = opt
-            agg_opt_data = agg_opt_data.sort_values("budget")
-            agg_opt_data["cum_budget"] = agg_opt_data.groupby("seed")["cum_budget"].cumsum()
-            
-            all_data += [agg_opt_data]
-        else:
-            opt_data["cum_budget"] = (opt_data["run_id"] + 1) * opt_data["budget"].min()
-            all_data += [opt_data]
+                # To fix the used budget, we determine the budget of one iteration
+                # and compute the cumulative sum
+                run_budget = float(runhistory_data["budget"].values[0])
+                try:
+                    incumbent_data["budget_used"] = np.array([run_budget * 32] * 10).cumsum()
+                except:
+                    continue
+
+            if not len(runhistory_data) == N_CONFIGS[opt]:
+                print(f"{runhistory_path}: Not finished.")
+                continue
+
+            incumbent_data["norm_budget"] = incumbent_data["budget_used"] / (incumbent_data["budget_used"].max() / 32)
+
+            all_norm_budget = pd.DataFrame({"norm_budget": np.arange(0, 32.025, 0.025)})
+            incumbent_data = pd.merge(all_norm_budget, incumbent_data, on="norm_budget", how="left")
+
+            incumbent_data["performance"] = incumbent_data["performance"].ffill()
+
+            incumbent_data = incumbent_data[["norm_budget", "performance"]]
+
+            incumbent_data["optimizer"] = OPTIMIZER_NAMES[opt]
+            incumbent_data["environment"] = environment
+            incumbent_data["seed"] = int(seed_dir) - 42 if opt == "rs" else int(seed_dir)
+
+            all_data.append(incumbent_data)
 
     all_df =  pd.concat(all_data) if len(all_data) > 0 else None
 
     return all_df
 
-def interpolate(opt_data: pd.DataFrame) -> pd.DataFrame:
-    interpolated_opt_datas = []
-    
-    min_budget = opt_data[opt_data["optimizer"] == "rs"]["cum_budget"].min()
-    max_budget = opt_data[opt_data["optimizer"] == "rs"]["cum_budget"].max()
 
-    for (optimizer, seed), group_opt_data in opt_data.groupby(["optimizer", "seed"]):
-        group_opt_data = group_opt_data.drop(columns=["budget"])
-        group_opt_data["performance"] = group_opt_data["performance"].ffill()
-
-        group_opt_data = group_opt_data[group_opt_data["cum_budget"] <= max_budget]
-
-        group_opt_data = group_opt_data.dropna(subset=["performance"])
-
-        group_opt_data["norm_budget"] = (N_BUCKETS * group_opt_data["cum_budget"] / max_budget).astype(int)
-        
-        group_opt_data = group_opt_data.loc[group_opt_data.groupby('norm_budget')['performance'].idxmin()]
-
-        all_norm_budget = pd.DataFrame({'norm_budget': range(0, N_BUCKETS + 1)})
-
-        all_norm_budget = pd.merge(all_norm_budget, group_opt_data, on='norm_budget', how='left')
-
-        all_norm_budget["performance"] = all_norm_budget["performance"].ffill()
-        all_norm_budget["seed"] = seed - 42 if optimizer == "rs" else seed
-        all_norm_budget["optimizer"] = OPTIMIZER_NAMES[optimizer]
-        all_norm_budget["norm_budget"] /= N_BUCKETS
-
-        interpolated_opt_datas.append(all_norm_budget)
-
-    interpolated_opt_datas = pd.concat(interpolated_opt_datas, ignore_index=True)
-    interpolated_opt_datas[interpolated_opt_datas["cum_budget"] <= max_budget]
-
-    return interpolated_opt_datas
-
-
-def get_incumbent(opt_data: pd.DataFrame, exp: str, method: str, min_scores = None, max_scores = None) -> pd.DataFrame:
-    best_config_opt_data = (
-        opt_data.groupby(["optimizer", "cum_budget", "seed"], as_index=False)
-        .apply(lambda group: group.loc[group["performance"].idxmin()])
-        .reset_index(drop=True))
-    best_config_opt_data = best_config_opt_data.drop(columns=["run_id"])
-
-    interpolated_opt_data = interpolate(best_config_opt_data)
-    
-    incumbent_opt_data = interpolated_opt_data.sort_values(by=["optimizer", "seed", "norm_budget"])
-    incumbent_opt_data["incumbent"] = incumbent_opt_data.groupby(["optimizer", "seed"])["performance"].cummin()
-    incumbent_opt_data = incumbent_opt_data[["cum_budget", "norm_budget", "optimizer", "seed", "incumbent"]]
-
+def normalize(
+        incumbent_data: pd.DataFrame, 
+        exp: str, 
+        method: str, 
+        min_scores: dict | None = None, 
+        max_scores: dict | None = None
+    ) -> pd.DataFrame:    
     algorithm, environment = exp.split("_")
 
     if method == "rank":
-         incumbent_opt_data["rank"] = incumbent_opt_data.groupby(["norm_budget", "seed"])["incumbent"].rank()
+        incumbent_data["rank"] = incumbent_data.groupby(["norm_budget", "seed", "environment"])["performance"].rank(ascending=True)
     elif method == "score":
+        assert min_scores is not None
+        assert max_scores is not None
+
         def min_max_normalize(row):
-            min_score = min_scores[algorithm][environment]
-            max_score = max_scores[algorithm][environment]
-            normalized_score = (row["incumbent"] - min_score) / (max_score - min_score)
-            return max(min(normalized_score, 1), 0)
+            overall_min = incumbent_data["performance"].min()
+            overall_max = incumbent_data["performance"].max()
 
-        incumbent_opt_data.loc[:, "score"] = incumbent_opt_data.apply(min_max_normalize, axis=1)
-        incumbent_opt_data.loc[:, "score"] *= -1
-        incumbent_opt_data.loc[:, "score"] += 1
-        incumbent_opt_data.loc[:, "score"] = incumbent_opt_data.loc[:, "score"].fillna(0)
+            min_score = min(min_scores[algorithm][environment], overall_min)
+            max_score = max(max_scores[algorithm][environment], overall_max)
+            normalized_score = (row["performance"] - min_score) / (max_score - min_score)
+            return normalized_score
 
+        incumbent_data.loc[:, "score"] = incumbent_data.apply(min_max_normalize, axis=1)
+        # incumbent_data.loc[:, "score"] *= -1
+        # incumbent_data.loc[:, "score"] -= 1
+        # incumbent_data.loc[:, "score"] = incumbent_data.loc[:, "score"].fillna(0)
 
-    return incumbent_opt_data
+    return incumbent_data
+
 
 def plot_opt_over_time(exp: str, method: str):
     min_scores, max_scores = None, None
     if method == "score":
         min_scores, max_scores = read_min_max_scores()
 
-    opt_data = read_opt_data(exp)
-    if opt_data is None:
+    incumbent_data = read_incubment_data(exp)
+    if incumbent_data is None:
         return
+    
+    incumbent_data = normalize(
+        incumbent_data=incumbent_data,
+        exp=exp,
+        method=method,
+        min_scores=min_scores,
+        max_scores=max_scores
+    )
+
+    incumbent_data = incumbent_data.reset_index()
 
     algorithm, environment = exp.split("_")
-    
-    incumbent_opt_data = get_incumbent(opt_data, exp, method, min_scores=min_scores, max_scores=max_scores)
 
     for scale in ["", "log"]:
         fig = plt.figure(figsize=(4, 3))
-        g = sns.lineplot(data=incumbent_opt_data, x="norm_budget", y=method, hue="optimizer", errorbar=("ci", 95), hue_order=HUE_ORDER, drawstyle='steps')
+        g = sns.lineplot(
+            data=incumbent_data,
+            x="norm_budget", 
+            y=method, 
+            hue="optimizer", 
+            errorbar=("ci", 95), 
+            hue_order=HUE_ORDER, 
+            drawstyle="steps")
         g.set_title(f"{algorithm.upper()} on {environment}")
         g.set_ylabel("Rank" if method == "rank" else "Normalized Score")
         g.set_xlabel("Normalized Steps")
@@ -335,24 +350,29 @@ def plot_envs_opt_over_time(algorithm: str, envs: list[str], category_name: str,
     all_opt_data = []
     for env in envs:
         exp = f"{algorithm}_{env}"
-        opt_data = read_opt_data(exp)
-        if opt_data is None:
+        incumbent_data = read_incubment_data(exp)
+        if incumbent_data is None:
             continue
 
-        incumbent_opt_data = get_incumbent(opt_data, exp, method, min_scores=min_scores, max_scores=max_scores)
+        incumbent_data = normalize(
+            incumbent_data=incumbent_data,
+            exp=exp,
+            method=method,
+            min_scores=min_scores,
+            max_scores=max_scores
+        )
 
-        incumbent_opt_data["env"] = env
-        all_opt_data += [incumbent_opt_data]
+        all_opt_data += [incumbent_data]
 
     if len (all_opt_data) == 0:
         return
 
     concat_opt_data = pd.concat(all_opt_data)
     concat_opt_data = concat_opt_data.reset_index()
-    
+
     for scale in ["", "log"]:
         fig = plt.figure(figsize=(4, 3))
-        g = sns.lineplot(data=concat_opt_data, x="norm_budget", y="score", hue="optimizer", errorbar=("ci", 95), hue_order=HUE_ORDER, drawstyle='steps')
+        g = sns.lineplot(data=concat_opt_data, x="norm_budget", y=method, hue="optimizer", errorbar=("ci", 95), hue_order=HUE_ORDER, drawstyle='steps')
         g.set_title(f"{algorithm.upper()} on {category_name}")
         g.set_ylabel("Rank" if method == "rank" else "Normalized Score")
         g.set_xlabel("Normalized Steps")
@@ -374,7 +394,7 @@ def plot_envs_opt_over_time(algorithm: str, envs: list[str], category_name: str,
         plt.close()
 
 
-def plot_subset_vs_overall(algorithm: str):
+def plot_subset_vs_overall(algorithm: str, method: str):
     min_scores, max_scores = read_min_max_scores()
 
     subset_envs = list(SUBSET_WEIGHTS[algorithm].keys())
@@ -384,37 +404,59 @@ def plot_subset_vs_overall(algorithm: str):
     for envs, data in zip([subset_envs, overall_envs], [subset_data, overall_data]):
         for env in envs:
             exp = f"{algorithm}_{env}"
-            opt_data = read_opt_data(exp)
-            if opt_data is None:
+            incumbent_data = read_incubment_data(exp)
+            if incumbent_data is None:
                 continue
 
-            incumbent_opt_data = get_incumbent(opt_data, exp, "score", min_scores=min_scores, max_scores=max_scores)
+            # incumbent_opt_data = get_incumbent(opt_data, exp, "score", min_scores=min_scores, max_scores=max_scores)
+            incumbent_data = normalize(
+                incumbent_data=incumbent_data,
+                exp=exp,
+                method=method,
+                min_scores=min_scores,
+                max_scores=max_scores
+            )
 
-            incumbent_opt_data["env"] = env
-            data.append(incumbent_opt_data)
+            data.append(incumbent_data)
 
         if len (data) == 0:
             return
 
     subset_data = pd.concat(subset_data)
     overall_data = pd.concat(overall_data)
-    subset_data = subset_data.reset_index()
-    overall_data = overall_data.reset_index()
+    # subset_data = subset_data.reset_index()
+    # overall_data = overall_data.reset_index()
 
-    print(subset_data)
-    
+    # Compute mean over all envs but keep seeds
+    subset_data = subset_data.groupby(["norm_budget", "optimizer", "seed"])["score"].mean().reset_index()
+    overall_data = overall_data.groupby(["norm_budget", "optimizer", "seed"])["score"].mean().reset_index()
+
     for scale in ["", "log"]:
         fig, axes = plt.subplots(ncols=2, nrows=1, figsize=(9, 2.5), sharey=True)
 
         for data, ax, set_name in zip([subset_data, overall_data], axes, ["Subset", "All"]):
-            g = sns.lineplot(data=data, x="norm_budget", y="score", hue="optimizer", errorbar=("ci", 95), hue_order=HUE_ORDER, drawstyle='steps', ax=ax)
+            g = sns.lineplot(
+                data=data,
+                x="norm_budget",
+                y=method,
+                hue="optimizer",
+                errorbar=("ci", 95),
+                hue_order=HUE_ORDER,
+                drawstyle='steps',
+                ax=ax
+            )
             g.set_title(f"{algorithm.upper()}: {set_name}")
             g.set_ylabel("Normalized Score")
-            g.set_xlabel("Normalized Steps")
-            g.set_ylim(0, 1)
+            g.set_xlabel("Full RL Trainings")
+
+            g.set_ylim(None, 1)
 
             if scale == "log":
+                g.set_xlim(0.125, 32)
                 g.set_xscale("log")
+            else:
+                g.set_xlim(0, 32)
+                g.set_xticks([0, 4, 8, 12, 16, 20, 24, 28, 32])
 
         legend = axes[0].legend()
         for ax in axes:
@@ -435,20 +477,25 @@ def plot_subset_vs_overall(algorithm: str):
 
 if __name__ == "__main__":
     for algorithm in SUBSET_WEIGHTS:
-        plot_subset_vs_overall(algorithm)
+        plot_subset_vs_overall(algorithm, "score")
+
 
     # for algorithm, subset_weights in SUBSET_WEIGHTS.items():
     #     subset_envs = list(subset_weights.keys())
-    #     plot_envs_opt_over_time(algorithm, subset_envs, "Subset", "score")
+    #     plot_envs_opt_over_time(algorithm, subset_envs, "Subset", "rank")
 
     # for algorithm, category in ENV_CATEGORIES.items():
     #     envs = [env for cat_envs in category.values() for env in cat_envs]
     #     plot_envs_opt_over_time(algorithm, envs, "Full Set", "score")
 
-    for algorithm, category in ENV_CATEGORIES.items():
-        for category_name, envs in category.items():
-            plot_envs_opt_over_time(algorithm, envs, category_name, "score")
+    # for algorithm, category in ENV_CATEGORIES.items():
+    #     for category_name, envs in category.items():
+    #         plot_envs_opt_over_time(algorithm, envs, category_name, "rank")
 
-    for exp in os.listdir("results/rs"):
-       plot_opt_over_time(exp, "score")
-       gc.collect()
+    #plot_envs_opt_over_time("ppo", ENV_CATEGORIES["ppo"]["Classic Control"], "Classic Control", "rank")
+
+    # plot_opt_over_time("ppo_LunarLander-v2", "score")
+
+    # for exp in os.listdir("results/rs"):
+    #    plot_opt_over_time(exp, "score")
+    #    gc.collect()

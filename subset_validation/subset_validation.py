@@ -176,22 +176,13 @@ def read_optimizer_results(optimizer: str) -> pd.DataFrame:
 
         for seed in OPTIMIZER_SEEDS[optimizer]:
             incumbent_path = os.path.join(
-                path, result_dir, str(seed), "42", "incumbent.json"
+                path, result_dir, str(seed), "42", "incumbent.csv"
             )
             if not os.path.isfile(incumbent_path):
                 continue
 
-            with open(incumbent_path, "r") as incumbent_file:
-                incumbent = incumbent_file.readlines()[-1]
-
-                incumbent = incumbent.replace("true", "True").replace("false", "False")
-
-            incumbent_dict = ast.literal_eval(incumbent)
-            score = incumbent_dict["score"]
-
-            # During the optimization, we are minimizing the scores,
-            # so we have to get the actual reward
-            score = -1 * score
+            incumbent = pd.read_csv(incumbent_path)
+            score = incumbent.iloc[-1, :]["performance"]
 
             scores += [
                 {
@@ -242,10 +233,16 @@ def validate(algorithm: str, method: str = "rank"):
         ].rank(ascending=False)
     else:
         def min_max_normalize(row):
-            min_score = min_scores[row["algorithm"]][row["environment"]]
-            max_score = max_scores[row["algorithm"]][row["environment"]]
+            algorithm_env_data = overall_data[overall_data["environment"] == row["environment"]]
+            algorithm_env_data = algorithm_env_data[algorithm_env_data["algorithm"] == row["algorithm"]]
+
+            overall_min = algorithm_env_data["score"].min()
+            overall_max = algorithm_env_data["score"].max()
+            
+            min_score = min(min_scores[row["algorithm"]][row["environment"]], overall_min)
+            max_score = max(max_scores[row["algorithm"]][row["environment"]], overall_max)
             normalized_score = (row["score"] - min_score) / (max_score - min_score)
-            return max(min(normalized_score, 1), 0)
+            return normalized_score
 
         # Apply min-max normalization
         overall_data.loc[:, "normalized_score"] = overall_data.apply(min_max_normalize, axis=1)
@@ -285,12 +282,12 @@ def plot_subset_vs_overall_combined(method: str, use_weights: bool = False):
         
         if use_weights:
             def apply_weights(row):      
-                return row['normalized_score'] * SUBSET_WEIGHTS[algorithm][row['environment']] / sum(SUBSET_WEIGHTS[algorithm].values())
+                return row["normalized_score"] * SUBSET_WEIGHTS[algorithm][row["environment"]] / sum(SUBSET_WEIGHTS[algorithm].values())
 
-            subset_data['weighted_score'] = subset_data.apply(lambda row: apply_weights(row), axis=1)
+            subset_data["weighted_score"] = subset_data.apply(lambda row: apply_weights(row), axis=1)
 
-            overall_data = overall_data.groupby(['algorithm', 'optimizer', 'seed'])['normalized_score'].mean().reset_index()
-            subset_data = subset_data.groupby(['algorithm', 'optimizer', 'seed'])['weighted_score'].sum().reset_index()
+            overall_data = overall_data.groupby(["algorithm", "optimizer", "seed"])["normalized_score"].mean().reset_index()
+            subset_data = subset_data.groupby(["algorithm", "optimizer", "seed"])["weighted_score"].sum().reset_index()
 
         sns.boxplot(
             x="optimizer", 
@@ -324,7 +321,7 @@ def plot_subset_vs_overall_combined(method: str, use_weights: bool = False):
         if i == 0:
             label = "Average Rank" if method == "rank" else "Normalized Score"
         else:
-            lablel = ""
+            label = ""
         
         axes[2 * i].set_ylabel(label)
         axes[2 * i + 1].set_ylabel("")
@@ -341,7 +338,7 @@ def plot_subset_vs_overall_combined(method: str, use_weights: bool = False):
     handles, labels = axes[0].get_legend_handles_labels()   
     fig.subplots_adjust(bottom=0.305, wspace=0.166)
 
-    fig.legend(loc='upper center', bbox_to_anchor=(0.5, 0.125), ncol=4, fancybox=False, shadow=False, frameon=False)
+    fig.legend(loc="upper center", bbox_to_anchor=(0.5, 0.125), ncol=4, fancybox=False, shadow=False, frameon=False)
 
     plt.tight_layout(rect=(0.02, 0.07, 1, 1))
     path = os.path.join(SUBSET_PLOTS, f"{method}_comparison_combined")
@@ -349,6 +346,7 @@ def plot_subset_vs_overall_combined(method: str, use_weights: bool = False):
     if use_weights:
         path += "_weighted"
     plt.savefig(f"{path}.png", dpi=500)
+    print(f"Saved {path}.png")
 
 if __name__ == "__main__":
     for method in ["rank", "min_max"]:
