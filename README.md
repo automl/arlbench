@@ -293,7 +293,6 @@ plots/
 You can then use the following scripts to create the figures and statistics:
 
 ```bash
-python subset_validation/plot_optimizers_over_time.py
 python runtime_comparisons/plot_runtime_comparisons.py
 python runtime_comparisons/plot_runtime_experiments.py
 ```
