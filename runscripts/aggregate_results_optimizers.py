@@ -15,7 +15,7 @@ N_SEEDS = 5
 
 
 def aggregate_runhistories(approach: str):
-    base_path = os.path.join("../results_finished", approach)
+    base_path = os.path.join("results_finished", approach)
     
     if not os.path.exists(base_path):
         logging.info(f"Directory for {approach} does not exist.")

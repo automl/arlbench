@@ -7,7 +7,7 @@ import shutil
 
 
 def aggregate_runhistories(approach: str):
-    base_path = os.path.join("../results", approach)
+    base_path = os.path.join("results", approach)
 
     if not os.path.exists(base_path):
         logging.info(f"Directory for {approach} does not exist.")
@@ -35,7 +35,7 @@ def aggregate_runhistories(approach: str):
                         continue
                     data["seed"] = seed_dir
                     dynamic_data = pd.DataFrame()
-                for train_dir in range(256):
+                for train_dir in range(1024):
                     train_path = os.path.join(seed_path, str(train_dir))
                     if os.path.isdir(train_path):
                         csv_file = os.path.join(train_path, "evaluation.csv")
@@ -84,7 +84,7 @@ def aggregate_runhistories(approach: str):
 
                     try:
                         run_dir_num = int(run_dir)
-                        if run_dir_num > 255:
+                        if run_dir_num > 1023:
                             print(f"Removing {run_path}")
                             shutil.rmtree(run_path)
                     except:
