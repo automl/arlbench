@@ -1,0 +1,7 @@
+results_finished filter=lfs diff=lfs merge=lfs -text
+results_finished/smac filter=lfs diff=lfs merge=lfs -text
+results_finished/smac_mf filter=lfs diff=lfs merge=lfs -text
+results_finished/sobol_landscaping filter=lfs diff=lfs merge=lfs -text
+results_finished/pbt filter=lfs diff=lfs merge=lfs -text
+results_finished/rs filter=lfs diff=lfs merge=lfs -text
+results_finished/runtime_experiments filter=lfs diff=lfs merge=lfs -text
