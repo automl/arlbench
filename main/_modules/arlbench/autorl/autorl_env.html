@@ -21,7 +21,7 @@
       
 
     
-    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=a746c00c" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="../../../_static/css/custom.css?v=2eb4fb78" />
     
   <link rel="preload" as="script" href="../../../_static/js/index.9ea38e314b9e6d9dab77.js">
@@ -333,19 +333,19 @@
                 
   <h1>Source code for arlbench.autorl.autorl_env</h1><div class="highlight"><pre>
 <span></span><span class="sd">&quot;&quot;&quot;Automated Reinforcement Learning Environment.&quot;&quot;&quot;</span>
-<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
 
-<span class="kn">import</span> <span class="nn">warnings</span>
-<span class="kn">from</span> <span class="nn">collections.abc</span> <span class="kn">import</span> <span class="n">Callable</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Callable</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span>
 
-<span class="kn">import</span> <span class="nn">gymnasium</span>
-<span class="kn">import</span> <span class="nn">jax</span>
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
-<span class="kn">from</span> <span class="nn">ConfigSpace</span> <span class="kn">import</span> <span class="n">Configuration</span><span class="p">,</span> <span class="n">ConfigurationSpace</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">gymnasium</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">jax</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">ConfigSpace</span><span class="w"> </span><span class="kn">import</span> <span class="n">Configuration</span><span class="p">,</span> <span class="n">ConfigurationSpace</span>
 
-<span class="kn">from</span> <span class="nn">arlbench.core.algorithms</span> <span class="kn">import</span> <span class="p">(</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">arlbench.core.algorithms</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">DQN</span><span class="p">,</span>
     <span class="n">PPO</span><span class="p">,</span>
     <span class="n">SAC</span><span class="p">,</span>
@@ -354,12 +354,12 @@
     <span class="n">TrainResult</span><span class="p">,</span>
     <span class="n">TrainReturnT</span><span class="p">,</span>
 <span class="p">)</span>
-<span class="kn">from</span> <span class="nn">arlbench.core.environments</span> <span class="kn">import</span> <span class="n">make_env</span>
-<span class="kn">from</span> <span class="nn">arlbench.utils</span> <span class="kn">import</span> <span class="n">config_space_to_gymnasium_space</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">arlbench.core.environments</span><span class="w"> </span><span class="kn">import</span> <span class="n">make_env</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">arlbench.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">config_space_to_gymnasium_space</span>
 
-<span class="kn">from</span> <span class="nn">.checkpointing</span> <span class="kn">import</span> <span class="n">Checkpointer</span>
-<span class="kn">from</span> <span class="nn">.objectives</span> <span class="kn">import</span> <span class="n">OBJECTIVES</span><span class="p">,</span> <span class="n">Objective</span>
-<span class="kn">from</span> <span class="nn">.state_features</span> <span class="kn">import</span> <span class="n">STATE_FEATURES</span><span class="p">,</span> <span class="n">StateFeature</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.checkpointing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Checkpointer</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.objectives</span><span class="w"> </span><span class="kn">import</span> <span class="n">OBJECTIVES</span><span class="p">,</span> <span class="n">Objective</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.state_features</span><span class="w"> </span><span class="kn">import</span> <span class="n">STATE_FEATURES</span><span class="p">,</span> <span class="n">StateFeature</span>
 
 <span class="n">ObservationT</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span>
 <span class="n">ObjectivesT</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span>
@@ -391,7 +391,7 @@
 
 <div class="viewcode-block" id="AutoRLEnv">
 <a class="viewcode-back" href="../../../arlbench.autorl.html#arlbench.AutoRLEnv">[docs]</a>
-<span class="k">class</span> <span class="nc">AutoRLEnv</span><span class="p">(</span><span class="n">gymnasium</span><span class="o">.</span><span class="n">Env</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">AutoRLEnv</span><span class="p">(</span><span class="n">gymnasium</span><span class="o">.</span><span class="n">Env</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Automated Reinforcement Learning (gynmasium-like) Environment.</span>
 
 <span class="sd">    With each reset, the algorithm state is (re-)initialized.</span>
@@ -408,7 +408,7 @@
     <span class="n">_hpo_config</span><span class="p">:</span> <span class="n">Configuration</span>
     <span class="n">_total_training_steps</span><span class="p">:</span> <span class="nb">int</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Creates a new AutoRL environment instance.</span>
 
 <span class="sd">        Args:</span>
@@ -487,7 +487,7 @@
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_observation_space</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_obs_space</span><span class="p">()</span>
 
-    <span class="k">def</span> <span class="nf">_get_objectives</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">Objective</span><span class="p">]:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_objectives</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">Objective</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Maps the objectives as list of strings to a sorted list of the actual objective classes.</span>
 
 <span class="sd">        Returns:</span>
@@ -510,7 +510,7 @@
         <span class="c1"># They are used to wrap the train function and compute the objective</span>
         <span class="k">return</span> <span class="p">[</span><span class="n">o</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">o</span> <span class="ow">in</span> <span class="n">objectives</span><span class="p">]</span>
 
-    <span class="k">def</span> <span class="nf">_get_state_features</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">StateFeature</span><span class="p">]:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_state_features</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">StateFeature</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Maps the state features as list of strings to a sorted list of the actual state feature classes.</span>
 
 <span class="sd">        Returns:</span>
@@ -524,7 +524,7 @@
             <span class="n">state_features</span> <span class="o">+=</span> <span class="p">[</span><span class="n">STATE_FEATURES</span><span class="p">[</span><span class="n">f</span><span class="p">]]</span>
         <span class="k">return</span> <span class="n">state_features</span>
 
-    <span class="k">def</span> <span class="nf">_get_obs_space</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">gymnasium</span><span class="o">.</span><span class="n">spaces</span><span class="o">.</span><span class="n">Dict</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_obs_space</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">gymnasium</span><span class="o">.</span><span class="n">spaces</span><span class="o">.</span><span class="n">Dict</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns the state feature space as gymnasium space.</span>
 
 <span class="sd">        Returns:</span>
@@ -538,7 +538,7 @@
 
         <span class="k">return</span> <span class="n">gymnasium</span><span class="o">.</span><span class="n">spaces</span><span class="o">.</span><span class="n">Dict</span><span class="p">(</span><span class="n">obs_space</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">_step</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_step</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Fundamental step behaviour, handles truncation.</span>
 
 <span class="sd">        Returns:</span>
@@ -549,7 +549,7 @@
             <span class="k">return</span> <span class="kc">True</span>
         <span class="k">return</span> <span class="kc">False</span>
 
-    <span class="k">def</span> <span class="nf">_train</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">train_kw_args</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">TrainReturnT</span><span class="p">,</span> <span class="nb">dict</span><span class="p">,</span> <span class="nb">dict</span><span class="p">]:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_train</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">train_kw_args</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">TrainReturnT</span><span class="p">,</span> <span class="nb">dict</span><span class="p">,</span> <span class="nb">dict</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Performs the RL training and returns the result as well as objectives and state features.</span>
 
 <span class="sd">        Returns:</span>
@@ -572,7 +572,7 @@
 
         <span class="c1"># Track configuration + budgets using deepcave (https://github.com/automl/DeepCAVE)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;deep_cave&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">):</span>
-            <span class="kn">from</span> <span class="nn">deepcave</span> <span class="kn">import</span> <span class="n">Objective</span><span class="p">,</span> <span class="n">Recorder</span>
+            <span class="kn">from</span><span class="w"> </span><span class="nn">deepcave</span><span class="w"> </span><span class="kn">import</span> <span class="n">Objective</span><span class="p">,</span> <span class="n">Recorder</span>
 
             <span class="n">dc_objectives</span> <span class="o">=</span> <span class="p">[</span><span class="n">Objective</span><span class="p">(</span><span class="o">**</span><span class="n">o</span><span class="o">.</span><span class="n">get_spec</span><span class="p">())</span> <span class="k">for</span> <span class="n">o</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_objectives</span><span class="p">]</span>
 
@@ -585,7 +585,7 @@
             <span class="n">result</span> <span class="o">=</span> <span class="n">train_func</span><span class="p">(</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">_algorithm_state</span><span class="p">,</span> <span class="o">**</span><span class="n">train_kw_args</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">result</span><span class="p">,</span> <span class="n">objectives</span><span class="p">,</span> <span class="n">obs</span>
 
-    <span class="k">def</span> <span class="nf">_make_algorithm</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Algorithm</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_make_algorithm</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Algorithm</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Instantiated the RL algorithm given the current AutoRL config and hyperparameter configuration.</span>
 
 <span class="sd">        Returns:</span>
@@ -604,7 +604,7 @@
 
 <div class="viewcode-block" id="AutoRLEnv.step">
 <a class="viewcode-back" href="../../../arlbench.autorl.html#arlbench.AutoRLEnv.step">[docs]</a>
-    <span class="k">def</span> <span class="nf">step</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">step</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">action</span><span class="p">:</span> <span class="n">Configuration</span> <span class="o">|</span> <span class="nb">dict</span><span class="p">,</span>
         <span class="n">checkpoint_path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -705,7 +705,7 @@
 
 <div class="viewcode-block" id="AutoRLEnv.reset">
 <a class="viewcode-back" href="../../../arlbench.autorl.html#arlbench.AutoRLEnv.reset">[docs]</a>
-    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">reset</span><span class="p">(</span>
         <span class="bp">self</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">ObservationT</span><span class="p">,</span> <span class="n">InfoT</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Resets the AutoRL environment and current algorithm state.</span>
@@ -721,7 +721,7 @@
         <span class="k">return</span> <span class="p">{},</span> <span class="p">{}</span></div>
 
 
-    <span class="k">def</span> <span class="nf">_save</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tag</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_save</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tag</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Saves the current algorithm state and training result.</span>
 
 <span class="sd">        Args:</span>
@@ -751,7 +751,7 @@
             <span class="n">tag</span><span class="o">=</span><span class="n">tag</span><span class="p">,</span>
         <span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">_load</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">checkpoint_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">seed</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AlgorithmState</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_load</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">checkpoint_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">seed</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AlgorithmState</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Load the algorithm state from a checkpoint.</span>
 
 <span class="sd">        Args:</span>
@@ -771,7 +771,7 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_algorithm</span><span class="o">.</span><span class="n">init</span><span class="p">(</span><span class="n">init_rng</span><span class="p">,</span> <span class="o">**</span><span class="n">algorithm_kw_args</span><span class="p">)</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">action_space</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">gymnasium</span><span class="o">.</span><span class="n">spaces</span><span class="o">.</span><span class="n">Space</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">action_space</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">gymnasium</span><span class="o">.</span><span class="n">spaces</span><span class="o">.</span><span class="n">Space</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns the hyperparameter configuration spaces as gymnasium space.</span>
 
 <span class="sd">        Returns:</span>
@@ -780,7 +780,7 @@
         <span class="k">return</span> <span class="n">config_space_to_gymnasium_space</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_config_space</span><span class="p">)</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">config_space</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ConfigurationSpace</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">config_space</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ConfigurationSpace</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns the hyperparameter configuration spaces as ConfigSpace.</span>
 
 <span class="sd">        Returns:</span>
@@ -789,7 +789,7 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config_space</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">observation_space</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">gymnasium</span><span class="o">.</span><span class="n">spaces</span><span class="o">.</span><span class="n">Space</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">observation_space</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">gymnasium</span><span class="o">.</span><span class="n">spaces</span><span class="o">.</span><span class="n">Space</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns a gymnasium spaces of state features (observations).</span>
 
 <span class="sd">        Returns:</span>
@@ -798,7 +798,7 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_observation_space</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">hpo_config</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Configuration</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">hpo_config</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Configuration</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns the current hyperparameter configuration stored in the AutoRL environment..</span>
 
 <span class="sd">        Returns:</span>
@@ -807,7 +807,7 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_hpo_config</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">checkpoints</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">checkpoints</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns a list of created checkpoints for this AutoRL environment.</span>
 
 <span class="sd">        Returns:</span>
@@ -816,7 +816,7 @@
         <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_checkpoints</span><span class="p">)</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">objectives</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">objectives</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns configured objectives.</span>
 
 <span class="sd">        Returns:</span>
@@ -825,7 +825,7 @@
         <span class="k">return</span> <span class="p">[</span><span class="n">o</span><span class="o">.</span><span class="vm">__name__</span> <span class="k">for</span> <span class="n">o</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_objectives</span><span class="p">]</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">config</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">config</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns the AutoRL configuration.</span>
 
 <span class="sd">        Returns:</span>
@@ -835,7 +835,7 @@
 
 <div class="viewcode-block" id="AutoRLEnv.eval">
 <a class="viewcode-back" href="../../../arlbench.autorl.html#arlbench.AutoRLEnv.eval">[docs]</a>
-    <span class="k">def</span> <span class="nf">eval</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">num_eval_episodes</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">eval</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">num_eval_episodes</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Evaluates the algorithm using its current training state.</span>
 
 <span class="sd">        Args:</span>
@@ -873,7 +873,7 @@
     
     <div class="footer-item">
       <p class="copyright">
-    &copy; Copyright Copyright 2024, AutoML Hannover.<br>
+    &copy; Copyright Copyright 2025, AutoML Hannover.<br>
 </p>
     </div>
     

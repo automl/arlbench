@@ -21,7 +21,7 @@
       
 
     
-    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=a746c00c" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="../../../_static/css/custom.css?v=2eb4fb78" />
     
   <link rel="preload" as="script" href="../../../_static/js/index.9ea38e314b9e6d9dab77.js">
@@ -333,37 +333,37 @@
                 
   <h1>Source code for arlbench.autorl.checkpointing</h1><div class="highlight"><pre>
 <span></span><span class="sd">&quot;&quot;&quot;Contains all checkpointing-related methods for the AutoRL environment.&quot;&quot;&quot;</span>
-<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
 
-<span class="kn">import</span> <span class="nn">json</span>
-<span class="kn">import</span> <span class="nn">os</span>
-<span class="kn">import</span> <span class="nn">warnings</span>
-<span class="kn">from</span> <span class="nn">collections.abc</span> <span class="kn">import</span> <span class="n">Callable</span>
-<span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">TYPE_CHECKING</span><span class="p">,</span> <span class="n">Any</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Callable</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">datetime</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">TYPE_CHECKING</span><span class="p">,</span> <span class="n">Any</span>
 
-<span class="kn">import</span> <span class="nn">jax</span>
-<span class="kn">import</span> <span class="nn">jax.numpy</span> <span class="k">as</span> <span class="nn">jnp</span>
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">import</span> <span class="nn">orbax.checkpoint</span> <span class="k">as</span> <span class="nn">ocp</span>
-<span class="kn">from</span> <span class="nn">flashbax.buffers.prioritised_trajectory_buffer</span> <span class="kn">import</span> <span class="p">(</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">jax</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">jax.numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">jnp</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">orbax.checkpoint</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ocp</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">flashbax.buffers.prioritised_trajectory_buffer</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">PrioritisedTrajectoryBufferState</span><span class="p">,</span>
 <span class="p">)</span>
-<span class="kn">from</span> <span class="nn">flashbax.buffers.sum_tree</span> <span class="kn">import</span> <span class="n">SumTreeState</span>
-<span class="kn">from</span> <span class="nn">flashbax.vault</span> <span class="kn">import</span> <span class="n">Vault</span>
-<span class="kn">from</span> <span class="nn">flax.core.frozen_dict</span> <span class="kn">import</span> <span class="n">FrozenDict</span>
-<span class="kn">from</span> <span class="nn">optax</span> <span class="kn">import</span> <span class="n">EmptyState</span><span class="p">,</span> <span class="n">ScaleByAdamState</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">flashbax.buffers.sum_tree</span><span class="w"> </span><span class="kn">import</span> <span class="n">SumTreeState</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">flashbax.vault</span><span class="w"> </span><span class="kn">import</span> <span class="n">Vault</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">flax.core.frozen_dict</span><span class="w"> </span><span class="kn">import</span> <span class="n">FrozenDict</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">optax</span><span class="w"> </span><span class="kn">import</span> <span class="n">EmptyState</span><span class="p">,</span> <span class="n">ScaleByAdamState</span>
 
-<span class="kn">from</span> <span class="nn">arlbench.core.algorithms</span> <span class="kn">import</span> <span class="n">DQN</span><span class="p">,</span> <span class="n">PPO</span><span class="p">,</span> <span class="n">SAC</span>
-<span class="kn">from</span> <span class="nn">arlbench.core.algorithms.dqn</span> <span class="kn">import</span> <span class="n">DQNRunnerState</span><span class="p">,</span> <span class="n">DQNTrainingResult</span>
-<span class="kn">from</span> <span class="nn">arlbench.core.algorithms.ppo</span> <span class="kn">import</span> <span class="n">PPORunnerState</span><span class="p">,</span> <span class="n">PPOTrainingResult</span>
-<span class="kn">from</span> <span class="nn">arlbench.core.algorithms.sac</span> <span class="kn">import</span> <span class="n">SACRunnerState</span><span class="p">,</span> <span class="n">SACTrainingResult</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">arlbench.core.algorithms</span><span class="w"> </span><span class="kn">import</span> <span class="n">DQN</span><span class="p">,</span> <span class="n">PPO</span><span class="p">,</span> <span class="n">SAC</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">arlbench.core.algorithms.dqn</span><span class="w"> </span><span class="kn">import</span> <span class="n">DQNRunnerState</span><span class="p">,</span> <span class="n">DQNTrainingResult</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">arlbench.core.algorithms.ppo</span><span class="w"> </span><span class="kn">import</span> <span class="n">PPORunnerState</span><span class="p">,</span> <span class="n">PPOTrainingResult</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">arlbench.core.algorithms.sac</span><span class="w"> </span><span class="kn">import</span> <span class="n">SACRunnerState</span><span class="p">,</span> <span class="n">SACTrainingResult</span>
 
 <span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
-    <span class="kn">from</span> <span class="nn">ConfigSpace</span> <span class="kn">import</span> <span class="n">Configuration</span>
-    <span class="kn">from</span> <span class="nn">flashbax.buffers.trajectory_buffer</span> <span class="kn">import</span> <span class="n">TrajectoryBufferState</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">ConfigSpace</span><span class="w"> </span><span class="kn">import</span> <span class="n">Configuration</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">flashbax.buffers.trajectory_buffer</span><span class="w"> </span><span class="kn">import</span> <span class="n">TrajectoryBufferState</span>
 
-    <span class="kn">from</span> <span class="nn">arlbench.core.algorithms</span> <span class="kn">import</span> <span class="n">AlgorithmState</span><span class="p">,</span> <span class="n">TrainResult</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">arlbench.core.algorithms</span><span class="w"> </span><span class="kn">import</span> <span class="n">AlgorithmState</span><span class="p">,</span> <span class="n">TrainResult</span>
 
 
 <span class="n">VALID_CHECKPOINTS</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;opt_state&quot;</span><span class="p">,</span> <span class="s2">&quot;params&quot;</span><span class="p">,</span> <span class="s2">&quot;loss&quot;</span><span class="p">,</span> <span class="s2">&quot;buffer&quot;</span><span class="p">]</span>
@@ -371,14 +371,14 @@
 
 <div class="viewcode-block" id="Checkpointer">
 <a class="viewcode-back" href="../../../arlbench.autorl.html#arlbench.autorl.checkpointing.Checkpointer">[docs]</a>
-<span class="k">class</span> <span class="nc">Checkpointer</span><span class="p">:</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">Checkpointer</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Contains all checkpointing-related methods for the AutoRL environment.&quot;&quot;&quot;</span>
     <span class="n">NODES_FILE</span> <span class="o">=</span> <span class="s2">&quot;nodes.npy&quot;</span>
     <span class="n">SCALARS_FILE</span> <span class="o">=</span> <span class="s2">&quot;scalars.json&quot;</span>
     <span class="n">MRP_FILE</span> <span class="o">=</span> <span class="s2">&quot;max_recorded_priority.npy&quot;</span>
 
     <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">_save_orbax_checkpoint</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_save_orbax_checkpoint</span><span class="p">(</span>
         <span class="n">checkpoint</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">checkpoint_dir</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">checkpoint_name</span><span class="p">:</span> <span class="nb">str</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Stores a dictionary using orbax.</span>
@@ -396,7 +396,7 @@
         <span class="p">)</span>
 
     <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">_load_orbax_checkpoint</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_load_orbax_checkpoint</span><span class="p">(</span>
         <span class="n">checkpoint_dir</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">checkpoint_name</span><span class="p">:</span> <span class="nb">str</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Load a dictionary using orbax.</span>
@@ -414,7 +414,7 @@
 <div class="viewcode-block" id="Checkpointer.save">
 <a class="viewcode-back" href="../../../arlbench.autorl.html#arlbench.autorl.checkpointing.Checkpointer.save">[docs]</a>
     <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">save</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">save</span><span class="p">(</span>
         <span class="n">algorithm</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">algorithm_state</span><span class="p">:</span> <span class="n">AlgorithmState</span><span class="p">,</span>
         <span class="n">autorl_config</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span>
@@ -542,7 +542,7 @@
 
 
     <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">_load_buffer</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_load_buffer</span><span class="p">(</span>
         <span class="n">ckpt</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">dummy_buffer_state</span><span class="p">:</span> <span class="n">PrioritisedTrajectoryBufferState</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PrioritisedTrajectoryBufferState</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Loads the buffer state from a given checkpoint.</span>
@@ -565,7 +565,7 @@
             <span class="k">return</span> <span class="kc">None</span>
 
     <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">_load_params</span><span class="p">(</span><span class="n">ckpt</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">key</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FrozenDict</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_load_params</span><span class="p">(</span><span class="n">ckpt</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">key</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FrozenDict</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Load network parameters from a give checkpoint.</span>
 
 <span class="sd">        Args:</span>
@@ -586,7 +586,7 @@
             <span class="k">return</span> <span class="n">FrozenDict</span><span class="p">(</span><span class="n">params</span><span class="p">)</span>
 
     <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">_load_adam_opt_state</span><span class="p">(</span><span class="n">ckpt</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">key</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_load_adam_opt_state</span><span class="p">(</span><span class="n">ckpt</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">key</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Load the state of a adam optimizer from a given checkpoint.</span>
 
 <span class="sd">        Args:</span>
@@ -596,7 +596,7 @@
 <span class="sd">        Returns:</span>
 <span class="sd">            tuple | None: Optimizer state.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">def</span> <span class="nf">apply</span><span class="p">(</span><span class="n">func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">|</span> <span class="nb">list</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="o">|</span> <span class="n">Any</span><span class="p">:</span>
+        <span class="k">def</span><span class="w"> </span><span class="nf">apply</span><span class="p">(</span><span class="n">func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">|</span> <span class="nb">list</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="o">|</span> <span class="n">Any</span><span class="p">:</span>
 <span class="w">            </span><span class="sd">&quot;&quot;&quot;Applies a given fuction to each element of a dict/list/tuple.</span>
 
 <span class="sd">            Args:</span>
@@ -611,7 +611,7 @@
             <span class="k">else</span><span class="p">:</span>
                 <span class="k">return</span> <span class="n">func</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
 
-        <span class="k">def</span> <span class="nf">make_opt_state</span><span class="p">(</span><span class="n">opt_state</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ScaleByAdamState</span> <span class="o">|</span> <span class="n">EmptyState</span><span class="p">:</span>
+        <span class="k">def</span><span class="w"> </span><span class="nf">make_opt_state</span><span class="p">(</span><span class="n">opt_state</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ScaleByAdamState</span> <span class="o">|</span> <span class="n">EmptyState</span><span class="p">:</span>
 <span class="w">            </span><span class="sd">&quot;&quot;&quot;Converts a dictionary containing an optimizer state to an actual OptState.</span>
 
 <span class="sd">            Args:</span>
@@ -639,7 +639,7 @@
 <div class="viewcode-block" id="Checkpointer.load">
 <a class="viewcode-back" href="../../../arlbench.autorl.html#arlbench.autorl.checkpointing.Checkpointer.load">[docs]</a>
     <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">load</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">load</span><span class="p">(</span>
         <span class="n">checkpoint_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">algorithm_state</span><span class="p">:</span> <span class="n">AlgorithmState</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span> <span class="nb">dict</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Loads a AutoRL environment checkpoint.</span>
@@ -715,7 +715,7 @@
 <div class="viewcode-block" id="Checkpointer.save_buffer">
 <a class="viewcode-back" href="../../../arlbench.autorl.html#arlbench.autorl.checkpointing.Checkpointer.save_buffer">[docs]</a>
     <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">save_buffer</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">save_buffer</span><span class="p">(</span>
         <span class="n">buffer_state</span><span class="p">:</span> <span class="n">TrajectoryBufferState</span> <span class="o">|</span> <span class="n">PrioritisedTrajectoryBufferState</span><span class="p">,</span>
         <span class="n">checkpoint_dir</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">checkpoint_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
@@ -771,7 +771,7 @@
 <div class="viewcode-block" id="Checkpointer.load_buffer">
 <a class="viewcode-back" href="../../../arlbench.autorl.html#arlbench.autorl.checkpointing.Checkpointer.load_buffer">[docs]</a>
     <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">load_buffer</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">load_buffer</span><span class="p">(</span>
         <span class="n">dummy_buffer_state</span><span class="p">:</span> <span class="n">PrioritisedTrajectoryBufferState</span><span class="p">,</span>
         <span class="n">priority_state_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">buffer_dir</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
@@ -812,7 +812,7 @@
 
 
     <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">_save_sum_tree_state</span><span class="p">(</span><span class="n">sum_tree_state</span><span class="p">:</span> <span class="n">SumTreeState</span><span class="p">,</span> <span class="n">directory</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_save_sum_tree_state</span><span class="p">(</span><span class="n">sum_tree_state</span><span class="p">:</span> <span class="n">SumTreeState</span><span class="p">,</span> <span class="n">directory</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Saves the state of a JAX sum stree to disk.</span>
 
 <span class="sd">        Args:</span>
@@ -841,7 +841,7 @@
             <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">scalar_values</span><span class="p">,</span> <span class="n">json_file</span><span class="p">)</span>
 
     <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">_load_sum_tree_state</span><span class="p">(</span><span class="n">directory</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SumTreeState</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_load_sum_tree_state</span><span class="p">(</span><span class="n">directory</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SumTreeState</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Loads the state of a JAX sum tree.</span>
 
 <span class="sd">        Args:</span>
@@ -890,7 +890,7 @@
     
     <div class="footer-item">
       <p class="copyright">
-    &copy; Copyright Copyright 2024, AutoML Hannover.<br>
+    &copy; Copyright Copyright 2025, AutoML Hannover.<br>
 </p>
     </div>
     

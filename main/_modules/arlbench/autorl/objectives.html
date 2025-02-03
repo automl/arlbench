@@ -21,7 +21,7 @@
       
 
     
-    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=a746c00c" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="../../../_static/css/custom.css?v=2eb4fb78" />
     
   <link rel="preload" as="script" href="../../../_static/js/index.9ea38e314b9e6d9dab77.js">
@@ -333,16 +333,16 @@
                 
   <h1>Source code for arlbench.autorl.objectives</h1><div class="highlight"><pre>
 <span></span><span class="sd">&quot;&quot;&quot;This module contains the objectives for the AutoRL environment.&quot;&quot;&quot;</span>
-<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
 
-<span class="kn">import</span> <span class="nn">time</span>
-<span class="kn">from</span> <span class="nn">abc</span> <span class="kn">import</span> <span class="n">ABC</span><span class="p">,</span> <span class="n">abstractmethod</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">TYPE_CHECKING</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">ABC</span><span class="p">,</span> <span class="n">abstractmethod</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">TYPE_CHECKING</span>
 
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 
 <span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
-    <span class="kn">from</span> <span class="nn">arlbench.core.algorithms</span> <span class="kn">import</span> <span class="n">TrainFunc</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">arlbench.core.algorithms</span><span class="w"> </span><span class="kn">import</span> <span class="n">TrainFunc</span>
 
 <span class="c1"># These are the ranks we are using for sorting:</span>
 <span class="c1"># Runtime = 0</span>
@@ -355,7 +355,7 @@
 
 <div class="viewcode-block" id="Objective">
 <a class="viewcode-back" href="../../../arlbench.autorl.html#arlbench.autorl.objectives.Objective">[docs]</a>
-<span class="k">class</span> <span class="nc">Objective</span><span class="p">(</span><span class="n">ABC</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">Objective</span><span class="p">(</span><span class="n">ABC</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;An abstract optimization objective for the AutoRL environment.</span>
 
 <span class="sd">    It can be wrapped around the training function to calculate the objective.</span>
@@ -367,7 +367,7 @@
 
 <div class="viewcode-block" id="Objective.__new__">
 <a class="viewcode-back" href="../../../arlbench.autorl.html#arlbench.autorl.objectives.Objective.__new__">[docs]</a>
-    <span class="k">def</span> <span class="fm">__new__</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TrainFunc</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__new__</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TrainFunc</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Creates a new instance of this objective and directly wraps the train function.</span>
 
 <span class="sd">        This is done by first creating an object and subsequently calling self.__call__().</span>
@@ -383,7 +383,7 @@
 <a class="viewcode-back" href="../../../arlbench.autorl.html#arlbench.autorl.objectives.Objective.__call__">[docs]</a>
     <span class="nd">@staticmethod</span>
     <span class="nd">@abstractmethod</span>
-    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__call__</span><span class="p">(</span>
         <span class="n">train_func</span><span class="p">:</span> <span class="n">TrainFunc</span><span class="p">,</span> <span class="n">objectives</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">optimize_objectives</span><span class="p">:</span> <span class="nb">str</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TrainFunc</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Wraps the training function with the objective calculation.</span>
@@ -403,7 +403,7 @@
 <a class="viewcode-back" href="../../../arlbench.autorl.html#arlbench.autorl.objectives.Objective.get_spec">[docs]</a>
     <span class="nd">@staticmethod</span>
     <span class="nd">@abstractmethod</span>
-    <span class="k">def</span> <span class="nf">get_spec</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_spec</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns a dictionary containing the specification of the objective.</span>
 
 <span class="sd">        Returns:</span>
@@ -414,7 +414,7 @@
 
 <div class="viewcode-block" id="Objective.__lt__">
 <a class="viewcode-back" href="../../../arlbench.autorl.html#arlbench.autorl.objectives.Objective.__lt__">[docs]</a>
-    <span class="k">def</span> <span class="fm">__lt__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="n">Objective</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__lt__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="n">Objective</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Implements &quot;less-than&quot; comparison between two objectives. Used for sorting based on objective rank.</span>
 
 <span class="sd">        Args:</span>
@@ -430,7 +430,7 @@
 
 <div class="viewcode-block" id="Runtime">
 <a class="viewcode-back" href="../../../arlbench.autorl.html#arlbench.autorl.objectives.Runtime">[docs]</a>
-<span class="k">class</span> <span class="nc">Runtime</span><span class="p">(</span><span class="n">Objective</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">Runtime</span><span class="p">(</span><span class="n">Objective</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Runtime objective for the AutoRL environment. It measures the total training runtime.&quot;&quot;&quot;</span>
     <span class="n">KEY</span> <span class="o">=</span> <span class="s2">&quot;runtime&quot;</span>
     <span class="n">RANK</span> <span class="o">=</span> <span class="mi">0</span>
@@ -438,11 +438,11 @@
 <div class="viewcode-block" id="Runtime.__call__">
 <a class="viewcode-back" href="../../../arlbench.autorl.html#arlbench.autorl.objectives.Runtime.__call__">[docs]</a>
     <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__call__</span><span class="p">(</span>
         <span class="n">train_func</span><span class="p">:</span> <span class="n">TrainFunc</span><span class="p">,</span> <span class="n">objectives</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">optimize_objectives</span><span class="p">:</span> <span class="nb">str</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TrainFunc</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Wraps the training function with the runtime calculation.&quot;&quot;&quot;</span>
-        <span class="k">def</span> <span class="nf">wrapper</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">def</span><span class="w"> </span><span class="nf">wrapper</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
             <span class="n">start_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
             <span class="n">result</span> <span class="o">=</span> <span class="n">train_func</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
             <span class="n">runtime</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start_time</span>
@@ -461,7 +461,7 @@
 <div class="viewcode-block" id="Runtime.get_spec">
 <a class="viewcode-back" href="../../../arlbench.autorl.html#arlbench.autorl.objectives.Runtime.get_spec">[docs]</a>
     <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">get_spec</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_spec</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns a dictionary containing the specification of the objective.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;runtime&quot;</span><span class="p">,</span> <span class="s2">&quot;upper&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;lower&quot;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span> <span class="s2">&quot;optimize&quot;</span><span class="p">:</span> <span class="s2">&quot;lower&quot;</span><span class="p">}</span></div>
 </div>
@@ -470,7 +470,7 @@
 
 <div class="viewcode-block" id="RewardMean">
 <a class="viewcode-back" href="../../../arlbench.autorl.html#arlbench.autorl.objectives.RewardMean">[docs]</a>
-<span class="k">class</span> <span class="nc">RewardMean</span><span class="p">(</span><span class="n">Objective</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">RewardMean</span><span class="p">(</span><span class="n">Objective</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Reward objective for the AutoRL environment. It measures the mean of the last evaluation rewards.&quot;&quot;&quot;</span>
 
     <span class="n">KEY</span> <span class="o">=</span> <span class="s2">&quot;reward_mean&quot;</span>
@@ -479,11 +479,11 @@
 <div class="viewcode-block" id="RewardMean.__call__">
 <a class="viewcode-back" href="../../../arlbench.autorl.html#arlbench.autorl.objectives.RewardMean.__call__">[docs]</a>
     <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__call__</span><span class="p">(</span>
         <span class="n">train_func</span><span class="p">:</span> <span class="n">TrainFunc</span><span class="p">,</span> <span class="n">objectives</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">optimize_objectives</span><span class="p">:</span> <span class="nb">str</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TrainFunc</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Wraps the training function with the reward mean calculation.&quot;&quot;&quot;</span>
-        <span class="k">def</span> <span class="nf">wrapper</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">def</span><span class="w"> </span><span class="nf">wrapper</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
             <span class="n">result</span> <span class="o">=</span> <span class="n">train_func</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
             <span class="n">_</span><span class="p">,</span> <span class="n">train_result</span> <span class="o">=</span> <span class="n">result</span>
             <span class="n">reward_mean</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">train_result</span><span class="o">.</span><span class="n">eval_rewards</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
@@ -502,7 +502,7 @@
 <div class="viewcode-block" id="RewardMean.get_spec">
 <a class="viewcode-back" href="../../../arlbench.autorl.html#arlbench.autorl.objectives.RewardMean.get_spec">[docs]</a>
     <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">get_spec</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_spec</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns a dictionary containing the specification of the objective.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="p">{</span>
             <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="n">RewardMean</span><span class="o">.</span><span class="n">KEY</span><span class="p">,</span>
@@ -516,7 +516,7 @@
 
 <div class="viewcode-block" id="RewardStd">
 <a class="viewcode-back" href="../../../arlbench.autorl.html#arlbench.autorl.objectives.RewardStd">[docs]</a>
-<span class="k">class</span> <span class="nc">RewardStd</span><span class="p">(</span><span class="n">Objective</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">RewardStd</span><span class="p">(</span><span class="n">Objective</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Reward objective for the AutoRL environment. It measures the standard deviation of the last evaluation rewards.&quot;&quot;&quot;</span>
 
     <span class="n">KEY</span> <span class="o">=</span> <span class="s2">&quot;reward_std&quot;</span>
@@ -525,11 +525,11 @@
 <div class="viewcode-block" id="RewardStd.__call__">
 <a class="viewcode-back" href="../../../arlbench.autorl.html#arlbench.autorl.objectives.RewardStd.__call__">[docs]</a>
     <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__call__</span><span class="p">(</span>
         <span class="n">train_func</span><span class="p">:</span> <span class="n">TrainFunc</span><span class="p">,</span> <span class="n">objectives</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">optimize_objectives</span><span class="p">:</span> <span class="nb">str</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TrainFunc</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Wraps the training function with the reward standard deviation calculation.&quot;&quot;&quot;</span>
-        <span class="k">def</span> <span class="nf">wrapper</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">def</span><span class="w"> </span><span class="nf">wrapper</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
             <span class="n">result</span> <span class="o">=</span> <span class="n">train_func</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
             <span class="n">_</span><span class="p">,</span> <span class="n">train_result</span> <span class="o">=</span> <span class="n">result</span>
             <span class="n">reward_std</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">train_result</span><span class="o">.</span><span class="n">eval_rewards</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
@@ -549,7 +549,7 @@
 <div class="viewcode-block" id="RewardStd.get_spec">
 <a class="viewcode-back" href="../../../arlbench.autorl.html#arlbench.autorl.objectives.RewardStd.get_spec">[docs]</a>
     <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">get_spec</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_spec</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns a dictionary containing the specification of the objective.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="n">RewardStd</span><span class="o">.</span><span class="n">KEY</span><span class="p">,</span> <span class="s2">&quot;upper&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;lower&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;optimize&quot;</span><span class="p">:</span> <span class="s2">&quot;lower&quot;</span><span class="p">}</span></div>
 </div>
@@ -558,7 +558,7 @@
 
 <div class="viewcode-block" id="Emissions">
 <a class="viewcode-back" href="../../../arlbench.autorl.html#arlbench.autorl.objectives.Emissions">[docs]</a>
-<span class="k">class</span> <span class="nc">Emissions</span><span class="p">(</span><span class="n">Objective</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">Emissions</span><span class="p">(</span><span class="n">Objective</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Emissions objective for the AutoRL environment. It measures the emissions during the training using code carbon.&quot;&quot;&quot;</span>
 
     <span class="n">KEY</span> <span class="o">=</span> <span class="s2">&quot;emissions&quot;</span>
@@ -567,12 +567,12 @@
 <div class="viewcode-block" id="Emissions.__call__">
 <a class="viewcode-back" href="../../../arlbench.autorl.html#arlbench.autorl.objectives.Emissions.__call__">[docs]</a>
     <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__call__</span><span class="p">(</span>
         <span class="n">train_func</span><span class="p">:</span> <span class="n">TrainFunc</span><span class="p">,</span> <span class="n">objectives</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">optimize_objectives</span><span class="p">:</span> <span class="nb">str</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TrainFunc</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Wraps the training function with the emissions calculation.&quot;&quot;&quot;</span>
-        <span class="k">def</span> <span class="nf">wrapper</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-            <span class="kn">from</span> <span class="nn">codecarbon</span> <span class="kn">import</span> <span class="n">EmissionsTracker</span>
+        <span class="k">def</span><span class="w"> </span><span class="nf">wrapper</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+            <span class="kn">from</span><span class="w"> </span><span class="nn">codecarbon</span><span class="w"> </span><span class="kn">import</span> <span class="n">EmissionsTracker</span>
 
             <span class="n">tracker</span> <span class="o">=</span> <span class="n">EmissionsTracker</span><span class="p">(</span>
                 <span class="n">save_to_file</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">output_dir</span><span class="o">=</span><span class="s2">&quot;/tmp&quot;</span><span class="p">,</span> <span class="n">logging_logger</span><span class="o">=</span><span class="kc">None</span>
@@ -599,7 +599,7 @@
 <div class="viewcode-block" id="Emissions.get_spec">
 <a class="viewcode-back" href="../../../arlbench.autorl.html#arlbench.autorl.objectives.Emissions.get_spec">[docs]</a>
     <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">get_spec</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_spec</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns a dictionary containing the specification of the objective.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;emissions&quot;</span><span class="p">,</span> <span class="s2">&quot;upper&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;lower&quot;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span> <span class="s2">&quot;optimize&quot;</span><span class="p">:</span> <span class="s2">&quot;lower&quot;</span><span class="p">}</span></div>
 </div>
@@ -628,7 +628,7 @@
     
     <div class="footer-item">
       <p class="copyright">
-    &copy; Copyright Copyright 2024, AutoML Hannover.<br>
+    &copy; Copyright Copyright 2025, AutoML Hannover.<br>
 </p>
     </div>
     

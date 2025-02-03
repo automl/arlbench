@@ -21,7 +21,7 @@
       
 
     
-    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=a746c00c" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="../../../_static/css/custom.css?v=2eb4fb78" />
     
   <link rel="preload" as="script" href="../../../_static/js/index.9ea38e314b9e6d9dab77.js">
@@ -335,21 +335,21 @@
 <span></span><span class="c1"># This file includes code from brax (https://github.com/google/brax)</span>
 <span class="c1"># Licensed under the Apache License 2.0 (http://www.apache.org/licenses/LICENSE-2.0).</span>
 <span class="sd">&quot;&quot;&quot;Running statistics.&quot;&quot;&quot;</span>
-<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
 
-<span class="kn">import</span> <span class="nn">dataclasses</span>
-<span class="kn">from</span> <span class="nn">collections.abc</span> <span class="kn">import</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">Mapping</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">dataclasses</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">Mapping</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span>
 
-<span class="kn">import</span> <span class="nn">jax</span>
-<span class="kn">import</span> <span class="nn">jax.numpy</span> <span class="k">as</span> <span class="nn">jnp</span>
-<span class="kn">from</span> <span class="nn">flax</span> <span class="kn">import</span> <span class="n">struct</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">jax</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">jax.numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">jnp</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">flax</span><span class="w"> </span><span class="kn">import</span> <span class="n">struct</span>
 
 
 <div class="viewcode-block" id="Array">
 <a class="viewcode-back" href="../../../arlbench.core.html#arlbench.core.running_statistics.Array">[docs]</a>
 <span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="k">class</span> <span class="nc">Array</span><span class="p">:</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">Array</span><span class="p">:</span>
 <span class="w">  </span><span class="sd">&quot;&quot;&quot;Describes a numpy array or scalar shape and dtype.</span>
 
 <span class="sd">  Similar to dm_env.specs.Array.</span>
@@ -370,18 +370,18 @@
 <span class="n">Nest</span> <span class="o">=</span> <span class="n">NestedArray</span> <span class="o">|</span> <span class="n">NestedTensor</span> <span class="o">|</span> <span class="n">NestedSpec</span>
 
 
-<span class="k">def</span> <span class="nf">_zeros_like</span><span class="p">(</span><span class="n">nest</span><span class="p">:</span> <span class="n">Nest</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Nest</span><span class="p">:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_zeros_like</span><span class="p">(</span><span class="n">nest</span><span class="p">:</span> <span class="n">Nest</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Nest</span><span class="p">:</span>
   <span class="k">return</span> <span class="n">jax</span><span class="o">.</span><span class="n">tree_util</span><span class="o">.</span><span class="n">tree_map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">dtype</span> <span class="ow">or</span> <span class="n">x</span><span class="o">.</span><span class="n">dtype</span><span class="p">),</span> <span class="n">nest</span><span class="p">)</span>
 
 
-<span class="k">def</span> <span class="nf">_ones_like</span><span class="p">(</span><span class="n">nest</span><span class="p">:</span> <span class="n">Nest</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Nest</span><span class="p">:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_ones_like</span><span class="p">(</span><span class="n">nest</span><span class="p">:</span> <span class="n">Nest</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Nest</span><span class="p">:</span>
   <span class="k">return</span> <span class="n">jax</span><span class="o">.</span><span class="n">tree_util</span><span class="o">.</span><span class="n">tree_map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">dtype</span> <span class="ow">or</span> <span class="n">x</span><span class="o">.</span><span class="n">dtype</span><span class="p">),</span> <span class="n">nest</span><span class="p">)</span>
 
 
 <div class="viewcode-block" id="NestedMeanStd">
 <a class="viewcode-back" href="../../../arlbench.core.html#arlbench.core.running_statistics.NestedMeanStd">[docs]</a>
 <span class="nd">@struct</span><span class="o">.</span><span class="n">dataclass</span>
-<span class="k">class</span> <span class="nc">NestedMeanStd</span><span class="p">:</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">NestedMeanStd</span><span class="p">:</span>
 <span class="w">  </span><span class="sd">&quot;&quot;&quot;A container for running statistics (mean, std) of possibly nested data.&quot;&quot;&quot;</span>
   <span class="n">mean</span><span class="p">:</span> <span class="n">Nest</span>
   <span class="n">std</span><span class="p">:</span> <span class="n">Nest</span></div>
@@ -391,7 +391,7 @@
 <div class="viewcode-block" id="RunningStatisticsState">
 <a class="viewcode-back" href="../../../arlbench.core.html#arlbench.core.running_statistics.RunningStatisticsState">[docs]</a>
 <span class="nd">@struct</span><span class="o">.</span><span class="n">dataclass</span>
-<span class="k">class</span> <span class="nc">RunningStatisticsState</span><span class="p">(</span><span class="n">NestedMeanStd</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">RunningStatisticsState</span><span class="p">(</span><span class="n">NestedMeanStd</span><span class="p">):</span>
 <span class="w">  </span><span class="sd">&quot;&quot;&quot;Full state of running statistics computation.&quot;&quot;&quot;</span>
   <span class="n">count</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span>
   <span class="n">summed_variance</span><span class="p">:</span> <span class="n">Nest</span></div>
@@ -400,7 +400,7 @@
 
 <div class="viewcode-block" id="init_state">
 <a class="viewcode-back" href="../../../arlbench.core.html#arlbench.core.running_statistics.init_state">[docs]</a>
-<span class="k">def</span> <span class="nf">init_state</span><span class="p">(</span><span class="n">nest</span><span class="p">:</span> <span class="n">Nest</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RunningStatisticsState</span><span class="p">:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">init_state</span><span class="p">(</span><span class="n">nest</span><span class="p">:</span> <span class="n">Nest</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RunningStatisticsState</span><span class="p">:</span>
 <span class="w">  </span><span class="sd">&quot;&quot;&quot;Initializes the running statistics for the given nested structure.&quot;&quot;&quot;</span>
   <span class="n">dtype</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">float64</span> <span class="k">if</span> <span class="n">jax</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">jax_enable_x64</span> <span class="k">else</span> <span class="n">jnp</span><span class="o">.</span><span class="n">float32</span>
 
@@ -414,7 +414,7 @@
 
 
 
-<span class="k">def</span> <span class="nf">_validate_batch_shapes</span><span class="p">(</span><span class="n">batch</span><span class="p">:</span> <span class="n">NestedArray</span><span class="p">,</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_validate_batch_shapes</span><span class="p">(</span><span class="n">batch</span><span class="p">:</span> <span class="n">NestedArray</span><span class="p">,</span>
                            <span class="n">reference_sample</span><span class="p">:</span> <span class="n">NestedArray</span><span class="p">,</span>
                            <span class="n">batch_dims</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">  </span><span class="sd">&quot;&quot;&quot;Verifies shapes of the batch leaves against the reference sample.</span>
@@ -431,7 +431,7 @@
 <span class="sd">  Returns:</span>
 <span class="sd">    None.</span>
 <span class="sd">  &quot;&quot;&quot;</span>
-  <span class="k">def</span> <span class="nf">validate_node_shape</span><span class="p">(</span><span class="n">reference_sample</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+  <span class="k">def</span><span class="w"> </span><span class="nf">validate_node_shape</span><span class="p">(</span><span class="n">reference_sample</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
                           <span class="n">batch</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
     <span class="n">expected_shape</span> <span class="o">=</span> <span class="n">batch_dims</span> <span class="o">+</span> <span class="n">reference_sample</span><span class="o">.</span><span class="n">shape</span>
     <span class="k">assert</span> <span class="n">batch</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="n">expected_shape</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">batch</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2"> != </span><span class="si">{</span><span class="n">expected_shape</span><span class="si">}</span><span class="s2">&quot;</span>
@@ -441,7 +441,7 @@
 
 <div class="viewcode-block" id="update">
 <a class="viewcode-back" href="../../../arlbench.core.html#arlbench.core.running_statistics.update">[docs]</a>
-<span class="k">def</span> <span class="nf">update</span><span class="p">(</span><span class="n">state</span><span class="p">:</span> <span class="n">RunningStatisticsState</span><span class="p">,</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">update</span><span class="p">(</span><span class="n">state</span><span class="p">:</span> <span class="n">RunningStatisticsState</span><span class="p">,</span>
            <span class="n">batch</span><span class="p">:</span> <span class="n">Nest</span><span class="p">,</span>
            <span class="o">*</span><span class="p">,</span>
            <span class="n">weights</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -499,7 +499,7 @@
       <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">weights</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2"> != </span><span class="si">{</span><span class="n">batch_dims</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
     <span class="n">_validate_batch_shapes</span><span class="p">(</span><span class="n">batch</span><span class="p">,</span> <span class="n">state</span><span class="o">.</span><span class="n">mean</span><span class="p">,</span> <span class="n">batch_dims</span><span class="p">)</span>
 
-  <span class="k">def</span> <span class="nf">_compute_node_statistics</span><span class="p">(</span>
+  <span class="k">def</span><span class="w"> </span><span class="nf">_compute_node_statistics</span><span class="p">(</span>
       <span class="n">mean</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">summed_variance</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
       <span class="n">batch</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
     <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">mean</span><span class="p">,</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">),</span> <span class="nb">type</span><span class="p">(</span><span class="n">mean</span><span class="p">)</span>
@@ -533,7 +533,7 @@
   <span class="n">summed_variance</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">tree_util</span><span class="o">.</span><span class="n">tree_map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">_</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">state</span><span class="o">.</span><span class="n">mean</span><span class="p">,</span>
                                            <span class="n">updated_stats</span><span class="p">)</span>
 
-  <span class="k">def</span> <span class="nf">compute_std</span><span class="p">(</span><span class="n">summed_variance</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+  <span class="k">def</span><span class="w"> </span><span class="nf">compute_std</span><span class="p">(</span><span class="n">summed_variance</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
                   <span class="n">std</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
     <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">summed_variance</span><span class="p">,</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span>
     <span class="c1"># Summed variance can get negative due to rounding errors.</span>
@@ -550,12 +550,12 @@
 
 <div class="viewcode-block" id="normalize">
 <a class="viewcode-back" href="../../../arlbench.core.html#arlbench.core.running_statistics.normalize">[docs]</a>
-<span class="k">def</span> <span class="nf">normalize</span><span class="p">(</span><span class="n">batch</span><span class="p">:</span> <span class="n">NestedArray</span><span class="p">,</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">normalize</span><span class="p">(</span><span class="n">batch</span><span class="p">:</span> <span class="n">NestedArray</span><span class="p">,</span>
               <span class="n">mean_std</span><span class="p">:</span> <span class="n">NestedMeanStd</span><span class="p">,</span>
               <span class="n">max_abs_value</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NestedArray</span><span class="p">:</span>
 <span class="w">  </span><span class="sd">&quot;&quot;&quot;Normalizes data using running statistics.&quot;&quot;&quot;</span>
 
-  <span class="k">def</span> <span class="nf">normalize_leaf</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">mean</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+  <span class="k">def</span><span class="w"> </span><span class="nf">normalize_leaf</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">mean</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
                      <span class="n">std</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
     <span class="c1"># Only normalize inexact</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">jnp</span><span class="o">.</span><span class="n">issubdtype</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="n">jnp</span><span class="o">.</span><span class="n">inexact</span><span class="p">):</span>
@@ -572,7 +572,7 @@
 
 <div class="viewcode-block" id="denormalize">
 <a class="viewcode-back" href="../../../arlbench.core.html#arlbench.core.running_statistics.denormalize">[docs]</a>
-<span class="k">def</span> <span class="nf">denormalize</span><span class="p">(</span><span class="n">batch</span><span class="p">:</span> <span class="n">NestedArray</span><span class="p">,</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">denormalize</span><span class="p">(</span><span class="n">batch</span><span class="p">:</span> <span class="n">NestedArray</span><span class="p">,</span>
                 <span class="n">mean_std</span><span class="p">:</span> <span class="n">NestedMeanStd</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NestedArray</span><span class="p">:</span>
 <span class="w">  </span><span class="sd">&quot;&quot;&quot;Denormalizes values in a nested structure using the given mean/std.</span>
 
@@ -588,7 +588,7 @@
 <span class="sd">    Nested structure with denormalized values.</span>
 <span class="sd">  &quot;&quot;&quot;</span>
 
-  <span class="k">def</span> <span class="nf">denormalize_leaf</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">mean</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+  <span class="k">def</span><span class="w"> </span><span class="nf">denormalize_leaf</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">mean</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
                        <span class="n">std</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
     <span class="c1"># Only denormalize inexact</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">jnp</span><span class="o">.</span><span class="n">issubdtype</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="n">jnp</span><span class="o">.</span><span class="n">inexact</span><span class="p">):</span>
@@ -619,7 +619,7 @@
     
     <div class="footer-item">
       <p class="copyright">
-    &copy; Copyright Copyright 2024, AutoML Hannover.<br>
+    &copy; Copyright Copyright 2025, AutoML Hannover.<br>
 </p>
     </div>
     

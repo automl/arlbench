@@ -21,7 +21,7 @@
       
 
     
-    <link rel="stylesheet" type="text/css" href="../../../../../_static/pygments.css?v=a746c00c" />
+    <link rel="stylesheet" type="text/css" href="../../../../../_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="../../../../../_static/css/custom.css?v=2eb4fb78" />
     
   <link rel="preload" as="script" href="../../../../../_static/js/index.9ea38e314b9e6d9dab77.js">
@@ -333,17 +333,17 @@
                 
   <h1>Source code for arlbench.core.algorithms.ppo.models</h1><div class="highlight"><pre>
 <span></span><span class="sd">&quot;&quot;&quot;Models for the PPO algorithm.&quot;&quot;&quot;</span>
-<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
 
-<span class="kn">import</span> <span class="nn">distrax</span>
-<span class="kn">import</span> <span class="nn">flax.linen</span> <span class="k">as</span> <span class="nn">nn</span>
-<span class="kn">import</span> <span class="nn">jax.numpy</span> <span class="k">as</span> <span class="nn">jnp</span>
-<span class="kn">from</span> <span class="nn">flax.linen.initializers</span> <span class="kn">import</span> <span class="n">constant</span><span class="p">,</span> <span class="n">orthogonal</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">distrax</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">flax.linen</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">nn</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">jax.numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">jnp</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">flax.linen.initializers</span><span class="w"> </span><span class="kn">import</span> <span class="n">constant</span><span class="p">,</span> <span class="n">orthogonal</span>
 
 
 <div class="viewcode-block" id="MLPActorCritic">
 <a class="viewcode-back" href="../../../../../arlbench.core.algorithms.ppo.html#arlbench.core.algorithms.ppo.models.MLPActorCritic">[docs]</a>
-<span class="k">class</span> <span class="nc">MLPActorCritic</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">MLPActorCritic</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;An MLP-based Actor-Critic network for PPO.&quot;&quot;&quot;</span>
 
     <span class="n">action_dim</span><span class="p">:</span> <span class="nb">int</span>
@@ -353,7 +353,7 @@
 
 <div class="viewcode-block" id="MLPActorCritic.setup">
 <a class="viewcode-back" href="../../../../../arlbench.core.algorithms.ppo.html#arlbench.core.algorithms.ppo.models.MLPActorCritic.setup">[docs]</a>
-    <span class="k">def</span> <span class="nf">setup</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">setup</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Initializes the actor-critic network.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">activation</span> <span class="o">==</span> <span class="s2">&quot;tanh&quot;</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">activation_func</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">tanh</span>
@@ -397,7 +397,7 @@
 
 <div class="viewcode-block" id="MLPActorCritic.__call__">
 <a class="viewcode-back" href="../../../../../arlbench.core.algorithms.ppo.html#arlbench.core.algorithms.ppo.models.MLPActorCritic.__call__">[docs]</a>
-    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Applies the actor-critic to the input.&quot;&quot;&quot;</span>
         <span class="n">actor_mean</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dense0</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
         <span class="n">actor_mean</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">activation_func</span><span class="p">(</span><span class="n">actor_mean</span><span class="p">)</span>
@@ -422,7 +422,7 @@
 
 <div class="viewcode-block" id="CNNActorCritic">
 <a class="viewcode-back" href="../../../../../arlbench.core.algorithms.ppo.html#arlbench.core.algorithms.ppo.models.CNNActorCritic">[docs]</a>
-<span class="k">class</span> <span class="nc">CNNActorCritic</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">CNNActorCritic</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;A CNN-based Actor-Critic network for PPO. Based on NatureCNN https://github.com/DLR-RM/stable-baselines3/blob/master/stable_baselines3/common/torch_layers.py#L48.&quot;&quot;&quot;</span>
 
     <span class="n">action_dim</span><span class="p">:</span> <span class="nb">int</span>
@@ -432,7 +432,7 @@
 
 <div class="viewcode-block" id="CNNActorCritic.setup">
 <a class="viewcode-back" href="../../../../../arlbench.core.algorithms.ppo.html#arlbench.core.algorithms.ppo.models.CNNActorCritic.setup">[docs]</a>
-    <span class="k">def</span> <span class="nf">setup</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">setup</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Initializes the actor-critic network.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">activation</span> <span class="o">==</span> <span class="s2">&quot;tanh&quot;</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">activation_func</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">tanh</span>
@@ -484,7 +484,7 @@
 
 <div class="viewcode-block" id="CNNActorCritic.__call__">
 <a class="viewcode-back" href="../../../../../arlbench.core.algorithms.ppo.html#arlbench.core.algorithms.ppo.models.CNNActorCritic.__call__">[docs]</a>
-    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Applies the actor-critic to the input.&quot;&quot;&quot;</span>
         <span class="n">x</span> <span class="o">=</span> <span class="n">x</span> <span class="o">/</span> <span class="mf">255.0</span>  <span class="c1"># todo: make a clean solution for this</span>
         <span class="n">x</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
@@ -530,7 +530,7 @@
     
     <div class="footer-item">
       <p class="copyright">
-    &copy; Copyright Copyright 2024, AutoML Hannover.<br>
+    &copy; Copyright Copyright 2025, AutoML Hannover.<br>
 </p>
     </div>
     

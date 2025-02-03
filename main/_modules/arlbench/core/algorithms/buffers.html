@@ -21,7 +21,7 @@
       
 
     
-    <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=a746c00c" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/css/custom.css?v=2eb4fb78" />
     
   <link rel="preload" as="script" href="../../../../_static/js/index.9ea38e314b9e6d9dab77.js">
@@ -335,32 +335,32 @@
 <span></span><span class="c1"># Contains code from flashbax (https://github.com/instadeepai/flashbax/blob/main/flashbax/buffers/prioritised_trajectory_buffer.py)</span>
 <span class="c1"># Licensed under the Apache License 2.0 (http://www.apache.org/licenses/LICENSE-2.0).</span>
 <span class="sd">&quot;&quot;&quot;Replay buffers.&quot;&quot;&quot;</span>
-<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
 
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">TYPE_CHECKING</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">TYPE_CHECKING</span>
 
-<span class="kn">import</span> <span class="nn">jax</span>
-<span class="kn">import</span> <span class="nn">jax.numpy</span> <span class="k">as</span> <span class="nn">jnp</span>
-<span class="kn">from</span> <span class="nn">flashbax</span> <span class="kn">import</span> <span class="n">utils</span>
-<span class="kn">from</span> <span class="nn">flashbax.buffers</span> <span class="kn">import</span> <span class="n">sum_tree</span>
-<span class="kn">from</span> <span class="nn">flashbax.buffers.prioritised_trajectory_buffer</span> <span class="kn">import</span> <span class="p">(</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">jax</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">jax.numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">jnp</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">flashbax</span><span class="w"> </span><span class="kn">import</span> <span class="n">utils</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">flashbax.buffers</span><span class="w"> </span><span class="kn">import</span> <span class="n">sum_tree</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">flashbax.buffers.prioritised_trajectory_buffer</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">Experience</span><span class="p">,</span>
     <span class="n">PrioritisedTrajectoryBufferSample</span><span class="p">,</span>
     <span class="n">PrioritisedTrajectoryBufferState</span><span class="p">,</span>
     <span class="n">_get_sample_trajectories</span><span class="p">,</span>
     <span class="n">get_invalid_indices</span><span class="p">,</span>
 <span class="p">)</span>
-<span class="kn">from</span> <span class="nn">flashbax.buffers.trajectory_buffer</span> <span class="kn">import</span> <span class="n">calculate_uniform_item_indices</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">flashbax.buffers.trajectory_buffer</span><span class="w"> </span><span class="kn">import</span> <span class="n">calculate_uniform_item_indices</span>
 
 <span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
-    <span class="kn">import</span> <span class="nn">chex</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">chex</span>
 
 
 <span class="c1"># Adapted from flashbax.buffers.trajectory_buffer.sample</span>
 <span class="c1"># See https://github.com/instadeepai/flashbax/blob/main/flashbax/buffers/trajectory_buffer.py for more details</span>
 <div class="viewcode-block" id="uniform_sample">
 <a class="viewcode-back" href="../../../../arlbench.core.algorithms.html#arlbench.core.algorithms.buffers.uniform_sample">[docs]</a>
-<span class="k">def</span> <span class="nf">uniform_sample</span><span class="p">(</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">uniform_sample</span><span class="p">(</span>
     <span class="n">state</span><span class="p">:</span> <span class="n">PrioritisedTrajectoryBufferState</span><span class="p">[</span><span class="n">Experience</span><span class="p">],</span>
     <span class="n">rng_key</span><span class="p">:</span> <span class="n">chex</span><span class="o">.</span><span class="n">PRNGKey</span><span class="p">,</span>
     <span class="n">batch_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
@@ -455,7 +455,7 @@
     
     <div class="footer-item">
       <p class="copyright">
-    &copy; Copyright Copyright 2024, AutoML Hannover.<br>
+    &copy; Copyright Copyright 2025, AutoML Hannover.<br>
 </p>
     </div>
     

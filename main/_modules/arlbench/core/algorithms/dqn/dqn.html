@@ -21,7 +21,7 @@
       
 
     
-    <link rel="stylesheet" type="text/css" href="../../../../../_static/pygments.css?v=a746c00c" />
+    <link rel="stylesheet" type="text/css" href="../../../../../_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="../../../../../_static/css/custom.css?v=2eb4fb78" />
     
   <link rel="preload" as="script" href="../../../../../_static/js/index.9ea38e314b9e6d9dab77.js">
@@ -335,18 +335,18 @@
 <span></span><span class="c1"># Parts of this code are based on PureJaxRL (https://github.com/luchris429/purejaxrl).</span>
 <span class="c1"># Licensed under the Apache License 2.0 (http://www.apache.org/licenses/LICENSE-2.0).</span>
 <span class="sd">&quot;&quot;&quot;DQN algorithm.&quot;&quot;&quot;</span>
-<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
 
-<span class="kn">import</span> <span class="nn">functools</span>
-<span class="kn">from</span> <span class="nn">collections.abc</span> <span class="kn">import</span> <span class="n">Callable</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">TYPE_CHECKING</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">NamedTuple</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">functools</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Callable</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">TYPE_CHECKING</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">NamedTuple</span>
 
-<span class="kn">import</span> <span class="nn">jax</span>
-<span class="kn">import</span> <span class="nn">jax.lax</span>
-<span class="kn">import</span> <span class="nn">jax.numpy</span> <span class="k">as</span> <span class="nn">jnp</span>
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">import</span> <span class="nn">optax</span>
-<span class="kn">from</span> <span class="nn">ConfigSpace</span> <span class="kn">import</span> <span class="p">(</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">jax</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">jax.lax</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">jax.numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">jnp</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">optax</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">ConfigSpace</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">Categorical</span><span class="p">,</span>
     <span class="n">Configuration</span><span class="p">,</span>
     <span class="n">ConfigurationSpace</span><span class="p">,</span>
@@ -354,33 +354,33 @@
     <span class="n">Float</span><span class="p">,</span>
     <span class="n">Integer</span><span class="p">,</span>
 <span class="p">)</span>
-<span class="kn">from</span> <span class="nn">flax.training.train_state</span> <span class="kn">import</span> <span class="n">TrainState</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">flax.training.train_state</span><span class="w"> </span><span class="kn">import</span> <span class="n">TrainState</span>
 
-<span class="kn">from</span> <span class="nn">arlbench.core</span> <span class="kn">import</span> <span class="n">running_statistics</span>
-<span class="kn">from</span> <span class="nn">arlbench.core.algorithms.algorithm</span> <span class="kn">import</span> <span class="n">Algorithm</span>
-<span class="kn">from</span> <span class="nn">arlbench.core.algorithms.buffers</span> <span class="kn">import</span> <span class="n">uniform_sample</span>
-<span class="kn">from</span> <span class="nn">arlbench.core.algorithms.common</span> <span class="kn">import</span> <span class="n">TimeStep</span>
-<span class="kn">from</span> <span class="nn">arlbench.core.algorithms.prioritised_item_buffer</span> <span class="kn">import</span> <span class="p">(</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">arlbench.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">running_statistics</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">arlbench.core.algorithms.algorithm</span><span class="w"> </span><span class="kn">import</span> <span class="n">Algorithm</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">arlbench.core.algorithms.buffers</span><span class="w"> </span><span class="kn">import</span> <span class="n">uniform_sample</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">arlbench.core.algorithms.common</span><span class="w"> </span><span class="kn">import</span> <span class="n">TimeStep</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">arlbench.core.algorithms.prioritised_item_buffer</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">make_prioritised_item_buffer</span><span class="p">,</span>
 <span class="p">)</span>
 
-<span class="kn">from</span> <span class="nn">.models</span> <span class="kn">import</span> <span class="n">CNNQ</span><span class="p">,</span> <span class="n">MLPQ</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.models</span><span class="w"> </span><span class="kn">import</span> <span class="n">CNNQ</span><span class="p">,</span> <span class="n">MLPQ</span>
 
 <span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
-    <span class="kn">import</span> <span class="nn">chex</span>
-    <span class="kn">from</span> <span class="nn">flashbax.buffers.prioritised_trajectory_buffer</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">chex</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">flashbax.buffers.prioritised_trajectory_buffer</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
         <span class="n">PrioritisedTrajectoryBufferState</span><span class="p">,</span>
     <span class="p">)</span>
-    <span class="kn">from</span> <span class="nn">flax.core.frozen_dict</span> <span class="kn">import</span> <span class="n">FrozenDict</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">flax.core.frozen_dict</span><span class="w"> </span><span class="kn">import</span> <span class="n">FrozenDict</span>
 
-    <span class="kn">from</span> <span class="nn">arlbench.core.environments</span> <span class="kn">import</span> <span class="n">Environment</span>
-    <span class="kn">from</span> <span class="nn">arlbench.core.running_statistics</span> <span class="kn">import</span> <span class="n">RunningStatisticsState</span>
-    <span class="kn">from</span> <span class="nn">arlbench.core.wrappers</span> <span class="kn">import</span> <span class="n">Wrapper</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">arlbench.core.environments</span><span class="w"> </span><span class="kn">import</span> <span class="n">Environment</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">arlbench.core.running_statistics</span><span class="w"> </span><span class="kn">import</span> <span class="n">RunningStatisticsState</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">arlbench.core.wrappers</span><span class="w"> </span><span class="kn">import</span> <span class="n">Wrapper</span>
 
 
 <div class="viewcode-block" id="DQNTrainState">
 <a class="viewcode-back" href="../../../../../arlbench.core.algorithms.dqn.html#arlbench.core.algorithms.DQNTrainState">[docs]</a>
-<span class="k">class</span> <span class="nc">DQNTrainState</span><span class="p">(</span><span class="n">TrainState</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">DQNTrainState</span><span class="p">(</span><span class="n">TrainState</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;DQN training state.&quot;&quot;&quot;</span>
 
     <span class="n">target_params</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="n">chex</span><span class="o">.</span><span class="n">Array</span> <span class="o">|</span> <span class="nb">dict</span> <span class="o">|</span> <span class="n">FrozenDict</span> <span class="o">=</span> <span class="kc">None</span>
@@ -389,7 +389,7 @@
 <div class="viewcode-block" id="DQNTrainState.create_with_opt_state">
 <a class="viewcode-back" href="../../../../../arlbench.core.algorithms.dqn.html#arlbench.core.algorithms.DQNTrainState.create_with_opt_state">[docs]</a>
     <span class="nd">@classmethod</span>
-    <span class="k">def</span> <span class="nf">create_with_opt_state</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">create_with_opt_state</span><span class="p">(</span>
         <span class="bp">cls</span><span class="p">,</span>
         <span class="o">*</span><span class="p">,</span>
         <span class="n">apply_fn</span><span class="p">:</span> <span class="n">Callable</span><span class="p">,</span>
@@ -417,7 +417,7 @@
 
 <div class="viewcode-block" id="DQNRunnerState">
 <a class="viewcode-back" href="../../../../../arlbench.core.algorithms.dqn.html#arlbench.core.algorithms.DQNRunnerState">[docs]</a>
-<span class="k">class</span> <span class="nc">DQNRunnerState</span><span class="p">(</span><span class="n">NamedTuple</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">DQNRunnerState</span><span class="p">(</span><span class="n">NamedTuple</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;DQN runner state. Consists of (rng, train_state, env_state, obs, global_step).&quot;&quot;&quot;</span>
 
     <span class="n">rng</span><span class="p">:</span> <span class="n">chex</span><span class="o">.</span><span class="n">PRNGKey</span>
@@ -431,7 +431,7 @@
 
 <div class="viewcode-block" id="DQNState">
 <a class="viewcode-back" href="../../../../../arlbench.core.algorithms.dqn.html#arlbench.core.algorithms.DQNState">[docs]</a>
-<span class="k">class</span> <span class="nc">DQNState</span><span class="p">(</span><span class="n">NamedTuple</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">DQNState</span><span class="p">(</span><span class="n">NamedTuple</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;DQN algorithm state. Consists of (runner_state, buffer_state).&quot;&quot;&quot;</span>
 
     <span class="n">runner_state</span><span class="p">:</span> <span class="n">DQNRunnerState</span>
@@ -441,7 +441,7 @@
 
 <div class="viewcode-block" id="DQNTrainingResult">
 <a class="viewcode-back" href="../../../../../arlbench.core.algorithms.dqn.html#arlbench.core.algorithms.DQNTrainingResult">[docs]</a>
-<span class="k">class</span> <span class="nc">DQNTrainingResult</span><span class="p">(</span><span class="n">NamedTuple</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">DQNTrainingResult</span><span class="p">(</span><span class="n">NamedTuple</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;DQN training result. Consists of (eval_rewards, trajectories, metrics).&quot;&quot;&quot;</span>
 
     <span class="n">eval_rewards</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span>
@@ -452,7 +452,7 @@
 
 <div class="viewcode-block" id="DQNMetrics">
 <a class="viewcode-back" href="../../../../../arlbench.core.algorithms.dqn.html#arlbench.core.algorithms.DQNMetrics">[docs]</a>
-<span class="k">class</span> <span class="nc">DQNMetrics</span><span class="p">(</span><span class="n">NamedTuple</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">DQNMetrics</span><span class="p">(</span><span class="n">NamedTuple</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;DQN metrics returned by train function. Consists of (loss, grads, td_error).&quot;&quot;&quot;</span>
 
     <span class="n">loss</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span>
@@ -463,7 +463,7 @@
 
 <div class="viewcode-block" id="Transition">
 <a class="viewcode-back" href="../../../../../arlbench.core.algorithms.dqn.html#arlbench.core.algorithms.Transition">[docs]</a>
-<span class="k">class</span> <span class="nc">Transition</span><span class="p">(</span><span class="n">NamedTuple</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">Transition</span><span class="p">(</span><span class="n">NamedTuple</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;DQN Transition. Consists of (done, action, reward, obs, info).&quot;&quot;&quot;</span>
 
     <span class="n">done</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span>
@@ -479,12 +479,12 @@
 
 <div class="viewcode-block" id="DQN">
 <a class="viewcode-back" href="../../../../../arlbench.core.algorithms.dqn.html#arlbench.core.algorithms.DQN">[docs]</a>
-<span class="k">class</span> <span class="nc">DQN</span><span class="p">(</span><span class="n">Algorithm</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">DQN</span><span class="p">(</span><span class="n">Algorithm</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;JAX-based implementation of Deep Q-Network (DQN).&quot;&quot;&quot;</span>
 
     <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;dqn&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">hpo_config</span><span class="p">:</span> <span class="n">Configuration</span><span class="p">,</span>
         <span class="n">env</span><span class="p">:</span> <span class="n">Environment</span> <span class="o">|</span> <span class="n">Wrapper</span><span class="p">,</span>
@@ -559,7 +559,7 @@
 <div class="viewcode-block" id="DQN.get_hpo_config_space">
 <a class="viewcode-back" href="../../../../../arlbench.core.algorithms.dqn.html#arlbench.core.algorithms.DQN.get_hpo_config_space">[docs]</a>
     <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">get_hpo_config_space</span><span class="p">(</span><span class="n">seed</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ConfigurationSpace</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_hpo_config_space</span><span class="p">(</span><span class="n">seed</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ConfigurationSpace</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns the hyperparameter optimization (HPO) configuration space for DQN.&quot;&quot;&quot;</span>
         <span class="c1"># defaults from https://stable-baselines3.readthedocs.io/en/master/modules/dqn.html</span>
         <span class="n">cs</span> <span class="o">=</span> <span class="n">ConfigurationSpace</span><span class="p">(</span>
@@ -615,7 +615,7 @@
 <div class="viewcode-block" id="DQN.get_default_hpo_config">
 <a class="viewcode-back" href="../../../../../arlbench.core.algorithms.dqn.html#arlbench.core.algorithms.DQN.get_default_hpo_config">[docs]</a>
     <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">get_default_hpo_config</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">Configuration</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_default_hpo_config</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">Configuration</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns the default hyperparameter configuration for DQN.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">DQN</span><span class="o">.</span><span class="n">get_hpo_config_space</span><span class="p">()</span><span class="o">.</span><span class="n">get_default_configuration</span><span class="p">()</span></div>
 
@@ -623,7 +623,7 @@
 <div class="viewcode-block" id="DQN.get_nas_config_space">
 <a class="viewcode-back" href="../../../../../arlbench.core.algorithms.dqn.html#arlbench.core.algorithms.DQN.get_nas_config_space">[docs]</a>
     <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">get_nas_config_space</span><span class="p">(</span><span class="n">seed</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ConfigurationSpace</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_nas_config_space</span><span class="p">(</span><span class="n">seed</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ConfigurationSpace</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns the neural architecture search (NAS) configuration space for DQN.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">ConfigurationSpace</span><span class="p">(</span>
             <span class="n">name</span><span class="o">=</span><span class="s2">&quot;DQNNASConfigSpace&quot;</span><span class="p">,</span>
@@ -640,7 +640,7 @@
 <div class="viewcode-block" id="DQN.get_default_nas_config">
 <a class="viewcode-back" href="../../../../../arlbench.core.algorithms.dqn.html#arlbench.core.algorithms.DQN.get_default_nas_config">[docs]</a>
     <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">get_default_nas_config</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">Configuration</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_default_nas_config</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">Configuration</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns the default NAS configuration for DQN.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">DQN</span><span class="o">.</span><span class="n">get_nas_config_space</span><span class="p">()</span><span class="o">.</span><span class="n">get_default_configuration</span><span class="p">()</span></div>
 
@@ -648,7 +648,7 @@
 <div class="viewcode-block" id="DQN.get_checkpoint_factory">
 <a class="viewcode-back" href="../../../../../arlbench.core.algorithms.dqn.html#arlbench.core.algorithms.DQN.get_checkpoint_factory">[docs]</a>
     <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">get_checkpoint_factory</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_checkpoint_factory</span><span class="p">(</span>
         <span class="n">runner_state</span><span class="p">:</span> <span class="n">DQNRunnerState</span><span class="p">,</span>
         <span class="n">train_result</span><span class="p">:</span> <span class="n">DQNTrainingResult</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Callable</span><span class="p">]:</span>
@@ -663,7 +663,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">train_state</span> <span class="o">=</span> <span class="n">runner_state</span><span class="o">.</span><span class="n">train_state</span>
 
-        <span class="k">def</span> <span class="nf">get_trajectories</span><span class="p">():</span>
+        <span class="k">def</span><span class="w"> </span><span class="nf">get_trajectories</span><span class="p">():</span>
             <span class="k">if</span> <span class="n">train_result</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">train_result</span><span class="o">.</span><span class="n">trajectories</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="k">return</span> <span class="kc">None</span>
 
@@ -690,7 +690,7 @@
 
 <div class="viewcode-block" id="DQN.init">
 <a class="viewcode-back" href="../../../../../arlbench.core.algorithms.dqn.html#arlbench.core.algorithms.DQN.init">[docs]</a>
-    <span class="k">def</span> <span class="nf">init</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">init</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">rng</span><span class="p">:</span> <span class="n">chex</span><span class="o">.</span><span class="n">PRNGKey</span><span class="p">,</span>
         <span class="n">buffer_state</span><span class="p">:</span> <span class="n">PrioritisedTrajectoryBufferState</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -766,7 +766,7 @@
 <div class="viewcode-block" id="DQN.predict">
 <a class="viewcode-back" href="../../../../../arlbench.core.algorithms.dqn.html#arlbench.core.algorithms.DQN.predict">[docs]</a>
     <span class="nd">@functools</span><span class="o">.</span><span class="n">partial</span><span class="p">(</span><span class="n">jax</span><span class="o">.</span><span class="n">jit</span><span class="p">,</span> <span class="n">static_argnums</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
-    <span class="k">def</span> <span class="nf">predict</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">predict</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">runner_state</span><span class="p">:</span> <span class="n">DQNRunnerState</span><span class="p">,</span>
         <span class="n">obs</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
@@ -785,19 +785,19 @@
 <span class="sd">            jnp.ndarray: Action(s).</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
-        <span class="k">def</span> <span class="nf">random_action</span><span class="p">(</span><span class="n">rng</span><span class="p">:</span> <span class="n">chex</span><span class="o">.</span><span class="n">PRNGKey</span><span class="p">,</span> <span class="n">_</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+        <span class="k">def</span><span class="w"> </span><span class="nf">random_action</span><span class="p">(</span><span class="n">rng</span><span class="p">:</span> <span class="n">chex</span><span class="o">.</span><span class="n">PRNGKey</span><span class="p">,</span> <span class="n">_</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
             <span class="n">_rngs</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">rng</span><span class="p">,</span> <span class="n">obs</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
             <span class="k">return</span> <span class="n">jnp</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
                 <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">env</span><span class="o">.</span><span class="n">action_space</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">_rngs</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">obs</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])]</span>
             <span class="p">)</span>
 
-        <span class="k">def</span> <span class="nf">greedy_action</span><span class="p">(</span><span class="n">_</span><span class="p">:</span> <span class="n">chex</span><span class="o">.</span><span class="n">PRNGKey</span><span class="p">,</span> <span class="n">obs</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+        <span class="k">def</span><span class="w"> </span><span class="nf">greedy_action</span><span class="p">(</span><span class="n">_</span><span class="p">:</span> <span class="n">chex</span><span class="o">.</span><span class="n">PRNGKey</span><span class="p">,</span> <span class="n">obs</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">hpo_config</span><span class="p">[</span><span class="s2">&quot;normalize_observations&quot;</span><span class="p">]:</span>
                 <span class="n">obs</span> <span class="o">=</span> <span class="n">running_statistics</span><span class="o">.</span><span class="n">normalize</span><span class="p">(</span><span class="n">obs</span><span class="p">,</span> <span class="n">runner_state</span><span class="o">.</span><span class="n">normalizer_state</span><span class="p">)</span>
             <span class="n">q_values</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">network</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">runner_state</span><span class="o">.</span><span class="n">train_state</span><span class="o">.</span><span class="n">params</span><span class="p">,</span> <span class="n">obs</span><span class="p">)</span>
             <span class="k">return</span> <span class="n">q_values</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
 
-        <span class="k">def</span> <span class="nf">sample_action</span><span class="p">(</span><span class="n">rng</span><span class="p">:</span> <span class="n">chex</span><span class="o">.</span><span class="n">PRNGKey</span><span class="p">,</span> <span class="n">obs</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+        <span class="k">def</span><span class="w"> </span><span class="nf">sample_action</span><span class="p">(</span><span class="n">rng</span><span class="p">:</span> <span class="n">chex</span><span class="o">.</span><span class="n">PRNGKey</span><span class="p">,</span> <span class="n">obs</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
             <span class="n">rnd_action</span> <span class="o">=</span> <span class="n">random_action</span><span class="p">(</span><span class="n">rng</span><span class="p">,</span> <span class="n">obs</span><span class="p">)</span>
             <span class="n">grd_action</span> <span class="o">=</span> <span class="n">greedy_action</span><span class="p">(</span><span class="n">rng</span><span class="p">,</span> <span class="n">obs</span><span class="p">)</span>
             <span class="k">return</span> <span class="n">jax</span><span class="o">.</span><span class="n">lax</span><span class="o">.</span><span class="n">select</span><span class="p">(</span>
@@ -816,7 +816,7 @@
 <div class="viewcode-block" id="DQN.train">
 <a class="viewcode-back" href="../../../../../arlbench.core.algorithms.dqn.html#arlbench.core.algorithms.DQN.train">[docs]</a>
     <span class="nd">@functools</span><span class="o">.</span><span class="n">partial</span><span class="p">(</span><span class="n">jax</span><span class="o">.</span><span class="n">jit</span><span class="p">,</span> <span class="n">static_argnums</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">),</span> <span class="n">donate_argnums</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span><span class="p">,))</span>
-    <span class="k">def</span> <span class="nf">train</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">train</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">runner_state</span><span class="p">:</span> <span class="n">DQNRunnerState</span><span class="p">,</span>
         <span class="n">buffer_state</span><span class="p">:</span> <span class="n">PrioritisedTrajectoryBufferState</span><span class="p">,</span>
@@ -845,7 +845,7 @@
             <span class="p">)</span>
         <span class="p">)</span>
 
-        <span class="k">def</span> <span class="nf">train_eval_step</span><span class="p">(</span>
+        <span class="k">def</span><span class="w"> </span><span class="nf">train_eval_step</span><span class="p">(</span>
             <span class="n">carry</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">DQNRunnerState</span><span class="p">,</span> <span class="n">PrioritisedTrajectoryBufferState</span><span class="p">],</span> <span class="n">_</span><span class="p">:</span> <span class="kc">None</span>
         <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span>
             <span class="nb">tuple</span><span class="p">[</span><span class="n">DQNRunnerState</span><span class="p">,</span> <span class="n">PrioritisedTrajectoryBufferState</span><span class="p">],</span> <span class="n">DQNTrainingResult</span>
@@ -883,7 +883,7 @@
 
 <div class="viewcode-block" id="DQN.update">
 <a class="viewcode-back" href="../../../../../arlbench.core.algorithms.dqn.html#arlbench.core.algorithms.DQN.update">[docs]</a>
-    <span class="k">def</span> <span class="nf">update</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">update</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">train_state</span><span class="p">:</span> <span class="n">DQNTrainState</span><span class="p">,</span>
         <span class="n">observations</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
@@ -917,7 +917,7 @@
         <span class="n">q_next_target</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">q_next_target</span><span class="p">,</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>  <span class="c1"># (batch_size,)</span>
         <span class="n">next_q_value</span> <span class="o">=</span> <span class="n">rewards</span> <span class="o">+</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">dones</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">hpo_config</span><span class="p">[</span><span class="s2">&quot;gamma&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="n">q_next_target</span>
 
-        <span class="k">def</span> <span class="nf">mse_loss</span><span class="p">(</span><span class="n">params</span><span class="p">:</span> <span class="n">FrozenDict</span> <span class="o">|</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
+        <span class="k">def</span><span class="w"> </span><span class="nf">mse_loss</span><span class="p">(</span><span class="n">params</span><span class="p">:</span> <span class="n">FrozenDict</span> <span class="o">|</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
             <span class="n">q_pred</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">network</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span>
                 <span class="n">params</span><span class="p">,</span> <span class="n">observations</span>
             <span class="p">)</span>  <span class="c1"># (batch_size, num_actions)</span>
@@ -936,7 +936,7 @@
         <span class="k">return</span> <span class="n">train_state</span><span class="p">,</span> <span class="n">loss_value</span><span class="p">,</span> <span class="n">td_error</span><span class="p">,</span> <span class="n">grads</span></div>
 
 
-    <span class="k">def</span> <span class="nf">_update_step</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_update_step</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">carry</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">DQNRunnerState</span><span class="p">,</span> <span class="n">PrioritisedTrajectoryBufferState</span><span class="p">],</span>
         <span class="n">n_total_timesteps</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
@@ -958,7 +958,7 @@
             <span class="n">runner_state</span>
         <span class="p">)</span>
 
-        <span class="k">def</span> <span class="nf">take_step</span><span class="p">(</span>
+        <span class="k">def</span><span class="w"> </span><span class="nf">take_step</span><span class="p">(</span>
             <span class="n">carry</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span>
                 <span class="n">chex</span><span class="o">.</span><span class="n">PRNGKey</span><span class="p">,</span>
                 <span class="n">DQNTrainState</span><span class="p">,</span>
@@ -1000,7 +1000,7 @@
                 <span class="n">buffer_state</span><span class="p">,</span>
             <span class="p">)</span> <span class="o">=</span> <span class="n">carry</span>
 
-            <span class="k">def</span> <span class="nf">random_action</span><span class="p">(</span><span class="n">rng</span><span class="p">:</span> <span class="n">chex</span><span class="o">.</span><span class="n">PRNGKey</span><span class="p">,</span> <span class="n">_</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+            <span class="k">def</span><span class="w"> </span><span class="nf">random_action</span><span class="p">(</span><span class="n">rng</span><span class="p">:</span> <span class="n">chex</span><span class="o">.</span><span class="n">PRNGKey</span><span class="p">,</span> <span class="n">_</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
 <span class="w">                </span><span class="sd">&quot;&quot;&quot;Takes a random action.</span>
 
 <span class="sd">                Args:</span>
@@ -1012,7 +1012,7 @@
 <span class="sd">                &quot;&quot;&quot;</span>
                 <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">env</span><span class="o">.</span><span class="n">sample_actions</span><span class="p">(</span><span class="n">rng</span><span class="p">)</span>
 
-            <span class="k">def</span> <span class="nf">greedy_action</span><span class="p">(</span><span class="n">_</span><span class="p">:</span> <span class="n">chex</span><span class="o">.</span><span class="n">PRNGKey</span><span class="p">,</span> <span class="n">obs</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+            <span class="k">def</span><span class="w"> </span><span class="nf">greedy_action</span><span class="p">(</span><span class="n">_</span><span class="p">:</span> <span class="n">chex</span><span class="o">.</span><span class="n">PRNGKey</span><span class="p">,</span> <span class="n">obs</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
 <span class="w">                </span><span class="sd">&quot;&quot;&quot;Takes a greedy action.</span>
 
 <span class="sd">                Args:</span>
@@ -1060,7 +1060,7 @@
 
             <span class="n">global_step</span> <span class="o">+=</span> <span class="mi">1</span>
 
-            <span class="k">def</span> <span class="nf">target_update</span><span class="p">(</span><span class="n">train_state</span><span class="p">:</span> <span class="n">DQNTrainState</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DQNTrainState</span><span class="p">:</span>
+            <span class="k">def</span><span class="w"> </span><span class="nf">target_update</span><span class="p">(</span><span class="n">train_state</span><span class="p">:</span> <span class="n">DQNTrainState</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DQNTrainState</span><span class="p">:</span>
 <span class="w">                </span><span class="sd">&quot;&quot;&quot;Update the target network.</span>
 
 <span class="sd">                Args:</span>
@@ -1077,7 +1077,7 @@
                     <span class="p">)</span>
                 <span class="p">)</span>
 
-            <span class="k">def</span> <span class="nf">dont_target_update</span><span class="p">(</span><span class="n">train_state</span><span class="p">:</span> <span class="n">DQNTrainState</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DQNTrainState</span><span class="p">:</span>
+            <span class="k">def</span><span class="w"> </span><span class="nf">dont_target_update</span><span class="p">(</span><span class="n">train_state</span><span class="p">:</span> <span class="n">DQNTrainState</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DQNTrainState</span><span class="p">:</span>
 <span class="w">                </span><span class="sd">&quot;&quot;&quot;Dummy function for jax.lax.cond(). Same interface as target_update()</span>
 <span class="sd">                but this function does not change the network.</span>
 
@@ -1122,7 +1122,7 @@
                 <span class="n">info</span><span class="p">,</span>
             <span class="p">)</span>
 
-        <span class="k">def</span> <span class="nf">do_update</span><span class="p">(</span>
+        <span class="k">def</span><span class="w"> </span><span class="nf">do_update</span><span class="p">(</span>
             <span class="n">rng</span><span class="p">:</span> <span class="n">chex</span><span class="o">.</span><span class="n">PRNGKey</span><span class="p">,</span>
             <span class="n">train_state</span><span class="p">:</span> <span class="n">DQNTrainState</span><span class="p">,</span>
             <span class="n">normalizer_state</span><span class="p">:</span> <span class="n">RunningStatisticsState</span><span class="p">,</span>
@@ -1142,7 +1142,7 @@
 <span class="sd">                Random number generator key, training state, buffer state, and metrics.</span>
 <span class="sd">            &quot;&quot;&quot;</span>
 
-            <span class="k">def</span> <span class="nf">gradient_step</span><span class="p">(</span>
+            <span class="k">def</span><span class="w"> </span><span class="nf">gradient_step</span><span class="p">(</span>
                 <span class="n">carry</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span>
                     <span class="n">chex</span><span class="o">.</span><span class="n">PRNGKey</span><span class="p">,</span> <span class="n">DQNTrainState</span><span class="p">,</span> <span class="n">PrioritisedTrajectoryBufferState</span>
                 <span class="p">],</span>
@@ -1212,7 +1212,7 @@
             <span class="p">)</span>
             <span class="k">return</span> <span class="n">rng</span><span class="p">,</span> <span class="n">train_state</span><span class="p">,</span> <span class="n">buffer_state</span><span class="p">,</span> <span class="n">metrics</span>
 
-        <span class="k">def</span> <span class="nf">dont_update</span><span class="p">(</span>
+        <span class="k">def</span><span class="w"> </span><span class="nf">dont_update</span><span class="p">(</span>
             <span class="n">rng</span><span class="p">:</span> <span class="n">chex</span><span class="o">.</span><span class="n">PRNGKey</span><span class="p">,</span>
             <span class="n">train_state</span><span class="p">:</span> <span class="n">DQNTrainState</span><span class="p">,</span>
             <span class="n">normalizer_state</span><span class="p">:</span> <span class="n">RunningStatisticsState</span><span class="p">,</span> <span class="c1"># noqa: ARG001</span>
@@ -1345,7 +1345,7 @@
     
     <div class="footer-item">
       <p class="copyright">
-    &copy; Copyright Copyright 2024, AutoML Hannover.<br>
+    &copy; Copyright Copyright 2025, AutoML Hannover.<br>
 </p>
     </div>
     

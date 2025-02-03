@@ -21,7 +21,7 @@
       
 
     
-    <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=a746c00c" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/css/custom.css?v=2eb4fb78" />
     
   <link rel="preload" as="script" href="../../../../_static/js/index.9ea38e314b9e6d9dab77.js">
@@ -335,31 +335,31 @@
 <span></span><span class="c1"># Contains code from flashbax (https://github.com/instadeepai/flashbax/blob/main/flashbax/buffers/prioritised_trajectory_buffer.py)</span>
 <span class="c1"># Licensed under the Apache License 2.0 (http://www.apache.org/licenses/LICENSE-2.0).</span>
 <span class="sd">&quot;&quot;&quot;Prioritised replay buffer.&quot;&quot;&quot;</span>
-<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
 
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">TYPE_CHECKING</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">TYPE_CHECKING</span>
 
-<span class="kn">import</span> <span class="nn">jax</span>
-<span class="kn">from</span> <span class="nn">flashbax</span> <span class="kn">import</span> <span class="n">utils</span>
-<span class="kn">from</span> <span class="nn">flashbax.buffers.item_buffer</span> <span class="kn">import</span> <span class="n">validate_item_buffer_args</span>
-<span class="kn">from</span> <span class="nn">flashbax.buffers.prioritised_flat_buffer</span> <span class="kn">import</span> <span class="n">validate_priority_exponent</span>
-<span class="kn">from</span> <span class="nn">flashbax.buffers.prioritised_trajectory_buffer</span> <span class="kn">import</span> <span class="p">(</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">jax</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">flashbax</span><span class="w"> </span><span class="kn">import</span> <span class="n">utils</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">flashbax.buffers.item_buffer</span><span class="w"> </span><span class="kn">import</span> <span class="n">validate_item_buffer_args</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">flashbax.buffers.prioritised_flat_buffer</span><span class="w"> </span><span class="kn">import</span> <span class="n">validate_priority_exponent</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">flashbax.buffers.prioritised_trajectory_buffer</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">PrioritisedTrajectoryBuffer</span><span class="p">,</span>
     <span class="n">PrioritisedTrajectoryBufferSample</span><span class="p">,</span>
     <span class="n">PrioritisedTrajectoryBufferState</span><span class="p">,</span>
     <span class="n">make_prioritised_trajectory_buffer</span><span class="p">,</span>
     <span class="n">validate_device</span><span class="p">,</span>
 <span class="p">)</span>
-<span class="kn">from</span> <span class="nn">flashbax.utils</span> <span class="kn">import</span> <span class="n">add_dim_to_args</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">flashbax.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">add_dim_to_args</span>
 
 <span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
-    <span class="kn">from</span> <span class="nn">chex</span> <span class="kn">import</span> <span class="n">PRNGKey</span>
-    <span class="kn">from</span> <span class="nn">flashbax.buffers.trajectory_buffer</span> <span class="kn">import</span> <span class="n">Experience</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">chex</span><span class="w"> </span><span class="kn">import</span> <span class="n">PRNGKey</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">flashbax.buffers.trajectory_buffer</span><span class="w"> </span><span class="kn">import</span> <span class="n">Experience</span>
 
 
 <div class="viewcode-block" id="create_prioritised_item_buffer">
 <a class="viewcode-back" href="../../../../arlbench.core.algorithms.html#arlbench.core.algorithms.prioritised_item_buffer.create_prioritised_item_buffer">[docs]</a>
-<span class="k">def</span> <span class="nf">create_prioritised_item_buffer</span><span class="p">(</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">create_prioritised_item_buffer</span><span class="p">(</span>
     <span class="n">max_length</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
     <span class="n">min_length</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
     <span class="n">sample_batch_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
@@ -408,7 +408,7 @@
         <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">,</span>
     <span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">add_fn</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">add_fn</span><span class="p">(</span>
         <span class="n">state</span><span class="p">:</span> <span class="n">PrioritisedTrajectoryBufferState</span><span class="p">,</span> <span class="n">batch</span><span class="p">:</span> <span class="n">Experience</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PrioritisedTrajectoryBufferState</span><span class="p">[</span><span class="n">Experience</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Flattens a batch to add items along single time axis.&quot;&quot;&quot;</span>
@@ -429,7 +429,7 @@
             <span class="n">add_fn</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="n">axis</span><span class="p">,</span> <span class="n">starting_arg_index</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">ending_arg_index</span><span class="o">=</span><span class="mi">2</span>
         <span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">sample_fn</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">sample_fn</span><span class="p">(</span>
         <span class="n">state</span><span class="p">:</span> <span class="n">PrioritisedTrajectoryBufferState</span><span class="p">,</span> <span class="n">rng_key</span><span class="p">:</span> <span class="n">PRNGKey</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PrioritisedTrajectoryBufferSample</span><span class="p">[</span><span class="n">Experience</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Samples a batch of items from the buffer.&quot;&quot;&quot;</span>
@@ -448,7 +448,7 @@
 
 <div class="viewcode-block" id="make_prioritised_item_buffer">
 <a class="viewcode-back" href="../../../../arlbench.core.algorithms.html#arlbench.core.algorithms.prioritised_item_buffer.make_prioritised_item_buffer">[docs]</a>
-<span class="k">def</span> <span class="nf">make_prioritised_item_buffer</span><span class="p">(</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">make_prioritised_item_buffer</span><span class="p">(</span>
     <span class="n">max_length</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
     <span class="n">min_length</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
     <span class="n">sample_batch_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
@@ -507,7 +507,7 @@
     
     <div class="footer-item">
       <p class="copyright">
-    &copy; Copyright Copyright 2024, AutoML Hannover.<br>
+    &copy; Copyright Copyright 2025, AutoML Hannover.<br>
 </p>
     </div>
     

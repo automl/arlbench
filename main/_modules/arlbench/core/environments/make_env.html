@@ -21,7 +21,7 @@
       
 
     
-    <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=a746c00c" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/css/custom.css?v=2eb4fb78" />
     
   <link rel="preload" as="script" href="../../../../_static/js/index.9ea38e314b9e6d9dab77.js">
@@ -333,22 +333,22 @@
                 
   <h1>Source code for arlbench.core.environments.make_env</h1><div class="highlight"><pre>
 <span></span><span class="sd">&quot;&quot;&quot;Environment creation function for ARLBench.&quot;&quot;&quot;</span>
-<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
 
-<span class="kn">import</span> <span class="nn">warnings</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">TYPE_CHECKING</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">TYPE_CHECKING</span>
 
-<span class="kn">from</span> <span class="nn">arlbench.core.wrappers</span> <span class="kn">import</span> <span class="n">FlattenObservationWrapper</span><span class="p">,</span> <span class="n">Wrapper</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">arlbench.core.wrappers</span><span class="w"> </span><span class="kn">import</span> <span class="n">FlattenObservationWrapper</span><span class="p">,</span> <span class="n">Wrapper</span>
 
 <span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
-    <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span>
 
-    <span class="kn">from</span> <span class="nn">.autorl_env</span> <span class="kn">import</span> <span class="n">Environment</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">.autorl_env</span><span class="w"> </span><span class="kn">import</span> <span class="n">Environment</span>
 
 
 <div class="viewcode-block" id="make_env">
 <a class="viewcode-back" href="../../../../arlbench.core.environments.html#arlbench.core.environments.make_env">[docs]</a>
-<span class="k">def</span> <span class="nf">make_env</span><span class="p">(</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">make_env</span><span class="p">(</span>
     <span class="n">env_framework</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="n">env_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="n">cnn_policy</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
@@ -380,23 +380,23 @@
                 <span class="sa">f</span><span class="s2">&quot;&quot;&quot;For gymnasium only n_envs must be set to 1 but</span>
 <span class="s2">                actual value is </span><span class="si">{</span><span class="n">n_envs</span><span class="si">}</span><span class="s2">. n_envs will be set to 1.&quot;&quot;&quot;</span>
             <span class="p">)</span>
-        <span class="kn">from</span> <span class="nn">.gymnasium_env</span> <span class="kn">import</span> <span class="n">GymnasiumEnv</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">.gymnasium_env</span><span class="w"> </span><span class="kn">import</span> <span class="n">GymnasiumEnv</span>
 
         <span class="n">env</span> <span class="o">=</span> <span class="n">GymnasiumEnv</span><span class="p">(</span><span class="n">env_name</span><span class="p">,</span> <span class="n">seed</span><span class="p">,</span> <span class="n">env_kwargs</span><span class="o">=</span><span class="n">env_kwargs</span><span class="p">)</span>
     <span class="k">elif</span> <span class="n">env_framework</span> <span class="o">==</span> <span class="s2">&quot;gymnax&quot;</span><span class="p">:</span>
-        <span class="kn">from</span> <span class="nn">.gymnax_env</span> <span class="kn">import</span> <span class="n">GymnaxEnv</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">.gymnax_env</span><span class="w"> </span><span class="kn">import</span> <span class="n">GymnaxEnv</span>
 
         <span class="n">env</span> <span class="o">=</span> <span class="n">GymnaxEnv</span><span class="p">(</span><span class="n">env_name</span><span class="p">,</span> <span class="n">n_envs</span><span class="p">,</span> <span class="n">env_kwargs</span><span class="o">=</span><span class="n">env_kwargs</span><span class="p">)</span>
     <span class="k">elif</span> <span class="n">env_framework</span> <span class="o">==</span> <span class="s2">&quot;envpool&quot;</span><span class="p">:</span>
-        <span class="kn">from</span> <span class="nn">.envpool_env</span> <span class="kn">import</span> <span class="n">EnvpoolEnv</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">.envpool_env</span><span class="w"> </span><span class="kn">import</span> <span class="n">EnvpoolEnv</span>
 
         <span class="n">env</span> <span class="o">=</span> <span class="n">EnvpoolEnv</span><span class="p">(</span><span class="n">env_name</span><span class="p">,</span> <span class="n">n_envs</span><span class="p">,</span> <span class="n">seed</span><span class="p">,</span> <span class="n">env_kwargs</span><span class="o">=</span><span class="n">env_kwargs</span><span class="p">)</span>
     <span class="k">elif</span> <span class="n">env_framework</span> <span class="o">==</span> <span class="s2">&quot;brax&quot;</span><span class="p">:</span>
-        <span class="kn">from</span> <span class="nn">.brax_env</span> <span class="kn">import</span> <span class="n">BraxEnv</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">.brax_env</span><span class="w"> </span><span class="kn">import</span> <span class="n">BraxEnv</span>
 
         <span class="n">env</span> <span class="o">=</span> <span class="n">BraxEnv</span><span class="p">(</span><span class="n">env_name</span><span class="p">,</span> <span class="n">n_envs</span><span class="p">,</span> <span class="n">env_kwargs</span><span class="o">=</span><span class="n">env_kwargs</span><span class="p">)</span>
     <span class="k">elif</span> <span class="n">env_framework</span> <span class="o">==</span> <span class="s2">&quot;xland&quot;</span><span class="p">:</span>
-        <span class="kn">from</span> <span class="nn">.xland_env</span> <span class="kn">import</span> <span class="n">XLandEnv</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">.xland_env</span><span class="w"> </span><span class="kn">import</span> <span class="n">XLandEnv</span>
 
         <span class="n">env</span> <span class="o">=</span> <span class="n">XLandEnv</span><span class="p">(</span><span class="n">env_name</span><span class="p">,</span> <span class="n">n_envs</span><span class="p">,</span> <span class="n">env_kwargs</span><span class="o">=</span><span class="n">env_kwargs</span><span class="p">,</span> <span class="n">cnn_policy</span><span class="o">=</span><span class="n">cnn_policy</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
@@ -428,7 +428,7 @@
     
     <div class="footer-item">
       <p class="copyright">
-    &copy; Copyright Copyright 2024, AutoML Hannover.<br>
+    &copy; Copyright Copyright 2025, AutoML Hannover.<br>
 </p>
     </div>
     
