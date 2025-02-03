@@ -1,0 +1,118 @@
+{
+  "hyperparameters": [
+    {
+      "name": "alpha",
+      "type": "uniform_float",
+      "log": false,
+      "lower": 0.0,
+      "upper": 1.0858348227718098,
+      "default": 0.5429174114
+    },
+    {
+      "name": "alpha_auto",
+      "type": "categorical",
+      "choices": [
+        true,
+        false
+      ],
+      "default": true,
+      "weights": null
+    },
+    {
+      "name": "buffer_alpha",
+      "type": "uniform_float",
+      "log": false,
+      "lower": 0.0,
+      "upper": 1.0858348227718098,
+      "default": 0.5429174114
+    },
+    {
+      "name": "buffer_batch_size",
+      "type": "uniform_float",
+      "log": false,
+      "lower": 0.0,
+      "upper": 1126.4,
+      "default": 563.2
+    },
+    {
+      "name": "buffer_beta",
+      "type": "uniform_float",
+      "log": false,
+      "lower": 0.0,
+      "upper": 1.0978468158685715,
+      "default": 0.5489234079
+    },
+    {
+      "name": "buffer_epsilon",
+      "type": "uniform_float",
+      "log": false,
+      "lower": 0.0,
+      "upper": 9.877593473682397e-05,
+      "default": 4.9388e-05
+    },
+    {
+      "name": "buffer_prio_sampling",
+      "type": "categorical",
+      "choices": [
+        true,
+        false
+      ],
+      "default": true,
+      "weights": null
+    },
+    {
+      "name": "buffer_size",
+      "type": "uniform_float",
+      "log": false,
+      "lower": 0.0,
+      "upper": 130762.5,
+      "default": 65381.25
+    },
+    {
+      "name": "learning_rate",
+      "type": "uniform_float",
+      "log": false,
+      "lower": 0.0,
+      "upper": 0.10908942553613082,
+      "default": 0.0545447128
+    },
+    {
+      "name": "learning_starts",
+      "type": "uniform_float",
+      "log": false,
+      "lower": 0.0,
+      "upper": 8998.0,
+      "default": 4499.0
+    },
+    {
+      "name": "reward_scale",
+      "type": "uniform_float",
+      "log": false,
+      "lower": 0.0,
+      "upper": 10.790045376673728,
+      "default": 5.3950226883
+    },
+    {
+      "name": "tau",
+      "type": "uniform_float",
+      "log": false,
+      "lower": 0.0,
+      "upper": 1.099960816192894,
+      "default": 0.5499804081
+    },
+    {
+      "name": "use_target_network",
+      "type": "categorical",
+      "choices": [
+        true,
+        false
+      ],
+      "default": true,
+      "weights": null
+    }
+  ],
+  "conditions": [],
+  "forbiddens": [],
+  "python_module_version": "0.6.1",
+  "json_format_version": 0.4
+}
