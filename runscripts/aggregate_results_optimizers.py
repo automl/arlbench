@@ -15,7 +15,7 @@ N_SEEDS = 5
 
 
 def aggregate_runhistories(approach: str):
-    base_path = os.path.join("results", approach)
+    base_path = os.path.join("../results_finished", approach)
     
     if not os.path.exists(base_path):
         logging.info(f"Directory for {approach} does not exist.")
@@ -42,8 +42,8 @@ def aggregate_runhistories(approach: str):
                         except pd.errors.ParserError as e:
                             print(f"Error while reading directory {seed_path}")
                             continue
-                        runhistory["seed"] = int(seed_dir)
-                        incumbent["seed"] = int(seed_dir)
+                        runhistory["optimisation_seed"] = int(seed_dir)
+                        incumbent["optimisation_seed"] = int(seed_dir)
 
                         if approach == "pbt" and len(runhistory) == N_CONFIGS[approach] + 1:
                             runhistory = runhistory.iloc[:N_CONFIGS[approach], :]
@@ -52,7 +52,25 @@ def aggregate_runhistories(approach: str):
                             print(f"{runhistory_file}: Expected {N_CONFIGS[approach]} entries but got {len(runhistory)} instead.")
                             continue
 
-                        all_runhistories.append(runhistory)
+                        def detangle_seeds(row):
+                            trimmed_row = row.copy()
+                            trimmed_row = trimmed_row.drop(
+                                ["performance_seed_0", "performance_seed_1", "performance_seed_2"],
+                            )
+                            new_rows = []
+                            for i in range(3):
+                                n_row = trimmed_row.copy()
+                                n_row["performance"] = row[f"performance_seed_{i}"]
+                                n_row["seed"] = i
+                                new_rows.append(n_row)
+                            return new_rows
+                        all_new_rows = runhistory.apply(detangle_seeds, axis=1)
+                        detangled_rows = []
+                        for rows in all_new_rows:
+                            detangled_rows += rows
+                        detangled_runhistory = pd.DataFrame(detangled_rows)
+
+                        all_runhistories.append(detangled_runhistory)
                         all_incumbents.append(incumbent)
 
             if all_runhistories:
@@ -62,7 +80,7 @@ def aggregate_runhistories(approach: str):
                 all_incumbents = pd.concat(all_incumbents, ignore_index=True)
                 all_incumbents.to_csv(combined_incumbent_path, index=False)
 
-                if not len(all_runhistories) == N_SEEDS * N_CONFIGS[approach]:
+                if not len(all_runhistories) == N_SEEDS * N_CONFIGS[approach] * 3:  # 3 training seeds
                     print(f"{algorithm_env} Runhistory: Expected {N_SEEDS * N_CONFIGS[approach]} entries but got {len(all_runhistories)} instead.")
 
                 if not len(all_incumbents) == N_SEEDS * N_CONFIGS[approach]:
