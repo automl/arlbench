@@ -152,7 +152,7 @@ Just like with RL agents, you can call 'step' multiple times until termination (
 
 ## Cite Us
 
-If you use ARLBench in your work, please cite us:
+ARLBench is a highlighted benchmark on [AutoML Space](https://automl.space/automl-tools/)! If you use ARLBench in your work, please cite us:
 
 ```bibtex
 @misc{beckdierkes24,
