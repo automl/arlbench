@@ -29,31 +29,32 @@ def run(cfg: DictConfig, logger: logging.Logger):
 
     # Remember grad norm and if we currently spike the learning rate
     last_grad_norm = None
+    grad_norm = None
     spiked = False
 
     # define a tolerance for the gradient norm
-    tolerance = 1e-4
+    tolerance = 2
     rewards = []
     lrs = []
-    for _i in range(100):
-        lrs.append(cfg.hp_config.learning_rate)
-        # Statistics here contain the number of steps and gradient information
-        statistics, objectives, te, tr, _ = env.step(cfg.hp_config)
-        grad_norm, _ = statistics["grad_info"]
-
+    for _i in range(50):
         # If grad norm doesn't change much, spike the learning rate
         if last_grad_norm is not None and abs(grad_norm - last_grad_norm) < tolerance:
             last_lr = cfg.hp_config.learning_rate
             cfg.hp_config.learning_rate *= 10
-            logger.info(f"Gradients stagnated, spiking learning rate to {cfg.hp_config.learning_rate}")
+            logger.info(f"Gradients stagnated in step {_i} with difference {abs(grad_norm - last_grad_norm)}, spiking learning rate to {cfg.hp_config.learning_rate}")
             spiked = True
+
+        last_grad_norm = grad_norm
+        lrs.append(cfg.hp_config.learning_rate)
+        # Statistics here contain the number of steps and gradient information
+        statistics, objectives, te, tr, _ = env.step(cfg.hp_config)
+        grad_norm, _ = statistics["grad_info"]
 
         # Reset learning rate if we spiked it in the last step
         if spiked:
             cfg.hp_config.learning_rate = last_lr
             spiked = False
             logger.info(f"Resetting learning rate to {cfg.hp_config.learning_rate}")
-        last_grad_norm = grad_norm
         rewards.append(float(objectives["reward_mean"]))
 
     logger.info(f"Training finished with a total reward of {objectives['reward_mean']}")
