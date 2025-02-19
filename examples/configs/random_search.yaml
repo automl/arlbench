@@ -10,7 +10,9 @@ hydra:
     n_trials: 16
     search_space: ${search_space}
     sweeper_kwargs:
+      maximize: true
       max_parallelization: 1 #  run all of it at once
+      seeds: [42, 43, 44]
   run:
     dir: results/sobol/${algorithm}_${autorl.env_name}/${autorl.seed}
   sweep:
@@ -21,9 +23,10 @@ hydra:
 load_checkpoint: ""
 jax_enable_x64: false
 search_space.seed: 0
+seed: 42
 
 autorl:
-  seed: 42
+  seed: ${seed}
   env_framework: ${environment.framework}
   env_name: ${environment.name}
   env_kwargs: ${environment.kwargs}
@@ -40,6 +43,5 @@ autorl:
   state_features: []
   objectives: ["reward_mean"]
   optimize_objectives: "upper"
-  n_steps: 10
   n_eval_steps: 10
   n_eval_episodes: 128
