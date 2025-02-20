@@ -5,4 +5,5 @@ kwargs: {"backend": "mjx"}
 eval_kwargs: {"backend": "mjx"}
 cnn_policy: False
 deterministic_eval: True
+jax_enable_x64: False
 n_envs: 2048

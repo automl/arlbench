@@ -234,5 +234,5 @@ The same can be done for single combinations of environments and algorithms.
 
 ### Evaluation of Dynamic Approaches
 
-When it comes to dynamic HPO methods, you cannot simply return the incumbent for evaluation since wou'll ahve a schedule with variable length and configuration intervals. 
+When it comes to dynamic HPO methods, you cannot simply return the incumbent for evaluation since wou'll have a schedule with variable length and configuration intervals. 
 For this case, we recommend to use your dynamic tuning setup, but make sure to set the seed of the AutoRL Environment accordingly to a set of test seeds (`100, 101, 102, ...`).

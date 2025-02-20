@@ -7,4 +7,5 @@ eval_kwargs:
   frame_skip: 1
 cnn_policy: False
 deterministic_eval: True
+jax_enable_x64: True
 n_envs: 8

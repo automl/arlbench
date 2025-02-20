@@ -9,4 +9,5 @@ eval_kwargs:
   reward_clip: False
 cnn_policy: True
 deterministic_eval: True
+jax_enable_x64: False
 n_envs: 8

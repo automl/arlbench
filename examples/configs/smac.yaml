@@ -41,7 +41,7 @@ hydra:
 
 load_checkpoint: ""
 smac_seed: 0
-jax_enable_x64: false
+jax_enable_x64: ${environment.jax_enable_x64}
 seed: 42
 
 autorl:

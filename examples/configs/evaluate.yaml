@@ -12,7 +12,7 @@ hydra:
   job:
     chdir: true
 
-jax_enable_x64: false
+jax_enable_x64: ${environment.jax_enable_x64}
 load_checkpoint: ""
 hpo_method: "default_method"
 
@@ -33,6 +33,5 @@ autorl:
   state_features: []
   objectives: ["reward_mean"]
   optimize_objectives: "upper"
-  n_steps: 1
   n_eval_steps: 1
   n_eval_episodes: 128

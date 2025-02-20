@@ -21,7 +21,7 @@ hydra:
     chdir: true
 
 load_checkpoint: ""
-jax_enable_x64: false
+jax_enable_x64: ${environment.jax_enable_x64}
 search_space.seed: 0
 seed: 42
 
