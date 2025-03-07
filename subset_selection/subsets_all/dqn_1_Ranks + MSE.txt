@@ -1,0 +1,7 @@
+Tasks chosen for dqn:
+Task 0: minigrid_unlock
+Correlation without weights: 0.33752187928987387
+Correlation with prediction: 0.325498250757046
+Validation error: 0.018249963787165258
+Weights:
+[0.97282245]

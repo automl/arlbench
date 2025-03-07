@@ -165,7 +165,7 @@ All aggregated results are stored in `results_combined`.
 To aggregate the landscaping results, run:
 
 ```bash
-python runscripts runscripts/aggregate_results_landscaping.py sobol
+python runscripts/aggregate_results_landscaping.py sobol
 ```
 
 The script creates a file called `runhistory_combined.csv` for each experiment.
@@ -173,7 +173,7 @@ The script creates a file called `runhistory_combined.csv` for each experiment.
 To aggregate the optimizer results, run
 
 ```bash
-python runscripts runscripts/aggregate_results_optimizers.py <optimizer>
+python runscripts/aggregate_results_optimizers.py <optimizer>
 ```
 
 where optimizer can be one of `<rs|pbt|smac|smac_mf>`.
@@ -187,13 +187,13 @@ All
 To run the subset selection, you can run:
 
 ```bash
-python runscripts subset_selection/subset_selection.py
+python subset_selection/subset_selection.py
 ```
 
 To run the subset validation, you can run:
 
 ```bash
-python runscripts subset_validation/subset_validation.py
+python subset_validation/subset_validation.py
 ```
 
 ### Plots and other experiments
@@ -259,7 +259,7 @@ Then runtime experiments can be found in `results_finished/runtime_experiments` 
 To aggregate the landscaping results, run:
 
 ```bash
-python runscripts runscripts/aggregate_results_landscaping.py sobol
+python runscripts/aggregate_results_landscaping.py sobol
 ```
 
 The script creates a file called `runhistory_combined.csv` for each experiment.
@@ -267,7 +267,7 @@ The script creates a file called `runhistory_combined.csv` for each experiment.
 To aggregate the optimizer results, run
 
 ```bash
-python runscripts runscripts/aggregate_results_optimizers.py <optimizer>
+python runscripts/aggregate_results_optimizers.py <optimizer>
 ```
 
 where optimizer can be one of `<rs|pbt|smac|smac_mf>`.

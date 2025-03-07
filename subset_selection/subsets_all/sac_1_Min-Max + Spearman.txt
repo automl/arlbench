@@ -1,0 +1,7 @@
+Tasks chosen for sac:
+Task 0: brax_halfcheetah
+Correlation without weights: 0.8421635385671777
+Correlation with prediction: 0.8323910185264236
+Validation error: 0.16760898147357645
+Weights:
+[0.97413206]
