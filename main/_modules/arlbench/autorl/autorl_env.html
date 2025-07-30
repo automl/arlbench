@@ -337,12 +337,13 @@
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Callable</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Dict</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">gymnasium</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">jax</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">omegaconf</span><span class="w"> </span><span class="kn">import</span> <span class="n">OmegaConf</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">ConfigSpace</span><span class="w"> </span><span class="kn">import</span> <span class="n">Configuration</span><span class="p">,</span> <span class="n">ConfigurationSpace</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">arlbench.core.algorithms</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
@@ -601,6 +602,40 @@
             <span class="n">cnn_policy</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="p">[</span><span class="s2">&quot;cnn_policy&quot;</span><span class="p">],</span>
             <span class="n">deterministic_eval</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="p">[</span><span class="s2">&quot;deterministic_eval&quot;</span><span class="p">],</span>
         <span class="p">)</span>
+    
+<div class="viewcode-block" id="AutoRLEnv.get_algorithm_init_kwargs">
+<a class="viewcode-back" href="../../../arlbench.autorl.html#arlbench.AutoRLEnv.get_algorithm_init_kwargs">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_algorithm_init_kwargs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">init_rng</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns the algorithm initialization parameters.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Dict: Dictionary of algorithm initialization parameters.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_algorithm</span><span class="p">,</span> <span class="n">PPO</span><span class="p">):</span>
+            <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;rng&quot;</span><span class="p">:</span> <span class="n">init_rng</span><span class="p">,</span> <span class="s2">&quot;network_params&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_algorithm_state</span><span class="o">.</span><span class="n">runner_state</span><span class="o">.</span><span class="n">train_state</span><span class="o">.</span><span class="n">params</span><span class="p">,</span> <span class="s2">&quot;opt_state&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_algorithm_state</span><span class="o">.</span><span class="n">runner_state</span><span class="o">.</span><span class="n">train_state</span><span class="o">.</span><span class="n">opt_state</span><span class="p">}</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_algorithm</span><span class="p">,</span> <span class="n">DQN</span><span class="p">):</span>
+            <span class="k">return</span><span class="p">{</span>
+                    <span class="s2">&quot;rng&quot;</span><span class="p">:</span> <span class="n">init_rng</span><span class="p">,</span>
+                    <span class="s2">&quot;buffer_state&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_algorithm_state</span><span class="o">.</span><span class="n">buffer_state</span><span class="p">,</span>
+                    <span class="s2">&quot;network_params&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_algorithm_state</span><span class="o">.</span><span class="n">runner_state</span><span class="o">.</span><span class="n">train_state</span><span class="o">.</span><span class="n">params</span><span class="p">,</span>
+                    <span class="s2">&quot;target_params&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_algorithm_state</span><span class="o">.</span><span class="n">runner_state</span><span class="o">.</span><span class="n">train_state</span><span class="o">.</span><span class="n">target_params</span><span class="p">,</span>
+                    <span class="s2">&quot;opt_state&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_algorithm_state</span><span class="o">.</span><span class="n">runner_state</span><span class="o">.</span><span class="n">train_state</span><span class="o">.</span><span class="n">opt_state</span><span class="p">,</span>
+                <span class="p">}</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_algorithm</span><span class="p">,</span> <span class="n">SAC</span><span class="p">):</span>
+            <span class="k">return</span> <span class="p">{</span>
+                    <span class="s2">&quot;rng&quot;</span><span class="p">:</span> <span class="n">init_rng</span><span class="p">,</span>
+                    <span class="s2">&quot;buffer_state&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_algorithm_state</span><span class="o">.</span><span class="n">buffer_state</span><span class="p">,</span>
+                    <span class="s2">&quot;actor_network_params&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_algorithm_state</span><span class="o">.</span><span class="n">runner_state</span><span class="o">.</span><span class="n">actor_train_state</span><span class="o">.</span><span class="n">params</span><span class="p">,</span>
+                    <span class="s2">&quot;critic_network_params&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_algorithm_state</span><span class="o">.</span><span class="n">runner_state</span><span class="o">.</span><span class="n">critic_train_state</span><span class="o">.</span><span class="n">params</span><span class="p">,</span>
+                    <span class="s2">&quot;critic_target_params&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_algorithm_state</span><span class="o">.</span><span class="n">runner_state</span><span class="o">.</span><span class="n">critic_train_state</span><span class="o">.</span><span class="n">target_params</span><span class="p">,</span>
+                    <span class="s2">&quot;alpha_network_params&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_algorithm_state</span><span class="o">.</span><span class="n">runner_state</span><span class="o">.</span><span class="n">alpha_train_state</span><span class="o">.</span><span class="n">params</span><span class="p">,</span>
+                    <span class="s2">&quot;actor_opt_state&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_algorithm_state</span><span class="o">.</span><span class="n">runner_state</span><span class="o">.</span><span class="n">actor_train_state</span><span class="o">.</span><span class="n">opt_state</span><span class="p">,</span>
+                    <span class="s2">&quot;critic_opt_state&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_algorithm_state</span><span class="o">.</span><span class="n">runner_state</span><span class="o">.</span><span class="n">critic_train_state</span><span class="o">.</span><span class="n">opt_state</span><span class="p">,</span>
+                    <span class="s2">&quot;alpha_opt_state&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_algorithm_state</span><span class="o">.</span><span class="n">runner_state</span><span class="o">.</span><span class="n">alpha_train_state</span><span class="o">.</span><span class="n">opt_state</span><span class="p">,</span>
+                <span class="p">}</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unsupported algorithm: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_algorithm</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+
 
 <div class="viewcode-block" id="AutoRLEnv.step">
 <a class="viewcode-back" href="../../../arlbench.autorl.html#arlbench.AutoRLEnv.step">[docs]</a>
@@ -642,7 +677,9 @@
 
         <span class="c1"># Apply changes to current hyperparameter configuration and reinstantiate algorithm</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">action</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
-            <span class="n">action</span> <span class="o">=</span> <span class="n">Configuration</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config_space</span><span class="p">,</span> <span class="n">action</span><span class="p">)</span>
+            <span class="n">action_config</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_hpo_config</span><span class="p">)</span>
+            <span class="n">action_config</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">action</span><span class="p">)</span>
+            <span class="n">action</span> <span class="o">=</span> <span class="n">Configuration</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config_space</span><span class="p">,</span> <span class="n">action_config</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_hpo_config</span> <span class="o">=</span> <span class="n">action</span>
 
         <span class="n">seed</span> <span class="o">=</span> <span class="n">seed</span> <span class="k">if</span> <span class="n">seed</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">_seed</span>
@@ -663,6 +700,10 @@
         <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">_algorithm_state</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">init_rng</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">key</span><span class="p">(</span><span class="n">seed</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_algorithm_state</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_algorithm</span><span class="o">.</span><span class="n">init</span><span class="p">(</span><span class="n">init_rng</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">init_rng</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">key</span><span class="p">(</span><span class="n">seed</span><span class="p">)</span>
+            <span class="n">init_kwargs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_algorithm_init_kwargs</span><span class="p">(</span><span class="n">init_rng</span><span class="p">)</span>            
+            <span class="bp">self</span><span class="o">.</span><span class="n">_algorithm_state</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_algorithm</span><span class="o">.</span><span class="n">init</span><span class="p">(</span><span class="o">**</span><span class="n">init_kwargs</span><span class="p">)</span>
 
         <span class="c1"># Training kwargs</span>
         <span class="n">train_kw_args</span> <span class="o">=</span> <span class="p">{</span>
