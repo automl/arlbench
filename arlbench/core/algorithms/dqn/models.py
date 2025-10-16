@@ -79,6 +79,7 @@ class MLPQ(nn.Module):
     activation: str = "tanh"
     hidden_size: int = 64
     discrete: bool = True
+    normalization: bool = False
 
     def setup(self):
         """Initializes the MLP Q-Network."""
@@ -103,10 +104,18 @@ class MLPQ(nn.Module):
             self.action_dim, kernel_init=orthogonal(1.0), bias_init=constant(0.0)
         )
 
+        if self.normalization:
+            self.layernorm0 = nn.LayerNorm()
+            self.layernorm1 = nn.LayerNorm()
+
     def __call__(self, x):
         """Applies the MLP to the input."""
         q = self.dense0(x)
+        if self.normalization:
+            q = self.layernorm0(q)
         q = self.activation_func(q)
         q = self.dense1(q)
+        if self.normalization:
+            q = self.layernorm1(q)
         q = self.activation_func(q)
         return self.out_layer(q)

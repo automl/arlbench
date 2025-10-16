@@ -1,0 +1,16 @@
+# @package _global_
+algorithm: pqn
+hp_config:
+  lambda: 0.95
+  gamma: 0.99
+  learning_rate: 0.0003
+  minibatch_size: 64
+  n_steps: 128
+  normalize_observations: false
+  exploration_fraction: 0.1
+  initial_epsilon: 1.0
+  target_epsilon: 0.05
+  update_epochs: 10
+nas_config:
+  activation: tanh
+  hidden_size: 64

@@ -16,6 +16,7 @@ from arlbench.core.algorithms import (
     DQN,
     PPO,
     SAC,
+    PQN,
     Algorithm,
     AlgorithmState,
     TrainResult,
@@ -65,7 +66,7 @@ class AutoRLEnv(gymnasium.Env):
     In each step, one iteration of training is performed with the current hyperparameter configuration (= action).
     """
 
-    ALGORITHMS = {"ppo": PPO, "dqn": DQN, "sac": SAC}
+    ALGORITHMS = {"ppo": PPO, "dqn": DQN, "sac": SAC, "pqn": PQN}
     _algorithm: Algorithm
     _get_obs: Callable[[], np.ndarray]
     _algorithm_state: AlgorithmState | None
@@ -281,6 +282,12 @@ class AutoRLEnv(gymnasium.Env):
                     "buffer_state": self._algorithm_state.buffer_state,
                     "network_params": self._algorithm_state.runner_state.train_state.params,
                     "target_params": self._algorithm_state.runner_state.train_state.target_params,
+                    "opt_state": self._algorithm_state.runner_state.train_state.opt_state,
+                }
+        elif isinstance(self._algorithm, PQN):
+            return{
+                    "rng": init_rng,
+                    "network_params": self._algorithm_state.runner_state.train_state.params,
                     "opt_state": self._algorithm_state.runner_state.train_state.opt_state,
                 }
         elif isinstance(self._algorithm, SAC):

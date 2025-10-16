@@ -7,6 +7,8 @@ from .dqn import (
     DQNTrainReturnT,
 )
 
+from .pqn import PQN
+
 __all__ = [
     "DQN",
     "DQNRunnerState",
@@ -14,4 +16,5 @@ __all__ = [
     "DQNMetrics",
     "DQNTrainReturnT",
     "DQNState",
+    "PQN",
 ]

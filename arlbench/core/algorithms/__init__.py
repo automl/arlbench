@@ -13,6 +13,7 @@ from .dqn import (
     DQNState,
     DQNTrainingResult,
     DQNTrainReturnT,
+    PQN
 )
 from .ppo import (
     PPO,
@@ -41,4 +42,4 @@ TrainFunc = Callable[
 ]
 AlgorithmState = DQNState | PPOState | SACState
 
-__all__ = ["Algorithm", "PPO", "DQN", "SAC"]
+__all__ = ["Algorithm", "PPO", "DQN", "SAC", "PQN"]
