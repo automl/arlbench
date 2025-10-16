@@ -1,0 +1,20 @@
+# @package _global_
+algorithm: crossq
+hp_config:
+  alpha: 1.0
+  alpha_auto: true
+  buffer_alpha: 0.9
+  buffer_batch_size: 256
+  buffer_beta: 0.9
+  buffer_epsilon: 0.001
+  buffer_prio_sampling: false
+  buffer_size: 1000000
+  gamma: 0.99
+  gradient_steps: 1
+  learning_rate: 0.0003
+  learning_starts: 128
+  normalize_observations: false
+  train_freq: 1
+nas_config:
+  activation: tanh
+  hidden_size: 256

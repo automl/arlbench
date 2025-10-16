@@ -24,6 +24,7 @@ from .ppo import (
 )
 from .sac import (
     SAC,
+    CrossQ,
     SACMetrics,
     SACRunnerState,
     SACState,
@@ -41,4 +42,4 @@ TrainFunc = Callable[
 ]
 AlgorithmState = DQNState | PPOState | SACState
 
-__all__ = ["Algorithm", "PPO", "DQN", "SAC"]
+__all__ = ["Algorithm", "PPO", "DQN", "SAC", "CrossQ"]

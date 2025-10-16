@@ -102,7 +102,7 @@ class GradInfo(StateFeature):
         return gymnasium.spaces.Box(
             low=np.array([-np.inf, 0]), high=np.array([np.inf, np.inf])
         )
-    
+
 class LossInfo(StateFeature):
     """Loss information state feature for the AutoRL environment. It contains the loss mean and variance."""
 
@@ -138,7 +138,7 @@ class LossInfo(StateFeature):
         return gymnasium.spaces.Box(
             low=np.array([-np.inf, -np.inf]), high=np.array([np.inf, np.inf])
         )
-    
+
 
 class WeightInfo(StateFeature):
     """Weight information state feature for the AutoRL environment. It contains statistics about the weights during training."""
@@ -152,14 +152,14 @@ class WeightInfo(StateFeature):
             def get_stats(params):
                 weights = [v["kernel"].flatten() for (k, v) in params.items() if isinstance(v, dict)]
                 biases = [v["bias"].flatten() for (k, v) in params.items() if isinstance(v, dict)]
-                weights = jnp.concatenate((weights))
-                biases = jnp.concatenate((biases))
-                    
+                weights = jnp.concatenate(weights)
+                biases = jnp.concatenate(biases)
+
                 w_mean = jnp.mean(weights)
                 w_var = jnp.var(weights)
                 w_median = jnp.median(weights)
                 b_mean = jnp.mean(biases)
-                b_var = jnp.var(biases) 
+                b_var = jnp.var(biases)
                 b_median = jnp.median(biases)
                 return np.array(
                         [w_mean, w_var, w_median, b_mean, b_var, b_median]

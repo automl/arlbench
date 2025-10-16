@@ -1,3 +1,4 @@
+from .crossq import CrossQ
 from .sac import (
     SAC,
     SACMetrics,
@@ -14,4 +15,5 @@ __all__ = [
     "SACMetrics",
     "SACTrainReturnT",
     "SACState",
+    "CrossQ",
 ]

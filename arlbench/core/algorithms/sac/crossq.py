@@ -1,0 +1,1033 @@
+# Parts of this code are based on Stable Baselines Jax  (https://github.com/araffin/sbx).
+# Licensed under the MIT License
+"""SAC algorithm."""
+from __future__ import annotations
+
+import functools
+from collections.abc import Callable
+from typing import TYPE_CHECKING
+
+import jax
+import jax.lax
+import jax.numpy as jnp
+import numpy as np
+import optax
+from ConfigSpace import (
+    Categorical,
+    Configuration,
+    ConfigurationSpace,
+    Float,
+    Integer,
+)
+
+from arlbench.core import running_statistics
+from arlbench.core.algorithms.algorithm import Algorithm
+from arlbench.core.algorithms.buffers import uniform_sample
+from arlbench.core.algorithms.common import TimeStep
+from arlbench.core.algorithms.prioritised_item_buffer import (
+    make_prioritised_item_buffer,
+)
+
+from .models import (
+    AlphaCoef,
+    SACCNNActor,
+    SACCrossQCNNCritic,
+    SACCrossQCritic,
+    SACCrossQVectorCritic,
+    SACMLPActor,
+)
+from .sac import (
+    SACMetrics,
+    SACRunnerState,
+    SACState,
+    SACTrainingResult,
+    SACTrainReturnT,
+    SACTrainState,
+    Transition,
+)
+
+if TYPE_CHECKING:
+    import chex
+    from flashbax.buffers.prioritised_trajectory_buffer import (
+        PrioritisedTrajectoryBufferState,
+    )
+    from flax.core.frozen_dict import FrozenDict
+
+    from arlbench.core.environments import Environment
+    from arlbench.core.running_statistics import RunningStatisticsState
+    from arlbench.core.wrappers import Wrapper
+
+class CrossQ(Algorithm):
+    """JAX-based implementation of CrossQ."""
+
+    name: str = "crossq"
+
+    def __init__(
+        self,
+        hpo_config: Configuration,
+        env: Environment | Wrapper,
+        eval_env: Environment | Wrapper | None = None,
+        deterministic_eval: bool = True,
+        cnn_policy: bool = False,
+        nas_config: Configuration | None = None,
+        track_metrics: bool = False,
+        track_trajectories: bool = False,
+    ) -> None:
+        """Creates a SAC algorithm instance.
+
+        Args:
+            hpo_config (Configuration): Hyperparameter configuration.
+            env (Environment | AutoRLWrapper): Training environment.
+            eval_env (Environment | AutoRLWrapper | None, optional): Evaluation environent
+            (otherwise training environment is used for evaluation). Defaults to None.
+            cnn_policy (bool, optional): Use CNN network architecture. Defaults to False.
+            nas_config (Configuration | None, optional): Neural architecture
+            configuration. Defaults to None.
+            track_trajectories (bool, optional):  Track metrics such as loss and gradients
+            during training. Defaults to False.
+            track_metrics (bool, optional): Track trajectories during training.
+            Defaults to False.
+        """
+        if nas_config is None:
+            nas_config = CrossQ.get_default_nas_config()
+        super().__init__(
+            hpo_config,
+            nas_config,
+            env,
+            eval_env=eval_env,
+            deterministic_eval=deterministic_eval,
+            track_trajectories=track_trajectories,
+            track_metrics=track_metrics,
+        )
+
+        # For the network, we need the properties of the action space
+        action_size, discrete = self.action_type
+        if discrete:
+            raise ValueError("SAC does not support discrete action spaces.")
+
+        actor_cls = SACCNNActor if cnn_policy else SACMLPActor
+        self.actor_network = actor_cls(
+            action_size,
+            activation=nas_config["activation"],
+            hidden_size=nas_config["hidden_size"],
+        )
+        self.critic_network = SACCrossQVectorCritic(
+            critic=SACCrossQCNNCritic if cnn_policy else SACCrossQCritic,
+            action_dim=action_size,
+            activation=nas_config["activation"],
+            hidden_size=nas_config["hidden_size"],
+            n_critics=2,
+        )
+        alpha_init = float(self.hpo_config["alpha"])
+        assert alpha_init > 0.0, "The initial value of alpha must be greater than 0"
+        self.alpha = AlphaCoef(alpha_init=alpha_init)
+
+        self.buffer = make_prioritised_item_buffer(
+            max_length=self.hpo_config["buffer_size"],
+            min_length=self.hpo_config["buffer_batch_size"],
+            sample_batch_size=self.hpo_config["buffer_batch_size"],
+            add_batches=True,
+            add_sequences=False,
+            priority_exponent=self.hpo_config["buffer_alpha"],
+            device=jax.default_backend(),
+        )
+        # This is how we can turn the prioritized sampling on/off for dynamic HPO
+        # We always use the prioritized replay buffer, but if "buffer_prio_sampling"
+        # is disabled, we replace the sampling function by the uniform sampling
+        if self.hpo_config["buffer_prio_sampling"] is False:
+            sample_fn = functools.partial(
+                uniform_sample,
+                batch_size=self.hpo_config["buffer_batch_size"],
+                sequence_length=1,
+                period=1,
+            )
+            self.buffer = self.buffer.replace(sample=sample_fn)
+
+        # target for automatic entropy tuning
+        self.target_entropy = -jnp.prod(jnp.array(self.env.action_space.shape)).astype(
+            jnp.float32
+        )
+
+    @staticmethod
+    def get_hpo_config_space(seed: int | None = None) -> ConfigurationSpace:
+        """Returns the hyperparameter configuration space for SAC."""
+        return ConfigurationSpace(
+            name="CrossQConfigSpace",
+            seed=seed,
+            space={
+                "buffer_size": Integer("buffer_size", (1, int(1e7)), default=1000000),
+                "buffer_batch_size": Categorical(
+                    "buffer_batch_size", [64, 128, 256, 512], default=256
+                ),
+                "buffer_prio_sampling": Categorical(
+                    "buffer_prio_sampling", [True, False], default=False
+                ),
+                "buffer_alpha": Float("buffer_alpha", (0.01, 1.0), default=0.9),
+                "buffer_beta": Float("buffer_beta", (0.01, 1.0), default=0.9),
+                "buffer_epsilon": Float("buffer_epsilon", (1e-7, 1e-2), default=1e-3),
+                "learning_rate": Float(
+                    "learning_rate", (1e-6, 0.1), default=3e-4, log=True
+                ),
+                "gradient_steps": Integer("gradient_steps", (1, int(1e5)), default=1),
+                "gamma": Float("gamma", (0.8, 1.0), default=0.99),
+                "tau": Float("tau", (0.01, 1.0), default=1.0),
+                "train_freq": Integer("train_freq", (1, 128), default=1),
+                "learning_starts": Integer("learning_starts", (0, 1024), default=128),
+                "alpha_auto": Categorical("alpha_auto", [True, False], default=True),
+                "alpha": Float("alpha", (0.0, 1.0), default=1.0),
+                "normalize_observations": Categorical(
+                    "normalize_observations", [True, False], default=False
+                ),
+            },
+        )
+
+
+    @staticmethod
+    def get_default_hpo_config() -> Configuration:
+        """Returns the default HPO configuration for SAC."""
+        return CrossQ.get_hpo_config_space().get_default_configuration()
+
+    @staticmethod
+    def get_nas_config_space(seed: int | None = None) -> ConfigurationSpace:
+        """Returns the neural architecture search (NAS) configuration space for SAC."""
+        return ConfigurationSpace(
+            name="SACNASConfigSpace",
+            seed=seed,
+            space={
+                "activation": Categorical(
+                    "activation", ["tanh", "relu"], default="tanh"
+                ),
+                "hidden_size": Integer("hidden_size", (1, 1024), default=256),
+            },
+        )
+
+    @staticmethod
+    def get_default_nas_config() -> Configuration:
+        """Returns the default NAS configuration for SAC."""
+        return CrossQ.get_nas_config_space().get_default_configuration()
+
+    @staticmethod
+    def get_checkpoint_factory(
+        runner_state: SACRunnerState,
+        train_result: SACTrainingResult | None,
+    ) -> dict[str, Callable]:
+        """Creates a factory dictionary of all posssible checkpointing options for SAC.
+
+        Args:
+            runner_state (SACRunnerState): Algorithm runner state.
+            train_result (SACTrainingResult | None): Training result.
+
+        Returns:
+            dict[str, Callable]: Dictionary of factory functions containing:
+             - actor_opt_state
+             - critic_opt_state
+             - alpha_opt_state
+             - actor_network_params
+             - critic_network_params
+             - alpha_network_params
+             - actor_loss
+             - critic_loss
+             - alpha_loss
+             - trajectories
+        """
+        actor_train_state = runner_state.actor_train_state
+        critic_train_state = runner_state.critic_train_state
+        alpha_train_state = runner_state.alpha_train_state
+
+        def get_trajectories():
+            if train_result is None or train_result.trajectories is None:
+                return None
+
+            traj = train_result.trajectories
+
+            trajectories = {}
+            trajectories["states"] = jnp.concatenate(traj.obs, axis=0)
+            trajectories["action"] = jnp.concatenate(traj.action, axis=0)
+            trajectories["reward"] = jnp.concatenate(traj.reward, axis=0)
+            trajectories["dones"] = jnp.concatenate(traj.done, axis=0)
+
+            return trajectories
+
+        return {
+            "actor_opt_state": lambda: actor_train_state.opt_state,
+            "critic_opt_state": lambda: critic_train_state.opt_state,
+            "alpha_opt_state": lambda: alpha_train_state.opt_state,
+            "actor_network_params": lambda: actor_train_state.params,
+            "critic_network_params": lambda: critic_train_state.params,
+            "alpha_network_params": lambda: alpha_train_state.params,
+            "actor_loss": lambda: train_result.metrics.actor_loss
+            if train_result and train_result.metrics
+            else None,
+            "critic_loss": lambda: train_result.metrics.critic_loss
+            if train_result and train_result.metrics
+            else None,
+            "alpha_loss": lambda: train_result.metrics.alpha_loss
+            if train_result and train_result.metrics
+            else None,
+            "trajectories": get_trajectories,
+        }
+
+    def init(
+        self,
+        rng: chex.PRNGKey,
+        buffer_state: PrioritisedTrajectoryBufferState | None = None,
+        actor_network_params: FrozenDict | dict | None = None,
+        critic_network_params: FrozenDict | dict | None = None,
+        alpha_network_params: FrozenDict | dict | None = None,
+        actor_opt_state: optax.OptState | None = None,
+        critic_opt_state: optax.OptState | None = None,
+        alpha_opt_state: optax.OptState | None = None,
+    ) -> SACState:
+        """Initializes SAC state. Passed parameters are not initialized and included in the final state.
+
+        Args:
+            actor_network_params (FrozenDict | dict | None, optional): Actor network parameters. Defaults to None.
+            critic_network_params (FrozenDict | dict | None, optional): Critic network parameters. Defaults to None.
+            alpha_network_params (FrozenDict | dict | None, optional): Alpha network parameters. Defaults to None.
+            actor_opt_state (optax.OptState | None, optional): Actor optimizer state. Defaults to None.
+            critic_opt_state (optax.OptState | None, optional): Critic optimizer state. Defaults to None.
+            alpha_opt_state (optax.OptState | None, optional): Alpha optimizer state. Defaults to None.
+
+        Returns:
+            SACState: SAC state.
+        """
+        rng, env_rng = jax.random.split(rng)
+        env_state, obs = self.env.reset(env_rng)
+
+        # If any of these if not defined, we need a dummy environment transition
+        # to initialize them
+        if (
+            buffer_state is None
+            or actor_network_params is None
+            or critic_network_params is None
+        ):
+            dummy_rng = jax.random.PRNGKey(0)
+            _action = self.env.sample_actions(dummy_rng)
+
+            # for x64 enabled runs we have to explicitly cast the dummy action
+            dtype = jnp.float64 if jax.config.jax_enable_x64 else jnp.float32
+            _action = jnp.array(_action, dtype=dtype)
+
+            _, (_obs, _reward, _done, _) = self.env.step(env_state, _action, dummy_rng)
+
+        if buffer_state is None:
+            # This is how transitions will look like during training, so we need to pass one
+            # once to the buffer to estimate and allocate the required buffer size
+            _timestep = TimeStep(
+                last_obs=_obs[0],
+                obs=_obs[0],
+                action=_action[0],
+                reward=_reward[0],
+                done=_done[0],
+            )
+            buffer_state = self.buffer.init(_timestep)
+
+        if actor_network_params is None:
+            rng, actor_rng = jax.random.split(rng)
+            actor_network_params = self.actor_network.init(actor_rng, _obs)
+        if critic_network_params is None:
+            rng, critic_rng = jax.random.split(rng)
+            critic_network_params = self.critic_network.init(critic_rng, _obs, _action, train=True)
+
+        actor_train_state = SACTrainState.create_with_opt_state(
+            apply_fn=self.actor_network.apply,
+            params=actor_network_params,
+            target_params=None,
+            tx=optax.adam(
+                self.hpo_config["learning_rate"], eps=1e-5
+            ),
+            opt_state=actor_opt_state,
+        )
+        critic_train_state = SACTrainState.create_with_opt_state(
+            apply_fn=self.critic_network.apply,
+            params=critic_network_params,
+            target_params=None,
+            tx=optax.adam(
+                self.hpo_config["learning_rate"], eps=1e-5
+            ),
+            opt_state=critic_opt_state,
+        )
+
+        if alpha_network_params is None:
+            rng, init_rng = jax.random.split(rng)
+            alpha_network_params = self.alpha.init(init_rng)
+        alpha_train_state = SACTrainState.create_with_opt_state(
+            apply_fn=self.alpha.apply,
+            params=alpha_network_params,
+            target_params=None,
+            tx=optax.adam(
+                self.hpo_config["learning_rate"], eps=1e-5
+            ),
+            opt_state=alpha_opt_state,
+        )
+
+        global_step = 0
+
+        runner_state = SACRunnerState(
+            rng=rng,
+            actor_train_state=actor_train_state,
+            critic_train_state=critic_train_state,
+            alpha_train_state=alpha_train_state,
+            normalizer_state=running_statistics.init_state(obs[0]),
+            env_state=env_state,
+            obs=obs,
+            global_step=global_step,
+        )
+
+        assert buffer_state is not None
+
+        return SACState(runner_state=runner_state, buffer_state=buffer_state)
+
+    @functools.partial(jax.jit, static_argnums=0)
+    def predict(
+        self,
+        runner_state: SACRunnerState,
+        obs: jnp.ndarray,
+        rng: chex.PRNGKey,
+        deterministic: bool = True,
+    ) -> jnp.ndarray:
+        """Predict action(s) based on the current observation(s).
+
+        Args:
+            runner_state (SACRunnerState): Algorithm runner state.
+            obs (jnp.ndarray): Observation(s).
+            rng (chex.PRNGKey | None, optional): Not used in DQN. Random generator key
+                in other algorithmsDefaults to None.
+            deterministic (bool): Not used in DQN. Return deterministic action
+                in other algorithm. Defaults to True.
+
+        Returns:
+            jnp.ndarray: Action(s).
+        """
+        if self.hpo_config["normalize_observations"]:
+            obs = running_statistics.normalize(obs, runner_state.normalizer_state)
+        pi = self.actor_network.apply(runner_state.actor_train_state.params, obs)
+
+        def deterministic_action():
+            return pi.mode()
+
+        def sampled_action():
+            return pi.sample(seed=rng)
+
+        action = jax.lax.cond(
+            deterministic,
+            deterministic_action,
+            sampled_action,
+        )
+
+        low, high = self.env.action_space.low, self.env.action_space.high
+        if low is None or np.isnan(low).any() or np.isinf(low).any():
+            low = -jnp.ones_like(action)
+        if high is None or np.isnan(high).any() or np.isinf(high).any():
+            high = jnp.ones_like(action)
+        return low + (action + 1.0) * 0.5 * (high - low)
+
+    @functools.partial(jax.jit, static_argnums=(0, 3, 4, 5), donate_argnums=(2,))
+    def train(
+        self,
+        runner_state: SACRunnerState,
+        buffer_state: PrioritisedTrajectoryBufferState,
+        n_total_timesteps: int = 1000000,
+        n_eval_steps: int = 100,
+        n_eval_episodes: int = 10,
+    ) -> SACTrainReturnT:
+        """Performs one full training.
+
+        Args:
+            runner_state (SACTrainReturnT): SAC runner state.
+            _ (None): Unused parameter (buffer_state in other algorithms).
+            n_total_timesteps (int, optional): Total number of training timesteps.
+                Update steps = n_total_timesteps // n_envs. Defaults to 1000000.
+            n_eval_steps (int, optional): Number of evaluation steps during training.
+            n_eval_episodes (int, optional): Number of evaluation episodes
+                 per evaluation during training.
+
+        Returns:
+            SACTrainReturnT: Tuple of PPO algorithm state and training result.
+        """
+
+        def train_eval_step(
+            carry: tuple[SACRunnerState, PrioritisedTrajectoryBufferState], _: None
+        ) -> tuple[
+            tuple[SACRunnerState, PrioritisedTrajectoryBufferState], SACTrainingResult
+        ]:
+            """Performs one iteration of training and evaluation.
+
+            Args:
+                _runner_state (PPORunnerState): PPO runner state.
+                _ (None): Unused parameter (required for jax.lax.scan).
+
+            Returns:
+                tuple[tuple[SACRunnerState, PrioritisedTrajectoryBufferState],
+                    SACTrainingResult]:
+                    Tuple of SAC runner state and training result.
+            """
+            runner_state, buffer_state = carry
+            (runner_state, buffer_state), (metrics, trajectories) = jax.lax.scan(
+                self._update_step,
+                (runner_state, buffer_state),
+                None,
+                np.ceil(
+                    n_total_timesteps
+                    / self.env.n_envs
+                    / self.hpo_config["train_freq"]
+                    / n_eval_steps
+                ),
+            )
+            eval_returns = self.eval(runner_state, n_eval_episodes)
+
+            return (runner_state, buffer_state), SACTrainingResult(
+                metrics=metrics, trajectories=trajectories, eval_rewards=eval_returns
+            )
+
+        (runner_state, buffer_state), result = jax.lax.scan(
+            train_eval_step,
+            (runner_state, buffer_state),
+            None,
+            n_eval_steps,
+        )
+        return SACState(runner_state=runner_state, buffer_state=buffer_state), result
+
+    def update_critic(
+        self,
+        actor_train_state: SACTrainState,
+        critic_train_state: SACTrainState,
+        alpha_train_state: SACTrainState,
+        experience: TimeStep,
+        is_weights: jnp.ndarray,
+        rng: chex.PRNGKey,
+    ) -> tuple[SACTrainState, jnp.ndarray, jnp.ndarray, FrozenDict, chex.PRNGKey]:
+        """Updates the critic network parameters.
+
+        Args:
+            actor_train_state (SACTrainState): Actor train state.
+            critic_train_state (SACTrainState): Critic train state.
+            alpha_train_state (SACTrainState): Alpha train state.
+            experience (Transition): Experience (batch of transitions).
+            rng (chex.PRNGKey): Random number generator key.
+
+        Returns:
+            tuple[SACTrainState, jnp.ndarray, jnp.ndarray, FrozenDict, chex.PRNGKey]:
+            Updated training state and metrics.
+        """
+        rng, action_rng = jax.random.split(rng, 2)
+        pi = self.actor_network.apply(actor_train_state.params, experience.obs)
+        next_state_actions, next_log_prob = pi.sample_and_log_prob(seed=action_rng)
+
+        alpha_value = self.alpha.apply(alpha_train_state.params)
+
+        def mse_loss(params: FrozenDict) -> tuple[SACTrainState, jnp.ndarray, jnp.ndarray, jnp.ndarray, chex.PRNGKey]:
+            """Computes the mean squared error.
+
+            Args:
+                params (FrozenDict): Critic network parameters.
+
+            Returns:
+                tuple: Loss and metrics.
+            """
+            q_pred = self.critic_network.apply(
+                params, jnp.concatenate([experience.last_obs, experience.obs]), jnp.concatenate([experience.action, next_state_actions])
+            )
+            q_pred, q_pred_next = jnp.split(q_pred, 2, axis=1)
+            q_pred_next = jnp.min(q_pred_next, axis=0)
+            q_pred_next = jax.lax.stop_gradient(q_pred_next - alpha_value * next_log_prob)
+            td_target = experience.reward + self.hpo_config["gamma"] * q_pred_next
+            td_error = jax.lax.stop_gradient(td_target) - q_pred
+            loss = 0.5 * (td_error ** 2).mean(axis=1).sum()
+            return loss, jnp.abs(td_error)
+
+        (loss_value, td_error), grads = jax.value_and_grad(mse_loss, has_aux=True)(
+            critic_train_state.params
+        )
+        critic_train_state = critic_train_state.apply_gradients(grads=grads)
+        return critic_train_state, loss_value, td_error, grads, rng
+
+    def update_actor(
+        self,
+        actor_train_state: SACTrainState,
+        critic_train_state: SACTrainState,
+        alpha_train_state: SACTrainState,
+        experience: TimeStep,
+        is_weights: jnp.ndarray,
+        rng: chex.PRNGKey,
+    ) -> tuple[SACTrainState, jnp.ndarray, jnp.ndarray, FrozenDict, chex.PRNGKey]:
+        """Updates the actor network parameters.
+
+        Args:
+            actor_train_state (SACTrainState): Actor train state.
+            critic_train_state (SACTrainState): Critic train state.
+            alpha_train_state (SACTrainState): Alpha train state.
+            experience (TimeStep): Experience (batch of TimeSteps).
+            is_weights (jnp.ndarray): Whether to use weights for PER or not.
+            rng (chex.PRNGKey): Random number generator key.
+
+        Returns:
+            tuple[SACTrainState, jnp.ndarray, jnp.ndarray, FrozenDict, chex.PRNGKey]:
+                _description_
+        """
+        rng, action_rng = jax.random.split(rng, 2)
+
+        def actor_loss(
+            actor_params: FrozenDict,
+            critic_params: FrozenDict,
+            alpha_params: FrozenDict,
+        ) -> tuple[jnp.ndarray, jnp.ndarray]:
+            """Compute actor loss.
+
+            Args:
+                actor_params (FrozenDict): Actor network parameters.
+                critic_params (FrozenDict): Critic network parameters.
+                alpha_params (FrozenDict): Alpha network parameters.
+
+            Returns:
+                tuple[jnp.ndarray, jnp.ndarray]: Update training state and metrics.
+            """
+            pi = self.actor_network.apply(actor_params, experience.last_obs)
+            actor_actions, log_prob = pi.sample_and_log_prob(seed=action_rng)
+
+            qf_pi = self.critic_network.apply(
+                critic_params, experience.last_obs, actor_actions
+            )
+            min_qf_pi = jnp.min(qf_pi, axis=0)
+
+            alpha_value = self.alpha.apply(alpha_params)
+            actor_loss = (is_weights * (alpha_value * log_prob - min_qf_pi)).mean()
+            return actor_loss, -log_prob.mean()
+
+        (loss_value, entropy), grads = jax.value_and_grad(actor_loss, has_aux=True)(
+            actor_train_state.params,
+            critic_train_state.params,
+            alpha_train_state.params,
+        )
+        actor_train_state = actor_train_state.apply_gradients(grads=grads)
+
+        return actor_train_state, loss_value, entropy, grads, rng
+
+    def update_alpha(
+        self, alpha_train_state: SACTrainState, entropy: jnp.ndarray
+    ) -> tuple[SACTrainState, jnp.ndarray]:
+        """Update alpha network parameters.
+
+        Args:
+            alpha_train_state (SACTrainState): Alpha training state.
+            entropy (jnp.ndarray): Entropy values.
+
+        Returns:
+            tuple[SACTrainState, jnp.ndarray]: Updated trainingi state and metrics.
+        """
+
+        def get_alpha_loss(params: FrozenDict) -> jnp.ndarray:
+            """Compute alpha loss.
+
+            Args:
+                params (FrozenDict): Alpha network parameters.
+
+            Returns:
+                jnp.ndarray: Alpha loss.
+            """
+            alpha_value = self.alpha.apply(params)
+            return alpha_value * (entropy - self.target_entropy).mean()  # type: ignore[union-attr]
+
+        alpha_loss, grads = jax.value_and_grad(get_alpha_loss)(alpha_train_state.params)
+        alpha_train_state = alpha_train_state.apply_gradients(grads=grads)
+
+        return alpha_train_state, alpha_loss
+
+    def _update_step(
+        self, carry: tuple[SACRunnerState, PrioritisedTrajectoryBufferState], _: None
+    ) -> tuple[
+        tuple[SACRunnerState, PrioritisedTrajectoryBufferState],
+        tuple[SACMetrics | None, Transition | None],
+    ]:
+        """Perform one update step.
+
+        Args:
+            carry (tuple[SACRunnerState, PrioritisedTrajectoryBufferState]):
+                Carry for jax.lax.scan().
+            _ (None): Unused parameter.
+
+        Returns:
+            tuple[ tuple[SACRunnerState, PrioritisedTrajectoryBufferState],
+            tuple[SACMetrics | None, Transition | None], ]:
+                Updated training state and metrics.
+        """
+
+        def do_update(
+            rng: chex.PRNGKey,
+            actor_train_state: SACTrainState,
+            critic_train_state: SACTrainState,
+            alpha_train_state: SACTrainState,
+            normalizer_state: RunningStatisticsState,
+            buffer_state: PrioritisedTrajectoryBufferState,
+        ) -> tuple[
+            chex.PRNGKey,
+            SACTrainState,
+            SACTrainState,
+            SACTrainState,
+            PrioritisedTrajectoryBufferState,
+            SACMetrics,
+        ]:
+            """Perform an update of the algorithm parameters..
+
+            Args:
+                rng (chex.PRNGKey): Random number generator key.
+                actor_train_state (SACTrainState): Actor training state.
+                critic_train_state (SACTrainState): Critic training state.
+                alpha_train_state (SACTrainState): Alpha training state.
+                buffer_state (PrioritisedTrajectoryBufferState): Buffer state.
+
+            Returns:
+                tuple[ chex.PRNGKey, SACTrainState, SACTrainState, SACTrainState,
+                PrioritisedTrajectoryBufferState, SACMetrics]:
+                    Updated training states and metrics.
+            """
+            def gradient_step(
+                carry: tuple[
+                    chex.PRNGKey,
+                    SACTrainState,
+                    SACTrainState,
+                    SACTrainState,
+                    PrioritisedTrajectoryBufferState,
+                ],
+                _: None,
+            ) -> tuple[
+                tuple[
+                    chex.PRNGKey,
+                    SACTrainState,
+                    SACTrainState,
+                    SACTrainState,
+                    PrioritisedTrajectoryBufferState,
+                ],
+                SACMetrics,
+            ]:
+                """Perform a gradient update step.
+
+                Args:
+                    carry (tuple[chex.PRNGKey, SACTrainState, SACTrainState,
+                    SACTrainState, PrioritisedTrajectoryBufferState,]):
+                        Carry for jax.lax.scan():
+                    _ (None): Unused parameter.
+
+                Returns:
+                    tuple[ tuple[ chex.PRNGKey, SACTrainState,
+                        SACTrainState, SACTrainState,
+                    PrioritisedTrajectoryBufferState, ], SACMetrics, ]:
+                        Updated training states and metrics.
+                """
+                (
+                    rng,
+                    actor_train_state,
+                    critic_train_state,
+                    alpha_train_state,
+                    buffer_state,
+                ) = carry
+                rng, batch_sample_rng = jax.random.split(rng)
+                batch = self.buffer.sample(buffer_state, batch_sample_rng)
+                experience = batch.experience
+                if self.hpo_config["normalize_observations"]:
+                    experience = experience.replace(
+                        last_obs=running_statistics.normalize(
+                            experience.last_obs, normalizer_state
+                        ),
+                        obs=running_statistics.normalize(
+                            experience.obs, normalizer_state
+                        ),
+                    )
+
+                if self.hpo_config["buffer_prio_sampling"]:
+                    is_weights = jnp.power(
+                        (1.0 / batch.priorities), self.hpo_config["buffer_beta"]
+                    )
+                    is_weights = is_weights / jnp.max(is_weights)
+                else:
+                    is_weights = jnp.ones_like(batch.priorities)
+                critic_train_state, critic_loss, td_error, critic_grads, rng = (
+                    self.update_critic(
+                        actor_train_state,
+                        critic_train_state,
+                        alpha_train_state,
+                        experience,
+                        is_weights,
+                        rng,
+                    )
+                )
+                actor_train_state, actor_loss, entropy, actor_grads, rng = (
+                    self.update_actor(
+                        actor_train_state,
+                        critic_train_state,
+                        alpha_train_state,
+                        experience,
+                        is_weights,
+                        rng,
+                    )
+                )
+                alpha_train_state, alpha_loss = self.update_alpha(
+                    alpha_train_state, entropy
+                )
+                new_priorities = (
+                    td_error.mean(axis=0) + self.hpo_config["buffer_epsilon"]
+                )
+                buffer_state = self.buffer.set_priorities(
+                    buffer_state, batch.indices, new_priorities
+                )
+                metrics = SACMetrics(
+                    actor_loss=actor_loss,
+                    critic_loss=critic_loss,
+                    alpha_loss=alpha_loss,
+                    td_error=td_error.mean(axis=0),
+                    actor_grads=actor_grads,
+                    critic_grads=critic_grads,
+                )
+                return (
+                    rng,
+                    actor_train_state,
+                    critic_train_state,
+                    alpha_train_state,
+                    buffer_state,
+                ), metrics
+
+            carry, metrics = jax.lax.scan(
+                gradient_step,
+                (
+                    rng,
+                    actor_train_state,
+                    critic_train_state,
+                    alpha_train_state,
+                    buffer_state,
+                ),
+                None,
+                self.hpo_config["gradient_steps"],
+            )
+            (
+                rng,
+                actor_train_state,
+                critic_train_state,
+                alpha_train_state,
+                buffer_state,
+            ) = carry
+            return (
+                rng,
+                actor_train_state,
+                critic_train_state,
+                alpha_train_state,
+                buffer_state,
+                metrics,
+            )
+        def dont_update(
+            rng: chex.PRNGKey,
+            actor_train_state: SACTrainState,
+            critic_train_state: SACTrainState,
+            alpha_train_state: SACTrainState,
+            normalizer_state: RunningStatisticsState, # noqa: ARG001
+            buffer_state: PrioritisedTrajectoryBufferState,
+        ) -> tuple[
+            chex.PRNGKey,
+            SACTrainState,
+            SACTrainState,
+            SACTrainState,
+            PrioritisedTrajectoryBufferState,
+            SACMetrics,
+        ]:
+            """Dummy for jax.lax.scan(). Does not perform an update.
+
+            Args:
+                rng (chex.PRNGKey): Random number generator key.
+                actor_train_state (SACTrainState): Actor training state.
+                critic_train_state (SACTrainState): Critic training state.
+                alpha_train_state (SACTrainState): Alpha training state.
+                normalizer_state (RunningStatisticsState): Normalizer state.
+                buffer_state (PrioritisedTrajectoryBufferState): Buffer state.
+
+            Returns:
+                tuple[ chex.PRNGKey, SACTrainState, SACTrainState, SACTrainState,
+                PrioritisedTrajectoryBufferState, SACMetrics]:
+                    Input training states and metrics.
+            """
+            single_loss = jnp.array(
+                [((jnp.array([0]) - jnp.array([0])) ** 2).mean()]
+                * self.hpo_config["gradient_steps"]
+            )
+            td_error = jnp.array(
+                [
+                    [[0] * self.hpo_config["buffer_batch_size"]]
+                    * self.hpo_config["gradient_steps"]
+                ]
+            ).mean(axis=0)
+            actor_grads = jax.tree_map(
+                lambda x: jnp.stack([x] * self.hpo_config["gradient_steps"]),
+                actor_train_state.params,
+            )
+            critic_grads = jax.tree_map(
+                lambda x: jnp.stack([x] * self.hpo_config["gradient_steps"]),
+                critic_train_state.params,
+            )
+            metrics = SACMetrics(
+                actor_loss=single_loss,
+                critic_loss=single_loss,
+                alpha_loss=single_loss,
+                td_error=td_error,
+                actor_grads=actor_grads,
+                critic_grads=critic_grads,
+            )
+            return (
+                rng,
+                actor_train_state,
+                critic_train_state,
+                alpha_train_state,
+                buffer_state,
+                metrics,
+            )
+        runner_state, buffer_state = carry
+        (
+            (runner_state, buffer_state),
+            (
+                done,
+                action,
+                value,
+                reward,
+                last_obs,
+                info,
+            ),
+        ) = jax.lax.scan(
+            self._env_step,
+            (runner_state, buffer_state),
+            None,
+            self.hpo_config["train_freq"],
+        )
+        (
+            rng,
+            actor_train_state,
+            critic_train_state,
+            alpha_train_state,
+            normalizer_state,
+            _,
+            _,
+            global_step,
+        ) = runner_state
+        rng, _rng = jax.random.split(rng)
+
+        if self.hpo_config["normalize_observations"]:
+            normalizer_state = running_statistics.update(normalizer_state, last_obs)
+
+        (
+            rng,
+            actor_train_state,
+            critic_train_state,
+            alpha_train_state,
+            buffer_state,
+            step_metrics,
+        ) = jax.lax.cond(
+            (global_step > self.hpo_config["learning_starts"])
+            & (global_step % self.hpo_config["train_freq"] == 0),
+            do_update,
+            dont_update,
+            rng,
+            actor_train_state,
+            critic_train_state,
+            alpha_train_state,
+            normalizer_state,
+            buffer_state,
+        )
+        runner_state = SACRunnerState(
+            rng=rng,
+            actor_train_state=actor_train_state,
+            critic_train_state=critic_train_state,
+            alpha_train_state=alpha_train_state,
+            normalizer_state=normalizer_state,
+            env_state=runner_state.env_state,
+            obs=runner_state.obs,
+            global_step=runner_state.global_step,
+        )
+        actor_loss, critic_loss, alpha_loss, td_error, actor_grads, critic_grads = (
+            step_metrics
+        )
+        metrics, trajectories = None, None
+        if self.track_metrics:
+            metrics = SACMetrics(
+                actor_loss=actor_loss,
+                critic_loss=critic_loss,
+                alpha_loss=alpha_loss,
+                actor_grads=actor_grads,
+                critic_grads=critic_grads,
+                td_error=td_error,
+            )
+        if self.track_trajectories:
+            trajectories = Transition(
+                obs=last_obs,
+                action=action,
+                reward=reward,
+                done=done,
+                value=value,
+                info=info,
+            )
+        return (runner_state, buffer_state), (metrics, trajectories)
+
+    @functools.partial(jax.jit, static_argnums=0)
+    def _env_step(
+        self, carry: tuple[SACRunnerState, PrioritisedTrajectoryBufferState], _: None
+    ) -> tuple[tuple[SACRunnerState, PrioritisedTrajectoryBufferState], Transition]:
+        """Take one step in the environment (n_envs steps in total).
+
+        Args:
+            carry (tuple[SACRunnerState, PrioritisedTrajectoryBufferState]):
+                Carry for jax.lax.scan().
+            _ (None): Unused parameter.
+
+        Returns:
+            tuple[tuple[SACRunnerState, PrioritisedTrajectoryBufferState], Transition]:
+            Updated carry and collected transitions.
+        """
+        runner_state, buffer_state = carry
+        (
+            rng,
+            actor_train_state,
+            critic_train_state,
+            alpha_train_state,
+            normalizer_state,
+            env_state,
+            last_obs,
+            global_step,
+        ) = runner_state
+
+        # Select action(s)
+        rng, _rng = jax.random.split(rng)
+        if self.hpo_config["normalize_observations"]:
+            pi = self.actor_network.apply(
+                actor_train_state.params,
+                running_statistics.normalize(last_obs, normalizer_state),
+            )
+        else:
+            pi = self.actor_network.apply(actor_train_state.params, last_obs)
+
+        buffer_action = pi.sample(seed=_rng)
+        low, high = self.env.action_space.low, self.env.action_space.high
+        if low is None or np.isnan(low).any() or np.isinf(low).any():
+            low = -jnp.ones_like(buffer_action)
+        if high is None or np.isnan(high).any() or np.isinf(high).any():
+            high = jnp.ones_like(buffer_action)
+        action = low + (buffer_action + 1.0) * 0.5 * (high - low)
+
+        # Perform environment step
+        rng, _rng = jax.random.split(rng)
+        env_state, (obsv, reward, done, info) = self.env.step(env_state, action, _rng)
+
+        timestep = TimeStep(
+            last_obs=last_obs, obs=obsv, action=action, reward=reward, done=done
+        )
+        buffer_state = self.buffer.add(buffer_state, timestep)
+
+        global_step += 1
+
+        value = jnp.zeros_like(reward)
+        transition = Transition(done, action, value, reward, last_obs, info)
+        runner_state = SACRunnerState(
+            actor_train_state=actor_train_state,
+            critic_train_state=critic_train_state,
+            alpha_train_state=alpha_train_state,
+            normalizer_state=normalizer_state,
+            env_state=env_state,
+            obs=obsv,
+            rng=rng,
+            global_step=global_step,
+        )
+        return (runner_state, buffer_state), transition
