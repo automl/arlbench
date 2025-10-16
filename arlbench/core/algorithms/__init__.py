@@ -8,12 +8,12 @@ from flashbax.buffers.prioritised_trajectory_buffer import (
 from .algorithm import Algorithm
 from .dqn import (
     DQN,
+    PQN,
     DQNMetrics,
     DQNRunnerState,
     DQNState,
     DQNTrainingResult,
     DQNTrainReturnT,
-    PQN
 )
 from .ppo import (
     PPO,

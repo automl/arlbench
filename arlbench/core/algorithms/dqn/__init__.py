@@ -6,7 +6,6 @@ from .dqn import (
     DQNTrainingResult,
     DQNTrainReturnT,
 )
-
 from .pqn import PQN
 
 __all__ = [

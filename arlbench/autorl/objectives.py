@@ -253,7 +253,7 @@ class TrainRewardMean(Objective):
                 episode_end_indices = np.where(train_dones[:, i])[0]
                 last_indices = episode_end_indices[-3:]
                 previous_indices = episode_end_indices[-4:-1]
-                for start, end in zip(previous_indices, last_indices):
+                for start, end in zip(previous_indices, last_indices, strict=False):
                     episode_reward = train_rewards[start+1:end, i]
                     rewards.append(sum(episode_reward))
 
@@ -277,7 +277,7 @@ class TrainRewardMean(Objective):
             "lower": None,
             "optimize": "upper",
         }
-    
+
 class DiscountedTrainRewardMean(Objective):
     """Discounted reward objective for the AutoRL environment. It measures the mean of the last discounted training rewards."""
 
@@ -301,7 +301,7 @@ class DiscountedTrainRewardMean(Objective):
                 episode_end_indices = np.where(train_dones[:, i])[0]
                 last_indices = episode_end_indices[-3:]
                 previous_indices = episode_end_indices[-4:-1]
-                for start, end in zip(previous_indices, last_indices):
+                for start, end in zip(previous_indices, last_indices, strict=False):
                     episode_reward = train_rewards[start+1:end, i]
                     episode_reward = discount_rewards(episode_reward, DiscountedTrainRewardMean.gamma)
                     rewards.append(sum(episode_reward))
@@ -316,7 +316,7 @@ class DiscountedTrainRewardMean(Objective):
             return result
 
         return wrapper
-    
+
     @staticmethod
     def get_spec() -> dict:
         """Returns a dictionary containing the specification of the objective."""
@@ -326,7 +326,7 @@ class DiscountedTrainRewardMean(Objective):
             "lower": None,
             "optimize": "upper",
         }
-    
+
 class TrainRewardStd(Objective):
     """Reward objective for the AutoRL environment. It measures the standard deviation of the last evaluation rewards."""
 
@@ -349,7 +349,7 @@ class TrainRewardStd(Objective):
                 episode_end_indices = np.where(train_dones[:, i])[0]
                 last_indices = episode_end_indices[-3:]
                 previous_indices = episode_end_indices[-4:-1]
-                for start, end in zip(previous_indices, last_indices):
+                for start, end in zip(previous_indices, last_indices, strict=False):
                     episode_reward = train_rewards[start+1:end, i]
                     stds.append(np.std(episode_reward))
 

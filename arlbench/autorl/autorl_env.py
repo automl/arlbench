@@ -3,20 +3,19 @@ from __future__ import annotations
 
 import warnings
 from collections.abc import Callable
-from typing import Any, Dict
+from typing import Any
 
 import gymnasium
 import jax
 import numpy as np
 import pandas as pd
-from omegaconf import OmegaConf
 from ConfigSpace import Configuration, ConfigurationSpace
 
 from arlbench.core.algorithms import (
     DQN,
     PPO,
-    SAC,
     PQN,
+    SAC,
     Algorithm,
     AlgorithmState,
     TrainResult,
@@ -267,8 +266,8 @@ class AutoRLEnv(gymnasium.Env):
             cnn_policy=self._config["cnn_policy"],
             deterministic_eval=self._config["deterministic_eval"],
         )
-    
-    def get_algorithm_init_kwargs(self, init_rng) -> Dict:
+
+    def get_algorithm_init_kwargs(self, init_rng) -> dict:
         """Returns the algorithm initialization parameters.
 
         Returns:
@@ -368,7 +367,7 @@ class AutoRLEnv(gymnasium.Env):
             self._algorithm_state = self._algorithm.init(init_rng)
         else:
             init_rng = jax.random.key(seed)
-            init_kwargs = self.get_algorithm_init_kwargs(init_rng)            
+            init_kwargs = self.get_algorithm_init_kwargs(init_rng)
             self._algorithm_state = self._algorithm.init(**init_kwargs)
 
         # Training kwargs

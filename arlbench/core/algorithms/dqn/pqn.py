@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import functools
 from collections.abc import Callable
-from typing import TYPE_CHECKING, Any, NamedTuple
+from typing import TYPE_CHECKING, Any
 
 import jax
 import jax.lax
@@ -18,16 +18,17 @@ from ConfigSpace import (
     Float,
     Integer,
 )
+
 from arlbench.core import running_statistics
 from arlbench.core.algorithms.algorithm import Algorithm
 from arlbench.core.algorithms.dqn.dqn import (
     DQNMetrics,
     DQNRunnerState,
     DQNState,
-    DQNTrainState,
-    DQNTrainReturnT,
     DQNTrainingResult,
-    Transition
+    DQNTrainReturnT,
+    DQNTrainState,
+    Transition,
 )
 
 from .models import CNNQ, MLPQ
@@ -103,7 +104,7 @@ class PQN(Algorithm):
     @staticmethod
     def get_hpo_config_space(seed: int | None = None) -> ConfigurationSpace:
         """Returns the hyperparameter optimization (HPO) configuration space for PQN."""
-        cs = ConfigurationSpace(
+        return ConfigurationSpace(
             name="PQNConfigSpace",
             seed=seed,
             space={
@@ -127,7 +128,6 @@ class PQN(Algorithm):
             },
         )
 
-        return cs
 
     @staticmethod
     def get_default_hpo_config() -> Configuration:
@@ -364,7 +364,7 @@ class PQN(Algorithm):
             None,
             n_eval_steps,
         )
-        return DQNState(runner_state=runner_state, buffer_state=None), result    
+        return DQNState(runner_state=runner_state, buffer_state=None), result
 
     def _update_step(
         self,
@@ -432,7 +432,7 @@ class PQN(Algorithm):
                 (self.hpo_config["initial_epsilon"] - self.hpo_config["target_epsilon"])
                 / self.hpo_config["exploration_fraction"]
             )
-            
+
             rand_action = jnp.array(
                     [self.env.action_space.sample(_rngs[i]) for i in range(obs.shape[0])]
                 )
@@ -468,7 +468,7 @@ class PQN(Algorithm):
                 None,
                 self.hpo_config["n_steps"],
             )
-        
+
         last_q = self.network.apply(train_state.params, last_obs)
         last_q = jnp.max(last_q, axis=-1)
 
@@ -527,10 +527,9 @@ class PQN(Algorithm):
             def preprocess_transition(x, rng):
                 x = x.reshape(-1, *x.shape[2:])
                 x = jax.random.permutation(rng, x)
-                x = x.reshape(
+                return x.reshape(
                         self.n_minibatches, -1, *x.shape[1:]
                     )
-                return x
 
             rng, _rng = jax.random.split(rng)
             obs_batches = jax.tree_util.tree_map(
@@ -547,14 +546,14 @@ class PQN(Algorithm):
             (train_state, rng), (loss, td_error, grads) = jax.lax.scan(
                     _learn_phase, (train_state, rng), (obs_batches, action_batches, target_batches)
                 )
-            
+
             if not self.track_metrics:
                 loss = None
                 td_error = None
                 grads = None
 
             return (train_state, rng), DQNMetrics(loss=loss, td_error=td_error, grads=grads)
-        
+
         rng, _ = jax.random.split(rng)
         (train_state, rng), metrics = jax.lax.scan(
                 _learn_epoch, (train_state, rng), None, self.hpo_config["update_epochs"]
