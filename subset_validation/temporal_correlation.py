@@ -185,7 +185,7 @@ def get_temporal_correlation(full_set: pd.DataFrame, algorithm: str, n_bootstrap
 
 def plot_temporal_correlation(all_data: dict[str, pd.DataFrame]):
     fig, axs = plt.subplots(1, 3, figsize=(9.5, 2.5), sharey=True)
-    for algorithm, ax in zip(all_data.keys(), axs):
+    for algorithm, ax in zip(["ppo", "dqn", "sac"], axs):
         results = get_temporal_correlation(all_data[algorithm], algorithm)
 
         sns.lineplot(data=results, x='budget', y='spearman_corr', ax=ax, marker='o')
