@@ -105,23 +105,35 @@ def read_all_data() -> dict[str, pd.DataFrame]:
         filename = file.stem
 
         algorithm = filename.split("_")[-1]
-        env_name = "_".join(filename.split("_")[:-1])
+        exp = "_".join(filename.split("_")[:-1])
         try:
-            env_name = EXPERIMENT_TO_ENV[env_name]
+            env_name = EXPERIMENT_TO_ENV[exp]
         except KeyError:
-            print(f"Unknown env name: {env_name}")
+            print(f"Unknown exp name: {exp}")
             continue
 
         df = pd.read_csv(file)
         df = df[["run_id", "budget", "performance", "seed"]]
-        df = df.rename(columns={"run_id": "config_id"})
+        df = df.rename(columns={"run_id": "config_id"})    
 
         # Normalize budget 
         df.budget = df.budget / df.budget.max()
 
+        min_p = df["performance"].min()
+        max_p = df["performance"].max()
+
+        # Account for numerical instabilities that caused
+        # performance to be way out of expected range
+        if "brax" in exp:
+            min_p = -2000
+        elif "box2d" in exp:
+            min_p = -200
+
         # Min-max normalize performance
-        df["performance"] = df["performance"].fillna(df["performance"].min())
-        df["performance"] = (df["performance"] - df["performance"].min()) / (df["performance"].max() - df["performance"].min())
+        df["performance"] = df["performance"].fillna(min_p)
+        df["performance"] = (df["performance"] - min_p) / (max_p - min_p)
+
+        df["performance"] = df["performance"].clip(0, 1)
 
         # Mean over seeds
         df = df.groupby(["config_id", "budget"]).performance.mean().reset_index()
@@ -150,8 +162,8 @@ def get_temporal_correlation(full_set: pd.DataFrame, algorithm: str, n_bootstrap
     results = []
 
     for budget in budgets:
-        subset_perf = subset_mean[subset_mean["budget"] == budget]['performance'].values
-        fullset_perf = full_set_mean[full_set_mean['budget'] == budget]['performance'].values
+        subset_perf = subset_mean[subset_mean["budget"] == budget]["performance"].values
+        fullset_perf = full_set_mean[full_set_mean["budget"] == budget]["performance"].values
 
         # Original correlation
         corr, p_value = spearmanr(subset_perf, fullset_perf)
@@ -166,17 +178,16 @@ def get_temporal_correlation(full_set: pd.DataFrame, algorithm: str, n_bootstrap
             boot_corr, _ = spearmanr(boot_subset, boot_fullset)
             boot_corrs.append(boot_corr)
 
-        # Confidence interval (e.g., 95%)
         ci_lower = np.percentile(boot_corrs, 5)
         ci_upper = np.percentile(boot_corrs, 95)
 
         results.append({
-            'budget': budget,
-            'spearman_corr': corr,
-            'p_value': p_value,
-            'ci_lower': ci_lower,
-            'ci_upper': ci_upper,
-            'std_dev': np.std(boot_corrs)
+            "budget": budget,
+            "spearman_corr": corr,
+            "p_value": p_value,
+            "ci_lower": ci_lower,
+            "ci_upper": ci_upper,
+            "std_dev": np.std(boot_corrs)
         })
 
     results_df = pd.DataFrame(results)
@@ -188,16 +199,80 @@ def plot_temporal_correlation(all_data: dict[str, pd.DataFrame]):
     for algorithm, ax in zip(["ppo", "dqn", "sac"], axs):
         results = get_temporal_correlation(all_data[algorithm], algorithm)
 
-        sns.lineplot(data=results, x='budget', y='spearman_corr', ax=ax, marker='o')
-        ax.fill_between(results['budget'], results['ci_lower'], results['ci_upper'], alpha=0.3)
-        ax.set_title(f'{algorithm.upper()}')
-        ax.set_xlabel('Normalized Training Steps')
-        ax.set_ylabel('Spearman Correlation')
+        sns.lineplot(data=results, x="budget", y="spearman_corr", ax=ax, marker="o")
+        ax.fill_between(results["budget"], results["ci_lower"], results["ci_upper"], alpha=0.3)
+        ax.set_title(f"{algorithm.upper()}")
+        ax.set_xlabel("Normalized Training Steps")
+        ax.set_ylabel("Spearman Correlation")
         ax.set_ylim(0, 1)
         ax.grid(True)
-    
+
     plt.tight_layout()
     plt.savefig(PLOTS_DIR / "temporal_correlation.png", dpi=500)
+
+def get_temporal_CIs(full_set: pd.DataFrame, algorithm: str):
+    percentiles = [0, 25, 50, 75, 100]
+
+    subset = get_subset(full_set, algorithm)
+
+    # Compute mean per config_id and budget for both sets
+    full_set_mean = full_set.groupby(["config_id", "budget"]).performance.mean().reset_index()
+    subset_mean = subset.groupby(["config_id", "budget"]).performance.mean().reset_index()
+
+    fullset_percentile_values = full_set_mean.groupby("budget")["performance"].quantile([p/100 for p in percentiles]).unstack(level=1)
+    subset_percentile_values = subset_mean.groupby("budget")["performance"].quantile([p/100 for p in percentiles]).unstack(level=1)
+
+    budgets = subset_mean["budget"].unique()
+    
+    fig, axs = plt.subplots(1, 2, figsize=(9.5, 2.5), sharey=True)
+    for p in percentiles:
+        sns.lineplot(x=budgets, y=fullset_percentile_values[p / 100], ax=axs[0], label=f"{p}th")
+        sns.lineplot(x=budgets, y=subset_percentile_values[p / 100], ax=axs[1], label=f"{p}th")
+
+    fig.subplots_adjust(
+        left=0.08,
+        right=0.95,
+        bottom=0.28,
+        wspace=0.1
+    )
+
+    axs[0].legend().remove()
+    axs[1].legend(loc='upper center', bbox_to_anchor=(-0., -0.25), ncol=5, fancybox=False, shadow=False, frameon=False)
+
+    axs[0].set_title(f"{algorithm.upper()} - Full Set")
+    axs[0].set_xlabel("Normalized Training Steps")
+    axs[0].set_ylabel("Average Normalized Return")
+    axs[0].grid(True)
+    axs[1].set_title(f"{algorithm.upper()} - Subset")
+    axs[1].set_xlabel("Normalized Training Steps")
+    axs[1].grid(True)
+    plt.savefig(PLOTS_DIR / f"temporal_CIs_{algorithm}.png", dpi=500)
+    
+def get_temporal_returns_box(full_set: pd.DataFrame, algorithm: str):
+    subset = get_subset(full_set, algorithm)
+
+    # Compute mean per config_id and budget for both sets
+    full_set_mean = full_set.groupby(["config_id", "budget"]).performance.mean().reset_index()
+    subset_mean = subset.groupby(["config_id", "budget"]).performance.mean().reset_index()
+
+    budgets = subset_mean["budget"].unique()
+    
+    fig, axs = plt.subplots(1, 2, figsize=(9.5, 2.5), sharey=True)
+    
+    for budget in budgets:
+        sns.boxplot(y=full_set_mean[full_set_mean["budget"] == budget]["performance"], x=budget, ax=axs[0])
+        sns.boxplot(y=subset_mean[subset_mean["budget"] == budget]["performance"], x=budget, ax=axs[1])
+
+    axs[0].set_title(f"{algorithm.upper()} - Full Set")
+    axs[0].set_xlabel("Normalized Training Steps")
+    axs[0].set_ylabel("Average Normalized Return")
+    axs[0].grid(True)
+    axs[1].set_title(f"{algorithm.upper()} - Subset")
+    axs[1].set_xlabel("Normalized Training Steps")
+    axs[1].grid(True)
+    
+    plt.tight_layout()
+    plt.savefig(PLOTS_DIR / f"temporal_returns_box_{algorithm}.png", dpi=500)
 
 if __name__ == "__main__":
     np.random.seed(42)
@@ -205,6 +280,9 @@ if __name__ == "__main__":
     all_data = read_all_data()
     plot_temporal_correlation(all_data)
 
+    for algorithm in ["ppo", "dqn", "sac"]:
+        get_temporal_returns_box(all_data[algorithm], algorithm)
+        get_temporal_CIs(all_data[algorithm], algorithm)
 
 
 
