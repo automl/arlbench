@@ -4,13 +4,31 @@
 .. automodule:: arlbench
 
    
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+
 .. rubric:: Modules
 
 .. autosummary::
    :toctree:
    :recursive:
 
-   arlbench
-   autorl
-   core
-   utils
+   arlbench.arlbench
+   arlbench.autorl
+   arlbench.core
+   arlbench.utils
+

@@ -4,10 +4,30 @@ arlbench.autorl.state\_features
 .. automodule:: arlbench.autorl.state_features
 
    
+   
+   
+
+   
+   
+   
+
+   
+   
    .. rubric:: Classes
 
    .. autosummary::
    
       GradInfo
+      LossInfo
+      PredictionInfo
       StateFeature
+      WeightInfo
    
+   
+
+   
+   
+   
+
+
+

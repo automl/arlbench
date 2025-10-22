@@ -28,7 +28,7 @@
   <link rel="preload" as="script" href="../_static/js/index.9ea38e314b9e6d9dab77.js">
 
     <script src="../_static/documentation_options.js?v=91f6191e"></script>
-    <script src="../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../_static/doctools.js?v=9a2dae69"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -140,7 +140,7 @@
   <ul>
    <li class="toctree-l2">
     <a class="reference internal" href="../basic_usage/objectives.html">
-     Objectives in ARLBench
+     Objectives &amp; Features in ARLBench
     </a>
    </li>
    <li class="toctree-l2">
@@ -333,6 +333,64 @@
 <nav id="bd-toc-nav">
     <ul class="visible nav section-nav flex-column">
  <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#arlbench.autorl.objectives.DiscountedReward">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     DiscountedReward
+    </span>
+   </code>
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#arlbench.autorl.objectives.DiscountedReward.__call__">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       DiscountedReward.__call__()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#arlbench.autorl.objectives.DiscountedReward.get_spec">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       DiscountedReward.get_spec()
+      </span>
+     </code>
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#arlbench.autorl.objectives.DiscountedTrainReward">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     DiscountedTrainReward
+    </span>
+   </code>
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#arlbench.autorl.objectives.DiscountedTrainReward.__call__">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       DiscountedTrainReward.__call__()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#arlbench.autorl.objectives.DiscountedTrainReward.get_spec">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       DiscountedTrainReward.get_spec()
+      </span>
+     </code>
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
   <a class="reference internal nav-link" href="#arlbench.autorl.objectives.Emissions">
    <code class="docutils literal notranslate">
     <span class="pre">
@@ -409,57 +467,28 @@
   </ul>
  </li>
  <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#arlbench.autorl.objectives.RewardMean">
+  <a class="reference internal nav-link" href="#arlbench.autorl.objectives.Reward">
    <code class="docutils literal notranslate">
     <span class="pre">
-     RewardMean
+     Reward
     </span>
    </code>
   </a>
   <ul class="nav section-nav flex-column">
    <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#arlbench.autorl.objectives.RewardMean.__call__">
+    <a class="reference internal nav-link" href="#arlbench.autorl.objectives.Reward.__call__">
      <code class="docutils literal notranslate">
       <span class="pre">
-       RewardMean.__call__()
+       Reward.__call__()
       </span>
      </code>
     </a>
    </li>
    <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#arlbench.autorl.objectives.RewardMean.get_spec">
+    <a class="reference internal nav-link" href="#arlbench.autorl.objectives.Reward.get_spec">
      <code class="docutils literal notranslate">
       <span class="pre">
-       RewardMean.get_spec()
-      </span>
-     </code>
-    </a>
-   </li>
-  </ul>
- </li>
- <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#arlbench.autorl.objectives.RewardStd">
-   <code class="docutils literal notranslate">
-    <span class="pre">
-     RewardStd
-    </span>
-   </code>
-  </a>
-  <ul class="nav section-nav flex-column">
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#arlbench.autorl.objectives.RewardStd.__call__">
-     <code class="docutils literal notranslate">
-      <span class="pre">
-       RewardStd.__call__()
-      </span>
-     </code>
-    </a>
-   </li>
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#arlbench.autorl.objectives.RewardStd.get_spec">
-     <code class="docutils literal notranslate">
-      <span class="pre">
-       RewardStd.get_spec()
+       Reward.get_spec()
       </span>
      </code>
     </a>
@@ -495,6 +524,44 @@
    </li>
   </ul>
  </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#arlbench.autorl.objectives.TrainReward">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     TrainReward
+    </span>
+   </code>
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#arlbench.autorl.objectives.TrainReward.__call__">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       TrainReward.__call__()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#arlbench.autorl.objectives.TrainReward.get_spec">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       TrainReward.get_spec()
+      </span>
+     </code>
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#arlbench.autorl.objectives.discount_rewards">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     discount_rewards()
+    </span>
+   </code>
+  </a>
+ </li>
 </ul>
 
 </nav>
@@ -519,26 +586,98 @@
   <section id="module-arlbench.autorl.objectives">
 <span id="arlbench-autorl-objectives"></span><h1>arlbench.autorl.objectives<a class="headerlink" href="#module-arlbench.autorl.objectives" title="Link to this heading">¶</a></h1>
 <p>This module contains the objectives for the AutoRL environment.</p>
+<p class="rubric">Functions</p>
+<table class="autosummary longtable table autosummary">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="../arlbench.autorl.html#arlbench.autorl.objectives.discount_rewards" title="arlbench.autorl.objectives.discount_rewards"><code class="xref py py-obj docutils literal notranslate"><span class="pre">discount_rewards</span></code></a>(rewards[, gamma])</p></td>
+<td><p>Compute discounted rewards.</p></td>
+</tr>
+</tbody>
+</table>
 <p class="rubric">Classes</p>
 <table class="autosummary longtable table autosummary">
 <tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="../arlbench.autorl.html#arlbench.autorl.objectives.DiscountedReward" title="arlbench.autorl.objectives.DiscountedReward"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DiscountedReward</span></code></a>(*args, **kwargs)</p></td>
+<td><p>Discounted reward objective for the AutoRL environment.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="../arlbench.autorl.html#arlbench.autorl.objectives.DiscountedTrainReward" title="arlbench.autorl.objectives.DiscountedTrainReward"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DiscountedTrainReward</span></code></a>(*args, **kwargs)</p></td>
+<td><p>Discounted reward objective for the AutoRL environment.</p></td>
+</tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="../arlbench.autorl.html#arlbench.autorl.objectives.Emissions" title="arlbench.autorl.objectives.Emissions"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Emissions</span></code></a>(*args, **kwargs)</p></td>
 <td><p>Emissions objective for the AutoRL environment.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="../arlbench.autorl.html#arlbench.autorl.objectives.Objective" title="arlbench.autorl.objectives.Objective"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Objective</span></code></a>(*args, **kwargs)</p></td>
 <td><p>An abstract optimization objective for the AutoRL environment.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="../arlbench.autorl.html#arlbench.autorl.objectives.RewardMean" title="arlbench.autorl.objectives.RewardMean"><code class="xref py py-obj docutils literal notranslate"><span class="pre">RewardMean</span></code></a>(*args, **kwargs)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="../arlbench.autorl.html#arlbench.autorl.objectives.Reward" title="arlbench.autorl.objectives.Reward"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Reward</span></code></a>(*args, **kwargs)</p></td>
 <td><p>Reward objective for the AutoRL environment.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="../arlbench.autorl.html#arlbench.autorl.objectives.RewardStd" title="arlbench.autorl.objectives.RewardStd"><code class="xref py py-obj docutils literal notranslate"><span class="pre">RewardStd</span></code></a>(*args, **kwargs)</p></td>
-<td><p>Reward objective for the AutoRL environment.</p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="../arlbench.autorl.html#arlbench.autorl.objectives.Runtime" title="arlbench.autorl.objectives.Runtime"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Runtime</span></code></a>(*args, **kwargs)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="../arlbench.autorl.html#arlbench.autorl.objectives.Runtime" title="arlbench.autorl.objectives.Runtime"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Runtime</span></code></a>(*args, **kwargs)</p></td>
 <td><p>Runtime objective for the AutoRL environment.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="../arlbench.autorl.html#arlbench.autorl.objectives.TrainReward" title="arlbench.autorl.objectives.TrainReward"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TrainReward</span></code></a>(*args, **kwargs)</p></td>
+<td><p>Reward objective for the AutoRL environment.</p></td>
 </tr>
 </tbody>
 </table>
+<dl class="py class">
+<dt class="sig sig-object py" id="arlbench.autorl.objectives.DiscountedReward">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">arlbench.autorl.objectives.</span></span><span class="sig-name descname"><span class="pre">DiscountedReward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arlbench/autorl/objectives.html#DiscountedReward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.autorl.objectives.DiscountedReward" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="../arlbench.autorl.html#arlbench.autorl.objectives.Objective" title="arlbench.autorl.objectives.Objective"><code class="xref py py-class docutils literal notranslate"><span class="pre">Objective</span></code></a></p>
+<p>Discounted reward objective for the AutoRL environment. It measures the last discounted evaluation rewards.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="arlbench.autorl.objectives.DiscountedReward.__call__">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">__call__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">train_func</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">objectives</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optimize_objectives</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gamma</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.99</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">default_arg</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'mean'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arlbench/autorl/objectives.html#DiscountedReward.__call__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.autorl.objectives.DiscountedReward.__call__" title="Link to this definition">¶</a></dt>
+<dd><p>Wraps the training function with the reward mean calculation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">Callable</span></code>[[<a class="reference internal" href="../arlbench.core.algorithms.dqn.html#arlbench.core.algorithms.dqn.dqn.DQNRunnerState" title="arlbench.core.algorithms.dqn.dqn.DQNRunnerState"><code class="xref py py-class docutils literal notranslate"><span class="pre">DQNRunnerState</span></code></a> | <a class="reference internal" href="../arlbench.core.algorithms.ppo.html#arlbench.core.algorithms.ppo.ppo.PPORunnerState" title="arlbench.core.algorithms.ppo.ppo.PPORunnerState"><code class="xref py py-class docutils literal notranslate"><span class="pre">PPORunnerState</span></code></a> | <a class="reference internal" href="../arlbench.core.algorithms.sac.html#arlbench.core.algorithms.sac.sac.SACRunnerState" title="arlbench.core.algorithms.sac.sac.SACRunnerState"><code class="xref py py-class docutils literal notranslate"><span class="pre">SACRunnerState</span></code></a>, <code class="xref py py-class docutils literal notranslate"><span class="pre">PrioritisedTrajectoryBufferState</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code> | <code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code> | <code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code> | <code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code>], <code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code>[<a class="reference internal" href="../arlbench.core.algorithms.dqn.html#arlbench.core.algorithms.dqn.dqn.DQNState" title="arlbench.core.algorithms.dqn.dqn.DQNState"><code class="xref py py-class docutils literal notranslate"><span class="pre">DQNState</span></code></a>, <a class="reference internal" href="../arlbench.core.algorithms.dqn.html#arlbench.core.algorithms.dqn.dqn.DQNTrainingResult" title="arlbench.core.algorithms.dqn.dqn.DQNTrainingResult"><code class="xref py py-class docutils literal notranslate"><span class="pre">DQNTrainingResult</span></code></a>] | <code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code>[<a class="reference internal" href="../arlbench.core.algorithms.ppo.html#arlbench.core.algorithms.ppo.ppo.PPOState" title="arlbench.core.algorithms.ppo.ppo.PPOState"><code class="xref py py-class docutils literal notranslate"><span class="pre">PPOState</span></code></a>, <a class="reference internal" href="../arlbench.core.algorithms.ppo.html#arlbench.core.algorithms.ppo.ppo.PPOTrainingResult" title="arlbench.core.algorithms.ppo.ppo.PPOTrainingResult"><code class="xref py py-class docutils literal notranslate"><span class="pre">PPOTrainingResult</span></code></a>] | <code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code>[<a class="reference internal" href="../arlbench.core.algorithms.sac.html#arlbench.core.algorithms.sac.sac.SACState" title="arlbench.core.algorithms.sac.sac.SACState"><code class="xref py py-class docutils literal notranslate"><span class="pre">SACState</span></code></a>, <a class="reference internal" href="../arlbench.core.algorithms.sac.html#arlbench.core.algorithms.sac.sac.SACTrainingResult" title="arlbench.core.algorithms.sac.sac.SACTrainingResult"><code class="xref py py-class docutils literal notranslate"><span class="pre">SACTrainingResult</span></code></a>]]</span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="arlbench.autorl.objectives.DiscountedReward.get_spec">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_spec</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arlbench/autorl/objectives.html#DiscountedReward.get_spec"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.autorl.objectives.DiscountedReward.get_spec" title="Link to this definition">¶</a></dt>
+<dd><p>Returns a dictionary containing the specification of the objective.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></span></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="arlbench.autorl.objectives.DiscountedTrainReward">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">arlbench.autorl.objectives.</span></span><span class="sig-name descname"><span class="pre">DiscountedTrainReward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arlbench/autorl/objectives.html#DiscountedTrainReward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.autorl.objectives.DiscountedTrainReward" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="../arlbench.autorl.html#arlbench.autorl.objectives.Objective" title="arlbench.autorl.objectives.Objective"><code class="xref py py-class docutils literal notranslate"><span class="pre">Objective</span></code></a></p>
+<p>Discounted reward objective for the AutoRL environment. It measures the mean of the last discounted training rewards.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="arlbench.autorl.objectives.DiscountedTrainReward.__call__">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">__call__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">train_func</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">objectives</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optimize_objectives</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gamma</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.99</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">default_arg</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'mean'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arlbench/autorl/objectives.html#DiscountedTrainReward.__call__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.autorl.objectives.DiscountedTrainReward.__call__" title="Link to this definition">¶</a></dt>
+<dd><p>Wraps the training function with the reward mean calculation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">Callable</span></code>[[<a class="reference internal" href="../arlbench.core.algorithms.dqn.html#arlbench.core.algorithms.dqn.dqn.DQNRunnerState" title="arlbench.core.algorithms.dqn.dqn.DQNRunnerState"><code class="xref py py-class docutils literal notranslate"><span class="pre">DQNRunnerState</span></code></a> | <a class="reference internal" href="../arlbench.core.algorithms.ppo.html#arlbench.core.algorithms.ppo.ppo.PPORunnerState" title="arlbench.core.algorithms.ppo.ppo.PPORunnerState"><code class="xref py py-class docutils literal notranslate"><span class="pre">PPORunnerState</span></code></a> | <a class="reference internal" href="../arlbench.core.algorithms.sac.html#arlbench.core.algorithms.sac.sac.SACRunnerState" title="arlbench.core.algorithms.sac.sac.SACRunnerState"><code class="xref py py-class docutils literal notranslate"><span class="pre">SACRunnerState</span></code></a>, <code class="xref py py-class docutils literal notranslate"><span class="pre">PrioritisedTrajectoryBufferState</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code> | <code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code> | <code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code> | <code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code>], <code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code>[<a class="reference internal" href="../arlbench.core.algorithms.dqn.html#arlbench.core.algorithms.dqn.dqn.DQNState" title="arlbench.core.algorithms.dqn.dqn.DQNState"><code class="xref py py-class docutils literal notranslate"><span class="pre">DQNState</span></code></a>, <a class="reference internal" href="../arlbench.core.algorithms.dqn.html#arlbench.core.algorithms.dqn.dqn.DQNTrainingResult" title="arlbench.core.algorithms.dqn.dqn.DQNTrainingResult"><code class="xref py py-class docutils literal notranslate"><span class="pre">DQNTrainingResult</span></code></a>] | <code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code>[<a class="reference internal" href="../arlbench.core.algorithms.ppo.html#arlbench.core.algorithms.ppo.ppo.PPOState" title="arlbench.core.algorithms.ppo.ppo.PPOState"><code class="xref py py-class docutils literal notranslate"><span class="pre">PPOState</span></code></a>, <a class="reference internal" href="../arlbench.core.algorithms.ppo.html#arlbench.core.algorithms.ppo.ppo.PPOTrainingResult" title="arlbench.core.algorithms.ppo.ppo.PPOTrainingResult"><code class="xref py py-class docutils literal notranslate"><span class="pre">PPOTrainingResult</span></code></a>] | <code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code>[<a class="reference internal" href="../arlbench.core.algorithms.sac.html#arlbench.core.algorithms.sac.sac.SACState" title="arlbench.core.algorithms.sac.sac.SACState"><code class="xref py py-class docutils literal notranslate"><span class="pre">SACState</span></code></a>, <a class="reference internal" href="../arlbench.core.algorithms.sac.html#arlbench.core.algorithms.sac.sac.SACTrainingResult" title="arlbench.core.algorithms.sac.sac.SACTrainingResult"><code class="xref py py-class docutils literal notranslate"><span class="pre">SACTrainingResult</span></code></a>]]</span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="arlbench.autorl.objectives.DiscountedTrainReward.get_spec">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_spec</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arlbench/autorl/objectives.html#DiscountedTrainReward.get_spec"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.autorl.objectives.DiscountedTrainReward.get_spec" title="Link to this definition">¶</a></dt>
+<dd><p>Returns a dictionary containing the specification of the objective.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></span></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
 <dl class="py class">
 <dt class="sig sig-object py" id="arlbench.autorl.objectives.Emissions">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">arlbench.autorl.objectives.</span></span><span class="sig-name descname"><span class="pre">Emissions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arlbench/autorl/objectives.html#Emissions"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.autorl.objectives.Emissions" title="Link to this definition">¶</a></dt>
@@ -646,13 +785,13 @@ the behaviour of a basic function while keeping the advantages of a static class
 </dd></dl>
 
 <dl class="py class">
-<dt class="sig sig-object py" id="arlbench.autorl.objectives.RewardMean">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">arlbench.autorl.objectives.</span></span><span class="sig-name descname"><span class="pre">RewardMean</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arlbench/autorl/objectives.html#RewardMean"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.autorl.objectives.RewardMean" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="arlbench.autorl.objectives.Reward">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">arlbench.autorl.objectives.</span></span><span class="sig-name descname"><span class="pre">Reward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arlbench/autorl/objectives.html#Reward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.autorl.objectives.Reward" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="../arlbench.autorl.html#arlbench.autorl.objectives.Objective" title="arlbench.autorl.objectives.Objective"><code class="xref py py-class docutils literal notranslate"><span class="pre">Objective</span></code></a></p>
-<p>Reward objective for the AutoRL environment. It measures the mean of the last evaluation rewards.</p>
+<p>Reward objective for the AutoRL environment. And applies an aggregation function.</p>
 <dl class="py method">
-<dt class="sig sig-object py" id="arlbench.autorl.objectives.RewardMean.__call__">
-<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">__call__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">train_func</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">objectives</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optimize_objectives</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arlbench/autorl/objectives.html#RewardMean.__call__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.autorl.objectives.RewardMean.__call__" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="arlbench.autorl.objectives.Reward.__call__">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">__call__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">train_func</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">objectives</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optimize_objectives</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">default_arg</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'mean'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arlbench/autorl/objectives.html#Reward.__call__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.autorl.objectives.Reward.__call__" title="Link to this definition">¶</a></dt>
 <dd><p>Wraps the training function with the reward mean calculation.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
@@ -662,37 +801,8 @@ the behaviour of a basic function while keeping the advantages of a static class
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="arlbench.autorl.objectives.RewardMean.get_spec">
-<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_spec</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arlbench/autorl/objectives.html#RewardMean.get_spec"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.autorl.objectives.RewardMean.get_spec" title="Link to this definition">¶</a></dt>
-<dd><p>Returns a dictionary containing the specification of the objective.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></span></p>
-</dd>
-</dl>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="py class">
-<dt class="sig sig-object py" id="arlbench.autorl.objectives.RewardStd">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">arlbench.autorl.objectives.</span></span><span class="sig-name descname"><span class="pre">RewardStd</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arlbench/autorl/objectives.html#RewardStd"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.autorl.objectives.RewardStd" title="Link to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="../arlbench.autorl.html#arlbench.autorl.objectives.Objective" title="arlbench.autorl.objectives.Objective"><code class="xref py py-class docutils literal notranslate"><span class="pre">Objective</span></code></a></p>
-<p>Reward objective for the AutoRL environment. It measures the standard deviation of the last evaluation rewards.</p>
-<dl class="py method">
-<dt class="sig sig-object py" id="arlbench.autorl.objectives.RewardStd.__call__">
-<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">__call__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">train_func</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">objectives</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optimize_objectives</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arlbench/autorl/objectives.html#RewardStd.__call__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.autorl.objectives.RewardStd.__call__" title="Link to this definition">¶</a></dt>
-<dd><p>Wraps the training function with the reward standard deviation calculation.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">Callable</span></code>[[<a class="reference internal" href="../arlbench.core.algorithms.dqn.html#arlbench.core.algorithms.dqn.dqn.DQNRunnerState" title="arlbench.core.algorithms.dqn.dqn.DQNRunnerState"><code class="xref py py-class docutils literal notranslate"><span class="pre">DQNRunnerState</span></code></a> | <a class="reference internal" href="../arlbench.core.algorithms.ppo.html#arlbench.core.algorithms.ppo.ppo.PPORunnerState" title="arlbench.core.algorithms.ppo.ppo.PPORunnerState"><code class="xref py py-class docutils literal notranslate"><span class="pre">PPORunnerState</span></code></a> | <a class="reference internal" href="../arlbench.core.algorithms.sac.html#arlbench.core.algorithms.sac.sac.SACRunnerState" title="arlbench.core.algorithms.sac.sac.SACRunnerState"><code class="xref py py-class docutils literal notranslate"><span class="pre">SACRunnerState</span></code></a>, <code class="xref py py-class docutils literal notranslate"><span class="pre">PrioritisedTrajectoryBufferState</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code> | <code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code> | <code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code> | <code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code>], <code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code>[<a class="reference internal" href="../arlbench.core.algorithms.dqn.html#arlbench.core.algorithms.dqn.dqn.DQNState" title="arlbench.core.algorithms.dqn.dqn.DQNState"><code class="xref py py-class docutils literal notranslate"><span class="pre">DQNState</span></code></a>, <a class="reference internal" href="../arlbench.core.algorithms.dqn.html#arlbench.core.algorithms.dqn.dqn.DQNTrainingResult" title="arlbench.core.algorithms.dqn.dqn.DQNTrainingResult"><code class="xref py py-class docutils literal notranslate"><span class="pre">DQNTrainingResult</span></code></a>] | <code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code>[<a class="reference internal" href="../arlbench.core.algorithms.ppo.html#arlbench.core.algorithms.ppo.ppo.PPOState" title="arlbench.core.algorithms.ppo.ppo.PPOState"><code class="xref py py-class docutils literal notranslate"><span class="pre">PPOState</span></code></a>, <a class="reference internal" href="../arlbench.core.algorithms.ppo.html#arlbench.core.algorithms.ppo.ppo.PPOTrainingResult" title="arlbench.core.algorithms.ppo.ppo.PPOTrainingResult"><code class="xref py py-class docutils literal notranslate"><span class="pre">PPOTrainingResult</span></code></a>] | <code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code>[<a class="reference internal" href="../arlbench.core.algorithms.sac.html#arlbench.core.algorithms.sac.sac.SACState" title="arlbench.core.algorithms.sac.sac.SACState"><code class="xref py py-class docutils literal notranslate"><span class="pre">SACState</span></code></a>, <a class="reference internal" href="../arlbench.core.algorithms.sac.html#arlbench.core.algorithms.sac.sac.SACTrainingResult" title="arlbench.core.algorithms.sac.sac.SACTrainingResult"><code class="xref py py-class docutils literal notranslate"><span class="pre">SACTrainingResult</span></code></a>]]</span></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="arlbench.autorl.objectives.RewardStd.get_spec">
-<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_spec</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arlbench/autorl/objectives.html#RewardStd.get_spec"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.autorl.objectives.RewardStd.get_spec" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="arlbench.autorl.objectives.Reward.get_spec">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_spec</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arlbench/autorl/objectives.html#Reward.get_spec"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.autorl.objectives.Reward.get_spec" title="Link to this definition">¶</a></dt>
 <dd><p>Returns a dictionary containing the specification of the objective.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
@@ -730,6 +840,41 @@ the behaviour of a basic function while keeping the advantages of a static class
 </dl>
 </dd></dl>
 
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="arlbench.autorl.objectives.TrainReward">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">arlbench.autorl.objectives.</span></span><span class="sig-name descname"><span class="pre">TrainReward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arlbench/autorl/objectives.html#TrainReward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.autorl.objectives.TrainReward" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="../arlbench.autorl.html#arlbench.autorl.objectives.Objective" title="arlbench.autorl.objectives.Objective"><code class="xref py py-class docutils literal notranslate"><span class="pre">Objective</span></code></a></p>
+<p>Reward objective for the AutoRL environment. It measures the mean of the last training rewards.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="arlbench.autorl.objectives.TrainReward.__call__">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">__call__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">train_func</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">objectives</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optimize_objectives</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">default_arg</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'mean'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arlbench/autorl/objectives.html#TrainReward.__call__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.autorl.objectives.TrainReward.__call__" title="Link to this definition">¶</a></dt>
+<dd><p>Wraps the training function with the reward mean calculation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">Callable</span></code>[[<a class="reference internal" href="../arlbench.core.algorithms.dqn.html#arlbench.core.algorithms.dqn.dqn.DQNRunnerState" title="arlbench.core.algorithms.dqn.dqn.DQNRunnerState"><code class="xref py py-class docutils literal notranslate"><span class="pre">DQNRunnerState</span></code></a> | <a class="reference internal" href="../arlbench.core.algorithms.ppo.html#arlbench.core.algorithms.ppo.ppo.PPORunnerState" title="arlbench.core.algorithms.ppo.ppo.PPORunnerState"><code class="xref py py-class docutils literal notranslate"><span class="pre">PPORunnerState</span></code></a> | <a class="reference internal" href="../arlbench.core.algorithms.sac.html#arlbench.core.algorithms.sac.sac.SACRunnerState" title="arlbench.core.algorithms.sac.sac.SACRunnerState"><code class="xref py py-class docutils literal notranslate"><span class="pre">SACRunnerState</span></code></a>, <code class="xref py py-class docutils literal notranslate"><span class="pre">PrioritisedTrajectoryBufferState</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code> | <code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code> | <code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code> | <code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code>], <code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code>[<a class="reference internal" href="../arlbench.core.algorithms.dqn.html#arlbench.core.algorithms.dqn.dqn.DQNState" title="arlbench.core.algorithms.dqn.dqn.DQNState"><code class="xref py py-class docutils literal notranslate"><span class="pre">DQNState</span></code></a>, <a class="reference internal" href="../arlbench.core.algorithms.dqn.html#arlbench.core.algorithms.dqn.dqn.DQNTrainingResult" title="arlbench.core.algorithms.dqn.dqn.DQNTrainingResult"><code class="xref py py-class docutils literal notranslate"><span class="pre">DQNTrainingResult</span></code></a>] | <code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code>[<a class="reference internal" href="../arlbench.core.algorithms.ppo.html#arlbench.core.algorithms.ppo.ppo.PPOState" title="arlbench.core.algorithms.ppo.ppo.PPOState"><code class="xref py py-class docutils literal notranslate"><span class="pre">PPOState</span></code></a>, <a class="reference internal" href="../arlbench.core.algorithms.ppo.html#arlbench.core.algorithms.ppo.ppo.PPOTrainingResult" title="arlbench.core.algorithms.ppo.ppo.PPOTrainingResult"><code class="xref py py-class docutils literal notranslate"><span class="pre">PPOTrainingResult</span></code></a>] | <code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code>[<a class="reference internal" href="../arlbench.core.algorithms.sac.html#arlbench.core.algorithms.sac.sac.SACState" title="arlbench.core.algorithms.sac.sac.SACState"><code class="xref py py-class docutils literal notranslate"><span class="pre">SACState</span></code></a>, <a class="reference internal" href="../arlbench.core.algorithms.sac.html#arlbench.core.algorithms.sac.sac.SACTrainingResult" title="arlbench.core.algorithms.sac.sac.SACTrainingResult"><code class="xref py py-class docutils literal notranslate"><span class="pre">SACTrainingResult</span></code></a>]]</span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="arlbench.autorl.objectives.TrainReward.get_spec">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_spec</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arlbench/autorl/objectives.html#TrainReward.get_spec"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.autorl.objectives.TrainReward.get_spec" title="Link to this definition">¶</a></dt>
+<dd><p>Returns a dictionary containing the specification of the objective.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></span></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="arlbench.autorl.objectives.discount_rewards">
+<span class="sig-prename descclassname"><span class="pre">arlbench.autorl.objectives.</span></span><span class="sig-name descname"><span class="pre">discount_rewards</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rewards</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gamma</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.99</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arlbench/autorl/objectives.html#discount_rewards"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arlbench.autorl.objectives.discount_rewards" title="Link to this definition">¶</a></dt>
+<dd><p>Compute discounted rewards.</p>
 </dd></dl>
 
 </section>
@@ -775,7 +920,7 @@ the behaviour of a basic function while keeping the advantages of a static class
     <div class="footer-item">
       <p class="sphinx-version">
 Created using <a href="http://sphinx-doc.org/">Sphinx</a>
-8.1.3. Template is modified version of <a
+7.3.7. Template is modified version of <a
 href="https://pydata-sphinx-theme.readthedocs.io">PyData Sphinx Theme</a>. <br>
 </p>
     </div>

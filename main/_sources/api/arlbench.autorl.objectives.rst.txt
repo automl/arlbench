@@ -4,13 +4,38 @@ arlbench.autorl.objectives
 .. automodule:: arlbench.autorl.objectives
 
    
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      discount_rewards
+   
+   
+
+   
+   
    .. rubric:: Classes
 
    .. autosummary::
    
+      DiscountedReward
+      DiscountedTrainReward
       Emissions
       Objective
-      RewardMean
-      RewardStd
+      Reward
       Runtime
+      TrainReward
    
+   
+
+   
+   
+   
+
+
+
