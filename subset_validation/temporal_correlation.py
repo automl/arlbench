@@ -274,15 +274,92 @@ def get_temporal_returns_box(full_set: pd.DataFrame, algorithm: str):
     plt.tight_layout()
     plt.savefig(PLOTS_DIR / f"temporal_returns_box_{algorithm}.png", dpi=500)
 
+def plot_ci_curves_per_subset(algorithm, full_data):
+    data = get_subset(full_data, algorithm)
+
+    percentiles = [0.0, 0.25, 0.50, 0.75, 1.0]
+
+    # Get configs IDs closest to each percentile
+    percentile_configs = {}
+
+    for env in data["env"].unique():
+        percentile_configs[env] = {}
+        env_data = data[data["env"] == env]
+        env_final_budget_data = env_data[env_data["budget"] == env_data["budget"].max()]
+        percentile_ranks = env_final_budget_data["performance"].rank(pct=True).reset_index(drop=True)
+        for p in percentiles:
+            closest_idx = (percentile_ranks - p).abs().idxmin()
+            percentile_configs[env][p] = env_data[env_data["config_id"] == closest_idx]
+
+    # Plot performance over budget for each percentile config
+    env_colors = {env: color for env, color in zip(percentile_configs.keys(), sns.color_palette("tab10", n_colors=len(percentile_configs)))}
+    plt.figure(figsize=(6, 4))
+    for env, configs in percentile_configs.items():
+        labeled = False
+        for p, df in configs.items():
+            print(df)
+            if labeled:
+                sns.lineplot(data=df, x="budget", y="performance", label=None, color=env_colors[env])
+            else:
+                sns.lineplot(data=df, x="budget", y="performance", label=f"{env}", color=env_colors[env])
+                labeled = True
+
+
+    plt.title(f"{algorithm.upper()}")
+    plt.xlabel("Budget")
+    plt.ylabel("Performance")
+    plt.legend()
+    plt.grid(True)
+    plt.tight_layout()
+    plt.savefig(PLOTS_DIR / f"per_env_learning_curves/{algorithm}.png", dpi=500)
+
+def plot_ci_curves_per_environment(algorithm, environment, full_data):
+    algo_data = full_data[algorithm]
+    data = algo_data[algo_data["env"] == environment]
+
+    percentiles = [0.0, 0.25, 0.50, 0.75, 1.0]
+    final_budget_data = data[data["budget"] == data["budget"].max()]
+    percentile_ranks = final_budget_data["performance"].rank(pct=True).reset_index(drop=True)
+
+    # Get configs IDs closest to each percentile
+    percentile_configs = {}
+    for p in percentiles:
+        closest_idx = (percentile_ranks - p).abs().idxmin()
+        percentile_configs[p] = data[data["config_id"] == closest_idx]
+
+    # Plot performance over budget for each percentile config
+    plt.figure(figsize=(6, 4))
+    for p, df in percentile_configs.items():
+        sns.lineplot(data=df, x="budget", y="performance", label=f"{p}th Percentile")
+
+    plt.title(f"{algorithm.upper()} - {environment.upper()}")
+    plt.xlabel("Budget")
+    plt.ylabel("Performance")
+    plt.legend()
+    plt.grid(True)
+    plt.tight_layout()
+    plt.savefig(PLOTS_DIR / f"per_env_learning_curves/{algorithm}_{environment}.png", dpi=500)
+
 if __name__ == "__main__":
     np.random.seed(42)
 
     all_data = read_all_data()
-    plot_temporal_correlation(all_data)
-
+    # for algorithm in ["ppo", "dqn", "sac"]:
+    #     for environment in EXPERIMENT_TO_ENV.values():
+    #         print(f"Plotting {algorithm} - {environment}")
+    #         try:
+    #             plot_ci_curves_per_environment(algorithm, environment, all_data)
+    #         except Exception as e:
+    #             pass
     for algorithm in ["ppo", "dqn", "sac"]:
-        get_temporal_returns_box(all_data[algorithm], algorithm)
-        get_temporal_CIs(all_data[algorithm], algorithm)
+        plot_ci_curves_per_subset(algorithm, all_data[algorithm])
+
+    #plot_temporal_correlation(all_data)
+
+
+    # for algorithm in ["ppo", "dqn", "sac"]:
+    #     get_temporal_returns_box(all_data[algorithm], algorithm)
+    #     get_temporal_CIs(all_data[algorithm], algorithm)
 
 
 
