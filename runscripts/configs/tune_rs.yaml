@@ -9,7 +9,7 @@ defaults:
 
 hydra:
   sweeper:
-    n_trials: 1
+    n_trials: 300
     search_space: ${search_space}
     sweeper_kwargs:
       maximize: true

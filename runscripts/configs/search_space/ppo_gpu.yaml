@@ -12,7 +12,7 @@ hyperparameters:
     log: false
   hp_config.minibatch_size:
     type: categorical
-    choices: [256, 512, 1024, 2048]
+    choices: [256, 512, 1024, 2048, 5096]
   hp_config.gae_lambda:
     type: uniform_float
     upper: 0.9999
@@ -31,8 +31,10 @@ hyperparameters:
     default: 0.01
     log: True
   hp_config.n_steps:
-    type: categorical
-    choices: [2, 4, 8, 16, 32]
+    type: uniform_int
+    upper: 16
+    lower: 1
+    log: False
   hp_config.update_epochs:
     type: uniform_int
     upper: 20
@@ -45,5 +47,5 @@ hyperparameters:
     log: False
   environment.n_envs:
     type: categorical
-    choices: [256, 512, 1024, 2048, 5096]
+    choices: [512, 1024, 2048, 5096, 10192]
 

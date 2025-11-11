@@ -3,7 +3,7 @@
 from __future__ import annotations
 import traceback
 import sys
-import copy
+import time
 
 import hydra
 import jax
@@ -59,13 +59,19 @@ def run(cfg: DictConfig, logger: logging.Logger):
     except FileNotFoundError:
         pass
 
+    start = time.time()
     objectives = run_arlbench(cfg, logger=logger)
+    training_time = time.time() - start
 
-    with open("./performance.csv", "w+") as f:
-        f.write(str(objectives))
-    with open("./done.txt", "w+") as f:
-        f.write("yes")
-    OmegaConf.save(config=cfg, f="./config.yaml", resolve=True)
+    with open("./performance.csv", "w+") as fp:
+        fp.write(str(objectives))
+    with open("./done.txt", "w+") as fp:
+        fp.write("yes")
+    with open("./config.yaml", "w+") as fp:
+        OmegaConf.save(config=cfg, f=fp, resolve=True)
+    with open("./time.csv", "w+") as fp:
+        fp.write(str(training_time))
+
 
     return objectives
 
