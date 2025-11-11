@@ -1,10 +1,10 @@
 defaults:
   - _self_
   - /cluster: local
-  - /algorithm: dqn
-  - /environment: cc_cartpole
-  - search_space: dqn
-  - /experiments: cc_cartpole_dqn
+  - /algorithm: ppo
+  - environment: brax_ant
+  - search_space: ppo_cpu
+  - /experiments: brax_ant_ppo
 
 hydra:
   run:
@@ -35,5 +35,5 @@ autorl:
   objectives: ["reward_mean"]
   optimize_objectives: "upper"
   n_steps: 10
-  n_eval_steps: 100
+  n_eval_steps: 10
   n_eval_episodes: 10

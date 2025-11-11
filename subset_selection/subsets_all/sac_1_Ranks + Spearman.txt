@@ -1,7 +1,0 @@
-Tasks chosen for sac:
-Task 0: box2d_bipedal_walker
-Correlation without weights: 0.8407120552314836
-Correlation with prediction: 0.8371764705882352
-Validation error: 0.16282352941176478
-Weights:
-[0.88011215]

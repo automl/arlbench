@@ -1,22 +1,22 @@
 defaults:
   - _self_
   - /cluster: local
-  - /algorithm: dqn
-  - /environment: cc_cartpole
-  - search_space: dqn
-  - /experiments: cc_cartpole_dqn
+  - /algorithm: ppo
+  - /environment: brax_ant
+  - search_space: ppo_gpu
+  - /experiments: brax_ant_ppo
   - override hydra/sweeper: HyperRS
 
 hydra:
   sweeper:
-    n_trials: 32
+    n_trials: 1
     search_space: ${search_space}
     sweeper_kwargs:
       maximize: true
       max_budget: ${environment.n_total_timesteps} 
       max_parallelization: 1 
       job_array_size_limit: 100
-      seeds: [0, 1, 2]
+      seeds: [0]
   run:
     dir: results/rs/${algorithm}_${autorl.env_name}/${search_space.seed}/${autorl.seed}
   sweep:

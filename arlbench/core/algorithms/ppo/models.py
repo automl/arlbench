@@ -11,6 +11,7 @@ class MLPActorCritic(nn.Module):
     action_dim: int
     activation: str = "tanh"
     hidden_size: int = 64
+    num_mlp_layers: int = 2
     discrete: bool = True
 
     def setup(self):
@@ -21,16 +22,27 @@ class MLPActorCritic(nn.Module):
         else:
             raise ValueError(f"Invalid activation function: {self.activation}")
 
-        self.dense0 = nn.Dense(
-            self.hidden_size,
-            kernel_init=orthogonal(jnp.sqrt(2)),
-            bias_init=constant(0.0),
-        )
-        self.dense1 = nn.Dense(
-            self.hidden_size,
-            kernel_init=orthogonal(jnp.sqrt(2)),
-            bias_init=constant(0.0),
-        )
+        actor_mlp_layers = []
+        critic_mlp_layers = []
+
+        for i in range(self.num_mlp_layers):
+            actor_mlp_layers.append(
+                nn.Dense(
+                    self.hidden_size,
+                    kernel_init=orthogonal(jnp.sqrt(2)),
+                    bias_init=constant(0.0),
+                )
+            )
+            critic_mlp_layers.append(
+                 nn.Dense(
+                    self.hidden_size,
+                    kernel_init=orthogonal(jnp.sqrt(2)),
+                    bias_init=constant(0.0),
+                )
+            )
+        self.actor_mlp_layers = actor_mlp_layers
+        self.critic_mlp_layers = critic_mlp_layers
+
         self.out_layer = nn.Dense(
             self.action_dim, kernel_init=orthogonal(0.01), bias_init=constant(0.0)
         )
@@ -39,35 +51,25 @@ class MLPActorCritic(nn.Module):
             "log_std", nn.initializers.zeros, (self.action_dim,)
         )
 
-        self.critic0 = nn.Dense(
-            self.hidden_size,
-            kernel_init=orthogonal(jnp.sqrt(2)),
-            bias_init=constant(0.0),
-        )
-        self.critic1 = nn.Dense(
-            self.hidden_size,
-            kernel_init=orthogonal(jnp.sqrt(2)),
-            bias_init=constant(0.0),
-        )
         self.critic_out = nn.Dense(
             1, kernel_init=orthogonal(1.0), bias_init=constant(0.0)
         )
 
     def __call__(self, x):
-        actor_mean = self.dense0(x)
-        actor_mean = self.activation_func(actor_mean)
-        actor_mean = self.dense1(actor_mean)
-        actor_mean = self.activation_func(actor_mean)
+        actor_mean = x
+        for layer in self.actor_mlp_layers:
+            actor_mean = layer(actor_mean)
+            actor_mean = self.activation_func(actor_mean)
         actor_mean = self.out_layer(actor_mean)
         if self.discrete:
             pi = distrax.Categorical(logits=actor_mean)
         else:
             pi = distrax.MultivariateNormalDiag(actor_mean, jnp.exp(self.actor_logtstd))
 
-        critic = self.critic0(x)
-        critic = self.activation_func(critic)
-        critic = self.critic1(critic)
-        critic = self.activation_func(critic)
+        critic = x
+        for layer in self.critic_mlp_layers:
+            critic = layer(critic)
+            critic = self.activation_func(critic)
         critic = self.critic_out(critic)
 
         return pi, jnp.squeeze(critic, axis=-1)

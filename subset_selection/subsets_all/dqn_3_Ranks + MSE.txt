@@ -1,9 +1,0 @@
-Tasks chosen for dqn:
-Task 0: atari_double_dunk
-Task 1: cc_acrobot
-Task 2: minigrid_unlock
-Correlation without weights: 0.9207549963952848
-Correlation with prediction: 0.9121917960182703
-Validation error: 0.003264939217017493
-Weights:
-[0.29382959 0.27106007 0.42524599]

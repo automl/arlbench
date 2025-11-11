@@ -1,8 +1,0 @@
-name: "humanoid"
-framework: "brax"
-n_total_timesteps: 50000000
-kwargs: {"backend": "mjx"}
-eval_kwargs: {"backend": "mjx"}
-cnn_policy: False
-deterministic_eval: True
-n_envs: 2048

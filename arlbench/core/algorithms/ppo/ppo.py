@@ -164,6 +164,7 @@ class PPO(Algorithm):
             discrete=discrete,
             activation=self.nas_config["activation"],
             hidden_size=self.nas_config["hidden_size"],
+            num_mlp_layers=self.nas_config["num_mlp_layers"],
         )
 
     @staticmethod
@@ -176,7 +177,7 @@ class PPO(Algorithm):
                 "learning_rate": Float("learning_rate", (1e-6, 0.1), default=3e-4, log=True),
                 "n_steps": Integer("n_steps", (1, 16384), default=128),
                 "update_epochs": Integer("update_epochs", (1, 20), default=10),
-                "gamma": Float("gamma", (0.8, 1.0), default=0.99),
+                "gamma_loss_rate": Float("gamma_loss_rate", (0.0, 0.2), default=0.01),
                 "gae_lambda": Float("gae_lambda", (0.8, 0.9999), default=0.95),
                 "clip_eps": Float("clip_eps", (0.0, 0.5), default=0.2),
                 "vf_clip_eps": Float("vf_clip_eps", (0.0, 0.5), default=0.2),
@@ -222,6 +223,7 @@ class PPO(Algorithm):
                     "activation", ["tanh", "relu"], default="tanh"
                 ),
                 "hidden_size": Integer("hidden_size", (1, 2048), default=64),
+                "num_mlp_layers": Integer("num_mlp_layers", (1, 3), default=2),
             },
         )
 
@@ -577,10 +579,11 @@ class PPO(Algorithm):
             transitions.value,
             transitions.reward,
         )
-        delta = reward + self.hpo_config["gamma"] * next_value * (1 - done) - value
+        discount = 1 - self.hpo_config["gamma_loss_rate"]
+        delta = reward + discount * next_value * (1 - done) - value
         gae = (
             delta
-            + self.hpo_config["gamma"]
+            + discount
             * self.hpo_config["gae_lambda"]
             * (1 - done)
             * gae

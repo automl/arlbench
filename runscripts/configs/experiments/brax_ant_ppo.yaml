@@ -2,7 +2,7 @@
 defaults:
   - override /environment: brax_ant
   - override /algorithm: ppo
-  - override /search_space: ppo_brax
+  - override /search_space: ppo_gpu
 
 experiment_name: brax_ant_ppo
 

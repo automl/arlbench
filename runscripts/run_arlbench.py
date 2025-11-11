@@ -3,9 +3,9 @@
 from __future__ import annotations
 import traceback
 import sys
+import copy
 
 import hydra
-from codecarbon import track_emissions
 import jax
 import logging
 from omegaconf import OmegaConf, DictConfig
@@ -18,7 +18,6 @@ OmegaConf.register_new_resolver("multiply", lambda x, y: x * y, replace=True)
 OmegaConf.register_new_resolver("divide", lambda x, y: x / y, replace=True)
 
 @hydra.main(version_base=None, config_path="configs", config_name="base")
-@track_emissions(offline=True, country_iso_code="DEU")
 def main(cfg: DictConfig):
     logging.basicConfig(filename="job.log", 
 					format="%(asctime)s %(message)s", 
@@ -44,7 +43,7 @@ def run(cfg: DictConfig, logger: logging.Logger):
     """Console script for arlbench."""
 
     logger.info("Starting run with config:")
-    logger.info(str(OmegaConf.to_yaml(cfg)))
+    logger.info(str(OmegaConf.to_yaml(cfg, resolve=True)))
 
     # check if file done exists and if so, return
     try:
@@ -66,6 +65,7 @@ def run(cfg: DictConfig, logger: logging.Logger):
         f.write(str(objectives))
     with open("./done.txt", "w+") as f:
         f.write("yes")
+    OmegaConf.save(config=cfg, f="./config.yaml", resolve=True)
 
     return objectives
 
