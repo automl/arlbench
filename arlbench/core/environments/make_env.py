@@ -63,6 +63,10 @@ def make_env(
         from .xland_env import XLandEnv
 
         env = XLandEnv(env_name, n_envs, env_kwargs=env_kwargs, cnn_policy=cnn_policy)
+    elif env_framework == "mdpp":
+        from .mdpp_env import JaxMdppEnv
+
+        env = JaxMdppEnv(env_name, n_envs, env_kwargs=env_kwargs)
     else:
         raise ValueError(f"Invalid framework: {env_framework}")
 

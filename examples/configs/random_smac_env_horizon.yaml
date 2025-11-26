@@ -1,0 +1,74 @@
+defaults:
+  - _self_
+  - /algorithm: dqn
+  - /environment: mdpp_horizons
+  - /search_space: dqn_cc
+  - override hydra/sweeper: HyperSMAC
+
+hydra:
+  sweeper:
+    n_trials: 32
+    budget_variable: autorl.n_total_timesteps
+    search_space: ${search_space}
+    sweeper_kwargs:
+      maximize: true
+      min_budget: 10000
+      max_budget: ${environment.n_total_timesteps}
+      optimizer_kwargs:
+        smac_facade:
+          _target_: smac.facade.multi_fidelity_facade.MultiFidelityFacade
+          _partial_: true
+        intensifier:
+          _target_: smac.facade.multi_fidelity_facade.MultiFidelityFacade.get_intensifier
+          _partial_: true
+          eta: 2
+          n_seeds: 1
+        scenario:
+          seed: ${smac_seed}
+          n_trials: ${hydra.sweeper.n_trials}
+          min_budget: ${hydra.sweeper.sweeper_kwargs.min_budget}
+          max_budget: ${environment.n_total_timesteps}
+          deterministic: false
+          n_workers: 1
+          output_directory: ${hydra.sweep.dir}
+  run:
+    dir: randomized_arlbench_results/smac/${algorithm_name}_env_horizon_${autorl.env_name}/${smac_seed}/${now:%H-%M-%S}
+  sweep:
+    dir: randomized_arlbench_results/smac/${algorithm_name}_env_horizon_${autorl.env_name}/${smac_seed}/${now:%H-%M-%S}
+  job:
+    chdir: true
+
+load_checkpoint: ""
+smac_seed: 42
+jax_enable_x64: ${environment.jax_enable_x64}
+seed: 0
+
+autorl:
+  seed: ${seed}
+  env_framework: ${environment.framework}
+  env_name: ${environment.name}
+  env_kwargs: ${environment.kwargs}
+  eval_env_kwargs: ${environment.kwargs}
+  n_envs: ${environment.n_envs}
+  algorithm: ${algorithm}
+  cnn_policy: ${environment.cnn_policy}
+  nas_config: ${nas_config}
+  n_total_timesteps: ${environment.n_total_timesteps}
+  checkpoint: []
+  checkpoint_name: "default_checkpoint"
+  checkpoint_dir: "/tmp"
+  state_features: []
+  objectives: ["reward_mean"]
+  optimize_objectives: "upper"
+  n_eval_steps: 10
+  n_eval_episodes: 128
+
+randomized_params:
+  autorl.seed: [int, 0, 100000000]
+  autorl.n_envs: [int, 1, 64]
+  nas_config.activation: [cat, "relu", "tanh"]
+  nas_config.hidden_size: [int, 32, 512]
+  autorl.env_kwargs.sequence_length: [int, 1, 10]
+  autorl.env_kwargs.max_steps_in_episode: [int, 10, 20]
+
+n_configs: 20

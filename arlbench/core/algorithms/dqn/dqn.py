@@ -657,7 +657,7 @@ class DQN(Algorithm):
                 / self.hpo_config["exploration_fraction"]
             )
             rand_action = random_action(sample_rng, last_obs)
-            greedy_action = greedy_action(action_rng, last_obs)
+            greedy_action = greedy_action(action_rng, last_obs)            
             action = jax.lax.select(
                 jax.random.uniform(sample_rng, shape=last_obs.shape[:1]) < epsilon,
                 rand_action,

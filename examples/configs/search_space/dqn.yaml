@@ -7,7 +7,7 @@ hyperparameters:
     default: 0.9
     log: false
   hp_config.buffer_batch_size:
-    type: categorical
+    type: uniform_int
     choices:
       - 4
       - 8

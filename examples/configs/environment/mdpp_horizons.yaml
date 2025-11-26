@@ -1,0 +1,19 @@
+name: "Jax-MDPP-discrete-v0"
+framework: "mdpp"
+n_total_timesteps: 1e5
+kwargs: 
+  sequence_length: 1
+  max_steps_in_episode: 100
+  diameter: 1
+  terminal_state_density: 0.1
+  reward_density: 0.5
+eval_kwargs: 
+  sequence_length: 1
+  max_steps_in_episode: 100
+  diameter: 1
+  terminal_state_density: 0.1
+  reward_density: 0.5
+cnn_policy: False
+deterministic_eval: True
+n_envs: 8
+jax_enable_x64: False

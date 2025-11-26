@@ -45,7 +45,7 @@ def run(cfg: DictConfig, logger: logging.Logger):
         f.write(str(objectives))
     with open("./done.txt", "w+") as f:
         f.write("yes")
-
+    print("Objectives:", objectives)
     return objectives
 
 

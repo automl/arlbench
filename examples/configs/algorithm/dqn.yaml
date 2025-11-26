@@ -1,5 +1,6 @@
 # @package _global_
 algorithm: dqn
+algorithm_name: dqn
 hp_config:
   buffer_prio_sampling: false
   buffer_alpha: 0.9
