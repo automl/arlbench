@@ -371,6 +371,8 @@
     <span class="s2">&quot;env_name&quot;</span><span class="p">:</span> <span class="s2">&quot;CartPole-v1&quot;</span><span class="p">,</span>
     <span class="s2">&quot;env_kwargs&quot;</span><span class="p">:</span> <span class="p">{},</span>
     <span class="s2">&quot;eval_env_kwargs&quot;</span><span class="p">:</span> <span class="p">{},</span>
+    <span class="s2">&quot;env_params&quot;</span><span class="p">:</span> <span class="p">{},</span>
+    <span class="s2">&quot;env_eval_params&quot;</span><span class="p">:</span> <span class="p">{},</span>
     <span class="s2">&quot;n_envs&quot;</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span>
     <span class="s2">&quot;algorithm&quot;</span><span class="p">:</span> <span class="s2">&quot;dqn&quot;</span><span class="p">,</span>
     <span class="s2">&quot;cnn_policy&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
@@ -443,6 +445,7 @@
             <span class="n">env_kwargs</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="p">[</span><span class="s2">&quot;env_kwargs&quot;</span><span class="p">],</span>
             <span class="n">cnn_policy</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="p">[</span><span class="s2">&quot;cnn_policy&quot;</span><span class="p">],</span>
             <span class="n">seed</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_seed</span><span class="p">,</span>
+            <span class="n">env_params</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;env_params&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
         <span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_eval_env</span> <span class="o">=</span> <span class="n">make_env</span><span class="p">(</span>
@@ -452,6 +455,7 @@
             <span class="n">env_kwargs</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="p">[</span><span class="s2">&quot;eval_env_kwargs&quot;</span><span class="p">],</span>
             <span class="n">cnn_policy</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="p">[</span><span class="s2">&quot;cnn_policy&quot;</span><span class="p">],</span>
             <span class="n">seed</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_seed</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span>
+            <span class="n">env_params</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;env_eval_params&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
         <span class="p">)</span>
 
         <span class="c1"># Checkpointing</span>
@@ -944,7 +948,7 @@
     
     <div class="footer-item">
       <p class="copyright">
-    &copy; Copyright Copyright 2025, AutoML Hannover.<br>
+    &copy; Copyright Copyright 2026, AutoML Hannover.<br>
 </p>
     </div>
     

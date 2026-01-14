@@ -355,6 +355,7 @@
     <span class="n">n_envs</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
     <span class="n">seed</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
     <span class="n">env_kwargs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">env_params</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Environment</span> <span class="o">|</span> <span class="n">Wrapper</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;ARLBench equivalent to make_env in gymnasium/gymnax etc.</span>
 <span class="sd">    Creates a JAX-compatible RL environment.</span>
@@ -386,7 +387,7 @@
     <span class="k">elif</span> <span class="n">env_framework</span> <span class="o">==</span> <span class="s2">&quot;gymnax&quot;</span><span class="p">:</span>
         <span class="kn">from</span><span class="w"> </span><span class="nn">.gymnax_env</span><span class="w"> </span><span class="kn">import</span> <span class="n">GymnaxEnv</span>
 
-        <span class="n">env</span> <span class="o">=</span> <span class="n">GymnaxEnv</span><span class="p">(</span><span class="n">env_name</span><span class="p">,</span> <span class="n">n_envs</span><span class="p">,</span> <span class="n">env_kwargs</span><span class="o">=</span><span class="n">env_kwargs</span><span class="p">)</span>
+        <span class="n">env</span> <span class="o">=</span> <span class="n">GymnaxEnv</span><span class="p">(</span><span class="n">env_name</span><span class="p">,</span> <span class="n">n_envs</span><span class="p">,</span> <span class="n">env_kwargs</span><span class="o">=</span><span class="n">env_kwargs</span><span class="p">,</span> <span class="n">env_params</span><span class="o">=</span><span class="n">env_params</span><span class="p">)</span>
     <span class="k">elif</span> <span class="n">env_framework</span> <span class="o">==</span> <span class="s2">&quot;envpool&quot;</span><span class="p">:</span>
         <span class="kn">from</span><span class="w"> </span><span class="nn">.envpool_env</span><span class="w"> </span><span class="kn">import</span> <span class="n">EnvpoolEnv</span>
 
@@ -428,7 +429,7 @@
     
     <div class="footer-item">
       <p class="copyright">
-    &copy; Copyright Copyright 2025, AutoML Hannover.<br>
+    &copy; Copyright Copyright 2026, AutoML Hannover.<br>
 </p>
     </div>
     
