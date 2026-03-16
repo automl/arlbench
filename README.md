@@ -56,6 +56,10 @@ conda activate arlbench
 
 The instructions below will help you install the default version of ARLBench with the CPU version of JAX.
 If you want to run the ARLBench on GPU, we recommend you check out the [JAX installation guide](https://jax.readthedocs.io/en/latest/installation.html) to see how you can install the correct version for your GPU setup before proceeding.
+Currently, ARLBench relies on JAX v0.4.26. To install the GPU version for CUDA 12, please run the following command:
+```bash
+pip install jaxlib==0.4.26+cuda12.cudnn89 -f https://storage.googleapis.com/jax-releases/jax_cuda_releases.html
+```
 
 <details>
 <summary>PyPI</summary>
