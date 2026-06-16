@@ -7,7 +7,7 @@ dependencies = [
   "tomli==2.0.1", 
   "pre-commit==3.7.0", 
   "codecarbon==2.3.5",
-  "memray==1.12.0",
+  "memray==1.19.2",
   "pathos==0.3.2",
   "jax==0.4.26",
   "jaxlib==0.4.26",
