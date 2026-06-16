@@ -18,7 +18,7 @@ dependencies = [
   "distrax==0.1.5",
   "flax==0.8.2",
   "brax==0.10.3",
-  "pytest==7.4.4",
+  "pytest==9.0.3",
   "coverage==7.4.4",
   "chex==0.1.86",
   "xminigrid==0.8.0",
@@ -48,7 +48,7 @@ license = { file = "LICENSE" }
 [project.optional-dependencies]
 dev = ["ARLBench[doc, test, examples]", "ruff==0.4.0", "pre-commit==3.7.0", "bump-my-version==0.20.1", "twine==5.0.0",  "mypy==1.9.0"]
 
-test = ["pytest==7.4.4", "pytest-coverage", "pytest-cases==3.8.5", "ARLBench[examples]"]
+test = ["pytest==9.0.3", "pytest-coverage", "pytest-cases==3.8.5", "ARLBench[examples]"]
 examples = ["hypersweeper==0.2.0"]
 doc = [
   "automl_sphinx_theme==0.2.0",
